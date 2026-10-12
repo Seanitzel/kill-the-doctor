@@ -196,12 +196,51 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     const badge = mesh('box', material('#dcebf2'), [.095,.13,.012], [.14,1.28,.21], root);
     mesh('box', material(person.accent || '#5288a2'), [.07,.03,.016], [.14,1.31,.22], root);
   }
-  return { root, model, mixer, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt) {
+  const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
+  const orient = (name, child, direction) => {
+    const bone=activityBones[name], tip=activityBones[child]; if(!bone || !tip) return;
+    model.updateMatrixWorld(true);
+    const parent=bone.parent.getWorldQuaternion(new THREE.Quaternion());
+    const modelWorld=model.getWorldQuaternion(new THREE.Quaternion());
+    const relative=modelWorld.invert().multiply(parent);
+    const rotation=new THREE.Quaternion().setFromUnitVectors(tip.position.clone().normalize(),new THREE.Vector3(...direction).normalize());
+    bone.quaternion.copy(relative.invert().multiply(rotation));bone.updateMatrixWorld(true);
+  };
+  return { root, model, mixer, head: activityBones.Head, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt) {
     const next = speed > 3.7 ? 'Run' : speed > .15 ? 'Walk' : 'Idle';
     if (next !== current && actions[next]) { actions[current]?.fadeOut(.18); actions[next].reset().fadeIn(.18).play(); current = next; }
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.65, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
     mixer.update(dt);
     if (aim) for (const item of arms) item.arm.quaternion.copy(item.q);
+  }, poseActivity(activity, time, { seated=false, reaction=0, look=0 } = {}) {
+    const b=activityBones;
+    if(seated) for(const side of ['Left','Right']) { if(b[`${side}UpLeg`]) b[`${side}UpLeg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2); if(b[`${side}Leg`]) b[`${side}Leg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2); }
+    if(b.Head) b.Head.rotation.y += look + Math.sin(time*.8)*.045;
+    if(b.Spine) b.Spine.rotation.x += activity==='examine' ? .15 : activity==='labor' ? Math.sin(time*2.6)*.05 : 0;
+    if(reaction>0) {
+      orient('RightArm','RightForeArm',[.15,-.2,.6]); orient('RightForeArm','RightHand',[.1,.5,.3]);
+      orient('LeftArm','LeftForeArm',[-.12,-.25,.5]); orient('LeftForeArm','LeftHand',[-.1,.3,.4]);
+      if(b.Head) b.Head.rotation.x -= .10;
+    } else if(activity==='eat') {
+      const bite=(Math.sin(time*1.25)+1)/2;
+      orient('RightArm','RightForeArm',[.06,-.28,.4]); orient('RightForeArm','RightHand',[-.06,.1+bite*.45,.3-bite*.23]);
+      orient('LeftArm','LeftForeArm',[-.13,-.25,.35]); orient('LeftForeArm','LeftHand',[.02,-.15,.45]);
+    } else if(activity==='examine') {
+      orient('RightArm','RightForeArm',[.08,-.19,.65]); orient('RightForeArm','RightHand',[0,-.16,.75]);
+      orient('LeftArm','LeftForeArm',[-.1,-.2,.4]); orient('LeftForeArm','LeftHand',[0,.05,.5]);
+    } else if(activity==='labor') {
+      orient('RightArm','RightForeArm',[.23,-.2,.2]); orient('RightForeArm','RightHand',[-.08,.22,.24]);
+      orient('LeftArm','LeftForeArm',[-.23,-.2,.2]); orient('LeftForeArm','LeftHand',[.08,.22,.24]);
+      if(b.Head) b.Head.rotation.z += Math.sin(time*2.4)*.055;
+    } else if(activity==='chat') {
+      const gesture=Math.sin(time*1.8)*.12;
+      orient('RightArm','RightForeArm',[.15,-.45,.15]); orient('RightForeArm','RightHand',[.04,-.1+gesture,.4]);
+    } else if(activity==='rest') {
+      orient('RightArm','RightForeArm',[.15,-.6,.02]); orient('LeftArm','LeftForeArm',[-.15,-.6,.02]);
+    }
+    model.traverse(o=>{if(o.morphTargetDictionary) for(const [name,index] of Object.entries(o.morphTargetDictionary)) {
+      if(/jawOpen|mouthOpen|browInnerUp/i.test(name)) o.morphTargetInfluences[index]=reaction ? .4 : activity==='labor' ? .35+.15*Math.sin(time*2.4) : 0;
+    }});
   } };
 }
 export function renderPortrait(renderer, assets, person, role = 'doctor') {

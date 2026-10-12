@@ -44,3 +44,26 @@ Fonts are bundled locally; their license files are included in licenses/.
 All game characters, hospital events, and temporary medical status effects are
 fictional. The reference images supplied by the user are not distributed with
 the game.
+
+ADDITIONAL AMBIENT AUDIO (BUILD 01.1)
+Crying newborn baby child 2 — the_yura — CC0 1.0.
+https://commons.wikimedia.org/wiki/File:Crying_newborn_baby.ogg
+https://freesound.org/people/the_yura/sounds/211528/
+Converted from Ogg to MP3 for cross-browser audio decoding; original source retained.
+
+Female Heavy Breathing - In Pain — Vanalosswen — CC0 1.0.
+https://freesound.org/people/Vanalosswen/sounds/572452/
+Included high-quality public preview as audio/labor-breathing.mp3.
+
+Human_groan_female 03 — Vaporpup — CC0 1.0.
+https://freesound.org/people/Vaporpup/sounds/570114/
+Included high-quality public preview as audio/labor-groan.mp3.
+
+CC0: https://creativecommons.org/publicdomain/zero/1.0/
+Clinical and maternity scenes are fictional, clothed, and non-graphic. NPC dialogue is bundled as generated English speech recordings. Public-address
+announcements use the browser's installed English speech voices. Recorded cries and vocals
+are bundled locally and positioned within the hospital through Web Audio.
+
+NPC speech recordings: original game dialogue rendered locally with macOS
+Samantha and Daniel text-to-speech voices, converted to mono 22.05 kHz MP3.
+The manifest in audio/dialogue/ lists each authored line and voice variant.

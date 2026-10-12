@@ -1,0 +1,13 @@
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import {CONVERSATIONS,ENTRY_REACTIONS,dialogueKey} from '../src/game/life-rules.js';
+const run=promisify(execFile),directory=path.resolve('public/audio/dialogue'),temporary=await fs.mkdtemp(path.join(os.tmpdir(),'northline-voice-'));
+await fs.mkdir(directory,{recursive:true});
+const lines=[...Object.values(CONVERSATIONS).flat(2),...Object.values(ENTRY_REACTIONS).flat()];
+const jobs=[...new Set(lines)].flatMap(text=>['male','female'].map(gender=>({text,gender,key:dialogueKey(text,gender)})));
+let next=0;
+await Promise.all(Array.from({length:3},async()=>{while(next<jobs.length){const job=jobs[next++],input=path.join(temporary,job.key+'.txt'),output=path.join(temporary,job.key+'.aiff');await fs.writeFile(input,job.text);await run('/usr/bin/say',['-v',job.gender==='female'?'Samantha':'Daniel','-r','175','-f',input,'-o',output]);await run('/Users/seandvir/miniconda3/bin/ffmpeg',['-hide_banner','-loglevel','error','-y','-i',output,'-ac','1','-ar','22050','-b:a','64k',path.join(directory,job.key+'.mp3')]);}}));
+await fs.writeFile(path.join(directory,'manifest.json'),JSON.stringify(jobs,null,2)+'\n');await fs.rm(temporary,{recursive:true,force:true});console.log(`Bundled ${jobs.length} voiced dialogue lines.`);

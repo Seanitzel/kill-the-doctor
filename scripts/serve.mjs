@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../dist');
 const port=Number(process.env.KTD_PORT || 4173);
-const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.glb':'model/gltf-binary','.fbx':'application/octet-stream','.woff2':'font/woff2','.json':'application/json','.wasm':'application/wasm'};
+const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.glb':'model/gltf-binary','.fbx':'application/octet-stream','.woff2':'font/woff2','.json':'application/json','.wasm':'application/wasm','.mp3':'audio/mpeg','.ogg':'audio/ogg'};
 const server=http.createServer(async(req,res)=>{
   try {
     const url=new URL(req.url,'http://localhost');const pathname=decodeURIComponent(url.pathname);

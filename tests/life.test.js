@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { exposureDuration,activityVolume,recoveryStrength,CONVERSATIONS } from '../src/game/life-rules.js';
+test('Only selected patients contaminate; two base durations are exactly 30 and 60 seconds',()=>{assert.equal(exposureDuration({contamination:0}),0);assert.equal(exposureDuration({}),0);assert.equal(exposureDuration({contamination:30}),30);assert.equal(exposureDuration({contamination:60}),60);assert.equal(exposureDuration({contamination:5}),0);});
+test('Recovery filter preserves its benefit for both contamination durations',()=>{assert.equal(exposureDuration({contamination:30},1),22.5);assert.equal(exposureDuration({contamination:60},1),45);assert.equal(exposureDuration({contamination:60},3),25.3125);});
+test('The last ten seconds gradually restore clear vision',()=>{assert.equal(recoveryStrength(60,60),1);assert.equal(recoveryStrength(30,30),1);assert.equal(recoveryStrength(5,60),.5);assert.equal(recoveryStrength(0,60),0);});
+test('Room sounds fade with distance, walls, and floor changes',()=>{assert.equal(activityVolume(0,true,true),1);assert.ok(activityVolume(5,true,true)>activityVolume(15,true,true));assert.ok(activityVolume(5,true,false)<activityVolume(5,true,true));assert.equal(activityVolume(0,false,true),0);assert.equal(activityVolume(30,true,true),0);});
+test('Nurses, patients, and diners have varied two-person exchanges',()=>{for(const kind of ['nurses','patients','cafe']){assert.ok(CONVERSATIONS[kind].length>=3);for(const exchange of CONVERSATIONS[kind]){assert.equal(exchange.length,2);assert.ok(exchange.every(line=>line.length>15));}}});

@@ -1,0 +1,282 @@
+[
+  {
+    "text": "Did you finish the handover for the west wing?",
+    "gender": "male",
+    "key": "m-5a0e2ae1"
+  },
+  {
+    "text": "Did you finish the handover for the west wing?",
+    "gender": "female",
+    "key": "f-5a0e2ae1"
+  },
+  {
+    "text": "Yes. The evening rounds are all written up.",
+    "gender": "male",
+    "key": "m-e15495d"
+  },
+  {
+    "text": "Yes. The evening rounds are all written up.",
+    "gender": "female",
+    "key": "f-e15495d"
+  },
+  {
+    "text": "I can cover your station while you take a break.",
+    "gender": "male",
+    "key": "m-f09bf8f9"
+  },
+  {
+    "text": "I can cover your station while you take a break.",
+    "gender": "female",
+    "key": "f-f09bf8f9"
+  },
+  {
+    "text": "Thank you. I could really use a coffee.",
+    "gender": "male",
+    "key": "m-8621b7e5"
+  },
+  {
+    "text": "Thank you. I could really use a coffee.",
+    "gender": "female",
+    "key": "f-8621b7e5"
+  },
+  {
+    "text": "There is another patient waiting for their results.",
+    "gender": "male",
+    "key": "m-9c628ab"
+  },
+  {
+    "text": "There is another patient waiting for their results.",
+    "gender": "female",
+    "key": "f-9c628ab"
+  },
+  {
+    "text": "I will check with the laboratory after these rounds.",
+    "gender": "male",
+    "key": "m-7cdb7330"
+  },
+  {
+    "text": "I will check with the laboratory after these rounds.",
+    "gender": "female",
+    "key": "f-7cdb7330"
+  },
+  {
+    "text": "It has been a busy night on this floor.",
+    "gender": "male",
+    "key": "m-34583681"
+  },
+  {
+    "text": "It has been a busy night on this floor.",
+    "gender": "female",
+    "key": "f-34583681"
+  },
+  {
+    "text": "At least the next shift will be here soon.",
+    "gender": "male",
+    "key": "m-cb4fb60b"
+  },
+  {
+    "text": "At least the next shift will be here soon.",
+    "gender": "female",
+    "key": "f-cb4fb60b"
+  },
+  {
+    "text": "Have you been waiting here long?",
+    "gender": "male",
+    "key": "m-6dc83502"
+  },
+  {
+    "text": "Have you been waiting here long?",
+    "gender": "female",
+    "key": "f-6dc83502"
+  },
+  {
+    "text": "A little while. They said someone would call me soon.",
+    "gender": "male",
+    "key": "m-c86f9b9e"
+  },
+  {
+    "text": "A little while. They said someone would call me soon.",
+    "gender": "female",
+    "key": "f-c86f9b9e"
+  },
+  {
+    "text": "My family is bringing me a change of clothes.",
+    "gender": "male",
+    "key": "m-d3375f5f"
+  },
+  {
+    "text": "My family is bringing me a change of clothes.",
+    "gender": "female",
+    "key": "f-d3375f5f"
+  },
+  {
+    "text": "That is nice. I hope you can go home tomorrow.",
+    "gender": "male",
+    "key": "m-e55e2bdf"
+  },
+  {
+    "text": "That is nice. I hope you can go home tomorrow.",
+    "gender": "female",
+    "key": "f-e55e2bdf"
+  },
+  {
+    "text": "Would you mind passing me that magazine?",
+    "gender": "male",
+    "key": "m-907c130c"
+  },
+  {
+    "text": "Would you mind passing me that magazine?",
+    "gender": "female",
+    "key": "f-907c130c"
+  },
+  {
+    "text": "Of course. I have already read it twice.",
+    "gender": "male",
+    "key": "m-ca61ef19"
+  },
+  {
+    "text": "Of course. I have already read it twice.",
+    "gender": "female",
+    "key": "f-ca61ef19"
+  },
+  {
+    "text": "This soup is better than yesterday.",
+    "gender": "male",
+    "key": "m-ac0222d1"
+  },
+  {
+    "text": "This soup is better than yesterday.",
+    "gender": "female",
+    "key": "f-ac0222d1"
+  },
+  {
+    "text": "Anything tastes good after a twelve hour shift.",
+    "gender": "male",
+    "key": "m-fef170bc"
+  },
+  {
+    "text": "Anything tastes good after a twelve hour shift.",
+    "gender": "female",
+    "key": "f-fef170bc"
+  },
+  {
+    "text": "Is this seat taken?",
+    "gender": "male",
+    "key": "m-a296bdc8"
+  },
+  {
+    "text": "Is this seat taken?",
+    "gender": "female",
+    "key": "f-a296bdc8"
+  },
+  {
+    "text": "No, please. I was just finishing my lunch.",
+    "gender": "male",
+    "key": "m-109f28a3"
+  },
+  {
+    "text": "No, please. I was just finishing my lunch.",
+    "gender": "female",
+    "key": "f-109f28a3"
+  },
+  {
+    "text": "Do you want to share the last piece of bread?",
+    "gender": "male",
+    "key": "m-51a623c2"
+  },
+  {
+    "text": "Do you want to share the last piece of bread?",
+    "gender": "female",
+    "key": "f-51a623c2"
+  },
+  {
+    "text": "Yes, thanks. I missed dinner again.",
+    "gender": "male",
+    "key": "m-ce85c5c5"
+  },
+  {
+    "text": "Yes, thanks. I missed dinner again.",
+    "gender": "female",
+    "key": "f-ce85c5c5"
+  },
+  {
+    "text": "I am going to get another coffee before rounds.",
+    "gender": "male",
+    "key": "m-a785ded4"
+  },
+  {
+    "text": "I am going to get another coffee before rounds.",
+    "gender": "female",
+    "key": "f-a785ded4"
+  },
+  {
+    "text": "Take a minute first. You have barely touched your food.",
+    "gender": "male",
+    "key": "m-1817c20e"
+  },
+  {
+    "text": "Take a minute first. You have barely touched your food.",
+    "gender": "female",
+    "key": "f-1817c20e"
+  },
+  {
+    "text": "Excuse me! This is a delivery room. Please give her some privacy.",
+    "gender": "male",
+    "key": "m-1a1697ef"
+  },
+  {
+    "text": "Excuse me! This is a delivery room. Please give her some privacy.",
+    "gender": "female",
+    "key": "f-1a1697ef"
+  },
+  {
+    "text": "Oh! Please wait outside. We are looking after a mother.",
+    "gender": "male",
+    "key": "m-ccf6a7a6"
+  },
+  {
+    "text": "Oh! Please wait outside. We are looking after a mother.",
+    "gender": "female",
+    "key": "f-ccf6a7a6"
+  },
+  {
+    "text": "Excuse me. We are examining a patient.",
+    "gender": "male",
+    "key": "m-a957a36e"
+  },
+  {
+    "text": "Excuse me. We are examining a patient.",
+    "gender": "female",
+    "key": "f-a957a36e"
+  },
+  {
+    "text": "Oh! I did not hear you come in. Please wait by the door.",
+    "gender": "male",
+    "key": "m-906dda85"
+  },
+  {
+    "text": "Oh! I did not hear you come in. Please wait by the door.",
+    "gender": "female",
+    "key": "f-906dda85"
+  },
+  {
+    "text": "Oh! Excuse me. Can I help you?",
+    "gender": "male",
+    "key": "m-ee6524aa"
+  },
+  {
+    "text": "Oh! Excuse me. Can I help you?",
+    "gender": "female",
+    "key": "f-ee6524aa"
+  },
+  {
+    "text": "Excuse me. You startled me.",
+    "gender": "male",
+    "key": "m-315b28a4"
+  },
+  {
+    "text": "Excuse me. You startled me.",
+    "gender": "female",
+    "key": "f-315b28a4"
+  }
+]

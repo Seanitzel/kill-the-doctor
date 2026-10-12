@@ -31,8 +31,12 @@ Touch controls appear on devices with a touch pointer. Maps, evidence dialogs, a
 - Central and perimeter routes, opening doors, viewing windows, navigable rooms, and a working lift between floors.
 - Three evidence sources, rotating target assignments, matching target portraits, badge inspection, and a journal.
 - Patrolling staff and security, emergency reactions, pursuit, and a late police response.
-- Layered synthesized music with gradual target proximity intensity, hospital ambience, optional spoken announcements, and persistent captions.
-- Blackouts, emergency lighting, a shadow-casting flashlight, and fictional temporary cough effects.
+- Nurse handovers and patient conversations with spoken dialogue and captions. Six seated cafeteria diners eat, gesture, and talk around tables with meals.
+- Doctors examine clothed patients in eight clinical rooms, with a visible stethoscope. Room entry interrupts the examination with a startled turn and an “Excuse me” response.
+- Two clothed pregnant maternity patients, two swaddled newborns in bassinets, and bundled recordings of baby cries, distress vocalizations, and heavy breathing. Maternity sounds fade with distance and stop being audible on the other floor.
+- Layered synthesized music with gradual target proximity intensity, hospital ambience, optional spoken announcements, bundled NPC dialogue in two voices, and persistent captions.
+- Blackouts, emergency lighting, a shadow-casting flashlight, and occasional brief light-fixture glitches.
+- Only selected sick patients emit green contamination clouds. Base blur durations are 30 or 60 seconds, according to the patient, with a visible recovery countdown and gradual clearing over the final ten seconds. The recovery filter upgrade reduces these durations. Clean patients do not contaminate the player, and a single cloud does not repeatedly reset the timer.
 - Target objective, visible escape timer, successful escapes, patient protection, interception, timer failure, and mission results.
 - Coins, reward breakdowns, four equipment upgrades, new rounds, and browser-persistent progression.
 - Difficulty, volume, speech, mouse sensitivity, visual quality, fullscreen, responsive menus, and touch controls.
@@ -43,7 +47,7 @@ This is the complete browser prototype stage of the supplied GDD. Hospital geome
 
 Coins, completed missions, selected character, equipment levels, and settings save automatically in this browser using `ktd-northline-v1`. Active mission state is not saved on a page reload. Saves are separate for each browser and origin, so localhost and the hosted edition maintain their own profiles.
 
-All models and fonts are included locally. Gameplay has no backend or external API dependency. Spoken announcements depend on available browser/OS voices; captions remain available.
+All models and fonts are included locally. Gameplay has no backend or external API dependency. NPC conversations and entry reactions are bundled as MP3 audio and can overlap announcements. Spoken public-address announcements use available browser/OS voices; captions remain available.
 
 ## Run or edit
 
@@ -84,7 +88,9 @@ Screenshots and the latest browser report are in `artifacts/`. Sixteen independe
 - `src/game/hospital.js`: architecture, medical furniture, signs, and colliders.
 - `src/game/assets.js`: character loading, bind-space animation retargeting, medical assets, portraits, and materials.
 - `src/game/mission.js`: mission state machine, rewards, and persistent upgrades.
-- `src/game/audio.js`: procedural music, effects, ambience, and announcements.
+- `src/game/audio.js`: procedural music, recorded spatial ambience, effects, dialogue, and announcements.
+- `src/game/atmosphere.js`: conversations, clinical activity, maternity, meals, entry reactions, contamination clouds, and fixture glitches.
+- `src/game/life-rules.js`: contamination duration, recovery, audio falloff, and conversation variations.
 
 The inspection bridge `window.__ktd` exists only in development builds. Production builds omit it.
 

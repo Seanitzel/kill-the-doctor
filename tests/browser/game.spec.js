@@ -3,7 +3,7 @@ async function start(page, character='male') {
   await page.goto('/');
   if (character==='female') await page.getByRole('button',{name:'ALEX Female protagonist'}).click();
   await page.getByRole('button',{name:'ENTER THE HOSPITAL',exact:false}).click();
-  await expect(page.locator('.loading-screen')).toHaveCount(0);
+  await expect(page.locator('.loading-screen')).toHaveCount(0,{timeout:20000});
   await page.waitForFunction(()=>window.__ktd?.engine.mission && !window.__ktd.engine.paused && window.__ktd.mission.elapsed > .25);
   await page.evaluate(()=>{window.__ktd.engine.nextBlackout=9999;window.__ktd.engine.coughCooldown=9999;});
 }
@@ -37,7 +37,7 @@ test('Clues, journal, map, and lift are usable and pause correctly', async({page
 });
 test('Doors change collision state; blackouts, flashlight, and coughing recover',async({page})=>{
   await start(page);
-  const checks=await page.evaluate(()=>{const e=window.__ktd.engine;e.pause(true);const d=e.levels[0].doors[0];d.open=false;const closed=e.canStand(d.x,d.z);d.open=true;const open=e.canStand(d.x,d.z);e.triggerBlackout(1);e.toggleFlash();e.updateLights();e.coughCooldown=0;const p=e.npcs.find(n=>n.role==='patient'&&n.floor===0);p.path=[];p.wait=1000;p.nextCough=0;e.playerPos.set(p.pos.x+.8,0,p.pos.z);e.updateNPCs(.1);const coughing=e.impairment>0;const flash=e.flash.visible;e.updateEnvironment(6);return {closed,open,coughing,flash,blackout:e.blackout,impairment:e.impairment};});
+  const checks=await page.evaluate(()=>{const e=window.__ktd.engine;e.pause(true);const d=e.levels[0].doors[0];d.open=false;const closed=e.canStand(d.x,d.z);d.open=true;const open=e.canStand(d.x,d.z);e.triggerBlackout(1);e.toggleFlash();e.updateLights();e.coughCooldown=0;const p=e.npcs.find(n=>n.role==='patient'&&n.contamination&&n.floor===0);p.path=[];p.wait=1000;p.nextCough=0;e.playerPos.set(p.pos.x+.8,0,p.pos.z);e.life.update(.1);const coughing=e.impairment>0;const flash=e.flash.visible;e.updateEnvironment(61);return {closed,open,coughing,flash,blackout:e.blackout,impairment:e.impairment};});
   expect(checks).toEqual({closed:false,open:true,coughing:true,flash:true,blackout:0,impairment:0});
 });
 test('Target identification, firing, emergency countdown, escape, rewards and upgrades',async({page})=>{

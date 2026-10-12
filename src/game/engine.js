@@ -3,6 +3,8 @@ import { makeLayout, TILE, world, tileAt, key, findPath, edgeKey } from './layou
 import { STAFF } from './mission.js';
 import { hospitalMaterials, makeHuman, makePlayer, loadCharacters, mesh, material, renderPortrait } from './assets.js';
 import { buildHospital } from './hospital.js';
+import { HospitalLife } from './atmosphere.js';
+import { exposureDuration, recoveryStrength } from './life-rules.js';
 import { HospitalAudio } from './audio.js';
 const UP = new THREE.Vector3(0, 1, 0);
 const clamp = THREE.MathUtils.clamp;
@@ -103,10 +105,10 @@ export class GameEngine {
     this.mission = mission; this.playerPos.set(0, 0, 30); this.yaw = Math.PI; this.pitch = -.06;
     this.setFloor(0); this.paused = true; this.aiming = false; this.keys.clear(); this.crouched = false;
     this.ammo = 6; this.reserve = 30; this.reloading = 0; this.shotCooldown = 0; this.stamina = 100; this.impairment = 0; this.blackout = 0; this.flashlight = false;
-    this.nextBlackout = 28 + mission.random() * 25; this.nextPA = 18; this.coughCooldown = 12; this.policeSpawned = false; this.captureTime = 0;
+    this.nextBlackout = 28 + mission.random() * 25; this.nextPA = 18; this.coughCooldown = 3; this.impairmentTotal=0; this.exposureSource=null; this.policeSpawned = false; this.captureTime = 0;
     this.visited = new Set(); this.npcClock = 0;
     for (const layout of this.levels) for (const d of layout.doors) { d.open = d.id.endsWith('-back'); d.angle = d.open ? -Math.PI / 2 : 0; d.pivot.rotation.y = d.angle; }
-    this.spawnNPCs(); this.player.root.visible = true;
+    this.spawnNPCs(); this.life=new HospitalLife(this); this.player.root.visible = true;
     this.camera.position.set(.6, 2.4, 33.5); this.updateCamera(.1, true);
     await this.renderer.compileAsync(this.scene, this.camera); this.paused = false; this.clock.getDelta();
     await this.audio.start(); this.audio.settings.suppressor = !!mission.save.upgrades.suppressor;
@@ -120,17 +122,18 @@ export class GameEngine {
   }
   pause(value) { this.paused = value; this.keys.clear(); this.aiming = false; this.audio.pause(value); if (value) document.exitPointerLock?.(); }
   stop() { this.pause(true); this.mission = null; this.player.root.visible = false; this.clearNPCs(); this.flashlight = false; this.blackout = 0; this.setFloor(0); }
-  clearNPCs() { for (const n of this.npcs) this.scene.remove(n.visual.root); this.npcs = []; }
-  spawnNPCs() {
-    const mission = this.mission;
-    const spawn = (person, role, floor, pos, room, id) => {
-      const visual = makePlayer(this.assets, person.gender || 'male', person, role);
+  clearNPCs() { this.life?.dispose(); this.life=null; for (const n of this.npcs) this.scene.remove(n.visual.root); this.npcs = []; }
+  spawnNPC(person, role, floor, pos, room, id, options = {}) {
+      const visual = options.visual || makePlayer(this.assets, person.gender || 'male', person, role);
       const candidates = [...this.navLayouts[floor].cells.values()].filter(c => !room || c.room === room.id);
       const nearest = candidates.map(c => world(c.x,c.z)).sort((a,b) => distance(a,pos)-distance(b,pos))[0];
-      const spawnPos = nearest || pos; visual.root.position.set(spawnPos.x, 0, spawnPos.z); this.scene.add(visual.root);
-      const npc = { id, name: person.name || (role === 'patient' ? 'Visitor / patient' : 'Hospital security'), role, person, floor, pos: visual.root.position, visual, room, path: [], cursor: 0, wait: mission.random() * 6, dead: false, speed: role === 'security' ? 1.35 : .8 + mission.random() * .4, nextCough: mission.random() * 20, home: { x: pos.x, z: pos.z }, routine: 0 };
+      const spawnPos = options.fixed ? pos : nearest || pos; visual.root.position.set(spawnPos.x, 0, spawnPos.z); this.scene.add(visual.root);
+      const npc = { id, name: person.name || (role === 'patient' ? 'Visitor / patient' : 'Hospital security'), role, person, floor, pos: visual.root.position, visual, room, path: [], cursor: 0, wait: this.mission.random() * 6, dead: false, speed: role === 'security' ? 1.35 : .8 + this.mission.random() * .4, nextCough: this.mission.random() * 20, home: { x: pos.x, z: pos.z }, routine: 0 };
       visual.root.visible = floor === this.floor; this.npcs.push(npc); return npc;
-    };
+  }
+  spawnNPCs() {
+    const mission = this.mission;
+    const spawn = (...args) => this.spawnNPC(...args);
     for (let floor = 0; floor < 2; floor++) {
       const layout = this.levels[floor];
       for (const room of layout.rooms) {
@@ -141,7 +144,7 @@ export class GameEngine {
         if (isTarget) spawn(mission.target, mission.target.name.startsWith('Nurse') ? 'nurse' : 'doctor', floor, { x: room.center.x, z: room.center.z + (room.kind === 'imaging' ? 4 : -1.5) }, room, 'target');
         else if (!['utility', 'morgue'].includes(room.kind)) spawn(person, person.name.startsWith('Nurse') ? 'nurse' : 'doctor', floor, { x: room.center.x, z: room.center.z + (room.kind === 'imaging' ? 4 : -1.5) }, room, `staff-${floor}-${room.index}`);
       }
-      for (const [i, p] of [[0, { x: 4.7, z: 18 }], [1, { x: -20, z: 1.7 }], [2, { x: 22, z: -2 }], [3, { x: 7, z: 29 }]]) spawn({ gender: i % 2 ? 'female' : 'male', skin: i % 2 ? '#bf8c6c' : '#d9b296', hair: '#62594e' }, 'patient', floor, p, null, `patient-${floor}-${i}`);
+      for (const [i, p] of [[0, { x: 4.7, z: 18 }], [1, { x: -20, z: 1.7 }], [2, { x: 22, z: -2 }], [3, { x: 7, z: 29 }]]) { const patient=spawn({ gender: i % 2 ? 'female' : 'male', skin: i % 2 ? '#bf8c6c' : '#d9b296', hair: '#62594e' }, 'patient', floor, p, null, `patient-${floor}-${i}`); patient.contamination = i === 1 ? 30 : i === 2 ? 60 : 0; }
       for (const [i, p] of [[0, world(10, 8)], [1, world(3, 14)]]) spawn({ skin: '#bd9275', hair: '#302b26' }, 'security', floor, p, null, `security-${floor}-${i}`);
     }
   }
@@ -152,10 +155,10 @@ export class GameEngine {
     this.blackout = duration; this.mission.blackoutCount++; this.audio.sound('blackout');
     this.say('A power fault has been reported. Emergency lighting is active. Please remain calm.', 'POWER INTERRUPTION'); this.notify('Power interrupted · F to use your flashlight', 'warning');
   }
-  triggerCough() {
-    if (this.impairment > 0) return;
-    this.impairment = 4.5 * Math.pow(.75, this.mission.save.upgrades.filter); this.coughCooldown = 22; this.audio.sound('cough');
-    this.notify('Patient coughing · temporary sensory disturbance', 'warning');
+  triggerCough(patient = {name:'Sick patient',contamination:30}) {
+    const duration=exposureDuration(patient,this.mission.save.upgrades.filter);if(!duration)return false;
+    this.impairment=Math.max(this.impairment,duration);this.impairmentTotal=Math.max(this.impairmentTotal||0,duration);this.exposureSource=patient.name;
+    this.coughCooldown=5;this.audio.sound('cough');this.notify(`Contamination exposure · ${Math.round(duration)}s recovery`, 'warning');return true;
   }
   nearestInteractable() {
     let best = null, dist = 2.45;
@@ -164,6 +167,7 @@ export class GameEngine {
     }
     for (const n of this.npcs) {
       if (n.floor !== this.floor || n.dead) continue;
+      if (best && ['directory','schedule','log','elevator'].includes(best.type)) continue;
       const d = distance(this.playerPos, n.pos); if (d < 2.3 && (d < dist || best?.type === 'door' && best.door.open) && this.lineOfSight(this.playerPos, n.pos)) { best = { type: 'npc', npc: n, x: n.pos.x, z: n.pos.z, label: 'Inspect staff badge' }; dist = d; }
     }
     return best;
@@ -202,8 +206,8 @@ export class GameEngine {
     let best = null, closest = 28;
     for (const n of this.npcs) {
       if (n.floor !== this.floor || n.dead) continue;
-      const center = n.pos.clone().add(new THREE.Vector3(0, 1.1, 0));
-      const sphere = new THREE.Sphere(center, .64), hit = ray.ray.intersectSphere(sphere, new THREE.Vector3());
+      const center = n.pos.clone().add(n.hitOffset || new THREE.Vector3(0, 1.1, 0));
+      const sphere = new THREE.Sphere(center, n.hitRadius || .64), hit = ray.ray.intersectSphere(sphere, new THREE.Vector3());
       if (!hit) continue;
       const d = hit.distanceTo(this.camera.position);
       if (d < closest && this.lineOfSight(this.playerPos, n.pos)) { closest = d; best = n; }
@@ -300,7 +304,7 @@ export class GameEngine {
       n.wait -= dt;
       if (hostile && local && n.wait < 0) {
         n.path = findPath(layout, tileAt(n.pos.x, n.pos.z), tileAt(this.playerPos.x, this.playerPos.z)); n.cursor = 1; n.wait = .85;
-      } else if (!hostile && n.cursor >= n.path.length && n.wait < 0) {
+      } else if (!hostile && !n.activity && !n.reaction && n.cursor >= n.path.length && n.wait < 0) {
         const start = tileAt(n.pos.x, n.pos.z); let end;
         if (n.room && (n.id === 'target' || n.routine % 3 !== 2)) {
           const candidates = [...layout.cells.values()].filter(c => c.room === n.room.id);
@@ -310,7 +314,7 @@ export class GameEngine {
         }
         n.path = findPath(layout, start, end); n.cursor = 1; n.wait = mission.random() * 5 + 2; n.routine++;
       }
-      const destination = n.path[n.cursor];
+      const destination = n.activity || n.reaction ? null : n.path[n.cursor];
       if (destination) {
         const p = world(destination.x, destination.z), dist = distance(n.pos, p);
         const current = n.path[Math.max(0, n.cursor - 1)], door = layout.doorEdges.get(edgeKey(key(current.x, current.z), key(destination.x, destination.z)));
@@ -319,8 +323,7 @@ export class GameEngine {
         if (dist < speed * dt + .04) { n.pos.x = p.x; n.pos.z = p.z; n.cursor++; }
         else { const dx = p.x - n.pos.x, dz = p.z - n.pos.z; n.pos.x += dx / dist * speed * dt; n.pos.z += dz / dist * speed * dt; n.visual.root.rotation.y = Math.atan2(dx, dz); }
       }
-      n.visual.animate(this.time + n.routine, speed, dt);
-      if (local && n.role === 'patient' && d < 2.3 && this.coughCooldown <= 0 && n.nextCough <= mission.elapsed) { this.triggerCough(); n.nextCough = mission.elapsed + 30; }
+      if(local && d<30) n.visual.animate(this.time + (n.routine || 0), speed, dt);
       if (local && n.role === 'security' && d < 5 && this.keys.has('ShiftLeft') && mission.state !== 'escape') mission.suspicion = Math.min(100, mission.suspicion + dt * (this.mission.save.upgrades.shoes ? 2 : 4));
       if (hostile && local && d < .85 && this.lineOfSight(n.pos, this.playerPos)) this.captureTime += dt;
     }
@@ -347,15 +350,17 @@ export class GameEngine {
   }
   updateLights() {
     const dark = this.blackout > 0, emergency = this.mission?.state === 'escape';
+    const flicker=this.life?.flickerLevel() || 1;
     this.ambient.intensity = dark ? .14 : .95; this.ambient.color.set(dark ? '#50647e' : '#d3e3f0'); this.rim.intensity = dark ? .3 : 2.5;
     this.materials.light.emissiveIntensity = dark ? .015 : 1.6;
     const lightAnchor = this.mission ? this.playerPos : this.camera.position;
     const near = this.hospitals[this.floor].fixtures.map(p => ({ p, d: p.distanceToSquared(lightAnchor) })).sort((a, b) => a.d - b.d);
     this.localLights.forEach((light, i) => {
       light.position.copy(near[i]?.p || this.playerPos); light.intensity = dark ? .05 : emergency && i % 3 === 0 ? 7 + Math.sin(this.time * 5) * 3 : 10;
+      if(this.life?.flicker?.floor === this.floor && this.life.flicker.fixture.distanceTo(light.position)<.5) light.intensity*=flicker;
       light.color.set(emergency && i % 3 === 0 ? '#ef7373' : '#d5edff');
     });
-    this.overhead.position.copy(near[0]?.p || lightAnchor); this.overhead.target.position.copy(lightAnchor); this.overhead.target.position.y = 0; this.overhead.intensity = dark ? 0 : 18;
+    this.overhead.position.copy(near[0]?.p || lightAnchor); this.overhead.target.position.copy(lightAnchor); this.overhead.target.position.y = 0; this.overhead.intensity = dark ? 0 : 18*(this.life?.flicker?.fixture.distanceTo(this.overhead.position)<.5?flicker:1);
     this.flash.visible = this.flashlight; this.flash.intensity = 45 + (this.mission?.save.upgrades.light || 0) * 20; this.flash.distance = 24 + (this.mission?.save.upgrades.light || 0) * 5;
     this.beam.visible = this.flashlight && dark;
     const beamDirection=this.flash.target.position.clone().sub(this.flash.position).normalize(); this.beam.position.copy(this.flash.position).addScaledVector(beamDirection,5);this.beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),beamDirection);
@@ -369,13 +374,13 @@ export class GameEngine {
     const room = this.levels[this.floor].rooms.find(r => r.id === cell?.room);
     const objective = this.mission.state === 'escape' ? 'Return to the main entrance' : this.mission.identified ? 'Eliminate the confirmed target' : this.mission.clues.length ? `Investigate ${this.mission.target.room.name}` : 'Find the staff directory';
     const prompt = !i ? null : { type: i.type, text: i.type === 'door' ? `${i.door.open ? 'Close' : 'Open'} · ${i.label}` : i.type === 'npc' ? i.npc.role === 'patient' ? 'Patient · protected' : 'Inspect badge' : i.label };
-    this.hooks.hud?.({ state: this.mission.state, objective, location: room?.name || (this.playerPos.z > 26 ? 'Main atrium' : this.playerPos.x < -6 ? 'West passage' : this.playerPos.x > 9 ? 'East passage' : 'Central concourse'), floor: this.floor, x: this.playerPos.x, z: this.playerPos.z, yaw: this.yaw, timer: this.mission.timer, elapsed: this.mission.elapsed, stamina: this.stamina, suspicion: this.mission.suspicion, flashlight: this.flashlight, blackout: this.blackout, impairment: this.impairment, aiming: this.aiming, ammo: this.ammo, reserve: this.reserve, reloading: this.reloading > 0, prompt, proximity: this.proximity(), crouched: this.crouched, targetConfirmed: this.mission.identified, clues: this.mission.clues.length });
+    this.hooks.hud?.({ state: this.mission.state, objective, location: room?.name || (this.playerPos.z > 26 ? 'Main atrium' : this.playerPos.x < -6 ? 'West passage' : this.playerPos.x > 9 ? 'East passage' : 'Central concourse'), floor: this.floor, x: this.playerPos.x, z: this.playerPos.z, yaw: this.yaw, timer: this.mission.timer, elapsed: this.mission.elapsed, stamina: this.stamina, suspicion: this.mission.suspicion, flashlight: this.flashlight, blackout: this.blackout, impairment: this.impairment, impairmentStrength: recoveryStrength(this.impairment,this.impairmentTotal), exposureSource:this.exposureSource, dialogues:this.life?.dialogueHUD()||[], aiming: this.aiming, ammo: this.ammo, reserve: this.reserve, reloading: this.reloading > 0, prompt, proximity: this.proximity(), crouched: this.crouched, targetConfirmed: this.mission.identified, clues: this.mission.clues.length });
   }
   frame() {
     const dt = Math.min(this.clock.getDelta(), .05); this.time += dt;
     if (this.mission && !this.paused && !this.mission.result) {
       this.mission.tick(dt); if (this.mission.result) this.finish();
-      else { this.updatePlayer(dt); if (!this.mission.result) { this.updateNPCs(dt); this.updateEnvironment(dt); this.updateCamera(dt); } }
+      else { this.updatePlayer(dt); if (!this.mission.result) { this.updateNPCs(dt); this.life?.update(dt); this.updateEnvironment(dt); this.updateCamera(dt); } }
       this.hudClock += dt; if (this.hudClock > .07) { this.emitHUD(); this.hudClock = 0; }
     } else if (!this.mission) {
       this.menuTime += dt; this.camera.position.set(.3 + Math.sin(this.menuTime * .06) * .3, 1.72, 22); this.camera.lookAt(.2, 1.6, -10);
@@ -386,7 +391,7 @@ export class GameEngine {
   }
   portrait(person, role = 'doctor') { return renderPortrait(this.renderer, this.assets, person, role); }
   dispose() {
-    this.renderer.setAnimationLoop(null); this.audio.dispose();
+    this.renderer.setAnimationLoop(null); this.life?.dispose(); this.audio.dispose();
     for (const [name, fn] of Object.entries(this.handlers)) { const target = ['mousedown', 'contextmenu'].includes(name) ? this.renderer.domElement : name === 'visibilitychange' || name === 'pointerlockchange' ? document : window; target.removeEventListener(name, fn); }
     this.scene.traverse(o => { if (o.isMesh) { o.geometry?.dispose(); if (Array.isArray(o.material)) o.material.forEach(m => m.dispose()); else o.material?.dispose(); } }); this.renderer.dispose(); this.renderer.domElement.remove();
   }

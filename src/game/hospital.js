@@ -62,7 +62,7 @@ export function buildHospital(layout, m) {
     if (['emergency', 'icu', 'ward', 'maternity', 'pediatric', 'cardio'].includes(room.kind)) {
       for (let i = 0; i < 3; i++) {
         const x = minX + 1.55, z = minZ + 3 + i * 3.7;
-        bed(batch, m, x, z, Math.PI / 2, i < 2); furnitureCollider(x, z, 2.3, 1.35);
+        bed(batch, m, x, z, Math.PI / 2, false); furnitureCollider(x, z, 2.3, 1.35);
         monitor(batch, m, x + 1.35, z - .9);
         cube(m.white, maxX - 1.1, 1.02, z, .85, 2.02, .7); furnitureCollider(maxX - 1.1, z, .9, .8);
         cube(m.blue, maxX - 1.1, 1.28, z + .36, .77, .06, .03);

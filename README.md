@@ -1,6 +1,8 @@
 # Kill the Doctor — Northline
 
-A complete playable hospital stealth thriller built with **Vue 3, Three.js, and Web Audio**.
+A complete playable hospital stealth thriller built with **Vue 3, Three.js, and Web Audio**, with native **Capacitor 8** apps for iOS and Android.
+
+For phone controls, native builds, simulator launch, and mobile verification, see [MOBILE.md](MOBILE.md).
 
 ## Play
 
@@ -22,7 +24,7 @@ Select Adrian or Alex, enter the hospital, and inspect the staff directory near 
 | Hospital map / evidence journal | M / J |
 | Pause / release mouse | Escape |
 
-Touch controls appear on devices with a touch pointer. Maps, evidence dialogs, and menus pause mission time. The game also pauses when the browser loses focus.
+Phone controls provide a movement stick, drag-to-look camera, and dedicated action buttons on touch devices. Maps, evidence dialogs, and menus pause mission time. The game also pauses when the browser loses focus.
 
 ## What is playable
 

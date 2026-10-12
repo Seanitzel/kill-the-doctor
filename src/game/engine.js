@@ -5,12 +5,15 @@ import { hospitalMaterials, makeHuman, makePlayer, loadCharacters, mesh, materia
 import { buildHospital } from './hospital.js';
 import { HospitalLife } from './atmosphere.js';
 import { exposureDuration, recoveryStrength } from './life-rules.js';
+import { createTouchInput } from '../mobile/input.js';
+import { touchDevice } from '../mobile/platform.js';
 import { HospitalAudio } from './audio.js';
 const UP = new THREE.Vector3(0, 1, 0);
 const clamp = THREE.MathUtils.clamp;
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 export class GameEngine {
   constructor(container, settings, hooks = {}) {
+    this.mobile=touchDevice();this.touchInput=createTouchInput();this.inputEvents={move:0,look:0,shot:0};this.performance={frames:0,fps:0,last:performance.now()};
     this.container = container; this.settings = settings; this.hooks = hooks; this.keys = new Set(); this.paused = true; this.mission = null;
     this.floor = 0; this.yaw = Math.PI; this.pitch = -.04; this.flashlight = false; this.aiming = false; this.crouched = false;
     this.ammo = 6; this.reserve = 30; this.reloading = 0; this.shotCooldown = 0; this.stamina = 100; this.impairment = 0; this.blackout = 0;
@@ -20,7 +23,7 @@ export class GameEngine {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7)); this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.16;
-    this.renderer.domElement.setAttribute('aria-label', '3D hospital game. Use WASD to move, E to interact, F for flashlight, and M for map.'); this.renderer.domElement.tabIndex = 0;
+    this.renderer.domElement.setAttribute('aria-label', this.mobile ? '3D hospital game. Move with the joystick, drag to look, and tap USE to interact.' : '3D hospital game. Use WASD to move, E to interact, F for flashlight, and M for map.'); this.renderer.domElement.tabIndex = 0;
     container.appendChild(this.renderer.domElement);
     this.materials = hospitalMaterials(); this.levels = [0, 1].map(makeLayout); this.hospitals = this.levels.map(l => buildHospital(l, this.materials));
     this.hospitals.forEach((h, i) => { h.group.visible = i === 0; this.scene.add(h.group); });
@@ -35,7 +38,7 @@ export class GameEngine {
       }
     });
     this.ambient = new THREE.HemisphereLight('#dbe9f4', '#3e5264', 1.15); this.scene.add(this.ambient);
-    this.localLights = Array.from({ length: 6 }, () => { const light = new THREE.PointLight('#cfeaff', 10, 11, 1.5); this.scene.add(light); return light; });
+    this.localLights = Array.from({ length: this.mobile ? 3 : 6 }, () => { const light = new THREE.PointLight('#cfeaff', 10, 11, 1.5); this.scene.add(light); return light; });
     this.overhead = new THREE.SpotLight('#dcefff', 18, 14, Math.PI / 3, .7, 1.8); this.overhead.castShadow = true; this.overhead.shadow.mapSize.set(1024, 1024); this.overhead.shadow.bias = -.0002; this.overhead.shadow.normalBias = .035; this.scene.add(this.overhead); this.scene.add(this.overhead.target);
     this.rim = new THREE.PointLight('#98bed7', 3, 9, 1.8); this.scene.add(this.rim);
     this.flash = new THREE.SpotLight('#d9eeff', 50, 24, Math.PI / 7, .55, 1.5); this.flash.castShadow = true; this.flash.shadow.mapSize.set(1024, 1024); this.flash.shadow.bias = -.0004; this.flash.shadow.normalBias = .045; this.scene.add(this.flash); this.scene.add(this.flash.target); this.flash.visible = false;
@@ -79,7 +82,7 @@ export class GameEngine {
       pointerlockchange: () => this.hooks.lock?.(document.pointerLockElement === this.renderer.domElement),
       visibilitychange: () => { if (document.hidden && this.mission && !this.paused && !this.mission.result) this.hooks.pause?.(); },
       mousedown: e => {
-        if (this.paused || !this.mission) return;
+        if (this.paused || !this.mission || this.mobile) return;
         if (e.button === 2) { this.aiming = true; this.dragging = true; }
         if (e.button === 0) { if (this.aiming) this.shoot(); else this.capture(); }
       },
@@ -91,12 +94,12 @@ export class GameEngine {
       target.addEventListener(name, fn);
     }
   }
-  capture() { try { this.renderer.domElement.focus(); const promise = this.renderer.domElement.requestPointerLock?.(); promise?.catch?.(() => {}); } catch {} }
+  capture() { if(this.mobile)return; try { this.renderer.domElement.focus(); const promise = this.renderer.domElement.requestPointerLock?.(); promise?.catch?.(() => {}); } catch {} }
   resize() { const w = this.container.clientWidth, h = this.container.clientHeight; this.camera.aspect = w / Math.max(1, h); this.camera.updateProjectionMatrix(); this.renderer.setSize(w, h); }
   applySettings(settings) {
     this.settings = settings; this.audio.setSettings(settings);
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, settings.quality === 'high' ? 1.7 : settings.quality === 'balanced' ? 1.25 : 1));
-    this.renderer.shadowMap.enabled = settings.quality !== 'low'; this.resize();
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.mobile ? settings.quality==='high'?1.3:settings.quality==='balanced'?1:.75 : settings.quality === 'high' ? 1.7 : settings.quality === 'balanced' ? 1.25 : 1));
+    this.renderer.shadowMap.enabled = settings.quality !== 'low';if(this.mobile){this.flash.shadow.mapSize.set(512,512);this.overhead.shadow.mapSize.set(512,512);} this.resize();
   }
   async start(mission, gender) {
     await this.assetsPromise;
@@ -120,7 +123,7 @@ export class GameEngine {
     this.npcs.forEach(n => n.visual.root.visible = n.floor === floor && !n.dead);
     this.flash.shadow.needsUpdate = true;
   }
-  pause(value) { this.paused = value; this.keys.clear(); this.aiming = false; this.audio.pause(value); if (value) document.exitPointerLock?.(); }
+  pause(value) { this.paused = value; this.keys.clear(); this.resetTouch(); this.aiming = false; this.audio.pause(value); if (value) document.exitPointerLock?.(); }
   stop() { this.pause(true); this.mission = null; this.player.root.visible = false; this.clearNPCs(); this.flashlight = false; this.blackout = 0; this.setFloor(0); }
   clearNPCs() { this.life?.dispose(); this.life=null; for (const n of this.npcs) this.scene.remove(n.visual.root); this.npcs = []; }
   spawnNPC(person, role, floor, pos, room, id, options = {}) {
@@ -255,13 +258,13 @@ export class GameEngine {
   }
   updatePlayer(dt) {
     if (this.keys.has('ArrowLeft')) this.yaw += dt * 1.9; if (this.keys.has('ArrowRight')) this.yaw -= dt * 1.9;
-    const f = Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) - Number(this.keys.has('KeyS') || this.keys.has('ArrowDown'));
-    const strafe = Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA'));
-    const moving = f !== 0 || strafe !== 0; this.crouched = this.keys.has('KeyC');
-    const running = moving && !this.crouched && !this.aiming && this.stamina > 1 && (this.keys.has('ShiftLeft') || this.keys.has('ShiftRight'));
+    const f = this.touchInput.forward + Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) - Number(this.keys.has('KeyS') || this.keys.has('ArrowDown'));
+    const strafe = this.touchInput.strafe + Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA'));
+    const moving = f !== 0 || strafe !== 0; this.crouched = this.keys.has('KeyC') || this.touchInput.crouch;
+    const running = moving && !this.crouched && !this.aiming && this.stamina > 1 && (this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || this.touchInput.sprint);
     const modifier = 1 + this.mission.save.upgrades.shoes * .08;
     const speed = (running ? 5.5 : this.crouched ? 1.3 : this.aiming ? 1.65 : 2.8) * modifier * (this.impairment > 0 ? .53 : 1);
-    const amount = Math.hypot(f, strafe) || 1;
+    const amount = Math.max(1,Math.hypot(f, strafe));
     const old = this.playerPos.clone();
     this.move((Math.sin(this.yaw) * f - Math.cos(this.yaw) * strafe) * speed * dt / amount, (Math.cos(this.yaw) * f + Math.sin(this.yaw) * strafe) * speed * dt / amount);
     const actual = this.playerPos.distanceTo(old) / dt;
@@ -377,10 +380,10 @@ export class GameEngine {
     this.hooks.hud?.({ state: this.mission.state, objective, location: room?.name || (this.playerPos.z > 26 ? 'Main atrium' : this.playerPos.x < -6 ? 'West passage' : this.playerPos.x > 9 ? 'East passage' : 'Central concourse'), floor: this.floor, x: this.playerPos.x, z: this.playerPos.z, yaw: this.yaw, timer: this.mission.timer, elapsed: this.mission.elapsed, stamina: this.stamina, suspicion: this.mission.suspicion, flashlight: this.flashlight, blackout: this.blackout, impairment: this.impairment, impairmentStrength: recoveryStrength(this.impairment,this.impairmentTotal), exposureSource:this.exposureSource, dialogues:this.life?.dialogueHUD()||[], aiming: this.aiming, ammo: this.ammo, reserve: this.reserve, reloading: this.reloading > 0, prompt, proximity: this.proximity(), crouched: this.crouched, targetConfirmed: this.mission.identified, clues: this.mission.clues.length });
   }
   frame() {
-    const dt = Math.min(this.clock.getDelta(), .05); this.time += dt;
+    const dt = Math.min(this.clock.getDelta(), .05); this.time += dt;this.performance.frames++;const now=performance.now();if(now-this.performance.last>1000){this.performance.fps=this.performance.frames*1000/(now-this.performance.last);this.performance.frames=0;this.performance.last=now;}
     if (this.mission && !this.paused && !this.mission.result) {
       this.mission.tick(dt); if (this.mission.result) this.finish();
-      else { this.updatePlayer(dt); if (!this.mission.result) { this.updateNPCs(dt); this.life?.update(dt); this.updateEnvironment(dt); this.updateCamera(dt); } }
+      else { this.updatePlayer(dt); if (!this.mission.result) { this.updateNPCs(dt); this.life?.update(dt); this.updateEnvironment(dt); this.updateCamera(dt);if(this.touchInput.shot){this.touchInput.shot=false;this.shoot();} } }
       this.hudClock += dt; if (this.hudClock > .07) { this.emitHUD(); this.hudClock = 0; }
     } else if (!this.mission) {
       this.menuTime += dt; this.camera.position.set(.3 + Math.sin(this.menuTime * .06) * .3, 1.72, 22); this.camera.lookAt(.2, 1.6, -10);
@@ -389,6 +392,10 @@ export class GameEngine {
     for (let i = this.effects.length - 1; i >= 0; i--) { const e = this.effects[i]; e.life -= dt; if (e.life <= 0) { this.scene.remove(e.mesh); e.mesh.geometry.dispose(); e.mesh.material.dispose(); this.effects.splice(i, 1); } }
     this.renderer.render(this.scene, this.camera);
   }
+  setTouchMove(forward,strafe){if(this.paused)return;this.touchInput.forward=clamp(forward,-1,1);this.touchInput.strafe=clamp(strafe,-1,1);this.inputEvents.move++;}
+  lookTouch(dx,dy){if(this.paused)return;this.yaw-=dx*.0035*this.settings.sensitivity;this.pitch=clamp(this.pitch-dy*.0035*this.settings.sensitivity,-.47,.5);this.inputEvents.look++;}
+  requestTouchShot(){if(this.paused)return;this.aiming=true;this.touchInput.shot=true;this.inputEvents.shot++;}
+  resetTouch(){this.touchInput=createTouchInput();}
   portrait(person, role = 'doctor') { return renderPortrait(this.renderer, this.assets, person, role); }
   dispose() {
     this.renderer.setAnimationLoop(null); this.life?.dispose(); this.audio.dispose();

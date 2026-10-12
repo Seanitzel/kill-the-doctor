@@ -1,3 +1,4 @@
+import { native,nativeAnnouncement,stopNativeSpeech } from '../mobile/platform.js';
 import { dialogueKey } from './life-rules.js';
 export class HospitalAudio {
   constructor(settings) { this.settings = settings; this.ctx = null; this.nextNote = 0; this.nextBeep = 0; this.stepClock = 0; this.enabled = true; this.noteIndex = 0; this.samples = {}; this.ambientChannels = new Map(); this.activeSamples = new Set(); this.speechPriority = 0; this.speechSerial = 0; this.dialogueBuffers = new Map(); this.voiceEpoch=0; this.listenerFloor=0; }
@@ -19,8 +20,8 @@ export class HospitalAudio {
       await this.ctx.resume(); this.enabled = true; this.setSettings(this.settings); await this.loadSamples();
     } catch { /* Captions and gameplay remain available without an audio device. */ }
   }
-  setSettings(settings) { this.settings = settings; if (!settings.volume || !settings.speech) window.speechSynthesis?.cancel(); if (this.ctx) this.master.gain.setTargetAtTime(this.enabled ? settings.volume * .45 : 0, this.ctx.currentTime, .12); }
-  pause(paused) { this.enabled = !paused; this.setSettings(this.settings); if (paused) { window.speechSynthesis?.cancel(); this.speechPriority=0; this.ctx?.suspend().catch(()=>{}); } else this.ctx?.resume().catch(()=>{}); }
+  setSettings(settings) { this.settings = settings; if (!settings.volume || !settings.speech) { window.speechSynthesis?.cancel(); stopNativeSpeech(); } if (this.ctx) this.master.gain.setTargetAtTime(this.enabled ? settings.volume * .45 : 0, this.ctx.currentTime, .12); }
+  pause(paused) { this.enabled = !paused; this.setSettings(this.settings); if (paused) { window.speechSynthesis?.cancel();stopNativeSpeech(); this.speechPriority=0; this.ctx?.suspend().catch(()=>{}); } else this.ctx?.resume().catch(()=>{}); }
   tone(freq, length = .2, gain = .1, type = 'sine', destination) {
     if (!this.ctx || !this.enabled) return;
     const now = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain();
@@ -50,7 +51,7 @@ export class HospitalAudio {
   async loadSamples() {
     if(this.samplePromise) return this.samplePromise;
     this.samplePromise=Promise.allSettled(Object.entries({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3'}).map(async([name,url])=>{
-      const response=await fetch(url);if(!response.ok) throw Error('Audio sample unavailable');this.samples[name]=await this.ctx.decodeAudioData(await response.arrayBuffer());
+      const response=await fetch(url);if(!response.ok && !(native && response.status === 0)) throw Error('Audio sample unavailable');this.samples[name]=await this.ctx.decodeAudioData(await response.arrayBuffer());
     }));return this.samplePromise;
   }
   sampleNodes(name,position,gain,loop=false,buffer=null) {
@@ -88,13 +89,13 @@ export class HospitalAudio {
     if(!this.enabled||!this.settings.speech||!this.settings.volume)return;
     const key=dialogueKey(text,person.gender),epoch=this.voiceEpoch;
     try {
-      if(!this.dialogueBuffers.has(key))this.dialogueBuffers.set(key,fetch(`/audio/dialogue/${key}.mp3`).then(async response=>{if(!response.ok)throw Error('Voice unavailable');return this.ctx.decodeAudioData(await response.arrayBuffer());}));
+      if(!this.dialogueBuffers.has(key))this.dialogueBuffers.set(key,fetch(`/audio/dialogue/${key}.mp3`).then(async response=>{if(!response.ok && !(native && response.status === 0))throw Error('Voice unavailable');return this.ctx.decodeAudioData(await response.arrayBuffer());}));
       const buffer=await this.dialogueBuffers.get(key);
       if(!this.enabled||epoch!==this.voiceEpoch||!this.settings.speech||position?.floor!==undefined&&position.floor!==this.listenerFloor)return;
       this.sampleNodes(`voice-${key}`,position||{x:0,y:1,z:0},gain*.9,false,buffer);
     }catch{this.speak(text,person,gain,urgent?4:1);}
   }
-  announce(text) {this.speak(text,{gender:'female'},.8,/Code blue|Police|Security incident/i.test(text)?5:3);}
+  announce(text) {if(native){if(this.enabled&&this.settings.speech&&this.settings.volume)nativeAnnouncement(text,this.settings.volume*.65);return;}this.speak(text,{gender:'female'},.8,/Code blue|Police|Security incident/i.test(text)?5:3);}
   update(dt, proximity, emergency, impairment, moving, running) {
     if (!this.ctx || !this.enabled) return;
     const now = this.ctx.currentTime;
@@ -109,5 +110,5 @@ export class HospitalAudio {
     else if (!emergency && now > this.nextBeep) { this.tone(980, .1, .028); this.nextBeep = now + 5 + Math.random() * 3; }
     if (moving) { this.stepClock += dt; if (this.stepClock > (running ? .27 : .46)) { this.sound('step'); this.stepClock = 0; } }
   }
-  dispose() { this.stopAmbient(); window.speechSynthesis?.cancel(); this.ctx?.close(); }
+  dispose() { stopNativeSpeech();this.stopAmbient(); window.speechSynthesis?.cancel(); this.ctx?.close(); }
 }

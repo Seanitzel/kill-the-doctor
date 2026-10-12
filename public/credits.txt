@@ -1,0 +1,46 @@
+KILL THE DOCTOR — NORTHLINE
+Playable private browser prototype, October 2026.
+
+Original hospital geometry, floor layouts, medical furniture, signs, textures,
+mission systems, interface, audio synthesis, and character bind-space retargeting
+were created for this project.
+
+CHARACTERS
+Ready Player Me / Wolf3D avatar sample assets from the three.ws collection:
+https://github.com/nirholas/three.ws/blob/main/public/avatars/realistic-male.glb
+https://github.com/nirholas/three.ws/blob/main/public/avatars/realistic-female.glb
+Local filenames: models/adrian.glb and models/alex.glb.
+Runtime modifications: clothing recoloring, skin/hair tinting, role badges,
+scaling, and animation retargeting. Avatar rights remain with their creators.
+These sample avatars are included for this private, non-commercial prototype.
+Ready Player Me's avatar terms apply independently of the repository's software
+license. Review the applicable avatar terms before commercial distribution:
+https://readyplayer.me/terms
+https://studio.readyplayer.me/terms
+
+ANIMATION
+Adobe Mixamo idle, walking, and running clips mirrored in three.ws:
+https://github.com/nirholas/three.ws/tree/main/character-studio/public/sprite-atlas-assets/animations
+https://github.com/nirholas/three.ws/tree/main/character-studio/public/lora-assets/animations
+Local filenames: models/idle.fbx, models/walk.fbx, models/run.fbx.
+Adobe permits use of Mixamo characters and animations in video games:
+https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html
+
+SOFTWARE
+Three.js — MIT — https://threejs.org/license/
+Vue — MIT — https://github.com/vuejs/core
+Lucide icons — ISC — https://lucide.dev/license
+three.ws source collection — Apache 2.0 — https://github.com/nirholas/three.ws
+See licenses/ for included notices. The three.ws software license does not
+replace separate rights or terms attached to third-party avatar assets.
+
+FONTS
+Barlow Condensed, DM Sans, IBM Plex Mono — SIL Open Font License 1.1.
+https://github.com/google/fonts/tree/main/ofl/barlowcondensed
+https://github.com/google/fonts/tree/main/ofl/dmsans
+https://github.com/google/fonts/tree/main/ofl/ibmplexmono
+Fonts are bundled locally; their license files are included in licenses/.
+
+All game characters, hospital events, and temporary medical status effects are
+fictional. The reference images supplied by the user are not distributed with
+the game.

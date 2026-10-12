@@ -97,3 +97,13 @@ Screenshots and the latest browser report are in `artifacts/`. Sixteen independe
 The inspection bridge `window.__ktd` exists only in development builds. Production builds omit it.
 
 Asset sources and notices are in `public/credits.txt` and `public/licenses/`.
+
+## GitHub Pages
+
+The personal-account source repository is `Seanitzel/kill-the-doctor`. GitHub Actions builds and deploys the browser game from `main` using `.github/workflows/pages.yml`. The Pages-specific build uses `/kill-the-doctor/` for all scripts, fonts, models, animations, and audio. Normal web and Capacitor builds continue to use `/`.
+
+```sh
+npm run build:pages
+```
+
+The output is in `artifacts/github-pages`. Enable **GitHub Actions** as the Pages publishing source in the repository settings. GitHub Pages requires a supported paid plan for a private repository; the published game URL is publicly accessible. A public repository supports Pages on the free plan.

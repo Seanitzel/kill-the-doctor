@@ -17,7 +17,8 @@
     "native:run:ios": "node scripts/build-native.mjs ios --run",
     "native:run:android": "node scripts/build-native.mjs android --run",
     "native:qa:ios": "node scripts/build-native.mjs ios --qa --run",
-    "native:qa:android": "node scripts/build-native.mjs android --qa --run"
+    "native:qa:android": "node scripts/build-native.mjs android --qa --run",
+    "build:pages": "vite build --mode github-pages --outDir artifacts/github-pages"
   },
   "dependencies": {
     "@capacitor-community/text-to-speech": "^8.0.2",

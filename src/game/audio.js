@@ -1,3 +1,4 @@
+import { assetUrl } from './asset-url.js';
 import { native,nativeAnnouncement,stopNativeSpeech } from '../mobile/platform.js';
 import { dialogueKey } from './life-rules.js';
 export class HospitalAudio {
@@ -51,7 +52,7 @@ export class HospitalAudio {
   async loadSamples() {
     if(this.samplePromise) return this.samplePromise;
     this.samplePromise=Promise.allSettled(Object.entries({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3'}).map(async([name,url])=>{
-      const response=await fetch(url);if(!response.ok && !(native && response.status === 0)) throw Error('Audio sample unavailable');this.samples[name]=await this.ctx.decodeAudioData(await response.arrayBuffer());
+      const response=await fetch(assetUrl(url));if(!response.ok && !(native && response.status === 0)) throw Error('Audio sample unavailable');this.samples[name]=await this.ctx.decodeAudioData(await response.arrayBuffer());
     }));return this.samplePromise;
   }
   sampleNodes(name,position,gain,loop=false,buffer=null) {
@@ -89,7 +90,7 @@ export class HospitalAudio {
     if(!this.enabled||!this.settings.speech||!this.settings.volume)return;
     const key=dialogueKey(text,person.gender),epoch=this.voiceEpoch;
     try {
-      if(!this.dialogueBuffers.has(key))this.dialogueBuffers.set(key,fetch(`/audio/dialogue/${key}.mp3`).then(async response=>{if(!response.ok && !(native && response.status === 0))throw Error('Voice unavailable');return this.ctx.decodeAudioData(await response.arrayBuffer());}));
+      if(!this.dialogueBuffers.has(key))this.dialogueBuffers.set(key,fetch(assetUrl(`audio/dialogue/${key}.mp3`)).then(async response=>{if(!response.ok && !(native && response.status === 0))throw Error('Voice unavailable');return this.ctx.decodeAudioData(await response.arrayBuffer());}));
       const buffer=await this.dialogueBuffers.get(key);
       if(!this.enabled||epoch!==this.voiceEpoch||!this.settings.speech||position?.floor!==undefined&&position.floor!==this.listenerFloor)return;
       this.sampleNodes(`voice-${key}`,position||{x:0,y:1,z:0},gain*.9,false,buffer);

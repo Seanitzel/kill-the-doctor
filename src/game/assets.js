@@ -1,3 +1,4 @@
+import { assetUrl } from './asset-url.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
@@ -149,8 +150,8 @@ export function makeHuman(person, role = 'doctor') {
 export async function loadCharacters() {
   const gltfLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const results = await Promise.allSettled([
-    gltfLoader.loadAsync('/models/adrian.glb'), gltfLoader.loadAsync('/models/alex.glb'),
-    new FBXLoader().loadAsync('/models/idle.fbx'), new FBXLoader().loadAsync('/models/walk.fbx'), new FBXLoader().loadAsync('/models/run.fbx'),
+    gltfLoader.loadAsync(assetUrl('models/adrian.glb')), gltfLoader.loadAsync(assetUrl('models/alex.glb')),
+    new FBXLoader().loadAsync(assetUrl('models/idle.fbx')), new FBXLoader().loadAsync(assetUrl('models/walk.fbx')), new FBXLoader().loadAsync(assetUrl('models/run.fbx')),
   ]);
   const male = results[0].status === 'fulfilled' ? results[0].value.scene : null;
   const female = results[1].status === 'fulfilled' ? results[1].value.scene : null;

@@ -1,3 +1,4 @@
+import {footprint} from './collision.js';
 import * as THREE from 'three';
 import { makePlayer, material, mesh } from './assets.js';
 import { CLINICAL_KINDS, CONVERSATIONS, ENTRY_REACTIONS, activityVolume } from './life-rules.js';
@@ -5,7 +6,7 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const Y=new THREE.Vector3(0,1,0);
 export class HospitalLife {
   constructor(engine) {
-    this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];
+    this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];
     this.props=new THREE.Group();this.props.name='hospital-life-props';engine.scene.add(this.props);
     this.lastRoom=null;this.roomReactions=new Map();this.nextAmbient=0;this.nextMaternity=0;
     this.nextFlicker=8+engine.mission.random()*7;this.flicker=null;
@@ -31,7 +32,7 @@ export class HospitalLife {
       const nurseA=this.actor(floor?'Nurse Nora Ellis':'Nurse Iris Lowe','nurse','female',floor,null,-2.8,11.2,'chat',{yaw:0});
       const nurseB=this.actor(floor?'Nurse Samir Rao':'Nurse Felix Shaw','nurse','male',floor,null,-2.8,12.9,'chat',{yaw:Math.PI});
       this.groups.push({kind:'nurses',floor,actors:[nurseA,nurseB],next:4,conversation:floor});
-      const patientA=this.actor('Waiting patient A','patient','female',floor,null,-6,30,'chat',{seated:true,yaw:Math.PI/2});
+      const patientA=this.actor('Waiting patient A','patient','female',floor,null,-6,29,'chat',{seated:true,yaw:Math.PI/2});
       const patientB=this.actor('Waiting patient B','patient','male',floor,null,-6,31.3,'chat',{seated:true,yaw:Math.PI/2,skin:'#996d51'});
       this.groups.push({kind:'patients',floor,actors:[patientA,patientB],next:6,conversation:floor});
       for(const room of e.levels[floor].rooms.filter(r=>CLINICAL_KINDS.includes(r.kind))) {
@@ -76,6 +77,7 @@ export class HospitalLife {
     const nursery=new THREE.Group();nursery.name='newborn-bassinets';nursery.userData.floor=floor;this.props.add(nursery);
     for(let i=0;i<2;i++) {
       const bx=room.center.x+1.65,bz=minZ+5+i*3.8;
+      const obstacle=footprint(bx,bz,.66,1.05,1.12,0,'bassinet');this.engine.hospitals[floor].colliders.push(obstacle);this.addedColliders.push({floor,obstacle});
       this.propBox(nursery,'#9cb0bf',[.62,.06,.97],[bx,.73,bz]);this.propBox(nursery,'#e3ebef',[.54,.12,.88],[bx,.82,bz]);
       for(const dx of [-.31,.31]) this.propBox(nursery,'#a5c5d4',[.035,.3,.96],[bx+dx,.94,bz]);
       for(const dz of [-.48,.48]) this.propBox(nursery,'#a5c5d4',[.62,.3,.035],[bx,.94,bz+dz]);
@@ -196,6 +198,7 @@ export class HospitalLife {
     this.updateClouds(dt);
   }
   dispose() {
+    for(const {floor,obstacle} of this.addedColliders){const list=this.engine.hospitals[floor].colliders,index=list.indexOf(obstacle);if(index>=0)list.splice(index,1);}
     this.engine.audio.stopAmbient();this.engine.scene.remove(this.props);
     this.props.traverse(o=>{if(o.userData.lifeOwned||o===this.flickerCover||o.isPoints){o.geometry?.dispose();o.material?.dispose();}});
     this.clouds.forEach(c=>c.texture.dispose());this.clouds=[];

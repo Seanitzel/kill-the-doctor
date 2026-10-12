@@ -1,5 +1,5 @@
 <script setup>
-import { ref,onBeforeUnmount } from 'vue';
+import { ref,onMounted,onBeforeUnmount } from 'vue';
 import { Crosshair,Hand,Flashlight,RotateCcw,Footprints,Map,BookOpen,Pause,ArrowDown,Target } from 'lucide-vue-next';
 import { stickVector } from './input.js';
 import { nativeFeedback } from './platform.js';
@@ -13,24 +13,27 @@ function moveEnd(event){if(event.pointerId!==movePointer)return;movePointer=null
 function lookStart(event){if(lookPointer!==null)return;event.preventDefault();lookPointer=event.pointerId;looking.value=true;lastLook={x:event.clientX,y:event.clientY};event.currentTarget.setPointerCapture(event.pointerId);}
 function lookMove(event){if(event.pointerId!==lookPointer)return;event.preventDefault();props.engine.lookTouch(event.clientX-lastLook.x,event.clientY-lastLook.y);lastLook={x:event.clientX,y:event.clientY};}
 function lookEnd(event){if(event.pointerId!==lookPointer)return;lookPointer=null;looking.value=false;lastLook=null;}
-function fireStart(event){event.preventDefault();event.stopPropagation();firePointer=event.pointerId;lastFire={x:event.clientX,y:event.clientY};event.currentTarget.setPointerCapture(event.pointerId);props.engine.requestTouchShot();}
+function fireStart(event){if(firePointer!==null)return;event.preventDefault();event.stopPropagation();firePointer=event.pointerId;lastFire={x:event.clientX,y:event.clientY};event.currentTarget.setPointerCapture(event.pointerId);props.engine.requestTouchShot();}
 function fireMove(event){if(event.pointerId!==firePointer)return;event.preventDefault();props.engine.lookTouch(event.clientX-lastFire.x,event.clientY-lastFire.y);lastFire={x:event.clientX,y:event.clientY};}
 function fireEnd(event){if(event.pointerId===firePointer){firePointer=null;lastFire=null;}}
+function buttonAction(event,name){if(event.type==='pointerdown'||event.detail===0)action(name);}
 function action(name){nativeFeedback();if(name==='aim')props.engine.aiming=!props.engine.aiming;else if(name==='run'){sprint.value=!sprint.value;props.engine.touchInput.sprint=sprint.value;}else if(name==='crouch'){crouch.value=!crouch.value;props.engine.touchInput.crouch=crouch.value;}else if(name==='use')props.engine.interact();else if(name==='light')props.engine.toggleFlash();else if(name==='reload')props.engine.reload();}
-onBeforeUnmount(()=>props.engine?.resetTouch());
+function resetGestures(){movePointer=lookPointer=firePointer=null;lastLook=lastFire=null;knob.value={x:0,y:0};looking.value=sprint.value=crouch.value=false;props.engine?.resetTouch();}
+onMounted(()=>{window.addEventListener('resize',resetGestures);window.addEventListener('blur',resetGestures);window.visualViewport?.addEventListener('resize',resetGestures);});
+onBeforeUnmount(()=>{window.removeEventListener('resize',resetGestures);window.removeEventListener('blur',resetGestures);window.visualViewport?.removeEventListener('resize',resetGestures);resetGestures();});
 </script>
 <template>
   <div class="phone-controls">
-    <div class="phone-look" :class="{looking}" data-testid="touch-look" aria-label="Drag to look around" @pointerdown="lookStart" @pointermove="lookMove" @pointerup="lookEnd" @pointercancel="lookEnd"><span>DRAG TO LOOK</span></div>
+    <div class="phone-look" :class="{looking}" data-testid="touch-look" aria-label="Drag to look around" @pointerdown="lookStart" @pointermove="lookMove" @pointerup="lookEnd" @pointercancel="lookEnd" @lostpointercapture="lookEnd"><span>DRAG TO LOOK</span></div>
     <nav class="phone-tools" aria-label="Mission tools"><button aria-label="Hospital map" @click="emit('map')"><Map :size="19"/></button><button aria-label="Evidence journal" @click="emit('journal')"><BookOpen :size="19"/></button><button aria-label="Pause mission" @click="emit('pause')"><Pause :size="19"/></button></nav>
-    <div class="phone-move" data-testid="touch-move" aria-label="Movement joystick" @pointerdown="moveStart" @pointermove="move" @pointerup="moveEnd" @pointercancel="moveEnd"><span class="stick-cross">+</span><span class="stick-knob" :style="{transform:`translate(${knob.x}px,${knob.y}px)`}"></span><small>MOVE</small></div>
-    <div class="phone-stance"><button aria-label="Toggle sprint" :aria-pressed="sprint" :class="{active:sprint}" @click="action('run')"><Footprints :size="18"/><small>RUN</small></button><button aria-label="Toggle crouch" :aria-pressed="crouch" :class="{active:crouch}" @click="action('crouch')"><ArrowDown :size="18"/><small>CROUCH</small></button></div>
+    <div class="phone-move" data-testid="touch-move" aria-label="Movement joystick" @pointerdown="moveStart" @pointermove="move" @pointerup="moveEnd" @pointercancel="moveEnd" @lostpointercapture="moveEnd"><span class="stick-cross">+</span><span class="stick-knob" :style="{transform:`translate(${knob.x}px,${knob.y}px)`}"></span><small>MOVE</small></div>
+    <div class="phone-stance"><button aria-label="Toggle sprint" :aria-pressed="sprint" :class="{active:sprint}" @pointerdown.prevent="buttonAction($event,'run')" @click="buttonAction($event,'run')"><Footprints :size="18"/><small>RUN</small></button><button aria-label="Toggle crouch" :aria-pressed="crouch" :class="{active:crouch}" @pointerdown.prevent="buttonAction($event,'crouch')" @click="buttonAction($event,'crouch')"><ArrowDown :size="18"/><small>CROUCH</small></button></div>
     <div class="phone-actions">
-      <button class="phone-use" data-testid="touch-use" aria-label="Interact" :class="{available:hud.prompt}" @click="action('use')"><Hand :size="21"/><small>USE</small></button>
-      <button data-testid="touch-aim" aria-label="Toggle aim" :aria-pressed="hud.aiming" :class="{active:hud.aiming}" @click="action('aim')"><Crosshair :size="22"/><small>AIM</small></button>
-      <button class="phone-fire" data-testid="touch-fire" aria-label="Fire weapon" @pointerdown="fireStart" @pointermove="fireMove" @pointerup="fireEnd" @pointercancel="fireEnd"><Target :size="28"/><small>FIRE</small><b>{{hud.ammo}}</b></button>
-      <button aria-label="Toggle flashlight" :aria-pressed="hud.flashlight" :class="{active:hud.flashlight}" @click="action('light')"><Flashlight :size="20"/><small>LIGHT</small></button>
-      <button data-testid="touch-reload" aria-label="Reload weapon" @click="action('reload')"><RotateCcw :size="20"/><small>{{hud.reloading?'LOADING':'RELOAD'}}</small></button>
+      <button class="phone-use" data-testid="touch-use" aria-label="Interact" :class="{available:hud.prompt}" @pointerdown.prevent="buttonAction($event,'use')" @click="buttonAction($event,'use')"><Hand :size="21"/><small>USE</small></button>
+      <button data-testid="touch-aim" aria-label="Toggle aim" :aria-pressed="hud.aiming" :class="{active:hud.aiming}" @pointerdown.prevent="buttonAction($event,'aim')" @click="buttonAction($event,'aim')"><Crosshair :size="22"/><small>AIM</small></button>
+      <button class="phone-fire" data-testid="touch-fire" aria-label="Fire weapon" @pointerdown="fireStart" @pointermove="fireMove" @pointerup="fireEnd" @pointercancel="fireEnd" @lostpointercapture="fireEnd"><Target :size="28"/><small>FIRE</small><b>{{hud.ammo}}</b></button>
+      <button aria-label="Toggle flashlight" :aria-pressed="hud.flashlight" :class="{active:hud.flashlight}" @pointerdown.prevent="buttonAction($event,'light')" @click="buttonAction($event,'light')"><Flashlight :size="20"/><small>LIGHT</small></button>
+      <button data-testid="touch-reload" aria-label="Reload weapon" @pointerdown.prevent="buttonAction($event,'reload')" @click="buttonAction($event,'reload')"><RotateCcw :size="20"/><small>{{hud.reloading?'LOADING':'RELOAD'}}</small></button>
     </div>
   </div>
 </template>

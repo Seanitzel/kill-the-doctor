@@ -7,3 +7,70 @@ html,body,#app{overscroll-behavior:none}button,input,select{touch-action:manipul
 @media(orientation:landscape) and (max-height:550px){.mobile-mode .results-panel{display:grid;width:760px;grid-template-columns:minmax(210px,1fr) minmax(245px,1fr);gap:9px 25px}.mobile-mode .results-panel>.eyebrow{grid-column:1/3;grid-row:1}.mobile-mode .results-panel>h2{grid-column:1;grid-row:2/4;align-self:start;margin:0;font-size:43px}.mobile-mode .result-reason{grid-column:1;grid-row:4;margin:0;align-self:center}.mobile-mode .result-checks{grid-column:1;grid-row:5;border:0;flex-wrap:wrap;gap:10px;padding:0;align-self:center}.mobile-mode .reward-card{grid-column:2;grid-row:2;margin:0}.mobile-mode .reward-breakdown,.mobile-mode .failure-reward{grid-column:2;grid-row:3;margin:0;padding:0;font-size:9px}.mobile-mode .results-panel>.primary{grid-column:2;grid-row:4;margin:0}.mobile-mode .result-actions{grid-column:2;grid-row:5;margin:0;gap:15px}.mobile-mode .result-actions button{min-height:44px;font-size:9px}}
 
 .mobile-mode .upgrade-grid button,.mobile-mode .settings-list select,.mobile-mode .settings-list input[type=range]{min-height:44px}.mobile-mode .modal.wide{max-width:900px;width:100%}
+
+/* Keep phone menu sections in flow as Safari's toolbars change the viewport height. */
+@media (orientation:landscape) {
+  .mobile-mode.menu {
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr) auto;
+    gap:10px;
+    padding:calc(var(--safe-top) + 12px) calc(var(--safe-right) + 22px) calc(var(--safe-bottom) + 10px) calc(var(--safe-left) + 22px);
+  }
+  .mobile-mode.menu .menu-header,.mobile-mode.menu .menu-footer {
+    position:static;
+  }
+  .mobile-mode.menu .menu-header {grid-row:1}
+  .mobile-mode.menu .menu-content {
+    position:static;
+    grid-row:2;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);
+    align-items:center;
+    column-gap:clamp(22px,4vw,48px);
+    width:100%;max-width:none;min-height:0;
+    overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;
+  }
+  .mobile-mode.menu .menu-intro {min-width:0}
+  .mobile-mode.menu .menu-intro>.eyebrow {font-size:7px}
+  .mobile-mode.menu h1 {font-size:clamp(44px,13dvh,68px);margin:16px 0 12px}
+  .mobile-mode.menu .tagline {font-size:11px;line-height:1.55}
+  .mobile-mode.menu .menu-launch {min-width:0;width:100%;max-width:390px;justify-self:end}
+  .mobile-mode.menu .character-select {margin:0 0 12px}
+  .mobile-mode.menu .field-label {font-size:8px;line-height:1.4}
+  .mobile-mode.menu .field-label span {font-size:7px}
+  .mobile-mode.menu .character-options {margin-top:8px}
+  .mobile-mode.menu .character-options button {min-height:48px;padding:7px 9px;gap:8px}
+  .mobile-mode.menu .character-options>button>span {font-size:9px;letter-spacing:.04em}
+  .mobile-mode.menu .character-options small {font-size:8px}
+  .mobile-mode.menu .character-options img {width:25px;height:30px}
+  .mobile-mode.menu .start-button {min-height:48px;padding:11px 15px;font-size:10px}
+  .mobile-mode.menu .menu-links {margin-top:5px;gap:clamp(10px,1.6vw,20px);flex-wrap:wrap}
+  .mobile-mode.menu .menu-links button {min-height:40px;font-size:10px}
+  .mobile-mode.menu .scene-label {display:none}
+  .mobile-mode.menu .menu-footer {grid-row:3;font-size:7px;min-height:24px}
+  .mobile-mode.menu .menu-version,.mobile-mode.menu .header-status {display:none}
+  .mobile-mode.menu .vignette {background:linear-gradient(90deg,rgba(6,19,29,.94),rgba(6,19,29,.72))}
+}
+@media (orientation:landscape) and (max-height:330px) {
+  .mobile-mode.menu {gap:6px;padding-top:calc(var(--safe-top) + 8px);padding-bottom:calc(var(--safe-bottom) + 6px)}
+}
+
+/* Never let renderer inline sizes stretch beyond the visible phone viewport. */
+.viewport canvas{width:100%!important;height:100%!important}
+
+/* The game owns multi-touch gestures; two thumbs must never zoom the page. */
+.game-shell.in-game:not(.has-overlay){touch-action:none}
+
+/* Keep both ends of the hospital visible when Safari leaves a short landscape view. */
+@media (orientation:landscape) and (max-height:550px) {
+  .mobile-mode .map-modal {height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 20px);display:flex;flex-direction:column;padding:10px 18px;overflow:hidden}
+  .mobile-mode .map-modal .modal-header {flex:none;margin-bottom:6px;padding-bottom:3px;min-height:40px}
+  .mobile-mode .map-modal .modal-title-row {flex:none;min-height:36px;margin-bottom:6px;align-items:center}
+  .mobile-mode .map-modal h2 {margin:0;font-size:25px}
+  .mobile-mode .map-modal .map-layout {flex:1;min-height:0;gap:18px}
+  .mobile-mode .map-modal .hospital-map {min-height:0;max-height:none;height:100%}
+  .mobile-mode .map-modal .map-notes {min-height:0;overflow:auto;padding-top:0;touch-action:pan-y}
+  .mobile-mode .map-modal .map-notes h3 {font-size:20px;margin:6px 0 10px}
+  .mobile-mode .map-modal .map-legend {font-size:9px;gap:6px;margin-bottom:9px}
+  .mobile-mode .map-modal .known-location {margin-top:10px;padding-top:8px}
+}

@@ -40,15 +40,16 @@ export class Batcher {
     const id = `${kind}-${mat.uuid}`; let bucket = this.buckets.get(id);
     if (!bucket) { bucket = { geometry: geometries[kind], material: mat, matrices: [] }; this.buckets.set(id, bucket); }
     const o = new THREE.Object3D(); o.position.set(x, y, z); o.scale.set(sx, sy, sz); o.rotation.set(0, ry, rz); o.updateMatrix(); bucket.matrices.push(o.matrix);
+    return { bucket, index: bucket.matrices.length - 1 };
   }
-  box(...args) { this.add('box', ...args); }
+  box(...args) { return this.add('box', ...args); }
   cylinder(...args) { this.add('cylinder', ...args); }
   sphere(...args) { this.add('sphere', ...args); }
   finish() {
     const meshes = [];
     for (const bucket of this.buckets.values()) {
       const mesh = new THREE.InstancedMesh(bucket.geometry, bucket.material, bucket.matrices.length);
-      bucket.matrices.forEach((m, i) => mesh.setMatrixAt(i, m)); mesh.castShadow = true; mesh.receiveShadow = true; mesh.computeBoundingSphere(); this.group.add(mesh); meshes.push(mesh);
+      bucket.mesh = mesh; bucket.matrices.forEach((m, i) => mesh.setMatrixAt(i, m)); mesh.castShadow = true; mesh.receiveShadow = true; mesh.computeBoundingSphere(); this.group.add(mesh); meshes.push(mesh);
     }
     return meshes;
   }
@@ -63,10 +64,11 @@ export function sign(text, subtitle, width = 2.6, height = .65, options = {}) {
   ctx.textBaseline = 'middle'; ctx.fillStyle = options.color || '#eef7fd'; ctx.font = `600 ${subtitle ? 68 : 85}px Arial`; ctx.fillText(text, 48, subtitle ? canvas.height * .35 : canvas.height / 2, 925);
   if (subtitle) { ctx.font = '400 38px Arial'; ctx.fillStyle = '#afd1e5'; ctx.fillText(subtitle, 50, canvas.height * .73, 920); }
   const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
-  const mat = new THREE.MeshStandardMaterial({ map: t, roughness: .6, emissiveMap: t, emissive: '#ffffff', emissiveIntensity: .12, side: THREE.DoubleSide });
+  const mat = new THREE.MeshStandardMaterial({ map: t, roughness: .6, emissiveMap: t, emissive: '#ffffff', emissiveIntensity: .12, side: THREE.FrontSide });
   return new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);
 }
-export function bed(b, m, x, z, rot = 0, patient = false) {
+export function bed(b,m,x,z,rot=0,patient=false) {
+  b.collider?.(x,z,1.3,2.35,1.25,rot,'bed');
   const p = (a, c) => [x + Math.cos(rot) * a + Math.sin(rot) * c, z - Math.sin(rot) * a + Math.cos(rot) * c];
   const box = (mat, a, y, c, sx, sy, sz) => { const [px, pz] = p(a, c); b.box(mat, px, y, pz, sx, sy, sz, rot); };
   box(m.steel, 0, .55, 0, 1.1, .18, 2.2); box(m.linen, 0, .78, 0, 1.02, .24, 2.12);
@@ -77,6 +79,7 @@ export function bed(b, m, x, z, rot = 0, patient = false) {
   if (patient) { const [px, pz] = p(0, -.64); b.sphere(material('#bd9478'), px, 1.01, pz, .16, .15, .2); box(m.linen, 0, 1.03, .2, .67, .18, 1.16); }
 }
 export function chair(b, m, x, z, rot = 0) {
+  b.collider?.(x,z,.8,.76,1.18,rot,'chair');
   const p = (a, c) => [x + Math.cos(rot) * a + Math.sin(rot) * c, z - Math.sin(rot) * a + Math.cos(rot) * c];
   const box = (mat, a, y, c, sx, sy, sz) => { const [px, pz] = p(a, c); b.box(mat, px, y, pz, sx, sy, sz, rot); };
   box(m.chair, 0, .47, 0, .65, .09, .6); box(m.chair, 0, .82, -.27, .65, .65, .07);
@@ -84,11 +87,13 @@ export function chair(b, m, x, z, rot = 0) {
   for (const a of [-.35, .35]) { box(m.dark, a, .68, 0, .065, .05, .52); box(m.steel, a, .56, .1, .035, .22, .035); }
 }
 export function desk(b, m, x, z, rot = 0) {
+  b.collider?.(x,z,2.3,.95,1.45,rot,'desk');
   b.box(m.white, x, .85, z, 2.3, .09, .9, rot); b.box(m.blue, x, .42, z, 2.1, .78, .8, rot);
   b.box(m.dark, x, 1.22, z, .62, .4, .07, rot); b.box(m.monitor, x, 1.22, z + .045, .54, .32, .01, rot);
   b.box(m.steel, x, 1, z, .05, .18, .05); b.box(m.dark, x, .92, z + .3, .55, .03, .19, rot);
 }
 export function monitor(b, m, x, z) {
+  b.collider?.(x,z,.55,.55,1.8,0,'monitor');
   b.box(m.steel, x, .9, z, .04, 1.6, .04); b.box(m.dark, x, 1.6, z, .58, .38, .12); b.box(m.monitor, x, 1.6, z + .07, .5, .31, .015);
   b.box(m.steel, x, .12, z, .5, .045, .5);
 }

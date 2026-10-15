@@ -1,0 +1,23 @@
+Expansion sound effects — licensed source records
+Retrieved 2026-10-15.
+
+cough-warning.mp3
+Original: Cough (3), by OwlStorm (credit requested as Ashe Kirk or Owlish Media).
+Source page: https://freesound.org/people/OwlStorm/sounds/151217/
+Downloaded audio: https://cdn.freesound.org/previews/151/151217_140737-lq.mp3
+License: Creative Commons Zero 1.0 Universal (CC0).
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+Attribution optional; supplied here for provenance.
+Description: Standard human cough; source duration approximately 0.898 seconds.
+Changes: Freesound-provided MP3 preview used; no further editing.
+
+witness-gasp.mp3
+Original: gasp01.wav, by FreqMan.
+Source page: https://freesound.org/people/FreqMan/sounds/31356/
+Downloaded audio: https://cdn.freesound.org/previews/31/31356_92661-lq.mp3
+License: Creative Commons Attribution 4.0 International (CC BY 4.0).
+License URL: https://creativecommons.org/licenses/by/4.0/
+Required credit: "gasp01.wav" by FreqMan, from Freesound, licensed CC BY 4.0.
+Description: Two people gasping in astonishment; source duration approximately 2.484 seconds.
+Changes: Freesound-provided MP3 preview used; no further editing.
+Include this credit, source link and license link in the game's visible credits.

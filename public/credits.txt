@@ -67,3 +67,19 @@ are bundled locally and positioned within the hospital through Web Audio.
 NPC speech recordings: original game dialogue rendered locally with macOS
 Samantha and Daniel text-to-speech voices, converted to mono 22.05 kHz MP3.
 The manifest in audio/dialogue/ lists each authored line and voice variant.
+
+NORTHLINE 2.0 — STORY ILLUSTRATIONS AND SOUND EFFECTS
+Eight original fictional story triptychs generated with OpenAI ImageGen.
+Exact prompts and provenance: stories/README.txt. Research references and case
+qualifications are available in the in-game Story references panel.
+
+Cough (3) — OwlStorm / Owlish Media — CC0 1.0.
+https://freesound.org/people/OwlStorm/sounds/151217/
+https://creativecommons.org/publicdomain/zero/1.0/
+Included Freesound MP3 preview as audio/cough-warning.mp3, without further editing.
+
+"gasp01.wav" by FreqMan, from Freesound — CC BY 4.0.
+https://freesound.org/people/FreqMan/sounds/31356/
+https://creativecommons.org/licenses/by/4.0/
+Included Freesound MP3 preview as audio/witness-gasp.mp3, without further editing.
+Full source records: audio/expansion-sources.txt.

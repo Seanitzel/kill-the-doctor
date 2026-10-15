@@ -39,6 +39,10 @@ export class HospitalAudio {
   }
   sound(name) {
     if (name === 'flicker') { this.noise(.09,.10,1800); this.tone(80,.12,.035,'triangle'); }
+    if(name==='rifle'){this.noise(.32,.68,2200);this.tone(48,.32,.4,'triangle');}
+    if(name==='gasp'){if(this.samples.gasp){this.sampleNodes('gasp',{x:0,y:1,z:0},.6);return;}this.noise(.35,.28,2300);this.tone(310,.17,.05,'sine');}
+    if(name==='sneeze'){this.noise(.17,.16,1600);setTimeout(()=>this.noise(.3,.3,3200),190);}
+    if(name==='magnet'){this.tone(90,1.1,.25,'sawtooth');this.noise(.8,.18,500);}
     if (name === 'shot') { this.noise(.22, this.settings.suppressor ? .25 : .6, 3400); this.tone(62, .2, .4, 'triangle'); }
     if (name === 'step') this.noise(.065, .11, 650);
     if (name === 'door') { this.noise(.25, .07, 300); this.tone(130, .12, .04, 'triangle'); }
@@ -49,9 +53,13 @@ export class HospitalAudio {
     if (name === 'reload') { this.noise(.08, .12, 2300); setTimeout(() => this.noise(.12, .13, 1300), 480); }
     if (name === 'alarm') { this.tone(660, .3, .2); setTimeout(() => this.tone(440, .3, .2), 320); }
   }
+  patientWarning(name,position){
+    if(name==='cough'&&this.samples.cough){this.playSample('cough',position,.65);}else this.sound(name);
+  }
+  gasp(position){if(this.samples.gasp)this.playSample('gasp',position,.85);else this.sound('gasp');}
   async loadSamples() {
     if(this.samplePromise) return this.samplePromise;
-    this.samplePromise=Promise.allSettled(Object.entries({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3'}).map(async([name,url])=>{
+    this.samplePromise=Promise.allSettled(Object.entries({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3'}).map(async([name,url])=>{
       const response=await fetch(assetUrl(url));if(!response.ok && !(native && response.status === 0)) throw Error('Audio sample unavailable');this.samples[name]=await this.ctx.decodeAudioData(await response.arrayBuffer());
     }));return this.samplePromise;
   }
@@ -100,14 +108,14 @@ export class HospitalAudio {
   update(dt, proximity, emergency, impairment, moving, running) {
     if (!this.ctx || !this.enabled) return;
     const now = this.ctx.currentTime;
-    this.music.gain.setTargetAtTime(.1 + proximity * .38 + (emergency ? .2 : 0), now, 1.4);
+    this.music.gain.setTargetAtTime(.16 + proximity * .55 + (emergency ? .28 : 0), now, 1.4);
     this.lowpass.frequency.setTargetAtTime(impairment ? 500 : 9500, now, .4);
     if (now > this.nextNote) {
       const notes = [220, 261.63, 329.63, 246.94, 164.81, 293.66, 207.65, 220];
       this.tone(notes[this.noteIndex++ % notes.length], 2.5, .09, 'triangle', this.music);
       this.nextNote = now + (emergency ? .8 : 2.9 - proximity * 1.3);
     }
-    if (emergency && now > this.nextBeep) { this.sound('alarm'); this.nextBeep = now + 3.5; }
+    if (emergency && now > this.nextBeep) { this.sound('alarm'); this.nextBeep = now + 2.4; }
     else if (!emergency && now > this.nextBeep) { this.tone(980, .1, .028); this.nextBeep = now + 5 + Math.random() * 3; }
     if (moving) { this.stepClock += dt; if (this.stepClock > (running ? .27 : .46)) { this.sound('step'); this.stepClock = 0; } }
   }

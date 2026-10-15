@@ -10,7 +10,7 @@ import {obstacleBounds,segmentHit3D} from '../src/game/collision.js';
 const oldDocument=globalThis.document;
 globalThis.document={createElement:()=>({getContext:()=>({fillRect(){},fillText(){}})})};
 const materials=Object.fromEntries(['floor','ceiling','steel','light','dark','stripe','wall','glass','trim','blue','white','linen','chair','wood','monitor','red','green'].map(k=>[k,new THREE.MeshBasicMaterial()]));
-const levels=[0,1].map(makeLayout),hospitals=levels.map(l=>buildHospital(l,materials));
+const levels=[0,1,2].map(makeLayout),hospitals=levels.map(l=>buildHospital(l,materials));
 globalThis.document=oldDocument;
 function engine(floor=0){
   const e=Object.create(GameEngine.prototype);
@@ -26,9 +26,9 @@ test('Waiting chairs, corridor benches, desks, beds and cafeteria tables are sol
   }
   e.playerPos.set(-6,0,30);e.move(0,-2);assert.ok(e.playerPos.z>29.5);
 });
-test('Camera remains outside solid geometry during turns, aiming and crouching across both floors',()=>{
+test('Camera remains outside solid geometry during turns, aiming and crouching across all three floors',()=>{
   let checked=0;
-  for(const floor of [0,1]){
+  for(const floor of [0,1,2]){
     const e=engine(floor);
     for(let x=-27;x<=24;x+=1.5)for(let z=-24;z<=34;z+=1.5){
       if(!e.canStand(x,z))continue;
@@ -42,14 +42,14 @@ test('Camera remains outside solid geometry during turns, aiming and crouching a
   }
   assert.ok(checked>10000);
 });
-test('Every department and both lift approaches remain physically reachable around furniture',()=>{
-  for(const floor of [0,1]){
+test('Every department and all three lift approaches remain physically reachable around furniture',()=>{
+  for(const floor of [0,1,2]){
     const e=engine(floor);for(const d of levels[floor].doors){d.open=true;d.angle=d.openAngle;}
     const step=.5,start=[0,60],queue=[start],seen=new Set(['0,60']),rooms=new Set();let lift=false;
     for(let i=0;i<queue.length;i++){
       const [gx,gz]=queue[i],x=gx*step,z=gz*step,cell=tileAt(x,z);rooms.add(levels[floor].cells.get(key(cell.x,cell.z))?.room);
       if(Math.hypot(x-levels[floor].elevator.x,z-levels[floor].elevator.z-.9)<2.3)lift=true;
-      for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      for(const [dx,dz] of [[1,0],[-1,0],[0,1,2],[0,-1]]){
         const nx=gx+dx,nz=gz+dz,k=`${nx},${nz}`;
         if(seen.has(k)||!e.canStand(nx*step,nz*step))continue;
         // Half-step clearance prevents jumping diagonally past thin walls or door leaves.
@@ -69,7 +69,7 @@ test('Doors cannot swing into the player or trap them in the doorway',()=>{
   e.npcs=[{floor:0,pos:{x:d.x,z:d.z},dead:false}];assert.equal(e.doorCanSwingTo(d,0),false);
 });
 test('Every door swings into its own room, away from someone approaching from the hallway',()=>{
-  for(const floor of [0,1])for(const d of levels[floor].doors){
+  for(const floor of [0,1,2])for(const d of levels[floor].doors){
     const e=engine(floor),room=levels[floor].rooms.find(r=>r.id===d.room),roomSide=Math.sign(room.center.z-d.z);
     assert.equal(-Math.sign(d.openAngle),roomSide);
     e.playerPos.set(d.x,0,d.z-roomSide*.41);

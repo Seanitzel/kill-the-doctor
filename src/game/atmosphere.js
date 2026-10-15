@@ -6,7 +6,7 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const Y=new THREE.Vector3(0,1,0);
 export class HospitalLife {
   constructor(engine) {
-    this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];
+    this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
     this.props=new THREE.Group();this.props.name='hospital-life-props';engine.scene.add(this.props);
     this.lastRoom=null;this.roomReactions=new Map();this.nextAmbient=0;this.nextMaternity=0;
     this.nextFlicker=8+engine.mission.random()*7;this.flicker=null;
@@ -28,7 +28,7 @@ export class HospitalLife {
   }
   setup() {
     const e=this.engine;
-    for(const floor of [0,1]) {
+    for(const floor of e.levels.map((_,i)=>i)) {
       const nurseA=this.actor(floor?'Nurse Nora Ellis':'Nurse Iris Lowe','nurse','female',floor,null,-2.8,11.2,'chat',{yaw:0});
       const nurseB=this.actor(floor?'Nurse Samir Rao':'Nurse Felix Shaw','nurse','male',floor,null,-2.8,12.9,'chat',{yaw:Math.PI});
       this.groups.push({kind:'nurses',floor,actors:[nurseA,nurseB],next:4,conversation:floor});
@@ -121,6 +121,13 @@ export class HospitalLife {
     if(t>=this.flicker.duration)return 1;
     return [[.05,.14],[.3,.42],[.65,.75],[1.03,1.15],[1.4,1.48]].some(([a,b])=>t>=a&&t<b)?.12:1;
   }
+  beginCough(patient){
+    const e=this.engine;if(!patient.contamination||this.pendingCoughs.some(p=>p.patient===patient))return false;
+    const sound=e.mission.random()<.3?'sneeze':'cough';patient.coughing=1.5;patient.nextCough=e.mission.elapsed+65+e.mission.random()*20;
+    e.audio.patientWarning?.(sound,{x:patient.pos.x,y:1.5,z:patient.pos.z,floor:patient.floor});
+    e.hooks.soundCaption?.(`A nearby patient ${sound==='sneeze'?'sneezes':'coughs'}. Keep your distance or put on a mask.`);
+    this.pendingCoughs.push({patient,ready:e.mission.elapsed+.85});return true;
+  }
   emitCloud(patient) {
     const e=this.engine;if(!patient.contamination)return null;
     const canvas=document.createElement('canvas');canvas.width=canvas.height=64;const c=canvas.getContext('2d'),g=c.createRadialGradient(32,32,0,32,32,32);
@@ -133,7 +140,7 @@ export class HospitalLife {
     const origin=patient.visual.head?.getWorldPosition?.(new THREE.Vector3()) || patient.pos.clone().add(new THREE.Vector3(0,1.48,0));
     origin.add(patient.lying?new THREE.Vector3(0,.08,0):new THREE.Vector3(Math.sin(patient.visual.root.rotation.y)*.18,.02,Math.cos(patient.visual.root.rotation.y)*.18));
     points.position.copy(origin);const cloud={patient,points,texture,origin,seeds,life:5,age:0,exposed:false,floor:patient.floor};this.clouds.push(cloud);
-    patient.coughing=1.5;patient.nextCough=e.mission.elapsed+65+e.mission.random()*20;e.audio.sound('cough');return cloud;
+    return cloud;
   }
   updateClouds(dt) {
     const e=this.engine;
@@ -148,7 +155,7 @@ export class HospitalLife {
   }
   dialogueHUD() {
     const e=this.engine;if(!e.mission)return [];
-    return this.dialogues.filter(d=>!d.actor.dead&&d.actor.floor===e.floor&&d.until>e.mission.elapsed).slice(-2).flatMap(d=>{
+    return this.dialogues.filter(d=>!d.actor.dead&&d.actor.floor===e.floor&&d.until>e.mission.elapsed&&e.lineOfSight(e.playerPos,d.actor.pos)).slice(-2).flatMap(d=>{
       const head=d.actor.visual.head?.getWorldPosition?.(new THREE.Vector3())||d.actor.pos.clone().add(new THREE.Vector3(0,1.65,0));head.y+=.34;const p=head.project(e.camera);
       if(p.z>1||p.z<0||Math.abs(p.x)>1.1)return [];
       return [{speaker:d.actor.name,text:d.text,x:THREE.MathUtils.clamp((p.x+1)*50,12,88),y:THREE.MathUtils.clamp((1-p.y)*50,20,78)}];
@@ -160,17 +167,16 @@ export class HospitalLife {
     const roomKey=room?.id||`hall-${e.floor}`;
     if(roomKey!==this.lastRoom){this.lastRoom=roomKey;if(room&&!emergency)this.reactToEntry(room);}
     for(const n of e.npcs) {
-      if(n.dead||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
-      n.reaction=Math.max(0,(n.reaction||0)-dt);
+      if(n.dead||n.evacuated||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
       if(n.activity&&n.activity!=='newborn') {
         const pose=emergency&&!n.lying?'chat':n.activity;
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
         n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0});
       }else if(n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction});
-      if(n.contamination&&n.nextCough<=now&&e.coughCooldown<=0&&dist(e.playerPos,n.pos)<3.1&&e.lineOfSight(e.playerPos,n.pos))this.emitCloud(n);
+      if(n.contamination&&n.nextCough<=now&&e.coughCooldown<=0&&dist(e.playerPos,n.pos)<3.1&&e.lineOfSight(e.playerPos,n.pos))this.beginCough(n);
     }
     for(const item of this.cases) {
-      const local=item.room.floor===e.floor,alive=!item.doctor.dead;item.cable.visible=item.disc.visible=local&&alive&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;
+      const local=item.room.floor===e.floor,alive=!item.doctor.dead&&!item.doctor.evacuating;item.cable.visible=item.disc.visible=local&&alive&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;
       if(!item.cable.visible||now<item.nextCable)continue;item.nextCable=now+.25;
       if(!item.doctor.reaction) item.doctor.visual.root.rotation.y=Math.atan2(item.patient.pos.x-item.doctor.pos.x,item.patient.pos.z-item.doctor.pos.z);
       const start=item.doctor.pos.clone().add(new THREE.Vector3(0,1.42,0));const end=item.patient.pos.clone().add(item.patient.hitOffset.clone());end.y=1.17;
@@ -195,6 +201,7 @@ export class HospitalLife {
     if(now>=this.nextFlicker&&!e.blackout){this.triggerFlicker();this.nextFlicker=now+12+e.mission.random()*17;}
     const flicker=this.flickerLevel();this.flickerCover.visible=flicker<1;
     if(this.flicker){this.flickerCover.position.copy(this.flicker.fixture);this.flickerCover.position.y=3.502;}
+    for(let i=this.pendingCoughs.length-1;i>=0;i--){const warning=this.pendingCoughs[i];if(now>=warning.ready){this.pendingCoughs.splice(i,1);if(!warning.patient.dead&&!warning.patient.evacuated)this.emitCloud(warning.patient);}}
     this.updateClouds(dt);
   }
   dispose() {

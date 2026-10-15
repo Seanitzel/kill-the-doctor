@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { Mission, defaultSave, purchase, readSave, writeSave, SAVE_KEY } from '../src/game/mission.js';
 import { makeLayout, findPath, key } from '../src/game/layout.js';
 const memory = () => { const map = new Map(); return { getItem: k => map.get(k) ?? null, setItem: (k,v) => map.set(k,v) }; };
-test('Every department, entrance, clue, and elevator is connected on both floors', () => {
-  for (const floor of [0,1]) {
+test('Every department, entrance, clue, and elevator is connected on all three floors', () => {
+  for (const floor of [0,1,2]) {
     const layout = makeLayout(floor);
     for (const room of layout.rooms) {
       const path = findPath(layout, {x:11,z:21}, {x:room.x+1,z:room.z+2});
@@ -22,9 +22,9 @@ test('Clues reveal evidence progressively and cannot be collected twice', () => 
   assert.ok(m.clue('schedule').text.includes(m.target.room.number));
   assert.ok(m.clue('log').text.includes(m.target.name)); assert.equal(m.clues.length,3);
 });
-test('Eliminating a decoy does not complete the objective', () => {
-  const m = new Mission(defaultSave(), 101); m.eliminate({id:'other',role:'doctor'});
-  assert.equal(m.staffKills,1); assert.equal(m.targetDown,false); assert.equal(m.state,'investigate');
+test('Staff cannot be eliminated before the assigned doctor', () => {
+  const m = new Mission(defaultSave(), 101); assert.equal(m.eliminate({id:'other',role:'doctor'}),false);
+  assert.equal(m.staffKills,0); assert.equal(m.targetDown,false); assert.equal(m.state,'investigate');
 });
 test('A patient hit ends the mission immediately with no reward', () => {
   const save=defaultSave();const m=new Mission(save,102);m.eliminate({id:'patient',role:'patient'});

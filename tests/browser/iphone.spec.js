@@ -6,7 +6,7 @@ test.beforeEach(async({page})=>{
   await page.goto('/');await page.waitForFunction(()=>window.__northline?.ready);
 });
 async function start(page){
-  await page.getByRole('button',{name:'ENTER THE HOSPITAL',exact:false}).tap();
+  await page.getByRole('button',{name:'ENTER THE HOSPITAL',exact:false}).tap();await page.getByRole('button',{name:'Skip story',exact:true}).click();
   await page.waitForFunction(()=>window.__northline.screen==='game'&&!window.__northline.loading);
   await page.evaluate(()=>{const e=window.__ktd.engine;e.nextBlackout=e.nextPA=99999;e.coughCooldown=99999;e.npcs.filter(n=>['security','police'].includes(n.role)).forEach(n=>{n.path=[];n.wait=9999;n.pos.set(-24,0,21);});});
 }

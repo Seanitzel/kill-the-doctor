@@ -6,7 +6,7 @@ import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { StatusBar } from '@capacitor/status-bar';
 export const native=Capacitor.isNativePlatform();
 export const platform=Capacitor.getPlatform();
-export function touchDevice(){return native || window.matchMedia('(pointer:coarse)').matches;}
+export function touchDevice(){return native || new URLSearchParams(window.location.search).get('controls')==='touch' || window.matchMedia('(pointer:coarse)').matches;}
 export async function nativeFeedback(type='tap') {
   if(!native)return;
   try {if(type==='success')await Haptics.notification({type:NotificationType.Success});else if(type==='warning')await Haptics.notification({type:NotificationType.Warning});else await Haptics.impact({style:type==='shot'?ImpactStyle.Medium:ImpactStyle.Light});}catch{}

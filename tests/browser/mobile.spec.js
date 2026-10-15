@@ -3,7 +3,7 @@ test.use({viewport:{width:844,height:390},hasTouch:true,isMobile:true});
 test('Phone web edition has usable landscape controls, pauses, and responds to portrait rotation',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('ktd-northline-v1',JSON.stringify({settings:{quality:'low',volume:0,speech:false}})));
  await page.goto('/');await expect(page.locator('.game-shell')).toHaveClass(/mobile-mode/);
- await page.getByRole('button',{name:'ENTER THE HOSPITAL',exact:false}).tap();
+ await page.getByRole('button',{name:'ENTER THE HOSPITAL',exact:false}).tap();await page.getByRole('button',{name:'Skip story',exact:true}).click();
  await page.waitForFunction(()=>window.__ktd?.engine.mission&&!window.__ktd.engine.paused);
  for(const selector of ['touch-move','touch-look','touch-use','touch-aim','touch-fire','touch-reload'])await expect(page.getByTestId(selector)).toBeVisible();
  const actions=await page.getByTestId('touch-fire').boundingBox();expect(actions.x+actions.width).toBeLessThanOrEqual(844);expect(actions.y+actions.height).toBeLessThanOrEqual(390);

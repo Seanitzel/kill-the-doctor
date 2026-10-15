@@ -1,6 +1,8 @@
 export const TILE = 3;
 export const SIZE = 23;
-export const FLOORS = ['Ground floor', 'First floor'];
+export const FLOORS = ['Ground floor', 'First floor', 'Second floor'];
+export const FLOOR_CODES = ['G','1','2'];
+export const FLOOR_THEMES = ['Clinical & diagnostics','Specialist care','Advanced care & research'];
 const roomSpecs = [
   [4, 5, 3, 5], [7, 5, 3, 5], [12, 5, 3, 5], [15, 5, 3, 5],
   [4, 12, 3, 6], [7, 12, 3, 6], [12, 12, 3, 6], [15, 12, 3, 6],
@@ -14,6 +16,10 @@ const departments = [
   ['Cardiology', 'Heart & vascular', 'cardio'], ['Neurology', 'Neuroscience clinic', 'clinic'],
   ['Maternity', 'Maternity & newborn care', 'maternity'], ['Pediatrics', 'Children’s ward', 'pediatric'],
   ['Patient Ward', 'Inpatient recovery', 'ward'], ['Pathology', 'Morgue & pathology', 'morgue'],
+  ['Oncology', 'Cancer care & recovery', 'ward'], ['Research', 'Clinical research & consent', 'lab'],
+  ['Renal Care', 'Kidney & transplant care', 'ward'], ['Endoscopy', 'Digestive diagnostics', 'clinic'],
+  ['Rehabilitation', 'Mobility & recovery', 'clinic'], ['Patient Advocacy', 'Rights & language services', 'office'],
+  ['Transplant Ward', 'Transplant recovery', 'ward'], ['Isolation Unit', 'Protected patient care', 'icu'],
 ];
 export const key = (x, z) => `${x},${z}`;
 export const edgeKey = (a, b) => [a, b].sort().join('|');
@@ -63,7 +69,7 @@ export function makeLayout(floor = 0) {
   return { floor, cells, rooms, doors, doorEdges, walls,
     exit: { ...world(11, 22), floor: 0 },
     elevator: { ...world(11, 3), floor, label: 'Elevator / stairs' },
-    directory: { ...world(9, 20), floor, label: floor ? 'First-floor directory' : 'Staff directory' },
+    directory: { ...world(9, 20), floor, label: floor ? `${FLOORS[floor]} directory` : 'Staff directory' },
     schedule: { ...world(17, 11), floor, label: 'Staff schedule' },
   };
 }

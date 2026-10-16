@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, shallowRef } from 'vue';
 import { ArrowRight, ArrowUpRight, Plus, Flashlight, Map, BookOpen, Crosshair, Volume2, VolumeX, Settings2, X, Check, ChevronRight, Shield, Footprints, Wind, CircleHelp, Pause, RotateCcw, Radio, AlertTriangle, Coins, Power, Maximize, UserRound, DoorOpen, Clock, Eye, Target, HeartPulse, Headphones, Smartphone } from 'lucide-vue-next';
+import {TimerScope} from './game/lifetime.js';
 import { GameEngine } from './game/engine.js';
 import { Mission, readSave, writeSave, purchase, UPGRADE_INFO } from './game/mission.js';
 import { portrait } from './game/assets.js';
@@ -23,7 +24,7 @@ const viewport = ref(null), screen = ref('menu'), overlay = ref(null), ready = r
 const isTouch=ref(touchDevice());let nativeCleanup=()=>{};
 let removeGestureGuard=()=>{};
 let stopCameraDiagnostics=()=>{};
-let engine, toastTimer, announcementTimer, effectTimer;
+let engine,appDisposed=false,debugBridge,diagnosticGetter;const feedbackTimers=new TimerScope();
 const save = reactive(readSave(localStorage));if(isTouch.value&&!localStorage.getItem('ktd-northline-v1'))save.settings.quality='balanced';
 const hud = reactive({ state: 'investigate', location: 'Main atrium', floor: 0, x: 3, z: 30, yaw: Math.PI, timer: 0, stamina: 100, suspicion: 0, flashlight: false, blackout: 0, impairment: 0, aiming: false, ammo: 6, reserve: 30, prompt: null, clues: 0 });
 const mission = shallowRef(null), result = ref(null), toast = ref(null), announcement = ref(null), clue = ref(null), badge = ref(null), mapFloor = ref(0), shotFlash = ref(false), transition = ref(false), hit = ref(false), soundCaption = ref(null);
@@ -38,7 +39,7 @@ const countdown = computed(() => `${Math.floor(hud.timer/60).toString().padStart
 const duration = s => `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
 const objectiveNumber = computed(() => hud.state === 'escape' ? '03' : hud.targetConfirmed ? '02' : '01');
 const persist = () => writeSave(localStorage, save);
-function notification(value) { toast.value = value; clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.value = null, 5500); }
+function notification(value) { toast.value = value; feedbackTimers.after('toast',5500,()=>toast.value=null); }
 function openOverlay(name) { overlay.value = name; engine?.pause(true); if (name === 'map') mapFloor.value = hud.floor; }
 function closeOverlay() { overlay.value = null; clue.value = null; badge.value = null; if (screen.value === 'game') engine?.pause(false); else if(screen.value==='story') engine?.audio.pause(false); }
 function pause() { if (screen.value !== 'game' || loading.value) return; if (overlay.value) closeOverlay(); else openOverlay('pause'); }
@@ -50,16 +51,18 @@ function startMission(){
 }
 function restartMission(){if(loading.value)return;mission.value?.finish(false,'Assignment restarted.');persist();enterHospital();}
 async function enterHospital() {
-  if (loading.value) return;
+  if (loading.value||!engine||appDisposed) return;
+  feedbackTimers.clear();shotFlash.value=false;hit.value=false;transition.value=false;soundCaption.value=null;
   engine.storyMusic=false;engine?.audio.start();loading.value = true; error.value = null;
   try {
     const assignment=prepareAssignment(save);markIntroSeen(save);persist();mission.value = new Mission(save,assignment.seed,assignment.attempt); result.value = null; overlay.value = null; toast.value = null; announcement.value = null; screen.value = 'game';
-    await engine.start(mission.value, save.character); assignmentPortrait.value = engine.portrait(mission.value.target, mission.value.target.name.startsWith('Nurse') ? 'nurse' : 'doctor'); ready.value = true;
+    const currentEngine=engine;const started=await currentEngine.start(mission.value, save.character);if(appDisposed||currentEngine!==engine||!started)return;assignmentPortrait.value = currentEngine.portrait(mission.value.target, mission.value.target.name.startsWith('Nurse') ? 'nurse' : 'doctor'); ready.value = true;
+    if(currentEngine.paused&&!overlay.value)openOverlay('pause');
     notification({ text: isTouch.value?'Move with the stick, drag to look, and tap USE at the staff directory.':'Start at the staff directory. Press E to inspect it.', kind: 'info' });
-  } catch (e) { error.value = `The game could not start: ${e.message}`; screen.value = 'menu'; }
-  loading.value = false;
+  } catch (e) { if(!appDisposed){error.value = `The game could not start: ${e.message}`; screen.value = 'menu';} }
+  finally{if(!appDisposed)loading.value=false;}
 }
-function toMenu() { engine.storyMusic=false;engine?.stop(); screen.value = 'menu'; overlay.value = null; announcement.value = null; toast.value = null; persist(); }
+function toMenu() { feedbackTimers.clear();shotFlash.value=false;hit.value=false;transition.value=false;soundCaption.value=null;if(engine)engine.storyMusic=false;engine?.stop(); screen.value = 'menu'; overlay.value = null; announcement.value = null; toast.value = null; persist(); }
 function buy(id) { if (purchase(save, id)) { persist();engine?.refreshLoadout(); engine?.audio.sound('clue'); } }
 function settingsChanged() { persist(); engine?.applySettings(save.settings); }
 function toggleSound() { save.settings.volume = save.settings.volume ? 0 : .5; settingsChanged(); }
@@ -72,29 +75,31 @@ function globalKey(e) {
 onMounted(() => {
   try {
     engine = new GameEngine(viewport.value, save.settings, {
+      error:value=>{error.value=`Character assets could not load: ${value.message}`;},
       ready: () => { ready.value = true; characterPortraits.male = engine.portrait({ gender:'male', skin:'#efddce', hair:'#514e50', accent:'#667683'}, 'civilian'); characterPortraits.female = engine.portrait({ gender:'female',skin:'#efddce',hair:'#433f3f',accent:'#697b88'}, 'civilian'); },
       hud: state => Object.assign(hud, state),
       pause,persist, lift:()=>openOverlay('lift'), map: () => openOverlay('map'), journal: () => openOverlay('journal'), lock: value => locked.value = value,
       notify: notification,
-      announcement: value => { announcement.value = value; clearTimeout(announcementTimer); announcementTimer = setTimeout(() => announcement.value = null, 11000); },
-      soundCaption: text => { soundCaption.value=text; setTimeout(()=>soundCaption.value=null,6500); },
+      announcement: value => { announcement.value = value; feedbackTimers.after('announcement',11000,()=>announcement.value=null); },
+      soundCaption: text => { soundCaption.value=text; feedbackTimers.after('caption',6500,()=>soundCaption.value=null); },
       clue: value => { nativeFeedback(); clue.value = value; openOverlay('clue'); },
       badge: value => { badge.value = value; openOverlay('badge'); },
-      shot: () => { nativeFeedback('shot');shotFlash.value = true; setTimeout(() => shotFlash.value = false, 95); },
-      hit: () => { hit.value = true; setTimeout(() => hit.value = false, 260); },
-      transition: () => { transition.value = true; setTimeout(() => transition.value = false, 450); },
+      shot: () => { nativeFeedback('shot');shotFlash.value = true; feedbackTimers.after('shot',95,()=>shotFlash.value=false); },
+      hit: () => { hit.value = true; feedbackTimers.after('hit',260,()=>hit.value=false); },
+      transition: () => { transition.value = true; feedbackTimers.after('transition',450,()=>transition.value=false); },
       result: value => { nativeFeedback(value.success?'success':'warning');result.value = value; screen.value = 'results'; overlay.value = null; persist(); },
     });
     // Dev-only inspection enables browser acceptance tests without changing the shipped UI.
-    if (import.meta.env.DEV || import.meta.env.MODE==='native-test') window.__ktd = { get engine() { return engine; }, get mission() { return mission.value; }, get save() { return save; }, get hud() { return hud; } };
+    if (import.meta.env.DEV || import.meta.env.MODE==='native-test') window.__ktd = debugBridge = { get engine() { return engine; }, get mission() { return mission.value; }, get save() { return save; }, get hud() { return hud; } };
   } catch (e) { error.value = `WebGL could not initialize. Try a browser with hardware acceleration enabled. ${e.message}`; }
-  initializeNative({background:()=>{persist();engine?.resetTouch();if(screen.value==='game'&&!overlay.value)openOverlay('pause');else engine?.pause(true);},back:()=>{if(overlay.value)closeOverlay();else if(screen.value==='game')pause();else if(screen.value==='results'||screen.value==='story')toMenu();else NativeApp.exitApp();}}).then(cleanup=>nativeCleanup=cleanup);
-  Object.defineProperty(window,'__northline',{configurable:true,get:()=>({platform,native,touch:isTouch.value,screen:screen.value,overlay:overlay.value,ready:ready.value,loading:loading.value,error:error.value,position:engine?.playerPos?.toArray(),yaw:engine?.yaw,paused:engine?.paused,frame:engine?.renderer.info.render.frame,fps:engine?.performance.fps,state:engine?.mission?.state,ammo:engine?.ammo,flashlight:engine?.flashlight,clues:engine?.mission?.clues.length,controls:{...engine?.touchInput},inputEvents:{...engine?.inputEvents},coins:save.coins,upgrades:{...save.upgrades},settings:{...save.settings},audio:{state:engine?.audio.ctx?.state,samples:Object.keys(engine?.audio.samples||{}),voices:engine?.audio.dialogueBuffers.size},url:location.href})});
+  initializeNative({background:()=>{persist();engine?.resetTouch();if(screen.value==='game'&&!overlay.value)openOverlay('pause');else engine?.pause(true);},back:()=>{if(overlay.value)closeOverlay();else if(screen.value==='game')pause();else if(screen.value==='results'||screen.value==='story')toMenu();else NativeApp.exitApp();}}).then(cleanup=>{if(appDisposed)cleanup();else nativeCleanup=cleanup;}).catch(()=>{});
+  diagnosticGetter=()=>({platform,native,touch:isTouch.value,screen:screen.value,overlay:overlay.value,ready:ready.value,loading:loading.value,error:error.value,position:engine?.playerPos?.toArray(),yaw:engine?.yaw,paused:engine?.paused,frame:engine?.renderer.info.render.frame,fps:engine?.performance.fps,state:engine?.mission?.state,ammo:engine?.ammo,flashlight:engine?.flashlight,clues:engine?.mission?.clues.length,controls:{...engine?.touchInput},inputEvents:{...engine?.inputEvents},coins:save.coins,upgrades:{...save.upgrades},settings:{...save.settings},audio:{state:engine?.audio.ctx?.state,samples:Object.keys(engine?.audio.samples||{}),voices:engine?.audio.dialogueBuffers.size},url:location.href});
+  Object.defineProperty(window,'__northline',{configurable:true,get:diagnosticGetter});
   if(import.meta.env.DEV)stopCameraDiagnostics=startCameraDiagnostics(()=>engine);
   window.addEventListener('keydown',globalKey);
   removeGestureGuard=installGameGestureGuard(document,()=>screen.value==='game'&&!overlay.value);
 });
-onBeforeUnmount(() => { removeGestureGuard();stopCameraDiagnostics();nativeCleanup();engine?.dispose(); clearTimeout(toastTimer); clearTimeout(announcementTimer); clearTimeout(effectTimer); window.removeEventListener('keydown',globalKey); });
+onBeforeUnmount(() => { appDisposed=true;removeGestureGuard();stopCameraDiagnostics();nativeCleanup();feedbackTimers.dispose();engine?.dispose();engine=null;if(window.__ktd===debugBridge)delete window.__ktd;if(Object.getOwnPropertyDescriptor(window,'__northline')?.get===diagnosticGetter)delete window.__northline;window.removeEventListener('keydown',globalKey); });
 </script>
 <template>
   <main class="game-shell" :style="{ '--impairment-blur': `${(hud.impairmentStrength || 0)*3}px` }" :class="[{ 'mobile-mode':isTouch,'native-mode':native,'has-overlay':!!overlay, 'in-game': screen === 'game', 'impaired': hud.impairment > 0 && screen === 'game', 'blackout': hud.blackout > 0 && screen === 'game', 'emergency': hud.state === 'escape' && screen === 'game' }, screen]">
@@ -122,7 +127,7 @@ onBeforeUnmount(() => { removeGestureGuard();stopCameraDiagnostics();nativeClean
         </div>
       </section>
       <aside class="scene-label"><span class="eyebrow">NORTHLINE / MAIN BUILDING</span><span class="scene-title">The night shift.</span><p>Three floors. Twenty-four departments.<br/>One way out.</p><div class="scene-meta"><span>THREE CONNECTED WINGS</span><span>G + 1 + 2</span></div></aside>
-      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ ready ? 'READY TO ENTER' : 'LOADING CHARACTER ASSETS' }} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 02.1 <ArrowUpRight :size="12"/></button></footer>
+      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ ready ? 'READY TO ENTER' : 'LOADING CHARACTER ASSETS' }} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 02.1.1 <ArrowUpRight :size="12"/></button></footer>
     </template>
     <StoryIntro v-if="screen==='story' && activeStory" :story="activeStory" :paused="!!overlay" @finish="enterHospital" @back="toMenu" @references="openOverlay('references')"/>
     <template v-if="screen === 'game'">

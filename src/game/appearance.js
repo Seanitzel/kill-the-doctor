@@ -21,9 +21,12 @@ export function recolorIrisPixels(data, width, height, hex) {
   return data;
 }
 
-function eyeTexture(source, hex) {
+function trimIrisCache(cache) {
+  for(const [key,entry] of cache){if(cache.size<=32)break;if(entry.users===0){entry.texture.dispose();cache.delete(key);}}
+}
+function eyeTexture(source, hex, cache, leases) {
   const key = `${source?.uuid || 'fallback'}:${hex}`;
-  if (irisCache.has(key)) return irisCache.get(key);
+  if (cache.has(key)) { const entry=cache.get(key);if(!leases.has(entry)){entry.users++;leases.add(entry);}return entry.texture; }
   if (typeof document === 'undefined') return source;
   const canvas = document.createElement('canvas'), image = source?.image;
   canvas.width = image?.width || 128; canvas.height = image?.height || 128;
@@ -42,10 +45,8 @@ function eyeTexture(source, hex) {
   texture.flipY = source?.flipY ?? false; texture.colorSpace = THREE.SRGBColorSpace;
   texture.wrapS = source?.wrapS ?? THREE.ClampToEdgeWrapping; texture.wrapT = source?.wrapT ?? THREE.ClampToEdgeWrapping;
   texture.anisotropy = source?.anisotropy || 1;
-  irisCache.set(key, texture);
-  // The UI uses a fixed palette. Bound the cache if a future importer provides
-  // arbitrary colors; evicted textures can be re-uploaded by an existing wearer.
-  if (irisCache.size > 32) { const oldest = irisCache.keys().next().value; irisCache.get(oldest).dispose(); irisCache.delete(oldest); }
+  const entry={texture,users:1,cache};cache.set(key,entry);leases.add(entry);
+  trimIrisCache(cache);
   return texture;
 }
 
@@ -105,8 +106,8 @@ function fitOutfit(model, top, style, accent) {
   const front = surfaceAt(points, false), back = surfaceAt(points, true);
   const dark = clothMaterial(style === 'jacket' ? accent : '#283d48');
   const trim = clothMaterial(style === 'jacket' ? '#29353e' : '#536a72');
-  const zip = clothMaterial('#a5b7bf', { metalness: .6, roughness: .4 });
   if (style === 'jacket') {
+    const zip = clothMaterial('#a5b7bf', { metalness: .6, roughness: .4 });
     reshape(top, model, p => { if (Math.abs(p.x) < .24) { p.x *= 1.055; p.z = (p.z - .02) * 1.06 + .02; if (p.y < waist + .11) p.y -= .035; } });
     for (const sign of [-1, 1]) {
       fittedPanel(model, chest, [[sign*.105, shoulder+.025],[sign*.04,shoulder+.005],[sign*.012,shoulder-.19],[sign*.095,shoulder-.085]], front, trim, 'KTD jacket lapel');
@@ -154,13 +155,14 @@ function fitHair(model, hair, skin, hairstyle, hex) {
   attachGeometry(model,head,tie,clothMaterial('#1e2b34'),'KTD hair tie');
 }
 
-export function applyAppearance(model, person, role = 'civilian') {
+export function applyAppearance(model, person, role = 'civilian', cache = irisCache) {
   if (!person || role !== 'civilian') return;
   model.updateMatrixWorld(true);
+  const leases=model.userData.appearanceTextureLeases=new Set();
   const meshes=[]; model.traverse(object=>{if(object.isMesh)meshes.push(object);});
   const find=name=>meshes.find(mesh=>mesh.material?.name.includes(name));
   if (/^#[\da-f]{6}$/i.test(person.eyes || '')) for(const mesh of meshes) if(mesh.material?.name.includes('Wolf3D_Eye')) {
-    mesh.material.map=eyeTexture(mesh.material.map,person.eyes); mesh.material.color.set('#ffffff');mesh.material.needsUpdate=true;
+    mesh.material.map=eyeTexture(mesh.material.map,person.eyes,cache,leases); mesh.material.color.set('#ffffff');mesh.material.needsUpdate=true;
   }
   const top=find('Outfit_Top');
   if(top && ['jacket','tactical'].includes(person.outfit))fitOutfit(model,top,person.outfit,person.accent || '#526778');
@@ -170,7 +172,15 @@ export function applyAppearance(model, person, role = 'civilian') {
 
 export function disposeAppearance(model) {
   if(!model)return;
+  const leases=model.userData.appearanceTextureLeases;
+  if(leases){for(const entry of leases){entry.users=Math.max(0,entry.users-1);trimIrisCache(entry.cache);}leases.clear();delete model.userData.appearanceTextureLeases;}
   const geometries=new Set(),materials=new Set(),remove=[];
-  model.traverse(object=>{if(object.userData.appearanceOwned){geometries.add(object.geometry);for(const material of Array.isArray(object.material)?object.material:[object.material])if(material)materials.add(material);remove.push(object);}else if(object.userData.appearanceGeometryOwned)geometries.add(object.geometry);});
+  model.traverse(object=>{if(object.userData.appearanceOwned){geometries.add(object.geometry);for(const material of Array.isArray(object.material)?object.material:[object.material])if(material)materials.add(material);remove.push(object);}else if(object.userData.appearanceGeometryOwned){geometries.add(object.geometry);delete object.userData.appearanceGeometryOwned;}});
   for(const geometry of geometries)geometry.dispose();for(const material of materials)material.dispose();for(const object of remove)object.removeFromParent();
+}
+
+// Generated iris atlases are shared by avatars and portraits. Clear only after
+// every wearer has been disposed, when unloading the complete character set.
+export function disposeAppearanceCache(cache = irisCache) {
+  for(const [key,entry] of cache)if(entry.users===0){entry.texture.dispose();cache.delete(key);}
 }

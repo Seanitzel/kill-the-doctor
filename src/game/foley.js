@@ -19,7 +19,7 @@ export function roomImpulse(ctx){
 // Only player foley enters this room bus. Music and hospital voices keep their original mix.
 export class HospitalFoley{
   constructor(ctx,destination,buffers){
-    this.ctx=ctx;this.buffers=buffers;this.active=new Set();this.stepIndex=0;this.shotIndex=0;this.nodes=[];
+    this.ctx=ctx;this.buffers=buffers;this.active=new Set();this.stepIndex=0;this.shotIndex=0;this.nodes=[];this.disposed=false;
     const own=node=>{this.nodes.push(node);return node;};
     this.input=own(ctx.createGain());this.input.connect(destination);
     const room=own(ctx.createConvolver()),tone=own(ctx.createBiquadFilter()),wet=own(ctx.createGain());
@@ -32,6 +32,7 @@ export class HospitalFoley{
     }
   }
   play(kind,{running=false,suppressed=false}={}){
+    if(this.disposed||this.ctx?.state==='closed')return false;
     const step=kind==='step',keys=step?['step-01','step-02','step-03','step-04'].filter(k=>this.buffers[k]):[kind==='rifle'?'rifle-shot':'pistol-shot'];
     if(!keys.length||!this.buffers[keys[0]])return false;
     const index=step?this.stepIndex++:this.shotIndex++,key=keys[index%keys.length];
@@ -43,11 +44,21 @@ export class HospitalFoley{
     if(pan.pan)pan.pan.value=step?(index%2?.12:-.12):.08;
     source.connect(filter);filter.connect(gain);gain.connect(pan);pan.connect(this.input);
     const record={source,filter,gain,pan,key};this.active.add(record);
-    source.onended=()=>{this.active.delete(record);source.disconnect();filter.disconnect();gain.disconnect();pan.disconnect();};
+    source.onended=()=>this.release(record);
     // A short clip budget prevents runaway node accumulation during repeated fire.
-    if(this.active.size>18){const first=this.active.values().next().value;this.active.delete(first);first.source.stop();}
-    source.start();return record;
+    if(this.active.size>18)this.release(this.active.values().next().value,true);
+    try{source.start();}catch{this.release(record,true);return false;}return record;
   }
-  stop(){for(const record of this.active){try{record.source.stop();}catch{}}this.active.clear();}
-  dispose(){this.stop();for(const node of this.nodes)node.disconnect();}
+  release(record,stop=false){
+    if(!record||record.released)return;record.released=true;this.active.delete(record);record.source.onended=null;
+    if(stop)try{record.source.stop();}catch{}
+    for(const node of [record.source,record.filter,record.gain,record.pan])try{node.disconnect();}catch{}
+    try{record.source.buffer=null;}catch{}
+  }
+  stop(){for(const record of [...this.active])this.release(record,true);}
+  dispose(){
+    if(this.disposed)return;this.disposed=true;this.stop();
+    for(const node of this.nodes){try{node.disconnect();}catch{}if('buffer'in node)try{node.buffer=null;}catch{}}
+    this.nodes.length=0;this.buffers={};this.input=null;this.ctx=null;
+  }
 }

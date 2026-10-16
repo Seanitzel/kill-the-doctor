@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {disposeObjectResources} from './resources.js';
 import {mesh,material} from './assets.js';
 export function weaponModel(kind){
   const g=new THREE.Group(),dark=material('#25313c',{metalness:.5}),black=material('#15212a');
@@ -16,5 +17,6 @@ export function playerAccessories(visual){
   const gold=material('#9babb7',{metalness:.9,roughness:.22});
   const chain=new THREE.Mesh(new THREE.TorusGeometry(.13,.012,6,24),gold);chain.position.set(0,-.33,.03);chain.rotation.x=1.1;jewelry.add(chain);
   for(const x of [-.16,.16]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.023,.006,6,12),gold);ring.position.set(x,-.08,.015);jewelry.add(ring);}
-  return {update(save){mask.visible=!!save.upgrades?.mask&&!!save.loadout?.mask;jewelry.visible=!!save.appearance?.jewelry;visual.root.updateMatrixWorld(true);if(visual.head){const head=visual.head.getWorldPosition(new THREE.Vector3());group.position.copy(visual.root.worldToLocal(head));}else group.position.set(0,1.68,0);},dispose(){group.traverse(o=>{if(o.isMesh){if(o.geometry.type==='TorusGeometry')o.geometry.dispose();o.material.dispose();}});group.removeFromParent();}};
+  const headPosition=new THREE.Vector3();let disposed=false;
+  return {update(save){mask.visible=!!save.upgrades?.mask&&!!save.loadout?.mask;jewelry.visible=!!save.appearance?.jewelry;visual.root.updateMatrixWorld(true);if(visual.head){const head=visual.head.getWorldPosition(headPosition);group.position.copy(visual.root.worldToLocal(head));}else group.position.set(0,1.68,0);},dispose(){if(disposed)return;disposed=true;disposeObjectResources(group);group.removeFromParent();}};
 }

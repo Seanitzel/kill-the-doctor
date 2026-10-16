@@ -15,9 +15,12 @@ export async function initializeNative({background,back}) {
   if(!native)return ()=>{};
   await Promise.allSettled([StatusBar.hide(),ScreenOrientation.lock({orientation:'landscape'})]);
   const handles=[];
-  handles.push(await App.addListener('appStateChange',({isActive})=>{if(!isActive)background();}));
-  if(platform==='android')handles.push(await App.addListener('backButton',()=>back()));
-  return ()=>handles.forEach(h=>h.remove());
+  const cleanup=()=>{for(const handle of handles.splice(0))Promise.resolve(handle.remove()).catch(()=>{});};
+  try {
+    handles.push(await App.addListener('appStateChange',({isActive})=>{if(!isActive)background();}));
+    if(platform==='android')handles.push(await App.addListener('backButton',()=>back()));
+    return cleanup;
+  } catch(error){cleanup();throw error;}
 }
 
 export async function nativeAnnouncement(text,volume){if(!native)return;try{await TextToSpeech.speak({text,lang:"en-US",rate:.95,pitch:1,volume,category:"playback"});}catch{}}

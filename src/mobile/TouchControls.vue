@@ -1,11 +1,12 @@
 <script setup>
-import { ref,onMounted,onBeforeUnmount } from 'vue';
+import { ref,watch,onMounted,onBeforeUnmount } from 'vue';
 import { Crosshair,Hand,Flashlight,RotateCcw,Footprints,Map,BookOpen,Pause,ArrowDown,Target,Shield } from 'lucide-vue-next';
 import { stickVector } from './input.js';
 import { nativeFeedback } from './platform.js';
 const props=defineProps({engine:Object,hud:Object});
 const emit=defineEmits(['map','journal','pause']);
 const knob=ref({x:0,y:0}),sprint=ref(false),crouch=ref(false),looking=ref(false);
+watch(()=>props.hud.sprintEnabled,value=>{if(value!==undefined)sprint.value=value;});
 let movePointer=null,lookPointer=null,lastLook=null,firePointer=null,lastFire=null;
 function move(event){if(event.pointerId!==movePointer)return;event.preventDefault();const r=event.currentTarget.getBoundingClientRect();const vector=stickVector(event.clientX-r.left-r.width/2,event.clientY-r.top-r.height/2,44);knob.value={x:vector.x,y:vector.y};props.engine.setTouchMove(vector.forward,vector.strafe);}
 function moveStart(event){if(movePointer!==null)return;event.preventDefault();movePointer=event.pointerId;event.currentTarget.setPointerCapture(event.pointerId);move(event);}
@@ -28,7 +29,7 @@ onBeforeUnmount(()=>{window.removeEventListener('resize',resetGestures);window.r
     <div class="phone-look" :class="{looking}" data-testid="touch-look" aria-label="Drag to look around" @pointerdown="lookStart" @pointermove="lookMove" @pointerup="lookEnd" @pointercancel="lookEnd" @lostpointercapture="lookEnd"><span>DRAG TO LOOK</span></div>
     <nav class="phone-tools" aria-label="Mission tools"><button aria-label="Hospital map" @pointerdown.prevent="toolAction($event,'map')" @click="toolAction($event,'map')"><Map :size="19"/></button><button aria-label="Evidence journal" @pointerdown.prevent="toolAction($event,'journal')" @click="toolAction($event,'journal')"><BookOpen :size="19"/></button><button aria-label="Pause mission" @pointerdown.prevent="toolAction($event,'pause')" @click="toolAction($event,'pause')"><Pause :size="19"/></button></nav>
     <div class="phone-move" data-testid="touch-move" aria-label="Movement joystick" @pointerdown="moveStart" @pointermove="move" @pointerup="moveEnd" @pointercancel="moveEnd" @lostpointercapture="moveEnd"><span class="stick-cross">+</span><span class="stick-knob" :style="{transform:`translate(${knob.x}px,${knob.y}px)`}"></span><small>MOVE</small></div>
-    <div class="phone-stance"><button aria-label="Toggle sprint" :aria-pressed="sprint" :class="{active:sprint}" @pointerdown.prevent="buttonAction($event,'run')" @click="buttonAction($event,'run')"><Footprints :size="18"/><small>RUN</small></button><button aria-label="Toggle crouch" :aria-pressed="crouch" :class="{active:crouch}" @pointerdown.prevent="buttonAction($event,'crouch')" @click="buttonAction($event,'crouch')"><ArrowDown :size="18"/><small>CROUCH</small></button></div>
+    <div class="phone-stance"><button aria-label="Toggle sprint" :disabled="hud.sprintExhausted" :aria-pressed="sprint" :class="{active:sprint}" @pointerdown.prevent="buttonAction($event,'run')" @click="buttonAction($event,'run')"><Footprints :size="18"/><small>{{hud.sprintExhausted?'REST':'RUN'}}</small></button><button aria-label="Toggle crouch" :aria-pressed="crouch" :class="{active:crouch}" @pointerdown.prevent="buttonAction($event,'crouch')" @click="buttonAction($event,'crouch')"><ArrowDown :size="18"/><small>CROUCH</small></button></div>
     <div class="phone-gear"><button :aria-label="hud.weaponDrawn?'Holster weapon':'Draw weapon'" :class="{active:hud.weaponDrawn}" @pointerdown.prevent="buttonAction($event,'draw')" @click="buttonAction($event,'draw')"><Crosshair :size="16"/><small>{{hud.weaponDrawn?'HIDE':'DRAW'}}</small></button><button aria-label="Switch weapon" @pointerdown.prevent="buttonAction($event,'weapon')" @click="buttonAction($event,'weapon')"><Target :size="16"/><small>{{hud.weaponKind==='sniper'?'PISTOL':'RIFLE'}}</small></button><button aria-label="Toggle mask" :class="{active:hud.masked}" @pointerdown.prevent="buttonAction($event,'mask')" @click="buttonAction($event,'mask')"><Shield :size="16"/><small>MASK</small></button></div>
     <div class="phone-actions">
       <button class="phone-use" data-testid="touch-use" aria-label="Interact" :class="{available:hud.prompt}" @pointerdown.prevent="buttonAction($event,'use')" @click="buttonAction($event,'use')"><Hand :size="21"/><small>USE</small></button>

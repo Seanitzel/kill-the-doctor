@@ -1,0 +1,34 @@
+Northline ambient dialogue — neural speech revision 2 (2026-10-16)
+
+These clips are locally generated synthetic speech, not human voice-actor recordings.
+No real person's custom voice clone was created or used.
+The text is the game's existing fictional staff/patient dialogue. The 56 original text/gender/key mappings are preserved exactly. Spoken renditions use a few natural contractions without changing meaning; the original captions remain unchanged.
+
+Generation system:
+Kokoro 82M v1.0 model by hexgrad, model weights licensed Apache License 2.0.
+Model source and model card: https://huggingface.co/hexgrad/Kokoro-82M
+Model repository: https://github.com/hexgrad/kokoro
+Voice documentation: https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md
+Kokoro-ONNX runtime 0.6.1 by thewh1teagle, MIT licensed.
+Runtime source: https://github.com/thewh1teagle/kokoro-onnx
+Model export download: https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/kokoro-v1.0.onnx
+Voice styles download: https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/voices-v1.0.bin
+
+Licenses are included as LICENSE-Kokoro-Apache-2.0.txt and LICENSE-kokoro-onnx-MIT.txt. These describe the generation model/runtime; the generated clips are game assets, not redistributed model weights. The model/runtime binaries are not included in the shipped game.
+
+Voices:
+Female base: af_heart. Alternate: 88% af_heart / 12% af_bella.
+Male base: am_michael. Alternate: 88% am_michael / 12% am_fenrir.
+These are supplied model styles, not recordings claimed to be these named real people.
+
+Each original key has KEY.mp3 and KEY-alt.mp3. manifest.json retains text/gender/key, then records spokenText, synthetic:true, engine, and variants with file, voice/blend, delivery, speed, duration, bytes and SHA-256.
+Delivery pacing distinguishes questions, friendly replies, tired conversation and polite interruptions. No pitch shifting or artificial reverberation is baked into the files. Source speech is 24 kHz; final output is mono 24 kHz 80 kbit/s MP3. Processing: 75 Hz high-pass, 10.5 kHz low-pass, restrained -20 LUFS normalization with -3 dB true-peak target, tiny entry/exit padding.
+
+QA:
+All 112 files decode to finite, nonempty audio, have unique outputs, preserve every original key, and pass headroom checks. Measured sample pitch varies naturally across phrases (female example 10th–90th percentile approximately 168–271 Hz; male example 94–151 Hz). This is a technical check, not a claim of a human listening session or of actor-grade performance. Playback feedback remains useful for final delivery preferences.
+
+Reproduce with scripts/generate-dialogue-audio-v2.py; local setup/models and QA records are kept in ignored artifacts/audio-v2/. Original music and all unrelated audio are unchanged.
+
+Model/export SHA-256:
+kokoro-v1.0.onnx: beb0d1848dee9a49da392cc3df26958d46cfa35d321edf434f52949153f0df3a
+voices-v1.0.bin: bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d

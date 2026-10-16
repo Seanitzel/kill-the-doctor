@@ -23,9 +23,9 @@ export class HospitalFoley{
     const own=node=>{this.nodes.push(node);return node;};
     this.input=own(ctx.createGain());this.input.connect(destination);
     const room=own(ctx.createConvolver()),tone=own(ctx.createBiquadFilter()),wet=own(ctx.createGain());
-    room.normalize=false;room.buffer=roomImpulse(ctx);tone.type='lowpass';tone.frequency.value=4300;wet.gain.value=.16;
+    room.normalize=false;room.buffer=roomImpulse(ctx);tone.type='lowpass';tone.frequency.value=4300;wet.gain.value=.04;
     this.input.connect(tone);tone.connect(room);room.connect(wet);wet.connect(destination);
-    for(const [time,level,frequency] of [[.043,.11,5900],[.096,.055,3400]]){
+    for(const [time,level,frequency] of [[.043,.025,5900],[.096,.008,3400]]){
       const delay=own(ctx.createDelay(.2)),filter=own(ctx.createBiquadFilter()),gain=own(ctx.createGain());
       delay.delayTime.value=time;filter.type='lowpass';filter.frequency.value=frequency;gain.gain.value=level;
       this.input.connect(delay);delay.connect(filter);filter.connect(gain);gain.connect(destination);

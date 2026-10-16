@@ -2,6 +2,7 @@ import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
 import { native,nativeAnnouncement,stopNativeSpeech } from '../mobile/platform.js';
 import { dialogueKey } from './life-rules.js';
+const AUDIO_REVISION='2.1.0';
 export class HospitalAudio {
   constructor(settings) { this.settings = settings; this.ctx = null; this.nextNote = 0; this.nextBeep = 0; this.stepClock = 0; this.enabled = true; this.noteIndex = 0; this.samples = {}; this.ambientChannels = new Map(); this.activeSamples = new Set(); this.speechPriority = 0; this.speechSerial = 0; this.dialogueBuffers = new Map(); this.voiceEpoch=0; this.listenerFloor=0; }
   async start() {
@@ -62,7 +63,7 @@ export class HospitalAudio {
   async loadSamples() {
     if(this.samplePromise) return this.samplePromise;
     this.samplePromise=Promise.allSettled(Object.entries({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3',...FOLEY_FILES}).map(async([name,url])=>{
-      const response=await fetch(assetUrl(url));if(!response.ok && !(native && response.status === 0)) throw Error('Audio sample unavailable');this.samples[name]=await this.ctx.decodeAudioData(await response.arrayBuffer());
+      const response=await fetch(assetUrl(url)+`?v=${AUDIO_REVISION}`);if(!response.ok && !(native && response.status === 0)) throw Error('Audio sample unavailable');this.samples[name]=await this.ctx.decodeAudioData(await response.arrayBuffer());
     }));return this.samplePromise;
   }
   sampleNodes(name,position,gain,loop=false,buffer=null) {
@@ -98,16 +99,18 @@ export class HospitalAudio {
   }
   async dialogue(text,person,gain,urgent=false,position=null) {
     if(!this.enabled||!this.settings.speech||!this.settings.volume)return;
-    const key=dialogueKey(text,person.gender),epoch=this.voiceEpoch;
+    const baseKey=dialogueKey(text,person.gender),epoch=this.voiceEpoch;
+    this.dialogueTakes??=new Map();const take=this.dialogueTakes.get(baseKey)||0;this.dialogueTakes.set(baseKey,take+1);
+    const key=baseKey+(take%2?'-alt':'');
     try {
-      if(!this.dialogueBuffers.has(key))this.dialogueBuffers.set(key,fetch(assetUrl(`audio/dialogue/${key}.mp3`)).then(async response=>{if(!response.ok && !(native && response.status === 0))throw Error('Voice unavailable');return this.ctx.decodeAudioData(await response.arrayBuffer());}));
+      if(!this.dialogueBuffers.has(key))this.dialogueBuffers.set(key,fetch(assetUrl(`audio/dialogue/${key}.mp3`)+`?v=${AUDIO_REVISION}`).then(async response=>{if(!response.ok && !(native && response.status === 0))throw Error('Voice unavailable');return this.ctx.decodeAudioData(await response.arrayBuffer());}));
       const buffer=await this.dialogueBuffers.get(key);
       if(!this.enabled||epoch!==this.voiceEpoch||!this.settings.speech||position?.floor!==undefined&&position.floor!==this.listenerFloor)return;
       this.sampleNodes(`voice-${key}`,position||{x:0,y:1,z:0},gain*.9,false,buffer);
     }catch{this.speak(text,person,gain,urgent?4:1);}
   }
   announce(text) {if(native){if(this.enabled&&this.settings.speech&&this.settings.volume)nativeAnnouncement(text,this.settings.volume*.65);return;}this.speak(text,{gender:'female'},.8,/Code blue|Police|Security incident/i.test(text)?5:3);}
-  update(dt, proximity, emergency, impairment, moving, running) {
+  update(dt, proximity, emergency, impairment, moving, running,footfalls=null) {
     if (!this.ctx || !this.enabled) return;
     const now = this.ctx.currentTime;
     this.music.gain.setTargetAtTime(.16 + proximity * .55 + (emergency ? .28 : 0), now, 1.4);
@@ -119,7 +122,9 @@ export class HospitalAudio {
     }
     if (emergency && now > this.nextBeep) { this.sound('alarm'); this.nextBeep = now + 2.4; }
     else if (!emergency && now > this.nextBeep) { this.tone(980, .1, .028); this.nextBeep = now + 5 + Math.random() * 3; }
-    if (moving) { this.stepClock += dt; if (this.stepClock > (running ? .27 : .46)) { this.sound('step',{running}); this.stepClock = 0; } }
+    if(moving&&Number.isInteger(footfalls)){for(let i=0;i<footfalls;i++)this.sound('step',{running});this.stepClock=0;}
+    else if (moving) { this.stepClock += dt; if (this.stepClock > (running ? .27 : .46)) { this.sound('step',{running}); this.stepClock = 0; } }
+    else this.stepClock=0;
   }
   dispose() { this.foley?.dispose();stopNativeSpeech();this.stopAmbient(); window.speechSynthesis?.cancel(); this.ctx?.close(); }
 }

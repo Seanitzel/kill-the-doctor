@@ -8,7 +8,7 @@ For phone controls, native builds, simulator launch, and mobile verification, se
 
 The local production build runs at **http://localhost:4173**. The development server runs at **http://localhost:5173**.
 
-Choose one of six character profiles, customize your appearance, watch or skip the rotating illustrated patient file, enter the hospital, and inspect the staff directory near reception. Follow the evidence to your assigned doctor, verify their badge, complete the objective, and escape through the ground-floor main entrance before police seal the hospital. Patients are protected: hitting a patient fails the assignment immediately.
+Choose one of six character profiles, customize your appearance, watch or skip the illustrated client file, enter the hospital, and inspect the staff directory near reception. Follow the evidence to your assigned doctor, verify their badge, complete the objective, and escape through the ground-floor main entrance before police seal the hospital. Patients are protected: hitting a patient fails the assignment immediately.
 
 | Action | Control |
 | --- | --- |
@@ -31,8 +31,8 @@ To preview phone controls on a desktop, append `?controls=touch` and use a lands
 
 ## What is playable
 
-- Six character profiles share two rigged body models, with idle, walking and running animations, customizable names, clothing, hair, skin tone and optional steel jewelry. Four profiles are free; River and Iman are coin unlocks.
-- Eight three-picture fictional revenge stories rotate without repeats until the set is exhausted. Jack, Pamela, Layla and Melanie have patient backstories that explain the promise, betrayal, discovery and motive. Fade transitions, reading time based on caption length, continue, skip and an in-game panel of researched references are included. The sources distinguish historical findings from invented story details. The original illustrations are unchanged; image prompts are in `public/stories/README.txt`.
+- Six character profiles share two rigged body models, with idle, walking and running animations, customizable names, iris colors, three outfit styles, three hairstyles, clothing and hair colors, skin tone and optional steel jewelry. Four profiles are free; River and Iman are coin unlocks.
+- Thirty-two fictional client case files use three or four pictures each. Every ending explains that the client hired the player as an assassin. Previous-picture and back-to-menu buttons, fades, timed reading, skip and qualified background references are included. A case and target remain assigned through retries and reloads; stories advance only after successful missions. The original eight illustrations are reused unchanged; prompts are in `public/stories/README.txt`.
 - Twenty-four departments across three connected floors: Emergency, Radiology, Laboratory, Pharmacy, Outpatient, Records, Cafeteria, Maintenance, Surgery, Intensive Care, Cardiology, Neurology, Maternity, Pediatrics, Patient Ward, Pathology, Oncology, Research, Renal Care, Endoscopy, Rehabilitation, Patient Advocacy, Transplant Ward and Isolation Unit.
 - Central and perimeter routes, opening doors, viewing windows, navigable rooms, and a working lift between floors.
 - Three evidence sources, rotating target assignments, matching target portraits, badge inspection, and a journal.
@@ -40,8 +40,8 @@ To preview phone controls on a desktop, append `?controls=touch` and use a lands
 - Nurse handovers and patient conversations with spoken dialogue and captions. Six seated cafeteria diners eat, gesture, and talk around tables with meals.
 - Doctors examine clothed patients in the clinical rooms, with a visible stethoscope. Room entry interrupts the examination with a startled turn and an “Excuse me” response.
 - Two clothed pregnant maternity patients, two swaddled newborns in bassinets, and bundled recordings of baby cries, distress vocalizations, and heavy breathing. Maternity sounds fade with distance and stop being audible on the other floor.
-- Layered synthesized music with gradual target proximity intensity, hospital ambience, optional spoken announcements, bundled NPC dialogue in two voices, and persistent captions.
-- Recorded hard-floor footsteps vary across four takes, with distinct pistol and rifle recordings and a short hospital room echo. Only player effects use this room response; the original music and hospital voices keep their existing mix. Clip provenance and CC0 licenses are in `public/audio/foley/SOURCES.txt`.
+- Layered synthesized music with gradual target proximity intensity, hospital ambience, optional spoken announcements, bundled neural NPC dialogue in male and female voices with alternate deliveries, and persistent captions.
+- Recorded sneakers on tile vary across four takes, synchronized to the rigged walking/running animation, with distinct pistol and rifle recordings and a subtle hospital room response. Only player effects use this room response; the original music and hospital voices keep their existing mix. Clip provenance and CC0 licenses are in `public/audio/foley/SOURCES.txt`.
 - Blackouts, emergency lighting, a shadow-casting flashlight, and occasional brief light-fixture glitches.
 - A cough or sneeze warns the player before selected sick patients emit green contamination clouds. A bought, equipped face mask prevents new exposure. Base blur durations are 30 or 60 seconds, according to the patient, with a visible recovery countdown and gradual clearing over the final ten seconds. The recovery filter upgrade reduces these durations. Clean patients do not contaminate the player, and a single cloud does not repeatedly reset the timer.
 - Drawing or aiming a visible weapon causes witnesses to gasp and run to report it. A completed report before the primary objective fails the mission. Walls and facing affect detection; holstering prevents new sightings.
@@ -49,6 +49,7 @@ To preview phone controls on a desktop, append `?controls=touch` and use a lands
 - The visible escape timer, patient protection, interception, timer failure and mission results remain active.
 - Optional steel jewelry triggers a dramatized fatal magnetic pull inside Radiology. This is an MRI magnet hazard, not radiation; not all real jewelry is magnetic. Remove jewelry in the studio or loadout before entering.
 - Coins, reward breakdowns, eight equipment upgrades (including a protective mask, scoped rifle, extended magazines and endurance training), new rounds, and browser-persistent progression.
+- Exhaustion settles into a steady walk until sprint is released and a recovery reserve is restored. Touch sprint switches off when depleted; the RUN control shows REST during recovery.
 - Difficulty, volume, speech, mouse sensitivity, visual quality, fullscreen, responsive menus, and touch controls.
 
 This is the complete browser prototype stage of the supplied GDD. Hospital geometry and equipment are modular; the lift transitions between three fully playable floor layouts. It is a foundation for further custom art and hospital expansion.

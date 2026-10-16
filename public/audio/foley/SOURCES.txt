@@ -1,67 +1,51 @@
-Hospital foley and weapon audio — source and editing record
-Retrieved and prepared 2026-10-16.
-All six selected recordings are licensed CC0 1.0 Universal by their creators.
+Hospital foley — audio revision 2 (2026-10-16)
+
+All bundled foley recordings are CC0 1.0 Universal.
 License: https://creativecommons.org/publicdomain/zero/1.0/
-No attribution is required. Optional credit: Foley by OwlStorm (Ashe Kirk / Owlish Media), michorvath and moosegravy via Freesound.
+No attribution is required; optional credit: Footsteps by SpliceSound via Freesound. Weapon recordings by michorvath and moosegravy via Freesound.
 
-Distribution format: mono 32 kHz, 16-bit PCM WAV, suitable for browser Web Audio.
-Source: each creator's public high-quality MP3 preview linked from the source page; original WAV downloads require a Freesound account. The public previews were converted to WAV and edited; these are not claimed to be original lossless masters.
+The four footsteps now use real sneakers walking on an indoor tile/linoleum floor. These replace the previously used hard-heeled shoe sounds. Each is a different contact, retaining the natural short sole scuff and weight transfer, without a synthesized thud or added echo.
 
-Footsteps are four distinct isolated hard-shoe recordings. They retain heel/toe contact and a little natural tail; they are not sneaker recordings and do not contain synthesized footfalls. Use subtle runtime room reverb/early reflections for the hospital rather than forcing a long fixed echo into every asset.
-Gunshots are field-recorded / creator-described real firearm sounds. They were shortened to the single discharge and its tail, excluding later handling. The rifle retains an early reflected/mechanical transient. No added voices or music. These are game effects, not loudness-calibrated recordings.
+Footstep original: Footsteps, Tile, Male Sneakers, Medium Pace.wav
+Creator: SpliceSound
+Source page: https://freesound.org/people/SpliceSound/sounds/170503/
+Downloaded public HQ MP3 preview: https://cdn.freesound.org/previews/170/170503_1480854-hq.mp3
+License verified on the creator's page: Creative Commons 0 / CC0 1.0 Universal.
+The original 24-bit WAV download requires a Freesound account; the public HQ preview was used and converted. The delivered WAVs are not claimed to be original lossless masters.
 
-Processing: remove leading/trailing dead space; mono downmix; high-pass 70 Hz for steps / 38 Hz for shots; low-pass 13.5 kHz; 2 ms entry and 25 ms exit fades. Footstep peaks -10 dBFS; weapon peaks -4 dBFS. All final WAVs have zero clipped samples.
-The pistol HQ MP3 has decoded intersample over-unity peaks; processing used floating-point samples and preserved headroom before the final PCM conversion.
+Preparation: isolate four separate shoe contacts; mono 32 kHz PCM16 WAV; high-pass 50 Hz, gentle low-pass 6.5 kHz; retain level differences; 4 ms entry/30 ms exit fades. No time stretch or pitch shift. No added voices or music. Clips are 0.42 seconds each, peak levels approximately -14 to -15.3 dBFS; all have zero clipped samples. Most contact energy is in the low/middle frequencies rather than bright heel clicks.
 
-QA: inspected decoded waveforms and spectrograms. Steps have discrete impact/scrape transients and decay; shots have broadband attacks and decaying tails. No sustained speech-like harmonic passages occur in the selected ranges. Spectrograms, source-page snapshots, source previews and exact metrics are in ignored artifacts/audio-qa/ for audit. This was waveform/spectrum inspection, not a claim of a human listening session.
+QA: decoded, checked finite samples and peak/RMS, and inspected waveform/spectrograms. This is spectral/asset inspection, not a claim of human listening. Sources and metrics are retained in ignored artifacts/audio-v2/. Room reverb belongs in playback: keep it subtle and avoid discrete repeats that create a second apparent step.
 
 step-01.wav
-Original title: Hard Female Footstep (1)
-Creator: OwlStorm
-Source page: https://freesound.org/people/OwlStorm/sounds/151232/
-Downloaded HQ MP3: https://cdn.freesound.org/previews/151/151232_140737-hq.mp3
-License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
-Selected source range: 0.070–0.500 s
-Output duration: 0.430 s
-Output peak: -10.00 dBFS
-Output bytes: 27598
-SHA-256: 50a13df96eacf27f25ab4ba20440d7a1d553f48bbf919d1e6d3ff82fe13bebba
+Selected source range: 4.440–4.860 s
+Output duration: 0.420 s
+Peak: -14.00 dBFS
+Output bytes: 26958
+SHA-256: 63585c23a80c6ac274155c5376f86820f54c3a6f755e203332e43d78ebc0b4ca
 
 step-02.wav
-Original title: Hard Female Footstep (2)
-Creator: OwlStorm
-Source page: https://freesound.org/people/OwlStorm/sounds/151238/
-Downloaded HQ MP3: https://cdn.freesound.org/previews/151/151238_140737-hq.mp3
-License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
-Selected source range: 0.070–0.470 s
-Output duration: 0.400 s
-Output peak: -10.00 dBFS
-Output bytes: 25678
-SHA-256: 1e66dc1f72cb6f35ac5630bbe02aacb32f32b6904a00d0fcb479f8a1c37b222d
+Selected source range: 4.970–5.390 s
+Output duration: 0.420 s
+Peak: -15.00 dBFS
+Output bytes: 26958
+SHA-256: fea179321e3ac2a1b15850c6bd265c696b440694802c2c26cab10174019a7290
 
 step-03.wav
-Original title: Hard Female Footstep (3)
-Creator: OwlStorm
-Source page: https://freesound.org/people/OwlStorm/sounds/151237/
-Downloaded HQ MP3: https://cdn.freesound.org/previews/151/151237_140737-hq.mp3
-License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
-Selected source range: 0.070–0.520 s
-Output duration: 0.450 s
-Output peak: -10.00 dBFS
-Output bytes: 28878
-SHA-256: c8e9ac900ce17fa69568c5d1bc6356319ea2e20a357e3d1d1f02f53b4004f12f
+Selected source range: 5.550–5.970 s
+Output duration: 0.420 s
+Peak: -14.50 dBFS
+Output bytes: 26958
+SHA-256: 1a5e0574c1548f6267d72b8a0f5290c3a535b00b94d11a5a4f0bd01b5a289b38
 
 step-04.wav
-Original title: Hard Female Footstep (4)
-Creator: OwlStorm
-Source page: https://freesound.org/people/OwlStorm/sounds/151222/
-Downloaded HQ MP3: https://cdn.freesound.org/previews/151/151222_140737-hq.mp3
-License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
-Selected source range: 0.160–0.600 s
-Output duration: 0.440 s
-Output peak: -10.00 dBFS
-Output bytes: 28238
-SHA-256: 265ef347e675d7dd9d5f1a684d7ddc238d95aad87b3cefbf35d1cc237d2dc9fa
+Selected source range: 9.300–9.720 s
+Output duration: 0.420 s
+Peak: -15.30 dBFS
+Output bytes: 26958
+SHA-256: 4421d578f3297a63b43d4c7ca611ec49fe305198e65f6d573a3a7b9b869b6d80
+
+Weapon recordings below are unchanged from the previous revision. Processing: mono 32 kHz PCM16 WAV, high-pass 38 Hz, low-pass 13.5 kHz, short entry/exit fades, peak -4 dBFS. No final clipped samples.
 
 pistol-shot.wav
 Original title: 22 magnum pistol shot

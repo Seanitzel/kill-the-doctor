@@ -64,9 +64,10 @@ Clinical and maternity scenes are fictional, clothed, and non-graphic. NPC dialo
 announcements use the browser's installed English speech voices. Recorded cries and vocals
 are bundled locally and positioned within the hospital through Web Audio.
 
-NPC speech recordings: original game dialogue rendered locally with macOS
-Samantha and Daniel text-to-speech voices, converted to mono 22.05 kHz MP3.
-The manifest in audio/dialogue/ lists each authored line and voice variant.
+NPC speech recordings: locally generated Kokoro 82M neural speech, with female
+af_heart and male am_michael voices plus alternate blended takes. These are
+synthetic voices, not human voice-actor recordings. Sources, model/runtime
+licenses and all 112 clip records: audio/dialogue/SOURCES.txt and manifest.json.
 
 NORTHLINE 2.0 — STORY ILLUSTRATIONS AND SOUND EFFECTS
 Eight original fictional story triptychs generated with OpenAI ImageGen.
@@ -85,11 +86,8 @@ Included Freesound MP3 preview as audio/witness-gasp.mp3, without further editin
 Full source records: audio/expansion-sources.txt.
 
 KTD — NATURAL FOOTSTEPS AND WEAPON RECORDINGS
-Four hard-shoe footfalls: OwlStorm / Ashe Kirk / Owlish Media, Freesound.
-https://freesound.org/people/OwlStorm/sounds/151232/
-https://freesound.org/people/OwlStorm/sounds/151238/
-https://freesound.org/people/OwlStorm/sounds/151237/
-https://freesound.org/people/OwlStorm/sounds/151222/
+Four sneaker footfalls on indoor tile: SpliceSound, Freesound.
+https://freesound.org/people/SpliceSound/sounds/170503/
 22 magnum pistol shot: michorvath, Freesound.
 https://freesound.org/people/michorvath/sounds/427594/
 Sauer 404 close shot: moosegravy, Freesound.

@@ -1,4 +1,6 @@
 import { assetUrl } from './asset-url.js';
+import {applyAppearance,disposeAppearance} from './appearance.js';
+import {animationFootfalls} from './movement.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
@@ -187,6 +189,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       }
     }
   });
+  applyAppearance(model,person,role);
   const mixer = new THREE.AnimationMixer(model); const actions = {};
   for (const name of ['Idle', 'Walk', 'Run']) {
     const clip = assets.animations[name];
@@ -216,8 +219,10 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     const next = speed > 3.7 ? 'Run' : speed > .15 ? 'Walk' : 'Idle';
     if (next !== current && actions[next]) { actions[current]?.fadeOut(.18); actions[next].reset().fadeIn(.18).play(); current = next; }
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.65, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
+    const action=actions[next],footfalls=speed>.15&&action?animationFootfalls(action.time,dt,action.timeScale,action.getClip().duration):0;
     mixer.update(dt);
     if (aim) for (const item of arms) item.arm.quaternion.copy(item.q);
+    return {footfalls};
   }, poseActivity(activity, time, { seated=false, reaction=0, look=0 } = {}) {
     const b=activityBones;
     if(seated) for(const side of ['Left','Right']) { if(b[`${side}UpLeg`]) b[`${side}UpLeg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2); if(b[`${side}Leg`]) b[`${side}Leg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2); }
@@ -249,17 +254,19 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     }});
   } };
 }
-export function renderPortrait(renderer, assets, person, role = 'doctor') {
+export function renderPortrait(renderer, assets, person, role = 'doctor',options={}) {
   const subject = makePlayer(assets, person.gender || 'male', person, role);
-  subject.animate(0, 0, 0.1);
+  subject.animate(0, 0, 0.35);
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#7293a8'); scene.add(subject.root);
   scene.add(new THREE.HemisphereLight('#e5f3ff', '#6b7a89', 2.5));
   const key = new THREE.DirectionalLight('#fff4e7', 3); key.position.set(2, 3, 4); scene.add(key);
   const fill = new THREE.DirectionalLight('#b8dcfa', 1.5); fill.position.set(-3, 2, 2); scene.add(fill);
-  const camera = new THREE.PerspectiveCamera(30, 1, .01, 10); camera.position.set(0, 1.56, 1.02); camera.lookAt(0, 1.56, 0);
+  const camera = new THREE.PerspectiveCamera(30, 1, .01, 10);if(options.fullBody){camera.position.set(0,1.05,3.9);camera.lookAt(0,.96,0);}else{camera.position.set(0, 1.56, 1.02); camera.lookAt(0, 1.56, 0);}
   const size = renderer.getSize(new THREE.Vector2()); const ratio = renderer.getPixelRatio();
   renderer.setPixelRatio(1); renderer.setSize(256, 256, false); renderer.render(scene, camera);
   const url = renderer.domElement.toDataURL('image/png'); renderer.setPixelRatio(ratio); renderer.setSize(size.x, size.y, false);
+  disposeAppearance(subject.model);
+  subject.model?.traverse(o=>{if(o.isMesh&&o.material&&!o.userData.appearanceOwned)o.material.dispose();});
   return url;
 }
 

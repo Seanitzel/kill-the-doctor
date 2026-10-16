@@ -12,16 +12,16 @@ import {HospitalLife} from '../src/game/atmosphere.js';
 import {buildHospital} from '../src/game/hospital.js';
 import {makeNavigation} from '../src/game/navigation.js';
 
-test('Eight illustrated stories rotate without repeats and persist across sessions',()=>{
+test('All client stories rotate without repeats and persist across sessions',()=>{
   const save=defaultSave(),ids=Array.from({length:STORIES.length},()=>takeStory(save,()=>.5).id);
-  assert.equal(new Set(ids).size,8);const last=ids.at(-1);
+  assert.equal(new Set(ids).size,STORIES.length);const last=ids.at(-1);
   const restored=readSave({getItem:k=>k===SAVE_KEY?JSON.stringify(save):null});
   assert.notEqual(takeStory(restored,()=>.5).id,last);
   for(const story of STORIES){
-    assert.equal(story.panels.length,3);assert.ok(STORY_SOURCES.some(s=>s.id===story.source));
-    const path=new URL(`../public/stories/${story.id}.png`,import.meta.url);assert.ok(existsSync(path));
+    assert.ok([3,4].includes(story.panels.length));assert.ok(!story.source||STORY_SOURCES.some(s=>s.id===story.source));
+    const path=new URL(`../public/stories/${story.artId||story.id}.png`,import.meta.url);assert.ok(existsSync(path));
     const bytes=readFileSync(path);assert.equal(bytes.readUInt32BE(16),1024);assert.equal(bytes.readUInt32BE(20),1536);
-    const cuts=STORY_CROPS[story.id];assert.equal(cuts[0],0);assert.equal(cuts[3],1536);assert.ok(cuts[1]>400&&cuts[2]>900);
+    const cuts=STORY_CROPS[story.artId||story.id];assert.equal(cuts[0],0);assert.equal(cuts[3],1536);assert.ok(cuts[1]>400&&cuts[2]>900);
   }
 });
 test('Old profiles migrate and paid characters require coins exactly once',()=>{

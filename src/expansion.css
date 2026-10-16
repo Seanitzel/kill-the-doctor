@@ -13,3 +13,5 @@
 
 .menu h1 .title-full{display:block;font:12px var(--mono);letter-spacing:.25em;line-height:1.5;margin-top:17px}
 .mobile-mode.menu h1 .title-full{font-size:8px;margin-top:9px}
+.style-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.style-choices label{display:flex;flex-direction:column;gap:7px;font:9px var(--mono);letter-spacing:.1em;color:#abc3d3}.style-choices select{min-height:44px;border:1px solid #3a566c;background:#102332;color:#deebf4;padding:8px;font:13px Arial;max-width:100%}.preview-views{display:flex;width:100%;gap:5px;margin-top:8px}.preview-views button{flex:1;min-height:36px;border:1px solid #49687e;font-size:10px;color:#a6c6db}.preview-views button[aria-pressed=true]{background:#34566d;border-color:#badcf2;color:#eff8fe}.mobile-mode .studio-name input,.mobile-mode .style-choices select{font-size:16px}.phone-stance button:disabled{opacity:.6}
+@media (orientation:landscape) and (max-height:330px){.mobile-mode .story-copy{bottom:95px}}

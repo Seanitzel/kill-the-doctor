@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {dialogueKey,CONVERSATIONS,ENTRY_REACTIONS} from '../src/game/life-rules.js';
 import {HospitalFoley,FOLEY_FILES,roomImpulse} from '../src/game/foley.js';
 import {HospitalAudio} from '../src/game/audio.js';
 import {STORIES,storyDuration} from '../src/game/stories.js';
@@ -56,8 +58,24 @@ test('Natural foley leaves the original eight-note music sequence intact',()=>{
   assert.deepEqual(notes,[220,261.63,329.63,246.94,164.81,293.66,207.65,220]);
 });
 test('Longer story captions receive enough automatic reading time',()=>{
-  for(const story of STORIES)for(let panel=0;panel<3;panel++){
+  for(const story of STORIES)for(let panel=0;panel<story.panels.length;panel++){
     const duration=storyDuration(story,panel);assert.ok(duration>=8500&&duration<=18000);
     if(story.panels[panel][1].split(/\s+/).length>35)assert.ok(duration>12000);
   }
+});
+test('Every conversation has two bundled neural takes with matching text keys and asset hashes',()=>{
+  const manifest=JSON.parse(readFileSync(new URL('../public/audio/dialogue/manifest.json',import.meta.url)));
+  const lines=[...new Set([...Object.values(CONVERSATIONS).flat(2),...Object.values(ENTRY_REACTIONS).flat()])];
+  assert.equal(manifest.length,lines.length*2);
+  for(const text of lines)for(const gender of ['male','female']){
+    const key=dialogueKey(text,gender),entry=manifest.find(e=>e.key===key);assert.equal(entry.text,text);assert.equal(entry.synthetic,true);
+    assert.equal(entry.variants.length,2);
+    for(const variant of entry.variants){const bytes=readFileSync(new URL(`../public/audio/dialogue/${variant.file}`,import.meta.url));assert.ok(bytes.length>1000);assert.equal(createHash('sha256').update(bytes).digest('hex'),variant.sha256);}
+  }
+});
+test('Repeated dialogue alternates performances and caches both without shifting playback pitch',async()=>{
+  const audio=new HospitalAudio({volume:.5,speech:true}),requests=[],played=[],oldFetch=globalThis.fetch;
+  audio.ctx={decodeAudioData:async()=>({decoded:true})};audio.sampleNodes=(key,pos,gain,loop,buffer)=>played.push({key,buffer});
+  globalThis.fetch=async url=>{requests.push(url);return {ok:true,arrayBuffer:async()=>new ArrayBuffer(1)};};
+  try{for(let i=0;i<3;i++)await audio.dialogue('Excuse me.',{gender:'female'},.5);assert.equal(requests.length,2);assert.match(requests[1],/-alt\.mp3\?v=2\.1\.0$/);assert.equal(played[0].key,played[2].key);assert.notEqual(played[0].key,played[1].key);}finally{globalThis.fetch=oldFetch;}
 });

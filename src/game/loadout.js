@@ -9,8 +9,12 @@ export const CHARACTERS = [
 export const OUTFIT_COLORS=['#667683','#3f657b','#5c756d','#76627e','#806549','#803e49'];
 export const HAIR_COLORS=['#211d22','#514339','#8b6541','#afaba4'];
 export const SKIN_COLORS=['#efddce','#d4ad8d','#bb8664','#a97758','#805a45'];
+export const EYE_COLORS=['#566d89','#537b60','#79533a','#a4a5a0','#7a6042'];
+export const OUTFITS=[{id:'casual',name:'Casual shirt'},{id:'jacket',name:'Field jacket'},{id:'tactical',name:'Tactical vest'}];
+export const HAIRSTYLE_CHOICES=[{id:'original',name:'Original'},{id:'cropped',name:'Cropped'},{id:'ponytail',name:'Ponytail'}];
+export function defaultAppearance(c=CHARACTERS[0]){return {name:'',accent:c.accent,hair:c.hair,skin:c.skin,eyes:EYE_COLORS[0],outfit:'casual',hairstyle:'original',jewelry:false};}
 export function profileFor(save){const base=CHARACTERS.find(c=>c.id===save.character)||CHARACTERS[0];return {...base,...save.appearance,gender:base.gender,name:save.appearance?.name?.trim()||base.name};}
-export function selectCharacter(save,id){const c=CHARACTERS.find(c=>c.id===id);if(!c||!save.unlockedCharacters.includes(id))return false;save.character=id;save.appearance={name:'',accent:c.accent,hair:c.hair,skin:c.skin,jewelry:false};return true;}
+export function selectCharacter(save,id){const c=CHARACTERS.find(c=>c.id===id);if(!c||!save.unlockedCharacters.includes(id))return false;save.character=id;save.appearance=defaultAppearance(c);return true;}
 export function unlockCharacter(save,id){const c=CHARACTERS.find(c=>c.id===id);if(!c||save.unlockedCharacters.includes(id)||save.coins<c.cost)return false;save.coins-=c.cost;save.unlockedCharacters.push(id);return selectCharacter(save,id);}
 export function weaponInfo(save,kind=save.loadout?.weapon||'pistol'){
   const sniper=kind==='sniper'&&save.upgrades?.sniper>0,mag=save.upgrades?.magazine||0;

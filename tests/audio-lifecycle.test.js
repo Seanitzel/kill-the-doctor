@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {HospitalAudio} from '../src/game/audio.js';
+import {HospitalAudio,HOSPITAL_SAMPLE_FILES} from '../src/game/audio.js';
+const SAMPLE_COUNT=Object.keys(HOSPITAL_SAMPLE_FILES).length;
 
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
 const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
@@ -35,7 +36,7 @@ function harness(t,{resumeGate=null}={}){
 test('Concurrent and repeated starts share one background graph and one sample load',async t=>{
   const h=harness(t),audio=h.audio();await Promise.all([audio.start(),audio.start(),audio.start()]);
   const ctx=audio.ctx,nodeCount=ctx.nodes.length,loads=h.requests.length;
-  assert.equal(h.contexts.length,1);assert.equal(audio.backgroundSources.size,4);assert.equal(loads,11);
+  assert.equal(h.contexts.length,1);assert.equal(audio.backgroundSources.size,4);assert.equal(loads,SAMPLE_COUNT);
   for(let i=0;i<8;i++){audio.pause(true);audio.pause(false);await audio.start();}
   assert.equal(ctx.nodes.length,nodeCount);assert.equal(h.requests.length,loads);assert.equal(audio.backgroundSources.size,4);
 });
@@ -58,7 +59,7 @@ test('Disposal during resume releases sources even before startup can finish',as
 test('Disposal aborts every sample request and ignores a fetch implementation that completes anyway',async t=>{
   const h=harness(t),gates=[];h.fetchImpl=()=>{const gate=deferred();gates.push(gate);return gate.promise;};
   const audio=h.audio(),starting=audio.start();await flush();const ctx=audio.ctx;
-  assert.equal(gates.length,11);await audio.dispose();assert.ok(h.requests.every(request=>request.options.signal.aborted));
+  assert.equal(gates.length,SAMPLE_COUNT);await audio.dispose();assert.ok(h.requests.every(request=>request.options.signal.aborted));
   for(const gate of gates)gate.resolve({ok:true,arrayBuffer:async()=>new ArrayBuffer(1)});await starting;
   assert.equal(ctx.decodeCalls,0);assert.deepEqual(Object.keys(audio.samples),[]);assert.equal(audio.samplePromise,null);assert.equal(audio.ctx,null);
 });
@@ -66,7 +67,7 @@ test('Disposal aborts every sample request and ignores a fetch implementation th
 test('A noncancelable sample decode finishing after disposal cannot refill the released sample bank',async t=>{
   const h=harness(t),audio=h.audio(),starting=audio.start(),gates=[],ctx=audio.ctx;
   ctx.decodeImpl=()=>{const gate=deferred();gates.push(gate);return gate.promise;};await flush();
-  assert.equal(gates.length,11);await audio.dispose();for(const gate of gates)gate.resolve(buffer());await starting;
+  assert.equal(gates.length,SAMPLE_COUNT);await audio.dispose();for(const gate of gates)gate.resolve(buffer());await starting;
   assert.deepEqual(Object.keys(audio.samples),[]);assert.equal(audio.samplePromise,null);assert.equal(audio.ctx,null);assert.equal(ctx.closeCalls,1);
 });
 

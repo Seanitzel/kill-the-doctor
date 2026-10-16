@@ -24,13 +24,13 @@ test('All client stories rotate without repeats and persist across sessions',()=
     const cuts=STORY_CROPS[story.artId||story.id];assert.equal(cuts[0],0);assert.equal(cuts[3],1536);assert.ok(cuts[1]>400&&cuts[2]>900);
   }
 });
-test('Old profiles migrate and paid characters require coins exactly once',()=>{
+test('Three profiles remain free, legacy paid identities retain their look and coins',()=>{
   const save=readSave({getItem:()=>JSON.stringify({character:'female',coins:400,upgrades:{shoes:2}})});
-  assert.equal(save.character,'female');assert.equal(save.unlockedCharacters.length,4);assert.equal(profileFor(save).gender,'female');
-  assert.equal(selectCharacter(save,'river'),false);assert.equal(unlockCharacter(save,'river'),true);assert.equal(save.coins,220);
-  assert.equal(unlockCharacter(save,'river'),false);assert.equal(save.coins,220);assert.equal(unlockCharacter(save,'iman'),true);assert.equal(save.coins,0);
+  assert.equal(save.character,'female');assert.equal(save.unlockedCharacters.length,3);assert.equal(profileFor(save).gender,'female');
+  assert.equal(selectCharacter(save,'river'),false);assert.equal(unlockCharacter(save,'river'),false);assert.equal(save.coins,400);
   for(const c of CHARACTERS){assert.equal(selectCharacter(save,c.id),true);assert.equal(profileFor(save).name,c.name);assert.equal(profileFor(save).gender,c.gender);}
   save.appearance.name='  Night visitor  ';assert.equal(profileFor(save).name,'Night visitor');
+  const legacy=readSave({getItem:()=>JSON.stringify({character:'iman',coins:220,appearance:{hair:'#2c2628'}})});assert.equal(legacy.character,'custom');assert.equal(profileFor(legacy).name,'Iman');assert.equal(profileFor(legacy).gender,'female');assert.equal(legacy.coins,220);
 });
 test('Mask and rifle purchases equip, preserve coins and survive save reload',()=>{
   const save=defaultSave();save.coins=500;

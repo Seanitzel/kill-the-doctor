@@ -50,7 +50,7 @@ test('New appearance fields migrate safely and persist across reload',()=>{
   const save=defaultSave();save.appearance.eyes='#537b60';save.appearance.hairstyle='ponytail';save.appearance.outfit='tactical';
   assert.deepEqual(readSave({getItem:()=>JSON.stringify(save)}),save);
   const repaired=readSave({getItem:()=>JSON.stringify({appearance:{eyes:'bad',hairstyle:'bad',outfit:'bad'}})});
-  assert.equal(repaired.appearance.outfit,'casual');assert.equal(repaired.appearance.hairstyle,'original');assert.equal(repaired.appearance.eyes,defaultSave().appearance.eyes);
+  assert.equal(repaired.appearance.outfit,'suit');assert.equal(repaired.appearance.hairstyle,'original');assert.equal(repaired.appearance.eyes,defaultSave().appearance.eyes);
 });
 test('Eye color changes the iris while retaining the white sclera, dark pupil and catchlight',()=>{
   const n=100,data=new Uint8ClampedArray(n*n*4);for(let i=0;i<data.length;i+=4)data.set([100,70,40,255],i);

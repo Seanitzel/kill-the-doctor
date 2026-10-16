@@ -1,13 +1,14 @@
+import {addInfusion} from './care-props.js';
 import {createCableGeometry,updateCableGeometry} from './dynamic-cable.js';
 import {footprint} from './collision.js';
 import * as THREE from 'three';
 import { makePlayer, material, mesh } from './assets.js';
-import { CLINICAL_KINDS, CONVERSATIONS, ENTRY_REACTIONS, activityVolume } from './life-rules.js';
+import { CLINICAL_KINDS, CONVERSATIONS, ENTRY_REACTIONS, CLINICAL_CONVERSATIONS, PATIENT_PAIN_LINES, activityVolume } from './life-rules.js';
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const Y=new THREE.Vector3(0,1,0);
 export class HospitalLife {
   constructor(engine) {
-    this.listenerDirection=new THREE.Vector3();this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
+    this.infusions=[];this.nextClinical=9;this.nextMachine=2;this.nextPain=18;this.listenerDirection=new THREE.Vector3();this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
     this.props=new THREE.Group();this.props.name='hospital-life-props';engine.scene.add(this.props);
     this.lastRoom=null;this.roomReactions=new Map();this.nextAmbient=0;this.nextMaternity=0;
     this.nextFlicker=8+engine.mission.random()*7;this.flicker=null;
@@ -48,9 +49,22 @@ export class HospitalLife {
         const cable=new THREE.Mesh(createCableGeometry(),material('#27343d'));
         cable.userData.lifeOwned=true;this.props.add(cable);
         const disc=new THREE.Mesh(new THREE.SphereGeometry(.055,12,8),material('#adbfc9',{metalness:.65,roughness:.25}));disc.scale.set(1,.3,1);disc.userData.lifeOwned=true;this.props.add(disc);
-        this.cases.push({room,patient,doctor,cable,disc,nextCable:0});
+        const standX=clinic?bedX+.95:bedX-.65,standZ=clinic?bedZ+.35:bedZ-.95;
+        const endpoint={x:patient.pos.x-standX,y:1.08,z:patient.pos.z-standZ};
+        const infusion=addInfusion(this.props,{x:standX,z:standZ,endpoint},e.materials||{});infusion.root.userData.floor=floor;
+        e.hospitals[floor].colliders.push(infusion.collider);this.addedColliders.push({floor,obstacle:infusion.collider});this.infusions.push(infusion);
+        this.cases.push({room,patient,doctor,cable,disc,infusion,nextCable:0,nextMachine:4+room.index*1.8,nextCare:10+room.index*3});
         if(room.kind==='maternity') this.maternity(room,patient,floor,minZ);
       }
+    }
+    for(const hospital of e.hospitals){
+      const shop=hospital.pharmacy;if(!shop)continue;
+      const clerk=this.actor('Pharmacist Maya Lewis','nurse','female',shop.floor,shop.room,shop.clerk.x,shop.clerk.z,'chat',{yaw:shop.clerk.yaw,skin:'#5c3c2d'});
+      const customers=shop.queue.map((p,i)=>this.actor(['Prescription collection','Waiting for medicine','Waiting customer'][i],'patient',i%2?'male':'female',shop.floor,shop.room,p.x,p.z,'chat',{yaw:p.yaw,skin:['#bf8c6c','#41281f','#e1bca0'][i]}));
+      this.groups.push({kind:'pharmacy',floor:shop.floor,actors:[customers[0],clerk],next:5,conversation:0});
+      this.groups.push({kind:'pharmacy',floor:shop.floor,actors:[customers[1],customers[2]],next:18,conversation:1});
+      for(const customer of customers){const paper=mesh('box',material('#d5e2de'),[.12,.16,.008],[.04,-.08,.03],customer.visual.hand||customer.visual.root);if(!customer.visual.hand)paper.position.set(.2,1.02,.3);}
+      this.pharmacy={clerk,customers,shop};
     }
     const cafe=e.levels[0].rooms.find(r=>r.kind==='cafe');
     const minX=(cafe.x-11)*3-1.5,minZ=(cafe.z-11)*3-1.5,maxX=(cafe.x+cafe.w-1-11)*3+1.5;
@@ -114,7 +128,7 @@ export class HospitalLife {
   triggerFlicker(duration=1.65) {
     const e=this.engine,fixtures=e.hospitals[e.floor].fixtures;
     const fixture=[...fixtures].sort((a,b)=>a.distanceToSquared(e.playerPos)-b.distanceToSquared(e.playerPos))[0];
-    this.flicker={fixture:fixture.clone(),floor:e.floor,start:e.mission.elapsed,duration};e.audio.sound('flicker');
+    this.flicker={fixture:fixture.clone(),floor:e.floor,start:e.mission.elapsed,duration};if(e.audio.hospitalMachine)e.audio.hospitalMachine('zap',{x:fixture.x,y:fixture.y,z:fixture.z,floor:e.floor},.32);else e.audio.sound('flicker');
   }
   flickerLevel() {
     if(!this.flicker||this.flicker.floor!==this.engine.floor)return 1;
@@ -169,8 +183,8 @@ export class HospitalLife {
     if(roomKey!==this.lastRoom){this.lastRoom=roomKey;if(room&&!emergency)this.reactToEntry(room);}
     for(const n of e.npcs) {
       if(n.dead||n.evacuated||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
-      if(n.animationVisible!==false&&n.activity&&n.activity!=='newborn') {
-        const pose=emergency&&!n.lying?'chat':n.activity;
+      if(n.animationVisible!==false&&(n.activity||n.worriedUntil>now)&&n.activity!=='newborn') {
+        const pose=emergency&&!n.lying?'chat':n.worriedUntil>now&&!n.lying?'worried':n.activity;
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
         n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0});
       }else if(n.animationVisible!==false&&n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction});
@@ -178,6 +192,21 @@ export class HospitalLife {
     }
     for(const item of this.cases) {
       const local=item.room.floor===e.floor,alive=!item.doctor.dead&&!item.doctor.evacuating;item.cable.visible=item.disc.visible=local&&alive&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;
+      const d=dist(e.playerPos,item.patient.pos),source={x:item.patient.pos.x,y:1.15,z:item.patient.pos.z,floor:item.room.floor};
+      if(local&&d<20&&now>=item.nextMachine&&now>=this.nextMachine){
+        const gain=activityVolume(d,true,e.lineOfSight(e.playerPos,item.patient.pos))*.30;
+        const kind=['icu','emergency'].includes(item.room.kind)?(Math.floor(now/20)%3===0?'ventilator':'monitor'):'blood-pressure';
+        e.audio.hospitalMachine?.(kind,source,gain);item.nextMachine=now+(kind==='blood-pressure'?33:5.5);this.nextMachine=now+2.8;
+      }
+      if(!emergency&&alive&&local&&d<15&&now>=item.nextCare&&now>=this.nextClinical&&now>=this.nextAmbient&&!item.doctor.reaction){
+        const kind=item.room.kind==='clinic'?'temperature':item.room.kind==='cardio'?'heart':'bloodPressure',pairs=CLINICAL_CONVERSATIONS[kind],pair=pairs[Math.floor(e.mission.random()*pairs.length)];
+        this.speak(item.doctor,pair[0]);this.queue.push({actor:item.patient,text:pair[1],time:now+Math.max(4.2,pair[0].length*.07)+.5});
+        item.nextCare=now+37+e.mission.random()*18;this.nextClinical=now+17;this.nextAmbient=now+12;
+      }
+      if(!emergency&&local&&!item.patient.dead&&d<12&&now>=this.nextPain&&now>=this.nextAmbient){
+        e.audio.patientPain?.(item.patient.person,source,activityVolume(d,true,true)*.38);
+        this.speak(item.patient,PATIENT_PAIN_LINES[Math.floor(e.mission.random()*PATIENT_PAIN_LINES.length)]);this.nextPain=now+28+e.mission.random()*17;this.nextAmbient=now+9;
+      }
       if(!item.cable.visible||now<item.nextCable)continue;item.nextCable=now+.25;
       if(!item.doctor.reaction) item.doctor.visual.root.rotation.y=Math.atan2(item.patient.pos.x-item.doctor.pos.x,item.patient.pos.z-item.doctor.pos.z);
       const start=item.doctor.pos.clone().add(new THREE.Vector3(0,1.42,0));const end=item.patient.pos.clone().add(item.patient.hitOffset.clone());end.y=1.17;
@@ -208,7 +237,7 @@ export class HospitalLife {
   dispose() {
     if(this.disposed)return;this.disposed=true;
     for(const {floor,obstacle} of this.addedColliders){const list=this.engine.hospitals[floor].colliders,index=list.indexOf(obstacle);if(index>=0)list.splice(index,1);}
-    this.engine.audio.stopAmbient();this.engine.scene.remove(this.props);
+    this.engine.audio.stopAmbient();for(const infusion of this.infusions)infusion.dispose();this.infusions.length=0;this.engine.scene.remove(this.props);
     this.props.traverse(o=>{if(o.userData.lifeOwned||o===this.flickerCover||o.isPoints){o.geometry?.dispose();o.material?.dispose();}});
     this.clouds.forEach(c=>c.texture.dispose());this.props.clear();for(const list of [this.clouds,this.groups,this.cases,this.queue,this.dialogues,this.history,this.pendingCoughs,this.addedColliders])list.length=0;this.roomReactions.clear();
   }

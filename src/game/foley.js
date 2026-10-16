@@ -23,7 +23,7 @@ export class HospitalFoley{
     const own=node=>{this.nodes.push(node);return node;};
     this.input=own(ctx.createGain());this.input.connect(destination);
     const room=own(ctx.createConvolver()),tone=own(ctx.createBiquadFilter()),wet=own(ctx.createGain());
-    room.normalize=false;room.buffer=roomImpulse(ctx);tone.type='lowpass';tone.frequency.value=4300;wet.gain.value=.04;
+    room.normalize=false;room.buffer=roomImpulse(ctx);tone.type='lowpass';tone.frequency.value=3800;wet.gain.value=.03;
     this.input.connect(tone);tone.connect(room);room.connect(wet);wet.connect(destination);
     for(const [time,level,frequency] of [[.043,.025,5900],[.096,.008,3400]]){
       const delay=own(ctx.createDelay(.2)),filter=own(ctx.createBiquadFilter()),gain=own(ctx.createGain());
@@ -39,8 +39,8 @@ export class HospitalFoley{
     const source=this.ctx.createBufferSource(),gain=this.ctx.createGain(),filter=this.ctx.createBiquadFilter();
     const pan=this.ctx.createStereoPanner?.()||this.ctx.createGain();
     source.buffer=this.buffers[key];source.playbackRate.value=step?[.97,1.025,.99,1.01][index%4]*(running?1.035:1):[.99,1.01,1][index%3];
-    filter.type='lowpass';filter.frequency.value=step?7200:suppressed?1250:14500;
-    gain.gain.value=step?(running?.79:.61)*[1,.9,.96,.87][index%4]:(kind==='rifle'?.95:.79)*(suppressed?.28:1);
+    filter.type='lowpass';filter.frequency.value=step?4200:suppressed?1250:14500;
+    gain.gain.value=step?(running?.58:.42)*[1,.9,.96,.87][index%4]:(kind==='rifle'?.95:.79)*(suppressed?.28:1);
     if(pan.pan)pan.pan.value=step?(index%2?.12:-.12):.08;
     source.connect(filter);filter.connect(gain);gain.connect(pan);pan.connect(this.input);
     const record={source,filter,gain,pan,key};this.active.add(record);

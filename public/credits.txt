@@ -67,7 +67,7 @@ are bundled locally and positioned within the hospital through Web Audio.
 NPC speech recordings: locally generated Kokoro 82M neural speech, with female
 af_heart and male am_michael voices plus alternate blended takes. These are
 synthetic voices, not human voice-actor recordings. Sources, model/runtime
-licenses and all 112 clip records: audio/dialogue/SOURCES.txt and manifest.json.
+licenses and all 244 clip records: audio/dialogue/SOURCES.txt and manifest.json.
 
 NORTHLINE 2.0 — STORY ILLUSTRATIONS AND SOUND EFFECTS
 Eight original fictional story triptychs generated with OpenAI ImageGen.
@@ -97,3 +97,5 @@ https://creativecommons.org/publicdomain/zero/1.0/
 Trimmed, filtered, normalized and converted from creator-supplied MP3 previews.
 Individual source ranges, changes and hashes: audio/foley/SOURCES.txt.
 Subtle room reflections and reverb are applied at runtime, separately from music.
+
+Additional short human pain reactions (CC0): MrFossy / Freesound 547209 and Guinamun / Freesound 796094. Full URLs and provenance: audio/expansion-sources.txt.

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {dialogueKey,CONVERSATIONS,ENTRY_REACTIONS} from '../src/game/life-rules.js';
+import {dialogueKey,ALL_DIALOGUE_LINES} from '../src/game/life-rules.js';
 import {HospitalFoley,FOLEY_FILES,roomImpulse} from '../src/game/foley.js';
 import {HospitalAudio} from '../src/game/audio.js';
 import {STORIES,storyDuration} from '../src/game/stories.js';
@@ -65,7 +65,7 @@ test('Longer story captions receive enough automatic reading time',()=>{
 });
 test('Every conversation has two bundled neural takes with matching text keys and asset hashes',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../public/audio/dialogue/manifest.json',import.meta.url)));
-  const lines=[...new Set([...Object.values(CONVERSATIONS).flat(2),...Object.values(ENTRY_REACTIONS).flat()])];
+  const lines=ALL_DIALOGUE_LINES;
   assert.equal(manifest.length,lines.length*2);
   for(const text of lines)for(const gender of ['male','female']){
     const key=dialogueKey(text,gender),entry=manifest.find(e=>e.key===key);assert.equal(entry.text,text);assert.equal(entry.synthetic,true);
@@ -77,5 +77,5 @@ test('Repeated dialogue alternates performances and caches both without shifting
   const audio=new HospitalAudio({volume:.5,speech:true}),requests=[],played=[],oldFetch=globalThis.fetch;
   audio.ctx={decodeAudioData:async()=>({decoded:true})};audio.sampleNodes=(key,pos,gain,loop,buffer)=>played.push({key,buffer});
   globalThis.fetch=async url=>{requests.push(url);return {ok:true,arrayBuffer:async()=>new ArrayBuffer(1)};};
-  try{for(let i=0;i<3;i++)await audio.dialogue('Excuse me.',{gender:'female'},.5);assert.equal(requests.length,2);assert.match(requests[1],/-alt\.mp3\?v=2\.1\.0$/);assert.equal(played[0].key,played[2].key);assert.notEqual(played[0].key,played[1].key);}finally{globalThis.fetch=oldFetch;}
+  try{for(let i=0;i<3;i++)await audio.dialogue('Excuse me.',{gender:'female'},.5);assert.equal(requests.length,2);assert.match(requests[1],/-alt\.mp3\?v=2\.2\.0$/);assert.equal(played[0].key,played[2].key);assert.notEqual(played[0].key,played[1].key);}finally{globalThis.fetch=oldFetch;}
 });

@@ -8,7 +8,7 @@ For phone controls, native builds, simulator launch, and mobile verification, se
 
 The local production build runs at **http://localhost:4173**. The development server runs at **http://localhost:5173**.
 
-Choose one of six character profiles, customize your appearance, watch or skip the illustrated client file, enter the hospital, and inspect the staff directory near reception. Follow the evidence to your assigned doctor, verify their badge, complete the objective, and escape through the ground-floor main entrance before police seal the hospital. Patients are protected: hitting a patient fails the assignment immediately.
+Choose Adrian, Alex, or your own customizable character, watch or skip the illustrated client file, enter the hospital, and inspect the staff directory near reception. Follow the evidence to your assigned doctor, verify their badge, complete the objective, and escape through the ground-floor main entrance before police seal the hospital. Patients are protected: hitting a patient fails the assignment immediately.
 
 | Action | Control |
 | --- | --- |
@@ -27,11 +27,14 @@ Choose one of six character profiles, customize your appearance, watch or skip t
 | Hospital map / evidence journal | M / J |
 | Pause / release mouse | Escape |
 
-To preview phone controls on a desktop, append `?controls=touch` and use a landscape window. Phone controls provide a movement stick, drag-to-look camera, and dedicated action buttons on touch devices. Maps, evidence dialogs, and menus pause mission time. The game also pauses when the browser loses focus.
+To preview phone controls on a desktop, append `?controls=touch` and use a landscape window. Phone controls provide a movement stick, drag-to-look and two-finger pinch camera zoom, and dedicated action buttons on touch devices. Maps, evidence dialogs, and menus pause mission time. The game also pauses when the browser loses focus.
 
 ## What is playable
 
-- Six character profiles share two rigged body models, with idle, walking and running animations, customizable names, iris colors, three outfit styles, three hairstyles, clothing and hair colors, skin tone and optional steel jewelry. Four profiles are free; River and Iman are coin unlocks.
+- Adrian, Alex and a customizable profile share two rigged body models. Eleven hairstyles include side-swept ponytails, an afro, braids, straight hair, and short/long curls. Eight skin tones, pink hair/highlights, iris colors, four outfits (including a suit), glasses, cap, watch, purse and two tattoo options are available. Existing extra profiles migrate to the custom slot without losing progression.
+- The pharmacy is a staffed store with a counter, open medicine shelves, checkout and three customers waiting in line. Clinical rooms contain IV bags, stands and visible infusion tubes.
+- An unseen same-floor gunshot leaves listeners worried for up to 120 seconds; later encounters include anxious gestures and uncertain sound-related dialogue. Hearing alone does not identify the player.
+- Three assignments in every ten can contain a varied distressed adult visitor. Invite them to follow, reach an empty office or side room, and make an offer in a voiced dialogue. A recruited contact waits until the primary target is down, then autonomously attacks eligible staff and contributes to the escape bonus. Patients remain protected.
 - Thirty-two fictional client case files use three or four pictures each. Every ending explains that the client hired the player as an assassin. Previous-picture and back-to-menu buttons, fades, timed reading, skip and qualified background references are included. A case and target remain assigned through retries and reloads; stories advance only after successful missions. The original eight illustrations are reused unchanged; prompts are in `public/stories/README.txt`.
 - Twenty-four departments across three connected floors: Emergency, Radiology, Laboratory, Pharmacy, Outpatient, Records, Cafeteria, Maintenance, Surgery, Intensive Care, Cardiology, Neurology, Maternity, Pediatrics, Patient Ward, Pathology, Oncology, Research, Renal Care, Endoscopy, Rehabilitation, Patient Advocacy, Transplant Ward and Isolation Unit.
 - Central and perimeter routes, opening doors, viewing windows, navigable rooms, and a working lift between floors.
@@ -41,8 +44,8 @@ To preview phone controls on a desktop, append `?controls=touch` and use a lands
 - Doctors examine clothed patients in the clinical rooms, with a visible stethoscope. Room entry interrupts the examination with a startled turn and an “Excuse me” response.
 - Two clothed pregnant maternity patients, two swaddled newborns in bassinets, and bundled recordings of baby cries, distress vocalizations, and heavy breathing. Maternity sounds fade with distance and stop being audible on the other floor.
 - Layered synthesized music with gradual target proximity intensity, hospital ambience, optional spoken announcements, bundled neural NPC dialogue in male and female voices with alternate deliveries, and persistent captions.
-- Recorded sneakers on tile vary across four takes, synchronized to the rigged walking/running animation, with distinct pistol and rifle recordings and a subtle hospital room response. Only player effects use this room response; the original music and hospital voices keep their existing mix. Clip provenance and CC0 licenses are in `public/audio/foley/SOURCES.txt`.
-- Blackouts, emergency lighting, a shadow-casting flashlight, and occasional brief light-fixture glitches.
+- Recorded sneakers on tile vary across four takes, synchronized to the rigged walking/running animation, with distinct pistol and rifle recordings and a subtle hospital room response. Only player effects use this room response. Footsteps have a softer contact and lower gain; the original soundtrack receives a20% bus gain rise without changing its notes or timing. Clip provenance and CC0 licenses are in `public/audio/foley/SOURCES.txt`.
+- Blackouts, emergency lighting, a shadow-casting flashlight, and occasional brief light-fixture glitches with electrical zaps. Blood-pressure cuffs, cardiac monitors, ventilators, clinical instructions and short pain reactions provide local background activity.
 - A cough or sneeze warns the player before selected sick patients emit green contamination clouds. A bought, equipped face mask prevents new exposure. Base blur durations are 30 or 60 seconds, according to the patient, with a visible recovery countdown and gradual clearing over the final ten seconds. The recovery filter upgrade reduces these durations. Clean patients do not contaminate the player, and a single cloud does not repeatedly reset the timer.
 - Drawing or aiming a visible weapon causes witnesses to gasp and run to report it. A completed report before the primary objective fails the mission. Walls and facing affect detection; holstering prevents new sightings.
 - Only the assigned doctor may be harmed before the primary objective. Their death immediately starts the alarm and an evacuation of staff and ambulatory patients. People on upper floors use the lift and then the ground exit; newborns remain protected. Additional staff earn 25 coins each, banked only after successful escape.

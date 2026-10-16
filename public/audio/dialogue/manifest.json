@@ -1,43 +1,9 @@
 [
   {
     "text": "Did you finish the handover for the west wing?",
-    "gender": "male",
-    "key": "m-5a0e2ae1",
-    "spokenText": "Did you finish the handover for the west wing?",
-    "synthetic": true,
-    "engine": "Kokoro 82M v1.0",
-    "variants": [
-      {
-        "file": "m-5a0e2ae1.mp3",
-        "voice": "am_michael",
-        "voiceBlend": {
-          "am_michael": 1
-        },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 2.988,
-        "bytes": 30827,
-        "sha256": "250d4bce49b2d2c412540015e051a2ad90f8e6f7bb73075fc9632e5d6b12ef6b"
-      },
-      {
-        "file": "m-5a0e2ae1-alt.mp3",
-        "voice": "am_michael",
-        "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
-        },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 2.69,
-        "bytes": 27947,
-        "sha256": "83cdd76c67a3a0b65db05bb603d69ecf9cf8e71110fcb3afcd93fc57bc9ecaac"
-      }
-    ]
-  },
-  {
-    "text": "Did you finish the handover for the west wing?",
     "gender": "female",
     "key": "f-5a0e2ae1",
+    "category": "conversation",
     "spokenText": "Did you finish the handover for the west wing?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -46,61 +12,76 @@
         "file": "f-5a0e2ae1.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 2.412,
-        "bytes": 25067,
-        "sha256": "35b3677959a5a2375ebebd0c4abbf6d4726573e0042212a7f8668397ac0a93ab"
+        "delivery": "conversation",
+        "speed": 0.935,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Did you finish the handover for the west wing?",
+        "duration": 2.534,
+        "bytes": 26267,
+        "sha256": "ce7c859d23575685e41714e7873c6661ec2ed7a1609466e140b092cf200165aa"
       },
       {
         "file": "f-5a0e2ae1-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 2.348,
-        "bytes": 24347,
-        "sha256": "b1d9ab1bdc99e68d55befab951a8b0e2d4851c5ce7e2c7761d0e89a471ec1fe8"
+        "delivery": "conversation",
+        "speed": 0.98,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Did you finish the handover for the west wing?",
+        "duration": 2.464,
+        "bytes": 25547,
+        "sha256": "326658f0e372a9d2bd38164db571e71bb54767c71a25499b297ab8611bbed64d"
       }
     ]
   },
   {
-    "text": "Yes. The evening rounds are all written up.",
+    "text": "Did you finish the handover for the west wing?",
     "gender": "male",
-    "key": "m-e15495d",
-    "spokenText": "Yes. The evening rounds are all written up.",
+    "key": "m-5a0e2ae1",
+    "category": "conversation",
+    "spokenText": "Did you finish the handover for the west wing?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-e15495d.mp3",
+        "file": "m-5a0e2ae1.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "warm, casual reply",
-        "speed": 0.96,
-        "duration": 2.836,
-        "bytes": 29387,
-        "sha256": "e1921b7f7ce07f552ff987b4c923da24a53b79e9613ab07333f925bee39c6290"
+        "delivery": "conversation",
+        "speed": 0.935,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Did you finish the handover for the west wing?",
+        "duration": 2.681,
+        "bytes": 27707,
+        "sha256": "634c43b4406048806ad607d4a8e638b555af96a26084ea539acb9bb314a4e0f4"
       },
       {
-        "file": "m-e15495d-alt.mp3",
+        "file": "m-5a0e2ae1-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "warm, casual reply",
-        "speed": 1.02,
-        "duration": 2.576,
-        "bytes": 26747,
-        "sha256": "0261a4f676d84cc57ed9133a22f70beefa8f2c48ae22a54431dbe6bebfcb5b81"
+        "delivery": "conversation",
+        "speed": 0.98,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Did you finish the handover for the west wing?",
+        "duration": 2.521,
+        "bytes": 26267,
+        "sha256": "8ef2cc64e058020da08da62fca77734e0e60fa9d868ff2749abee2c85cfad6b1"
       }
     ]
   },
@@ -108,6 +89,7 @@
     "text": "Yes. The evening rounds are all written up.",
     "gender": "female",
     "key": "f-e15495d",
+    "category": "conversation",
     "spokenText": "Yes. The evening rounds are all written up.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -116,61 +98,76 @@
         "file": "f-e15495d.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "warm, casual reply",
-        "speed": 0.96,
-        "duration": 2.538,
-        "bytes": 26267,
-        "sha256": "6a3eba22ecdbc3892f8d41dd0176f44452f036ed4f2d035b61be1c19fddbf319"
+        "delivery": "conversation",
+        "speed": 0.935,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Yes. The evening rounds are all written up.",
+        "duration": 2.645,
+        "bytes": 27467,
+        "sha256": "2e8a99d8e35f988fed5f92a7bdde71cf72660236e2a973c5245c0f6054bdf6e0"
       },
       {
         "file": "f-e15495d-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "warm, casual reply",
-        "speed": 1.02,
-        "duration": 2.472,
-        "bytes": 25787,
-        "sha256": "24bf175c444f3d8ddf572e295f8003017e5bb95dee9cd81dc83d2989679a611b"
+        "delivery": "conversation",
+        "speed": 0.98,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Yes. The evening rounds are all written up.",
+        "duration": 2.59,
+        "bytes": 26747,
+        "sha256": "e7967663b595554ba074310dc985837c4f4bedd9e5eeaca973d229ad99ba7374"
       }
     ]
   },
   {
-    "text": "I can cover your station while you take a break.",
+    "text": "Yes. The evening rounds are all written up.",
     "gender": "male",
-    "key": "m-f09bf8f9",
-    "spokenText": "I can cover your station while you take a break.",
+    "key": "m-e15495d",
+    "category": "conversation",
+    "spokenText": "Yes. The evening rounds are all written up.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-f09bf8f9.mp3",
+        "file": "m-e15495d.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 3.287,
-        "bytes": 33707,
-        "sha256": "9bd8b02bc50e618a6190d7ea0c71e95ceeb1b84b7ee5743c15297d5c071de214"
+        "delivery": "conversation",
+        "speed": 0.935,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Yes. The evening rounds are all written up.",
+        "duration": 2.723,
+        "bytes": 28187,
+        "sha256": "c7b111f3df4c5cab16c248e8499cf1c96ead5fc517f554c2c677421b5ae88438"
       },
       {
-        "file": "m-f09bf8f9-alt.mp3",
+        "file": "m-e15495d-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.988,
-        "bytes": 30827,
-        "sha256": "df7772611c16b44d5a5bbbe6810c59e09ac26d416f6d6a7f094f58c548707802"
+        "delivery": "conversation",
+        "speed": 0.98,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Yes. The evening rounds are all written up.",
+        "duration": 2.673,
+        "bytes": 27707,
+        "sha256": "e0d74367e248c04730a094b448de3868a4f4d46e77f502e24a17f0bdf0ecdef5"
       }
     ]
   },
@@ -178,6 +175,7 @@
     "text": "I can cover your station while you take a break.",
     "gender": "female",
     "key": "f-f09bf8f9",
+    "category": "conversation",
     "spokenText": "I can cover your station while you take a break.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -186,61 +184,76 @@
         "file": "f-f09bf8f9.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.845,
-        "bytes": 29387,
-        "sha256": "6ce84d4041ae6a7ae51e72f0496c9378a2885a6418212eb1383c55e3bdcf5b5d"
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "I can cover your station while you take a break.",
+        "duration": 2.953,
+        "bytes": 30587,
+        "sha256": "c7c368ff8953315912c3d36d32d857a8a4669cbd1f40c1a2bd125dcd65b8c9d2"
       },
       {
         "file": "f-f09bf8f9-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.694,
-        "bytes": 27947,
-        "sha256": "27958fd34f4538709a333da43e2f0e7baa84f64a5a759e9e1ad2c7eab1559b25"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "I can cover your station while you take a break.",
+        "duration": 2.786,
+        "bytes": 28907,
+        "sha256": "dfeec2fc41e4b9b8a9968c7d7dfc8240d5a95c4ca30a37c92ba7009a03a9c983"
       }
     ]
   },
   {
-    "text": "Thank you. I could really use a coffee.",
+    "text": "I can cover your station while you take a break.",
     "gender": "male",
-    "key": "m-8621b7e5",
-    "spokenText": "Thank you. I could really use a coffee.",
+    "key": "m-f09bf8f9",
+    "category": "conversation",
+    "spokenText": "I can cover your station while you take a break.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-8621b7e5.mp3",
+        "file": "m-f09bf8f9.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "warm, casual reply",
-        "speed": 0.96,
-        "duration": 2.772,
-        "bytes": 28667,
-        "sha256": "09a218cc11e6781c659a7dd1a69401e4ae95e789d465b281f23731c0bea0b537"
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "I can cover your station while you take a break.",
+        "duration": 3.019,
+        "bytes": 31067,
+        "sha256": "21326dcd254c8d34190efcb4f02483465a76610fd2ecfcbbdf970cfb1284c26b"
       },
       {
-        "file": "m-8621b7e5-alt.mp3",
+        "file": "m-f09bf8f9-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "warm, casual reply",
-        "speed": 1.02,
-        "duration": 2.494,
-        "bytes": 25787,
-        "sha256": "a2292eb5d4f60d5f8366d061081ed2cbe87d61f7c82416dd81018c1a50badae5"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "I can cover your station while you take a break.",
+        "duration": 2.872,
+        "bytes": 29627,
+        "sha256": "38a7ae337f68bc98f4c47dd3bfccdf6efd97fd1fab7a7e24014cd5e9a12e6afc"
       }
     ]
   },
@@ -248,6 +261,7 @@
     "text": "Thank you. I could really use a coffee.",
     "gender": "female",
     "key": "f-8621b7e5",
+    "category": "conversation",
     "spokenText": "Thank you. I could really use a coffee.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -256,61 +270,76 @@
         "file": "f-8621b7e5.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "warm, casual reply",
-        "speed": 0.96,
-        "duration": 2.347,
-        "bytes": 24347,
-        "sha256": "8d4fce6cfba0662603607ec878b6085ab9091900c5a08fccf5cf0cc56069afbe"
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Thank you. I could really use a coffee.",
+        "duration": 2.382,
+        "bytes": 24827,
+        "sha256": "500147f4b6884a3e1bf09692c55fa80be5cb5baa1bef374d51150f930285767e"
       },
       {
         "file": "f-8621b7e5-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "warm, casual reply",
-        "speed": 1.02,
-        "duration": 2.198,
-        "bytes": 22907,
-        "sha256": "e1fd0f6cf0f589db467a287af0f2a49b30bd583e83f8ac460c421f457df9fed1"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Thank you. I could really use a coffee.",
+        "duration": 2.338,
+        "bytes": 24347,
+        "sha256": "ec7a96879fff6b0c386b887a58ace0787d154ecbc1f94ff934d5723c5357264e"
       }
     ]
   },
   {
-    "text": "There is another patient waiting for their results.",
+    "text": "Thank you. I could really use a coffee.",
     "gender": "male",
-    "key": "m-9c628ab",
-    "spokenText": "There's another patient waiting for their results.",
+    "key": "m-8621b7e5",
+    "category": "conversation",
+    "spokenText": "Thank you. I could really use a coffee.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-9c628ab.mp3",
+        "file": "m-8621b7e5.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.988,
-        "bytes": 30827,
-        "sha256": "cd4fff29d902e866dea6e04961d29943359051c29cee01146de3d50040c8398c"
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Thank you. I could really use a coffee.",
+        "duration": 2.555,
+        "bytes": 26507,
+        "sha256": "6f3dec6db91e8b660669c20112e565fac11b14d5cb85d61f15e1ace7f86e42d8"
       },
       {
-        "file": "m-9c628ab-alt.mp3",
+        "file": "m-8621b7e5-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.826,
-        "bytes": 29147,
-        "sha256": "545286e7276bfa4dd860f5ec3e8cd7e6edbd2e6b7dd8f3668e378f5dca334b64"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Thank you. I could really use a coffee.",
+        "duration": 2.517,
+        "bytes": 26027,
+        "sha256": "9cb7fb69f58a38cd28e792db43ef14edffe3cbb111ea923a53c4540c4a30c654"
       }
     ]
   },
@@ -318,6 +347,7 @@
     "text": "There is another patient waiting for their results.",
     "gender": "female",
     "key": "f-9c628ab",
+    "category": "conversation",
     "spokenText": "There's another patient waiting for their results.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -326,61 +356,76 @@
         "file": "f-9c628ab.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.674,
-        "bytes": 27707,
-        "sha256": "d6851d69d628ba8c94fa8d10acdb195fb300405d1e75db954967746fda49f88b"
+        "delivery": "conversation",
+        "speed": 0.941,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "There's another patient waiting for their results.",
+        "duration": 2.806,
+        "bytes": 28907,
+        "sha256": "cfa48552f96eada303e60f75732d495a5b5c1025cd665415876f3e0e5422e87b"
       },
       {
         "file": "f-9c628ab-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.589,
-        "bytes": 26747,
-        "sha256": "cd8972c2f9e26f69b8956c7922372d2f950dc68e6a5e09ef04263e90e1bd53c2"
+        "delivery": "conversation",
+        "speed": 0.986,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "There's another patient waiting for their results.",
+        "duration": 2.753,
+        "bytes": 28427,
+        "sha256": "fcba94135913a363a35417461c39f783c1c8182f935320a74e49c3e6f598adcb"
       }
     ]
   },
   {
-    "text": "I will check with the laboratory after these rounds.",
+    "text": "There is another patient waiting for their results.",
     "gender": "male",
-    "key": "m-7cdb7330",
-    "spokenText": "I'll check with the laboratory after these rounds.",
+    "key": "m-9c628ab",
+    "category": "conversation",
+    "spokenText": "There's another patient waiting for their results.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-7cdb7330.mp3",
+        "file": "m-9c628ab.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 3.287,
-        "bytes": 33707,
-        "sha256": "07e87be4c9d6424d6bc83fd7b75449e145c232f002b32bd7c79418836bc0935e"
+        "delivery": "conversation",
+        "speed": 0.941,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "There's another patient waiting for their results.",
+        "duration": 2.847,
+        "bytes": 29387,
+        "sha256": "3d675d9021d5bcb449903cd736ca03d92e531add38d548015188341e44d0fb38"
       },
       {
-        "file": "m-7cdb7330-alt.mp3",
+        "file": "m-9c628ab-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.976,
-        "bytes": 30587,
-        "sha256": "878567dfd011b6be9d4a5d7f673f86351b0735ad8e99d5c029e313bc02baa23f"
+        "delivery": "conversation",
+        "speed": 0.986,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "There's another patient waiting for their results.",
+        "duration": 2.71,
+        "bytes": 27947,
+        "sha256": "74fe818f3230b918c9b7f5a83c09beeaa4635e0aedc64c9fa410a053d5abb887"
       }
     ]
   },
@@ -388,6 +433,7 @@
     "text": "I will check with the laboratory after these rounds.",
     "gender": "female",
     "key": "f-7cdb7330",
+    "category": "conversation",
     "spokenText": "I'll check with the laboratory after these rounds.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -396,61 +442,76 @@
         "file": "f-7cdb7330.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.784,
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "I'll check with the laboratory after these rounds.",
+        "duration": 2.766,
         "bytes": 28667,
-        "sha256": "ca03d250f411d80abd5020a128b54b55cc6171a8f0e398d6d5c976823b17d7c2"
+        "sha256": "4248555c4d0b5f6aa775b47aec4764dd90db3174be57d8e3f28be19034de21ca"
       },
       {
         "file": "f-7cdb7330-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.72,
-        "bytes": 28187,
-        "sha256": "e4f28152a0ae0b48abe0c8aa26289531272d0c75ee90a3a3fcc01ccc7e777e12"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "I'll check with the laboratory after these rounds.",
+        "duration": 2.758,
+        "bytes": 28427,
+        "sha256": "2a6888e91573200ce92589f524555147dae96dbe69eb0715678dabf94a9c4771"
       }
     ]
   },
   {
-    "text": "It has been a busy night on this floor.",
+    "text": "I will check with the laboratory after these rounds.",
     "gender": "male",
-    "key": "m-34583681",
-    "spokenText": "It's been a busy night on this floor.",
+    "key": "m-7cdb7330",
+    "category": "conversation",
+    "spokenText": "I'll check with the laboratory after these rounds.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-34583681.mp3",
+        "file": "m-7cdb7330.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "tired, conversational",
-        "speed": 0.94,
-        "duration": 2.562,
-        "bytes": 26507,
-        "sha256": "8ef47f6021b06e2726f08309224219f019b12b546d4a6b28f83d5455776361b7"
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "I'll check with the laboratory after these rounds.",
+        "duration": 3.029,
+        "bytes": 31307,
+        "sha256": "40ac2090ee8fbc5f812571ba674a896ed31e66f04070cb2357704c292c8d3121"
       },
       {
-        "file": "m-34583681-alt.mp3",
+        "file": "m-7cdb7330-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "tired, conversational",
-        "speed": 0.98,
-        "duration": 2.306,
-        "bytes": 24107,
-        "sha256": "6e437f4bc88e106b205bce09aabd4d84ba9c67b4ffef048cd59b03755167a1ca"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "I'll check with the laboratory after these rounds.",
+        "duration": 2.892,
+        "bytes": 29867,
+        "sha256": "377c15f45d1175efbe0a5c16eb36ce46e982379bdc1ad4ef445abc46eb6ff212"
       }
     ]
   },
@@ -458,6 +519,7 @@
     "text": "It has been a busy night on this floor.",
     "gender": "female",
     "key": "f-34583681",
+    "category": "conversation",
     "spokenText": "It's been a busy night on this floor.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -466,61 +528,76 @@
         "file": "f-34583681.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "tired, conversational",
-        "speed": 0.94,
-        "duration": 1.983,
-        "bytes": 20747,
-        "sha256": "f0c62b08b1566e912347f533fd0e5faf1e34f97ff9d2b91deddba0933f947218"
+        "delivery": "conversation",
+        "speed": 0.936,
+        "sentencePause": 0.24,
+        "clausePause": 0.085,
+        "spokenText": "It's been a busy night on this floor.",
+        "duration": 2.019,
+        "bytes": 21227,
+        "sha256": "7676fc74ddaadf2a17ddd91e327268e3cde3b23d070414f4e61497f3be919565"
       },
       {
         "file": "f-34583681-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "tired, conversational",
-        "speed": 0.98,
-        "duration": 1.93,
-        "bytes": 20267,
-        "sha256": "a7e2154119a9a12171835252cf812622b2513bfac15141b4a61d5b78ad538ec2"
+        "delivery": "conversation",
+        "speed": 0.981,
+        "sentencePause": 0.265,
+        "clausePause": 0.1,
+        "spokenText": "It's been a busy night on this floor.",
+        "duration": 1.96,
+        "bytes": 20507,
+        "sha256": "51ae63dc31c99894940d76a138b502a1f91219c8d5d0806b96077a229de16cb5"
       }
     ]
   },
   {
-    "text": "At least the next shift will be here soon.",
+    "text": "It has been a busy night on this floor.",
     "gender": "male",
-    "key": "m-cb4fb60b",
-    "spokenText": "At least the next shift will be here soon.",
+    "key": "m-34583681",
+    "category": "conversation",
+    "spokenText": "It's been a busy night on this floor.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-cb4fb60b.mp3",
+        "file": "m-34583681.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.647,
-        "bytes": 27467,
-        "sha256": "e5207dbbb9bb07a4c1f6153259ccd4c669bcdf1c52fa37bc89682c4933f3cad2"
+        "delivery": "conversation",
+        "speed": 0.936,
+        "sentencePause": 0.24,
+        "clausePause": 0.085,
+        "spokenText": "It's been a busy night on this floor.",
+        "duration": 2.284,
+        "bytes": 23867,
+        "sha256": "9534960be8ec064095a0a35b1346fac1024e8ca323b0ee5d0be05ee590820676"
       },
       {
-        "file": "m-cb4fb60b-alt.mp3",
+        "file": "m-34583681-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.519,
-        "bytes": 26027,
-        "sha256": "0b93f609731d807b5c3ba0897e1a0d43dcb87f3ea8b5e12789e446e9318badee"
+        "delivery": "conversation",
+        "speed": 0.981,
+        "sentencePause": 0.265,
+        "clausePause": 0.1,
+        "spokenText": "It's been a busy night on this floor.",
+        "duration": 2.218,
+        "bytes": 23147,
+        "sha256": "a9bf59d99100864af1f9624bb8ef1c39b02e8ccc112502c7ee6721a37f693d64"
       }
     ]
   },
@@ -528,6 +605,7 @@
     "text": "At least the next shift will be here soon.",
     "gender": "female",
     "key": "f-cb4fb60b",
+    "category": "conversation",
     "spokenText": "At least the next shift will be here soon.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -536,61 +614,76 @@
         "file": "f-cb4fb60b.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.188,
-        "bytes": 22907,
-        "sha256": "76722e2a6742af7e5b019636f744cd97ef5dfc0c308e034038729085f6fbacad"
+        "delivery": "conversation",
+        "speed": 0.941,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "At least the next shift will be here soon.",
+        "duration": 2.214,
+        "bytes": 23147,
+        "sha256": "aac726b3b4a48305957c0431a154ba9646fa961d571908482c9ea8737a0f3a11"
       },
       {
         "file": "f-cb4fb60b-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.145,
-        "bytes": 22427,
-        "sha256": "0c267dcc6bec2002c816dce6ef63f10c8d0bc34f1f7a0eed3cf01fe2071ac6d3"
+        "delivery": "conversation",
+        "speed": 0.986,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "At least the next shift will be here soon.",
+        "duration": 2.186,
+        "bytes": 22907,
+        "sha256": "745278bf7179f10dd7ee0e65ea8ec13d0c598ad4638f07340b77a269067854c6"
       }
     ]
   },
   {
-    "text": "Have you been waiting here long?",
+    "text": "At least the next shift will be here soon.",
     "gender": "male",
-    "key": "m-6dc83502",
-    "spokenText": "Have you been waiting here long?",
+    "key": "m-cb4fb60b",
+    "category": "conversation",
+    "spokenText": "At least the next shift will be here soon.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-6dc83502.mp3",
+        "file": "m-cb4fb60b.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 2.114,
-        "bytes": 22187,
-        "sha256": "5d0bd684e803d26438bc694c553cb5eb261e4bb21c103f542f4e1df151b68b51"
+        "delivery": "conversation",
+        "speed": 0.941,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "At least the next shift will be here soon.",
+        "duration": 2.416,
+        "bytes": 25067,
+        "sha256": "086b006f83fa9c0d2572a8bc9c77cf40f1aac78e0eb7912afc3deb12f3300599"
       },
       {
-        "file": "m-6dc83502-alt.mp3",
+        "file": "m-cb4fb60b-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 1.943,
-        "bytes": 20267,
-        "sha256": "ba8f555bf52dee5c0bfcbed7ff08446b000d29d80e0145385cdb4f7542448b24"
+        "delivery": "conversation",
+        "speed": 0.986,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "At least the next shift will be here soon.",
+        "duration": 2.32,
+        "bytes": 24107,
+        "sha256": "e642afbfb8bf18b1a9a8c1b0578b15dfac7b30daedfe043f37a9b2b8f6b5d235"
       }
     ]
   },
@@ -598,6 +691,7 @@
     "text": "Have you been waiting here long?",
     "gender": "female",
     "key": "f-6dc83502",
+    "category": "conversation",
     "spokenText": "Have you been waiting here long?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -606,61 +700,76 @@
         "file": "f-6dc83502.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 1.751,
-        "bytes": 18347,
-        "sha256": "f38b33c9357a1c04c0d78f4aab12b691d7bbb3538aa4b3d2bc35e9393fcc8ca9"
+        "delivery": "conversation",
+        "speed": 0.947,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Have you been waiting here long?",
+        "duration": 1.786,
+        "bytes": 18827,
+        "sha256": "97f21e237516a84c3ab5ef8f590913246b609332eb6be5cd09b2b4eb120f78b0"
       },
       {
         "file": "f-6dc83502-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 1.666,
-        "bytes": 17627,
-        "sha256": "3ca2c7495fcf8599b9f1a1a98541557ae221e8454cb65fdae6d8b6ed00e4c055"
+        "delivery": "conversation",
+        "speed": 0.992,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Have you been waiting here long?",
+        "duration": 1.737,
+        "bytes": 18347,
+        "sha256": "54eb6f07e883210fa15bd1d58e02d74772f115fbe5ed650f72bace7759bad7ec"
       }
     ]
   },
   {
-    "text": "A little while. They said someone would call me soon.",
+    "text": "Have you been waiting here long?",
     "gender": "male",
-    "key": "m-c86f9b9e",
-    "spokenText": "A little while. They said someone would call me soon.",
+    "key": "m-6dc83502",
+    "category": "conversation",
+    "spokenText": "Have you been waiting here long?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-c86f9b9e.mp3",
+        "file": "m-6dc83502.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 3.543,
-        "bytes": 36347,
-        "sha256": "a251a816e7825dc9a783682924fa2b43e7c7d80ff42016bf9f3d053f6c63992b"
+        "delivery": "conversation",
+        "speed": 0.947,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Have you been waiting here long?",
+        "duration": 1.87,
+        "bytes": 19547,
+        "sha256": "2fb07e11fb31e2118085307c4f5d914440f355bbdbc4ee6c3744fffc7b85b1a2"
       },
       {
-        "file": "m-c86f9b9e-alt.mp3",
+        "file": "m-6dc83502-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 3.223,
-        "bytes": 33227,
-        "sha256": "671649b46cbf07fc8daa94f130c0d097b6eacb71df3cf45db01d66d54378e957"
+        "delivery": "conversation",
+        "speed": 0.992,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Have you been waiting here long?",
+        "duration": 1.807,
+        "bytes": 19067,
+        "sha256": "007e858a742c2413dba8152eb3e31a947031210721e58cf614e4754ebd4c0fb8"
       }
     ]
   },
@@ -668,6 +777,7 @@
     "text": "A little while. They said someone would call me soon.",
     "gender": "female",
     "key": "f-c86f9b9e",
+    "category": "conversation",
     "spokenText": "A little while. They said someone would call me soon.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -676,61 +786,76 @@
         "file": "f-c86f9b9e.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.89,
-        "bytes": 29867,
-        "sha256": "6ef56636fdee453532a19033fe24a951aa8d71dceaf07d0622b48f4084c06cc1"
+        "delivery": "conversation",
+        "speed": 0.953,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "A little while. They said someone would call me soon.",
+        "duration": 3.031,
+        "bytes": 31307,
+        "sha256": "a1912862cde1a3151579c23105f1def3ab0853c88e98337a22b1618098b9cbc8"
       },
       {
         "file": "f-c86f9b9e-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.761,
-        "bytes": 28667,
-        "sha256": "e3067575d17efbe4e25a9d58e0faadc476a8ad69b8fd75785a2ef36decb09ef9"
+        "delivery": "conversation",
+        "speed": 0.998,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "A little while. They said someone would call me soon.",
+        "duration": 2.929,
+        "bytes": 30347,
+        "sha256": "61b26130bd07394728d80e573e98e8a198670b7ff7985a4115f563b75e2d4e07"
       }
     ]
   },
   {
-    "text": "My family is bringing me a change of clothes.",
+    "text": "A little while. They said someone would call me soon.",
     "gender": "male",
-    "key": "m-d3375f5f",
-    "spokenText": "My family is bringing me a change of clothes.",
+    "key": "m-c86f9b9e",
+    "category": "conversation",
+    "spokenText": "A little while. They said someone would call me soon.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-d3375f5f.mp3",
+        "file": "m-c86f9b9e.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 3.138,
+        "delivery": "conversation",
+        "speed": 0.953,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "A little while. They said someone would call me soon.",
+        "duration": 3.14,
         "bytes": 32267,
-        "sha256": "cd1aec55d3b78a605e7616dc02f009850c0653a585d29167c26ac1eff96dd82c"
+        "sha256": "04208731a13c6d60d26746be0980e1a0474161f7aa5e499138937fd84d71b446"
       },
       {
-        "file": "m-d3375f5f-alt.mp3",
+        "file": "m-c86f9b9e-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.86,
-        "bytes": 29627,
-        "sha256": "4658426a98ae73978289010e1a7f6270d672db06423438421cfb68a41708412e"
+        "delivery": "conversation",
+        "speed": 0.998,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "A little while. They said someone would call me soon.",
+        "duration": 3.089,
+        "bytes": 31787,
+        "sha256": "283e510a0499b856cdf9c7e9039b4d6bdf54107f4f766d606e1607659c4af8a9"
       }
     ]
   },
@@ -738,6 +863,7 @@
     "text": "My family is bringing me a change of clothes.",
     "gender": "female",
     "key": "f-d3375f5f",
+    "category": "conversation",
     "spokenText": "My family is bringing me a change of clothes.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -746,61 +872,76 @@
         "file": "f-d3375f5f.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.57,
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "My family is bringing me a change of clothes.",
+        "duration": 2.587,
         "bytes": 26747,
-        "sha256": "9275394e5b42b97a1699639a863aab41c113cf35a069d6757dcf3795de656fec"
+        "sha256": "f287a98eb80bd5fa6fa6cb288cc7d96ffb7c9318df739d5592d5ca090d944834"
       },
       {
         "file": "f-d3375f5f-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.55,
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "My family is bringing me a change of clothes.",
+        "duration": 2.556,
         "bytes": 26507,
-        "sha256": "dac55179b5b1b66cdf854026ae3da9f3c8883a7ecc29f3c371ff8941a8283550"
+        "sha256": "8b6aea74f1ecf37667f55f51db78a4410fa3ca3f8959aebf828c4dcd8f8b547c"
       }
     ]
   },
   {
-    "text": "That is nice. I hope you can go home tomorrow.",
+    "text": "My family is bringing me a change of clothes.",
     "gender": "male",
-    "key": "m-e55e2bdf",
-    "spokenText": "That's nice. I hope you can go home tomorrow.",
+    "key": "m-d3375f5f",
+    "category": "conversation",
+    "spokenText": "My family is bringing me a change of clothes.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-e55e2bdf.mp3",
+        "file": "m-d3375f5f.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 3.159,
-        "bytes": 32507,
-        "sha256": "fea4632fb29c931898c941269ad14dea269432c6c04e684b0ef7599118e496b1"
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "My family is bringing me a change of clothes.",
+        "duration": 2.893,
+        "bytes": 29867,
+        "sha256": "7be3e3e1519b8a619b1395812a9f0b7e156afa28d5043e42bd91af0102a6ee90"
       },
       {
-        "file": "m-e55e2bdf-alt.mp3",
+        "file": "m-d3375f5f-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.988,
-        "bytes": 30827,
-        "sha256": "225f2370665deca1f1a04afabaf71e86a389952f45bb6891460f84265987d80c"
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "My family is bringing me a change of clothes.",
+        "duration": 2.754,
+        "bytes": 28427,
+        "sha256": "7425f939f9701fafe3e0a3a5ca940e6a63a5b0be572e70372fa61366b39b7f85"
       }
     ]
   },
@@ -808,6 +949,7 @@
     "text": "That is nice. I hope you can go home tomorrow.",
     "gender": "female",
     "key": "f-e55e2bdf",
+    "category": "conversation",
     "spokenText": "That's nice. I hope you can go home tomorrow.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -816,61 +958,76 @@
         "file": "f-e55e2bdf.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.678,
-        "bytes": 27707,
-        "sha256": "cc0d6535650d540b8f9835eb02bb37755394511cf5a7ed4a6389d363c4c00ae9"
+        "delivery": "conversation",
+        "speed": 0.935,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "That's nice. I hope you can go home tomorrow.",
+        "duration": 2.83,
+        "bytes": 29147,
+        "sha256": "5338d509eb03a2584a2afcc02158704867947f16130fadcbdfdb8d657e821286"
       },
       {
         "file": "f-e55e2bdf-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.633,
-        "bytes": 27227,
-        "sha256": "6508b7f0f3b4d17d46fcd85181a3577a0d0750e42e4883b1b80f966cbb365c27"
+        "delivery": "conversation",
+        "speed": 0.98,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "That's nice. I hope you can go home tomorrow.",
+        "duration": 2.801,
+        "bytes": 28907,
+        "sha256": "f9693796b4e3d0aea6b21255c1d02a5eb6e403c6f1ca714361c106cd596b26f5"
       }
     ]
   },
   {
-    "text": "Would you mind passing me that magazine?",
+    "text": "That is nice. I hope you can go home tomorrow.",
     "gender": "male",
-    "key": "m-907c130c",
-    "spokenText": "Would you mind passing me that magazine?",
+    "key": "m-e55e2bdf",
+    "category": "conversation",
+    "spokenText": "That's nice. I hope you can go home tomorrow.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-907c130c.mp3",
+        "file": "m-e55e2bdf.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 2.818,
-        "bytes": 29147,
-        "sha256": "4c4b66563d986c66f9b7ea21f017961ef06d7ebae3ceb79ecd975b00dd16539b"
+        "delivery": "conversation",
+        "speed": 0.935,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "That's nice. I hope you can go home tomorrow.",
+        "duration": 2.915,
+        "bytes": 30107,
+        "sha256": "14d0350371f7cbff0004c840524885aa9d2219da94a0889f65f243d840071141"
       },
       {
-        "file": "m-907c130c-alt.mp3",
+        "file": "m-e55e2bdf-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 2.54,
-        "bytes": 26267,
-        "sha256": "4b57727b81c09bf6d1cf598de079c3d5792def869b85d290047fddef37c4859f"
+        "delivery": "conversation",
+        "speed": 0.98,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "That's nice. I hope you can go home tomorrow.",
+        "duration": 2.862,
+        "bytes": 29627,
+        "sha256": "1f1f33c0183412fd8b2ad17cd8fb52c1feb1e646c615c94376f97ad323d31d17"
       }
     ]
   },
@@ -878,6 +1035,7 @@
     "text": "Would you mind passing me that magazine?",
     "gender": "female",
     "key": "f-907c130c",
+    "category": "conversation",
     "spokenText": "Would you mind passing me that magazine?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -886,61 +1044,76 @@
         "file": "f-907c130c.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 2.38,
-        "bytes": 24827,
-        "sha256": "e6d8316600d4a331fa54bebba24f024a93edf134d3a029676c49030ec3f249e1"
+        "delivery": "conversation",
+        "speed": 0.959,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Would you mind passing me that magazine?",
+        "duration": 2.499,
+        "bytes": 26027,
+        "sha256": "248b1f3e96ebb39c33cec8381cca245cb65376d160060c93cb7fbed66cdea8ce"
       },
       {
         "file": "f-907c130c-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 2.273,
-        "bytes": 23627,
-        "sha256": "516c831dcf14963b75fc950d480da8a49ae91b2781165c142c10cd9fd31a1900"
+        "delivery": "conversation",
+        "speed": 1.004,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Would you mind passing me that magazine?",
+        "duration": 2.417,
+        "bytes": 25067,
+        "sha256": "242e3521b58b22538ebe85263a7b01a1243e2921fe2b231b2a456b89114aefdd"
       }
     ]
   },
   {
-    "text": "Of course. I have already read it twice.",
+    "text": "Would you mind passing me that magazine?",
     "gender": "male",
-    "key": "m-ca61ef19",
-    "spokenText": "Of course. I've already read it twice.",
+    "key": "m-907c130c",
+    "category": "conversation",
+    "spokenText": "Would you mind passing me that magazine?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-ca61ef19.mp3",
+        "file": "m-907c130c.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "warm, casual reply",
-        "speed": 0.96,
-        "duration": 2.56,
-        "bytes": 26507,
-        "sha256": "e6ba9a80fc141b809c7177433e25843d98c021a373bd2d30e24ebea18c709953"
+        "delivery": "conversation",
+        "speed": 0.959,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Would you mind passing me that magazine?",
+        "duration": 2.52,
+        "bytes": 26027,
+        "sha256": "0eaeb957d9ba1c57e666e7eb6338208991514503917f41a56d27d32fe187b46e"
       },
       {
-        "file": "m-ca61ef19-alt.mp3",
+        "file": "m-907c130c-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "warm, casual reply",
-        "speed": 1.02,
-        "duration": 2.388,
-        "bytes": 24827,
-        "sha256": "63bef22a0bf29f0c17ea0a1572272a87afa3a3d661213d430f3a0115828c9dfd"
+        "delivery": "conversation",
+        "speed": 1.004,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Would you mind passing me that magazine?",
+        "duration": 2.446,
+        "bytes": 25307,
+        "sha256": "0d4eede27b3330901fcd28c025df6db3f8e7b5eaaac53ad5c5be6e5ddb6cf91e"
       }
     ]
   },
@@ -948,6 +1121,7 @@
     "text": "Of course. I have already read it twice.",
     "gender": "female",
     "key": "f-ca61ef19",
+    "category": "conversation",
     "spokenText": "Of course. I've already read it twice.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -956,61 +1130,76 @@
         "file": "f-ca61ef19.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "warm, casual reply",
-        "speed": 0.96,
-        "duration": 2.258,
-        "bytes": 23627,
-        "sha256": "7c7265fde4fa04aa41ddad141bbf91b43ff26062e4595dd8e11fa7336e64a1bd"
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Of course. I've already read it twice.",
+        "duration": 2.379,
+        "bytes": 24827,
+        "sha256": "2c0da2bb203f3cf0674696b0d268b85ce2c58ac35d29af3368666c9f50d40447"
       },
       {
         "file": "f-ca61ef19-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "warm, casual reply",
-        "speed": 1.02,
-        "duration": 2.194,
-        "bytes": 22907,
-        "sha256": "4f78f43b895621006b434a5451f5614d9177e059037ffd66f68c205928d9631a"
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Of course. I've already read it twice.",
+        "duration": 2.324,
+        "bytes": 24107,
+        "sha256": "1bc91e1bfe4bea55786a3fdc9d125977fbbac9ef75629aaceac350a4d9548dba"
       }
     ]
   },
   {
-    "text": "This soup is better than yesterday.",
+    "text": "Of course. I have already read it twice.",
     "gender": "male",
-    "key": "m-ac0222d1",
-    "spokenText": "This soup is better than yesterday.",
+    "key": "m-ca61ef19",
+    "category": "conversation",
+    "spokenText": "Of course. I've already read it twice.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-ac0222d1.mp3",
+        "file": "m-ca61ef19.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.476,
-        "bytes": 25787,
-        "sha256": "92886b166475f690238a9d339d006a01519d7a9c9e2800d0f103924bb15c9630"
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Of course. I've already read it twice.",
+        "duration": 2.443,
+        "bytes": 25307,
+        "sha256": "0fc49398d0b6301c75847a52e40272d943c6b9fa4b776c6cae0f15d8b8c1eac7"
       },
       {
-        "file": "m-ac0222d1-alt.mp3",
+        "file": "m-ca61ef19-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.199,
-        "bytes": 22907,
-        "sha256": "9e42048df8c7396590e8b3986f9143209a025dc371c96fcb142e1d0749017c74"
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Of course. I've already read it twice.",
+        "duration": 2.395,
+        "bytes": 24827,
+        "sha256": "4b6b626fdaefe56b1ef120b837a239bba1074c6682ce28d1112cc3026c317deb"
       }
     ]
   },
@@ -1018,6 +1207,7 @@
     "text": "This soup is better than yesterday.",
     "gender": "female",
     "key": "f-ac0222d1",
+    "category": "conversation",
     "spokenText": "This soup is better than yesterday.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1026,61 +1216,76 @@
         "file": "f-ac0222d1.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.028,
-        "bytes": 21227,
-        "sha256": "fe8ce0c442920389fc39487a5877effcf6a18d5783e482a8ba9bfa4f2d62ff75"
+        "delivery": "conversation",
+        "speed": 0.953,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "This soup is better than yesterday.",
+        "duration": 2.063,
+        "bytes": 21467,
+        "sha256": "e41184d6aa0bbcdebcf9cbb7bf2981718e94708a9c2a6143df1a2c9b7eaa0107"
       },
       {
         "file": "f-ac0222d1-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 1.984,
-        "bytes": 20747,
-        "sha256": "9bf3cd6067a2b2b5a3572285b05f4b8bad7d60f88fa67d09fc185e8747ba7cdf"
+        "delivery": "conversation",
+        "speed": 0.998,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "This soup is better than yesterday.",
+        "duration": 2.088,
+        "bytes": 21947,
+        "sha256": "847fe3ee4bb94f573899f396ed0b3eb81091721cdced724b01f6991941293f6a"
       }
     ]
   },
   {
-    "text": "Anything tastes good after a twelve hour shift.",
+    "text": "This soup is better than yesterday.",
     "gender": "male",
-    "key": "m-fef170bc",
-    "spokenText": "Anything tastes good after a twelve-hour shift.",
+    "key": "m-ac0222d1",
+    "category": "conversation",
+    "spokenText": "This soup is better than yesterday.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-fef170bc.mp3",
+        "file": "m-ac0222d1.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "tired, conversational",
-        "speed": 0.94,
-        "duration": 3.372,
-        "bytes": 34667,
-        "sha256": "0142fbf4910f276bba505bee10f41342505bfbcc27d2699bec7a7b0e1d377259"
+        "delivery": "conversation",
+        "speed": 0.953,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "This soup is better than yesterday.",
+        "duration": 2.179,
+        "bytes": 22667,
+        "sha256": "f49df66669164e770cbc77247ba88eb3edaf1fa0de701400f4a9b90bb3260d43"
       },
       {
-        "file": "m-fef170bc-alt.mp3",
+        "file": "m-ac0222d1-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "tired, conversational",
-        "speed": 0.98,
-        "duration": 3.074,
-        "bytes": 31787,
-        "sha256": "87a59698291398269187568906294f9194d94cf825a2f81904bf8403b5b09a9e"
+        "delivery": "conversation",
+        "speed": 0.998,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "This soup is better than yesterday.",
+        "duration": 2.126,
+        "bytes": 22187,
+        "sha256": "21bf7986a734744398df340865d00f70ab072fc1cebf83eab790c4e54eff98b4"
       }
     ]
   },
@@ -1088,6 +1293,7 @@
     "text": "Anything tastes good after a twelve hour shift.",
     "gender": "female",
     "key": "f-fef170bc",
+    "category": "conversation",
     "spokenText": "Anything tastes good after a twelve-hour shift.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1096,61 +1302,76 @@
         "file": "f-fef170bc.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "tired, conversational",
-        "speed": 0.94,
-        "duration": 2.888,
-        "bytes": 29867,
-        "sha256": "c7d0af2d3346cb636157a55205f1d95d9608b35808ee3d0d1039f7145d91de25"
+        "delivery": "conversation",
+        "speed": 0.9,
+        "sentencePause": 0.24,
+        "clausePause": 0.085,
+        "spokenText": "Anything tastes good after a twelve-hour shift.",
+        "duration": 2.987,
+        "bytes": 30827,
+        "sha256": "ca1b5e91a70a34d9b0769c4cf9f7e52ee076a62154d351d93a0bb5321f8878ca"
       },
       {
         "file": "f-fef170bc-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "tired, conversational",
-        "speed": 0.98,
-        "duration": 2.812,
-        "bytes": 29147,
-        "sha256": "387dded1c760518f5961dbf1e1775c9c3f178b9656a1aabd33a389d659b99609"
+        "delivery": "conversation",
+        "speed": 0.945,
+        "sentencePause": 0.265,
+        "clausePause": 0.1,
+        "spokenText": "Anything tastes good after a twelve-hour shift.",
+        "duration": 2.906,
+        "bytes": 30107,
+        "sha256": "7dd90ba6dad95c51b258536d6dc34cf32e085c0553f133c3542b3c13e5f0bdca"
       }
     ]
   },
   {
-    "text": "Is this seat taken?",
+    "text": "Anything tastes good after a twelve hour shift.",
     "gender": "male",
-    "key": "m-a296bdc8",
-    "spokenText": "Is this seat taken?",
+    "key": "m-fef170bc",
+    "category": "conversation",
+    "spokenText": "Anything tastes good after a twelve-hour shift.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-a296bdc8.mp3",
+        "file": "m-fef170bc.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 1.708,
-        "bytes": 18107,
-        "sha256": "55476c1307f89e0a1676b0a20dc6e64945dd1d08d56f04d6ec13f212ccddc1ec"
+        "delivery": "conversation",
+        "speed": 0.9,
+        "sentencePause": 0.24,
+        "clausePause": 0.085,
+        "spokenText": "Anything tastes good after a twelve-hour shift.",
+        "duration": 3.2,
+        "bytes": 32987,
+        "sha256": "f5c770df186cc98a987212184776a230bff067dd219cac95fff27d30afb6169f"
       },
       {
-        "file": "m-a296bdc8-alt.mp3",
+        "file": "m-fef170bc-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 1.559,
-        "bytes": 16427,
-        "sha256": "1f38088939982cb7431ab1c1423f8fa0d151ef1c3d7d06f9e8a1993863632c41"
+        "delivery": "conversation",
+        "speed": 0.945,
+        "sentencePause": 0.265,
+        "clausePause": 0.1,
+        "spokenText": "Anything tastes good after a twelve-hour shift.",
+        "duration": 2.978,
+        "bytes": 30827,
+        "sha256": "c920717f2e63e1efab156ea938851c8b8772ad33fafbb692a09bed1ca661f931"
       }
     ]
   },
@@ -1158,6 +1379,7 @@
     "text": "Is this seat taken?",
     "gender": "female",
     "key": "f-a296bdc8",
+    "category": "conversation",
     "spokenText": "Is this seat taken?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1166,61 +1388,76 @@
         "file": "f-a296bdc8.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 1.452,
-        "bytes": 15467,
-        "sha256": "30ef130816aa221f8f7cbbd4523b639e6b0232b16f077fbc72ef9c39b6cc87ae"
+        "delivery": "conversation",
+        "speed": 0.959,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Is this seat taken?",
+        "duration": 1.476,
+        "bytes": 15707,
+        "sha256": "bb1c640c9eccc1d87b578e299e413318baf4060389e09a6b536d8c00c50b11f1"
       },
       {
         "file": "f-a296bdc8-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 1.41,
-        "bytes": 14987,
-        "sha256": "a832278c25c8e1c4a3efcac95b6effc6e0a0d73feef67d71487d7962340f40a1"
+        "delivery": "conversation",
+        "speed": 1.004,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Is this seat taken?",
+        "duration": 1.427,
+        "bytes": 15227,
+        "sha256": "2db5e112eab9eab000146b049fea75f76c9ac06532eb5eac84f4fd8a1cdd752d"
       }
     ]
   },
   {
-    "text": "No, please. I was just finishing my lunch.",
+    "text": "Is this seat taken?",
     "gender": "male",
-    "key": "m-109f28a3",
-    "spokenText": "No, please. I was just finishing my lunch.",
+    "key": "m-a296bdc8",
+    "category": "conversation",
+    "spokenText": "Is this seat taken?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-109f28a3.mp3",
+        "file": "m-a296bdc8.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "warm, casual reply",
-        "speed": 0.96,
-        "duration": 3.158,
-        "bytes": 32507,
-        "sha256": "7965ed14a78da703e8c65b64462340cd37d15babc0fb38e84c0f555b429e0b16"
+        "delivery": "conversation",
+        "speed": 0.959,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Is this seat taken?",
+        "duration": 1.537,
+        "bytes": 16427,
+        "sha256": "ba48884356ee9e45d68794393cbdf15b6988eafaf03f3eed83fd5d24072d51af"
       },
       {
-        "file": "m-109f28a3-alt.mp3",
+        "file": "m-a296bdc8-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "warm, casual reply",
-        "speed": 1.02,
-        "duration": 2.922,
-        "bytes": 30107,
-        "sha256": "8b6c4e9f49786d4ae2707012a372db8f41dd80847913b48f84a0f0fd8afd4449"
+        "delivery": "conversation",
+        "speed": 1.004,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Is this seat taken?",
+        "duration": 1.474,
+        "bytes": 15707,
+        "sha256": "13ca13d2b86276134a6c3234c53d92e064ad39a30dbbd01883aa48153de28ec7"
       }
     ]
   },
@@ -1228,6 +1465,7 @@
     "text": "No, please. I was just finishing my lunch.",
     "gender": "female",
     "key": "f-109f28a3",
+    "category": "conversation",
     "spokenText": "No, please. I was just finishing my lunch.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1236,61 +1474,76 @@
         "file": "f-109f28a3.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "warm, casual reply",
-        "speed": 0.96,
-        "duration": 2.747,
-        "bytes": 28427,
-        "sha256": "434ad7f7610abf40affe85f99105aa043902a185855c088dad269ccd8657d170"
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "No, please. I was just finishing my lunch.",
+        "duration": 2.814,
+        "bytes": 29147,
+        "sha256": "e2e28285fc135ea085c1ef9aa3b07ee22e9da06d886cd192d09663782a64bbf9"
       },
       {
         "file": "f-109f28a3-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "warm, casual reply",
-        "speed": 1.02,
-        "duration": 2.662,
-        "bytes": 27467,
-        "sha256": "1c0943b33f3edca88ee958eb10bae57434ced7b8cbb3663b01c8a31fb37cd18b"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "No, please. I was just finishing my lunch.",
+        "duration": 2.843,
+        "bytes": 29387,
+        "sha256": "debe3d6ca15869eff76fc95a03703ccb4c54e1a79b656641a3f680af8db9850b"
       }
     ]
   },
   {
-    "text": "Do you want to share the last piece of bread?",
+    "text": "No, please. I was just finishing my lunch.",
     "gender": "male",
-    "key": "m-51a623c2",
-    "spokenText": "Do you want to share the last piece of bread?",
+    "key": "m-109f28a3",
+    "category": "conversation",
+    "spokenText": "No, please. I was just finishing my lunch.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-51a623c2.mp3",
+        "file": "m-109f28a3.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 2.69,
-        "bytes": 27947,
-        "sha256": "44f53b270c8f75b800da14f2b986f024c5c07be0b6dce63aab423600551f510e"
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "No, please. I was just finishing my lunch.",
+        "duration": 2.965,
+        "bytes": 30587,
+        "sha256": "d8825b80ec4cbdfd9ee660c5150e13a94c139570daac3e569a1732868005e553"
       },
       {
-        "file": "m-51a623c2-alt.mp3",
+        "file": "m-109f28a3-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 2.562,
-        "bytes": 26507,
-        "sha256": "7915dbf62a2e1a42a70ce44343d0252e41e161123464f37904d1fb037fc0dbbc"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "No, please. I was just finishing my lunch.",
+        "duration": 2.827,
+        "bytes": 29147,
+        "sha256": "40e371f9cdcb8f022f7f392d439ca886e0b63bc52d41f0e696f5805e5274b779"
       }
     ]
   },
@@ -1298,6 +1551,7 @@
     "text": "Do you want to share the last piece of bread?",
     "gender": "female",
     "key": "f-51a623c2",
+    "category": "conversation",
     "spokenText": "Do you want to share the last piece of bread?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1306,61 +1560,76 @@
         "file": "f-51a623c2.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "friendly question",
-        "speed": 0.98,
-        "duration": 2.22,
-        "bytes": 23147,
-        "sha256": "7fc7d0cf781d4257bf2ecfea07768256b138bb055ec4e6792dcd80cdb3b2a000"
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Do you want to share the last piece of bread?",
+        "duration": 2.278,
+        "bytes": 23627,
+        "sha256": "f22a81dbdc9ef70eebb2f407d95cc72cecb3ed3011b9413f6894190195f98666"
       },
       {
         "file": "f-51a623c2-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "friendly question",
-        "speed": 1.03,
-        "duration": 2.135,
-        "bytes": 22187,
-        "sha256": "edf9ad0abe3c73b41f46bbcd9ce18e9b6756b040cdf538f347bf0ef00101dbdc"
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Do you want to share the last piece of bread?",
+        "duration": 2.193,
+        "bytes": 22907,
+        "sha256": "8ee343474d80b338fe1ccc3ab794a4920c46c965739aef4b8b8312359e07be6f"
       }
     ]
   },
   {
-    "text": "Yes, thanks. I missed dinner again.",
+    "text": "Do you want to share the last piece of bread?",
     "gender": "male",
-    "key": "m-ce85c5c5",
-    "spokenText": "Yes, thanks. I missed dinner again.",
+    "key": "m-51a623c2",
+    "category": "conversation",
+    "spokenText": "Do you want to share the last piece of bread?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-ce85c5c5.mp3",
+        "file": "m-51a623c2.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "tired, conversational",
-        "speed": 0.94,
-        "duration": 2.626,
-        "bytes": 27227,
-        "sha256": "0757fc0b52b047e0e33fef2cac8da31f8582ef2e1be0f1e48f799c74b4becf9e"
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Do you want to share the last piece of bread?",
+        "duration": 2.457,
+        "bytes": 25547,
+        "sha256": "127ec213d88861a501d3ddbb2d667e40cfd56e5fac13127a6bed13573c5c5171"
       },
       {
-        "file": "m-ce85c5c5-alt.mp3",
+        "file": "m-51a623c2-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "tired, conversational",
-        "speed": 0.98,
-        "duration": 2.387,
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Do you want to share the last piece of bread?",
+        "duration": 2.383,
         "bytes": 24827,
-        "sha256": "06807a88a9aed7845ceee96936e8735d52c038a58d50b9143af3eefc79adb659"
+        "sha256": "be98db9633cfbff9f0da2e671b4ed59d94d8a140df5d577c98bab2cfbce9e2d0"
       }
     ]
   },
@@ -1368,6 +1637,7 @@
     "text": "Yes, thanks. I missed dinner again.",
     "gender": "female",
     "key": "f-ce85c5c5",
+    "category": "conversation",
     "spokenText": "Yes, thanks. I missed dinner again.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1376,61 +1646,76 @@
         "file": "f-ce85c5c5.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "tired, conversational",
-        "speed": 0.94,
-        "duration": 2.359,
-        "bytes": 24587,
-        "sha256": "60e023121ca8551ed4007ed797ce0819a59080fa519de09d5502f0cd16a73f43"
+        "delivery": "conversation",
+        "speed": 0.906,
+        "sentencePause": 0.24,
+        "clausePause": 0.085,
+        "spokenText": "Yes, thanks. I missed dinner again.",
+        "duration": 2.463,
+        "bytes": 25547,
+        "sha256": "3bbd0d82d5dad2b46fca6383a1ff0a82898e830e50b3fc8b286d53d949fdd10a"
       },
       {
         "file": "f-ce85c5c5-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "tired, conversational",
-        "speed": 0.98,
-        "duration": 2.328,
-        "bytes": 24107,
-        "sha256": "df12eeefbdbbec2eeb5ef57a6f3a1b8efd0352ed8f22b411523ad29ffd80ea15"
+        "delivery": "conversation",
+        "speed": 0.951,
+        "sentencePause": 0.265,
+        "clausePause": 0.1,
+        "spokenText": "Yes, thanks. I missed dinner again.",
+        "duration": 2.454,
+        "bytes": 25547,
+        "sha256": "9418680b71a25af0b5ccd72c33945f5b07529757971871971b6f66a3c7ebc198"
       }
     ]
   },
   {
-    "text": "I am going to get another coffee before rounds.",
+    "text": "Yes, thanks. I missed dinner again.",
     "gender": "male",
-    "key": "m-a785ded4",
-    "spokenText": "I'm going to get another coffee before rounds.",
+    "key": "m-ce85c5c5",
+    "category": "conversation",
+    "spokenText": "Yes, thanks. I missed dinner again.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-a785ded4.mp3",
+        "file": "m-ce85c5c5.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 3.223,
-        "bytes": 33227,
-        "sha256": "61b5d63b54a17c7a76db1da5d7c9d4395b0fac261cd5c58f71d13c9fbf818983"
+        "delivery": "conversation",
+        "speed": 0.906,
+        "sentencePause": 0.24,
+        "clausePause": 0.085,
+        "spokenText": "Yes, thanks. I missed dinner again.",
+        "duration": 2.469,
+        "bytes": 25547,
+        "sha256": "640a90648d8bebf7f94ca6dfe63b0fcafa42f873c22005f87a4c507a837647b5"
       },
       {
-        "file": "m-a785ded4-alt.mp3",
+        "file": "m-ce85c5c5-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.922,
-        "bytes": 30107,
-        "sha256": "198baf3b035d843880df5b31662dcf8298c064fb0351bdca0efb04575fffa832"
+        "delivery": "conversation",
+        "speed": 0.951,
+        "sentencePause": 0.265,
+        "clausePause": 0.1,
+        "spokenText": "Yes, thanks. I missed dinner again.",
+        "duration": 2.385,
+        "bytes": 24827,
+        "sha256": "5e6b754a37a34ab02c68ff458dd09e5192f6b4c5652f06e2d0f6efe78a9a0ec9"
       }
     ]
   },
@@ -1438,6 +1723,7 @@
     "text": "I am going to get another coffee before rounds.",
     "gender": "female",
     "key": "f-a785ded4",
+    "category": "conversation",
     "spokenText": "I'm going to get another coffee before rounds.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1446,61 +1732,76 @@
         "file": "f-a785ded4.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.73,
-        "bytes": 28187,
-        "sha256": "360d28a89fc8790194288d717bd87dd4346f207fd3497dbb9db9ba5a5e16f38e"
+        "delivery": "conversation",
+        "speed": 0.935,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "I'm going to get another coffee before rounds.",
+        "duration": 2.871,
+        "bytes": 29627,
+        "sha256": "538acbbdc6b0be2c6f32f73a1ba43ac26233d4ccacb2ccf56836004fb0d14d02"
       },
       {
         "file": "f-a785ded4-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.654,
-        "bytes": 27467,
-        "sha256": "34b651b1c09fa148242ac14dbdc578863754a36eed69fb5892ea1614b047fc44"
+        "delivery": "conversation",
+        "speed": 0.98,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "I'm going to get another coffee before rounds.",
+        "duration": 2.748,
+        "bytes": 28427,
+        "sha256": "cde1c0e50738ab0b7fc51ba70ec107bfb11471861ae0a4040e38b121e2ee526d"
       }
     ]
   },
   {
-    "text": "Take a minute first. You have barely touched your food.",
+    "text": "I am going to get another coffee before rounds.",
     "gender": "male",
-    "key": "m-1817c20e",
-    "spokenText": "Take a minute first. You've barely touched your food.",
+    "key": "m-a785ded4",
+    "category": "conversation",
+    "spokenText": "I'm going to get another coffee before rounds.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-1817c20e.mp3",
+        "file": "m-a785ded4.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 3.394,
-        "bytes": 34907,
-        "sha256": "f2fc61b34f18b983c7ca9efd999982947d2f38895f233bfcb813653a0e6dbc61"
+        "delivery": "conversation",
+        "speed": 0.935,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "I'm going to get another coffee before rounds.",
+        "duration": 3.017,
+        "bytes": 31067,
+        "sha256": "b8c098427914abdd2fa638e08df87b5185ca3d4310b3e9ea66d9362c5c91e8ef"
       },
       {
-        "file": "m-1817c20e-alt.mp3",
+        "file": "m-a785ded4-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 3.18,
-        "bytes": 32747,
-        "sha256": "4f66b76ff217ae255d6cb3a84aa4bae26182f3378b52395ac5b0898adebb53ad"
+        "delivery": "conversation",
+        "speed": 0.98,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "I'm going to get another coffee before rounds.",
+        "duration": 2.784,
+        "bytes": 28907,
+        "sha256": "a745db5d8dc8ec67cbc39c0586e3e7d1340eacce4a1ecf75fc2979a87dab2550"
       }
     ]
   },
@@ -1508,6 +1809,7 @@
     "text": "Take a minute first. You have barely touched your food.",
     "gender": "female",
     "key": "f-1817c20e",
+    "category": "conversation",
     "spokenText": "Take a minute first. You've barely touched your food.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1516,61 +1818,592 @@
         "file": "f-1817c20e.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.705,
+          "af_bella": 0.295
         },
-        "delivery": "relaxed conversation",
-        "speed": 0.97,
-        "duration": 2.889,
-        "bytes": 29867,
-        "sha256": "809b207629301b77163e091cc16291503178ea606cd9830940f5484309a152d5"
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Take a minute first. You've barely touched your food.",
+        "duration": 2.998,
+        "bytes": 30827,
+        "sha256": "65eec8027d5ec24a2b361c76ce2e63975c16c8f89adf20a13d5665b8183620e6"
       },
       {
         "file": "f-1817c20e-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.59,
+          "af_bella": 0.41
         },
-        "delivery": "relaxed conversation",
-        "speed": 1.025,
-        "duration": 2.836,
-        "bytes": 29387,
-        "sha256": "1c8c15229eacd09c509a0159e883930a04d7fc147225ab0bc495fd783a15df02"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Take a minute first. You've barely touched your food.",
+        "duration": 2.959,
+        "bytes": 30587,
+        "sha256": "31699f3fdb93bc765b7ee12de1febe872fbf3b6ef31defa3781e65f2b1fd2280"
       }
     ]
   },
   {
-    "text": "Excuse me! This is a delivery room. Please give her some privacy.",
+    "text": "Take a minute first. You have barely touched your food.",
     "gender": "male",
-    "key": "m-1a1697ef",
-    "spokenText": "Excuse me! This is a delivery room. Please give her some privacy.",
+    "key": "m-1817c20e",
+    "category": "conversation",
+    "spokenText": "Take a minute first. You've barely touched your food.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-1a1697ef.mp3",
+        "file": "m-1817c20e.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 4.705,
-        "bytes": 48107,
-        "sha256": "aa3f589819fbe2e74c69d543e952ff92eeac4292cf58b3ef2352c381c657d44b"
+        "delivery": "conversation",
+        "speed": 0.971,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Take a minute first. You've barely touched your food.",
+        "duration": 3.116,
+        "bytes": 32027,
+        "sha256": "42ffc8bb0c890dd94c5f04b6ec4d8aedc9fdda80818c14e6db7374aba4f4fee7"
       },
       {
-        "file": "m-1a1697ef-alt.mp3",
+        "file": "m-1817c20e-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 4.361,
-        "bytes": 44507,
-        "sha256": "7fbf8c5b0909859b4794b94e20778f4fd933319766190e43a0e47963672663a9"
+        "delivery": "conversation",
+        "speed": 1.016,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Take a minute first. You've barely touched your food.",
+        "duration": 3.067,
+        "bytes": 31547,
+        "sha256": "636dcc0276574ac417237f8dc7d6d79bc252974243553f97c9ef42a4bf3212d1"
+      }
+    ]
+  },
+  {
+    "text": "Hi. I am here to collect my prescription.",
+    "gender": "female",
+    "key": "f-5d263076",
+    "category": "conversation",
+    "spokenText": "Hi. I am here to collect my prescription.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-5d263076.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.705,
+          "af_bella": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.953,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Hi. I am here to collect my prescription.",
+        "duration": 2.766,
+        "bytes": 28667,
+        "sha256": "c3597be8c860911465cea010b04a9e65b97fa53acff3067bf79cfd6ff6bdcdf5"
+      },
+      {
+        "file": "f-5d263076-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.59,
+          "af_bella": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 0.998,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Hi. I am here to collect my prescription.",
+        "duration": 2.741,
+        "bytes": 28427,
+        "sha256": "65a02a4624014ff7238f9bc510130ae973cb022edb3cc6db2552fc5b03285dbe"
+      }
+    ]
+  },
+  {
+    "text": "Hi. I am here to collect my prescription.",
+    "gender": "male",
+    "key": "m-5d263076",
+    "category": "conversation",
+    "spokenText": "Hi. I am here to collect my prescription.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-5d263076.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.953,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Hi. I am here to collect my prescription.",
+        "duration": 2.833,
+        "bytes": 29387,
+        "sha256": "4b9a08c51a8b287df7ac066cfc871c7682e8f8eef7b13d0f15b51d6a36b096d2"
+      },
+      {
+        "file": "m-5d263076-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 0.998,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Hi. I am here to collect my prescription.",
+        "duration": 2.827,
+        "bytes": 29147,
+        "sha256": "a9999a5becdda64e8367813f82203fc17b7b58782d2c507be6ff7a9f40de4374"
+      }
+    ]
+  },
+  {
+    "text": "Of course. Can I check your name and date of birth?",
+    "gender": "female",
+    "key": "f-1593761c",
+    "category": "conversation",
+    "spokenText": "Of course. Can I check your name and date of birth?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-1593761c.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.705,
+          "af_bella": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.953,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Of course. Can I check your name and date of birth?",
+        "duration": 2.985,
+        "bytes": 30827,
+        "sha256": "545ea9b73cce606139c24bd7c860729bfd167e4bb8500271541848ec0d538490"
+      },
+      {
+        "file": "f-1593761c-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.59,
+          "af_bella": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 0.998,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Of course. Can I check your name and date of birth?",
+        "duration": 2.966,
+        "bytes": 30587,
+        "sha256": "74c86e926f9694ec999008861a980651c70cc776fbb23d49e9459406f086a479"
+      }
+    ]
+  },
+  {
+    "text": "Of course. Can I check your name and date of birth?",
+    "gender": "male",
+    "key": "m-1593761c",
+    "category": "conversation",
+    "spokenText": "Of course. Can I check your name and date of birth?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-1593761c.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.953,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Of course. Can I check your name and date of birth?",
+        "duration": 3.099,
+        "bytes": 32027,
+        "sha256": "5335815bfaf92dd0ffe722a4062496c5a713677d38695311f14c256b362d63e6"
+      },
+      {
+        "file": "m-1593761c-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 0.998,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Of course. Can I check your name and date of birth?",
+        "duration": 3.053,
+        "bytes": 31547,
+        "sha256": "fb3dd8b5440ed81903add6405af661b9f6add5890283e5781e695013673f8258"
+      }
+    ]
+  },
+  {
+    "text": "Is this the queue for prescriptions?",
+    "gender": "female",
+    "key": "f-e5b35a96",
+    "category": "conversation",
+    "spokenText": "Is this the queue for prescriptions?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-e5b35a96.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.705,
+          "af_bella": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Is this the queue for prescriptions?",
+        "duration": 2.062,
+        "bytes": 21467,
+        "sha256": "21eae4f7af69f2c23cad1f50eb66c69693013cd0add4c2d87346c2f860be61b3"
+      },
+      {
+        "file": "f-e5b35a96-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.59,
+          "af_bella": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Is this the queue for prescriptions?",
+        "duration": 2.057,
+        "bytes": 21467,
+        "sha256": "28b59025025b3d78530fe352abf1aad4664886c9619e7f988961f8f1b6e4ace8"
+      }
+    ]
+  },
+  {
+    "text": "Is this the queue for prescriptions?",
+    "gender": "male",
+    "key": "m-e5b35a96",
+    "category": "conversation",
+    "spokenText": "Is this the queue for prescriptions?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-e5b35a96.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Is this the queue for prescriptions?",
+        "duration": 2.156,
+        "bytes": 22427,
+        "sha256": "784f5de2d377135db4fdebb670ade9fff22adc8286061273d37860f5d55abf59"
+      },
+      {
+        "file": "m-e5b35a96-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Is this the queue for prescriptions?",
+        "duration": 2.124,
+        "bytes": 22187,
+        "sha256": "75f41bf2523c581db1220ed9e11ef98ce9b1806694c50a13515bd3d1da79b113"
+      }
+    ]
+  },
+  {
+    "text": "Yes. The pharmacist will call you to the counter.",
+    "gender": "female",
+    "key": "f-602f676e",
+    "category": "conversation",
+    "spokenText": "Yes. The pharmacist will call you to the counter.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-602f676e.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.705,
+          "af_bella": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Yes. The pharmacist will call you to the counter.",
+        "duration": 2.935,
+        "bytes": 30347,
+        "sha256": "5798af5ad3277cc79651a804567e7e59567722659b3ae15e96954f6b01a4c7c0"
+      },
+      {
+        "file": "f-602f676e-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.59,
+          "af_bella": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Yes. The pharmacist will call you to the counter.",
+        "duration": 2.869,
+        "bytes": 29627,
+        "sha256": "06346c2ffb50d366b3a134f599739d1352efbc8574a904e88065c64e447f777b"
+      }
+    ]
+  },
+  {
+    "text": "Yes. The pharmacist will call you to the counter.",
+    "gender": "male",
+    "key": "m-602f676e",
+    "category": "conversation",
+    "spokenText": "Yes. The pharmacist will call you to the counter.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-602f676e.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.965,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Yes. The pharmacist will call you to the counter.",
+        "duration": 3.169,
+        "bytes": 32747,
+        "sha256": "e1d9c39b2fbf489e154049c9d03d3ccdcb232dfbd9fd94189bfe97250710cf5a"
+      },
+      {
+        "file": "m-602f676e-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 1.01,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Yes. The pharmacist will call you to the counter.",
+        "duration": 3.037,
+        "bytes": 31307,
+        "sha256": "6617dcc4c33c56c0033e59d2f3932620c84aaec170fe37d2180bb253c19a8536"
+      }
+    ]
+  },
+  {
+    "text": "Could you explain how I should take this?",
+    "gender": "female",
+    "key": "f-c2302360",
+    "category": "conversation",
+    "spokenText": "Could you explain how I should take this?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-c2302360.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.705,
+          "af_bella": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.941,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Could you explain how I should take this?",
+        "duration": 2.181,
+        "bytes": 22667,
+        "sha256": "6db2e726cd853ecd684b05d91ba9b3e2802614cc7ad909ade9a91a389df3f207"
+      },
+      {
+        "file": "f-c2302360-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.59,
+          "af_bella": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 0.986,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Could you explain how I should take this?",
+        "duration": 2.175,
+        "bytes": 22667,
+        "sha256": "f75a742ad90e53551add04c12b0ced311b8dbee6d73f39b2ed63dc3513df5cc4"
+      }
+    ]
+  },
+  {
+    "text": "Could you explain how I should take this?",
+    "gender": "male",
+    "key": "m-c2302360",
+    "category": "conversation",
+    "spokenText": "Could you explain how I should take this?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-c2302360.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.941,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Could you explain how I should take this?",
+        "duration": 2.382,
+        "bytes": 24827,
+        "sha256": "3103c43a00d8b4484473af68343534803d9619526739baad8168139bd81274f1"
+      },
+      {
+        "file": "m-c2302360-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 0.986,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Could you explain how I should take this?",
+        "duration": 2.306,
+        "bytes": 24107,
+        "sha256": "c5a69f92b1d5a5b4556a53bf254d5d21ea67143cf5f0fe85b77136a14b8f6052"
+      }
+    ]
+  },
+  {
+    "text": "Let us go through the label together before you leave.",
+    "gender": "female",
+    "key": "f-6a8d5e11",
+    "category": "conversation",
+    "spokenText": "Let us go through the label together before you leave.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-6a8d5e11.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.705,
+          "af_bella": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.959,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Let us go through the label together before you leave.",
+        "duration": 3.145,
+        "bytes": 32507,
+        "sha256": "cb7e8d42a4c419a67401ab039bff62b119687a88104dd9e4be22dc4ae732e34f"
+      },
+      {
+        "file": "f-6a8d5e11-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.59,
+          "af_bella": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 1.004,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Let us go through the label together before you leave.",
+        "duration": 2.999,
+        "bytes": 30827,
+        "sha256": "7fb7e2008111f089124575051aae9823f40919fa75e53b7b33be1ff947641e23"
+      }
+    ]
+  },
+  {
+    "text": "Let us go through the label together before you leave.",
+    "gender": "male",
+    "key": "m-6a8d5e11",
+    "category": "conversation",
+    "spokenText": "Let us go through the label together before you leave.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-6a8d5e11.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.705,
+          "am_fenrir": 0.295
+        },
+        "delivery": "conversation",
+        "speed": 0.959,
+        "sentencePause": 0.2,
+        "clausePause": 0.085,
+        "spokenText": "Let us go through the label together before you leave.",
+        "duration": 3.369,
+        "bytes": 34667,
+        "sha256": "4f18595884a57228d128bff5556780188b958f93f618fe9b7709bd3c14f74518"
+      },
+      {
+        "file": "m-6a8d5e11-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.59,
+          "am_fenrir": 0.41
+        },
+        "delivery": "conversation",
+        "speed": 1.004,
+        "sentencePause": 0.225,
+        "clausePause": 0.1,
+        "spokenText": "Let us go through the label together before you leave.",
+        "duration": 3.192,
+        "bytes": 32987,
+        "sha256": "1cf1c6e1431b1c3af278ed7a44d2e2135ffd84573542fc23f798ebbbe04052b9"
       }
     ]
   },
@@ -1578,6 +2411,7 @@
     "text": "Excuse me! This is a delivery room. Please give her some privacy.",
     "gender": "female",
     "key": "f-1a1697ef",
+    "category": "interruption",
     "spokenText": "Excuse me! This is a delivery room. Please give her some privacy.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1586,61 +2420,76 @@
         "file": "f-1a1697ef.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.305,
+          "af_bella": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 3.946,
-        "bytes": 40427,
-        "sha256": "833683c1df757c8c3bad294205b89a7d209d6c81975cc0d8f561adfbe7c77120"
+        "delivery": "interruption",
+        "speed": 1.023,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Excuse me! This is a delivery room. Please give her some privacy.",
+        "duration": 4.23,
+        "bytes": 43307,
+        "sha256": "ba8c43b8e798a319757321f2badd4c4995c5849c368e9a2be1db93baa659d017"
       },
       {
         "file": "f-1a1697ef-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.19,
+          "af_bella": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 3.873,
-        "bytes": 39707,
-        "sha256": "429a83d1c4c246896397e4c4ae8e047c7a25c3e25c969ac28c51c0c1a755a376"
+        "delivery": "interruption",
+        "speed": 1.068,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Excuse me! This is a delivery room. Please give her some privacy.",
+        "duration": 4.287,
+        "bytes": 43787,
+        "sha256": "ac77e4c8f90a0efd43789a59911a31bb956b03fb239e92f15376666f5717a2dd"
       }
     ]
   },
   {
-    "text": "Oh! Please wait outside. We are looking after a mother.",
+    "text": "Excuse me! This is a delivery room. Please give her some privacy.",
     "gender": "male",
-    "key": "m-ccf6a7a6",
-    "spokenText": "Oh! Please wait outside. We're looking after a mother.",
+    "key": "m-1a1697ef",
+    "category": "interruption",
+    "spokenText": "Excuse me! This is a delivery room. Please give her some privacy.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-ccf6a7a6.mp3",
+        "file": "m-1a1697ef.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.305,
+          "am_fenrir": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 3.472,
-        "bytes": 35627,
-        "sha256": "ca613e536baf19c1b9b467946a2e7bf2d74b06d704e736d147c7b71170b907cf"
+        "delivery": "interruption",
+        "speed": 1.023,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Excuse me! This is a delivery room. Please give her some privacy.",
+        "duration": 4.082,
+        "bytes": 41867,
+        "sha256": "68075718b1b9b75386f279d60aa91851cc85420299a0a49df66cb7b2f5cd27e5"
       },
       {
-        "file": "m-ccf6a7a6-alt.mp3",
+        "file": "m-1a1697ef-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.19,
+          "am_fenrir": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 3.194,
-        "bytes": 32987,
-        "sha256": "e4442d659768355555b04b804948524373ba99ec704702e761f50499cfcb370e"
+        "delivery": "interruption",
+        "speed": 1.068,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Excuse me! This is a delivery room. Please give her some privacy.",
+        "duration": 3.981,
+        "bytes": 40667,
+        "sha256": "2bbba8fbb2dd007a1b64eca2ef4e12fee36f9985d7f28bee4dd2d197a3abbff3"
       }
     ]
   },
@@ -1648,6 +2497,7 @@
     "text": "Oh! Please wait outside. We are looking after a mother.",
     "gender": "female",
     "key": "f-ccf6a7a6",
+    "category": "interruption",
     "spokenText": "Oh! Please wait outside. We're looking after a mother.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1656,61 +2506,76 @@
         "file": "f-ccf6a7a6.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.305,
+          "af_bella": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 3.131,
-        "bytes": 32267,
-        "sha256": "222fb2a8df764462530a519cf79552fe712e40a5853ed1ae47e5f3815f67ef4a"
+        "delivery": "interruption",
+        "speed": 1.029,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Oh! Please wait outside. We're looking after a mother.",
+        "duration": 3.357,
+        "bytes": 34427,
+        "sha256": "810bcb8df18631ac94b9f0e2b0a8a4cb7c03267d4c8c5aecc7517c220d5b8baa"
       },
       {
         "file": "f-ccf6a7a6-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.19,
+          "af_bella": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 3.078,
-        "bytes": 31787,
-        "sha256": "f5e2cc3688ffa56a81bda976111f1945ea8659c218d0b76acba4549324a44dc0"
+        "delivery": "interruption",
+        "speed": 1.074,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Oh! Please wait outside. We're looking after a mother.",
+        "duration": 3.332,
+        "bytes": 34187,
+        "sha256": "4e5cdb610590ab78ae8c3a7a2c0efdcb7a7d82c32067bc8e498fd843c45e062f"
       }
     ]
   },
   {
-    "text": "Excuse me. We are examining a patient.",
+    "text": "Oh! Please wait outside. We are looking after a mother.",
     "gender": "male",
-    "key": "m-a957a36e",
-    "spokenText": "Excuse me. We're examining a patient.",
+    "key": "m-ccf6a7a6",
+    "category": "interruption",
+    "spokenText": "Oh! Please wait outside. We're looking after a mother.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-a957a36e.mp3",
+        "file": "m-ccf6a7a6.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.305,
+          "am_fenrir": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 2.86,
-        "bytes": 29627,
-        "sha256": "b6a4d52f61ae129b96cd14e0a627ed4d395d9caac431a326749edfa9be07a5c7"
+        "delivery": "interruption",
+        "speed": 1.029,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Oh! Please wait outside. We're looking after a mother.",
+        "duration": 3.221,
+        "bytes": 33227,
+        "sha256": "ab80473e3b263e2b3c98e0d25ba83de3f8b13f92659d2597bfe77f37e7b842cf"
       },
       {
-        "file": "m-a957a36e-alt.mp3",
+        "file": "m-ccf6a7a6-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.19,
+          "am_fenrir": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 2.626,
-        "bytes": 27227,
-        "sha256": "bce6514b65aa6f72a66cc33e3fb88425f87849b97756bc8bb3d9cc89e463c7b3"
+        "delivery": "interruption",
+        "speed": 1.074,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Oh! Please wait outside. We're looking after a mother.",
+        "duration": 3.23,
+        "bytes": 33227,
+        "sha256": "80f7352cb9dfdfb7c32ff66db3a385f4306c6e222f44e268cec9ce19d57e5407"
       }
     ]
   },
@@ -1718,6 +2583,7 @@
     "text": "Excuse me. We are examining a patient.",
     "gender": "female",
     "key": "f-a957a36e",
+    "category": "interruption",
     "spokenText": "Excuse me. We're examining a patient.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1726,61 +2592,76 @@
         "file": "f-a957a36e.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.305,
+          "af_bella": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 2.506,
-        "bytes": 26027,
-        "sha256": "8fe3a376f6d5495c6f922c720b51a1e7fa8ce36fa61228e4df5ed074cd52cd5a"
+        "delivery": "interruption",
+        "speed": 1.041,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Excuse me. We're examining a patient.",
+        "duration": 2.619,
+        "bytes": 27227,
+        "sha256": "8128ad6ce282b400f7f70d40676399abfabe340930f5474225b27bfc94788b7e"
       },
       {
         "file": "f-a957a36e-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.19,
+          "af_bella": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 2.474,
-        "bytes": 25787,
-        "sha256": "90dcea2e79fc17daa5e03e4a21a91013997340addc777cfe915d3164f6c057f5"
+        "delivery": "interruption",
+        "speed": 1.086,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Excuse me. We're examining a patient.",
+        "duration": 2.548,
+        "bytes": 26507,
+        "sha256": "f188444fc21d312393a56d1a51561c931b95480d1580bf6b2df7d763ddfd65e6"
       }
     ]
   },
   {
-    "text": "Oh! I did not hear you come in. Please wait by the door.",
+    "text": "Excuse me. We are examining a patient.",
     "gender": "male",
-    "key": "m-906dda85",
-    "spokenText": "Oh! I didn't hear you come in. Please wait by the door.",
+    "key": "m-a957a36e",
+    "category": "interruption",
+    "spokenText": "Excuse me. We're examining a patient.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-906dda85.mp3",
+        "file": "m-a957a36e.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.305,
+          "am_fenrir": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 3.564,
-        "bytes": 36587,
-        "sha256": "ee29c12eebf5cb1eba2ac9f82fdcbcea48d94d2895929a0272a0de8520f9ac12"
+        "delivery": "interruption",
+        "speed": 1.041,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Excuse me. We're examining a patient.",
+        "duration": 2.554,
+        "bytes": 26507,
+        "sha256": "8e34de77683bd4783f745fb2ca3845981b932453550a8d5229dc3d4b275f49f7"
       },
       {
-        "file": "m-906dda85-alt.mp3",
+        "file": "m-a957a36e-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.19,
+          "am_fenrir": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 3.372,
-        "bytes": 34667,
-        "sha256": "157027345a8b1bc503083888d917677466508939d252131b7862e05abdb7219c"
+        "delivery": "interruption",
+        "speed": 1.086,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Excuse me. We're examining a patient.",
+        "duration": 2.519,
+        "bytes": 26027,
+        "sha256": "e31ceec772661c43fc7d79fa0be84f666c6555f20ad45622496d1e33014215e1"
       }
     ]
   },
@@ -1788,6 +2669,7 @@
     "text": "Oh! I did not hear you come in. Please wait by the door.",
     "gender": "female",
     "key": "f-906dda85",
+    "category": "interruption",
     "spokenText": "Oh! I didn't hear you come in. Please wait by the door.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1796,61 +2678,76 @@
         "file": "f-906dda85.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.305,
+          "af_bella": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 3.094,
-        "bytes": 31787,
-        "sha256": "d434c1a3007a191948732fe2cf8e613565490194411b2251f779da78c7c59926"
+        "delivery": "interruption",
+        "speed": 1.017,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Oh! I didn't hear you come in. Please wait by the door.",
+        "duration": 3.441,
+        "bytes": 35387,
+        "sha256": "2a6e5f315b722288b737365e339dd41361e759037c433103151168ce048ff491"
       },
       {
         "file": "f-906dda85-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.19,
+          "af_bella": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 3.008,
-        "bytes": 31067,
-        "sha256": "4f5d58925c981d7def03e41c7a50d426557d556fe4981a0d0149c31803dcf3b5"
+        "delivery": "interruption",
+        "speed": 1.062,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Oh! I didn't hear you come in. Please wait by the door.",
+        "duration": 3.387,
+        "bytes": 34907,
+        "sha256": "9599e4948f2ffc5c10b876e26eff9cecb64cf498764071cb0e605f9a7483f12e"
       }
     ]
   },
   {
-    "text": "Oh! Excuse me. Can I help you?",
+    "text": "Oh! I did not hear you come in. Please wait by the door.",
     "gender": "male",
-    "key": "m-ee6524aa",
-    "spokenText": "Oh! Excuse me. Can I help you?",
+    "key": "m-906dda85",
+    "category": "interruption",
+    "spokenText": "Oh! I didn't hear you come in. Please wait by the door.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-ee6524aa.mp3",
+        "file": "m-906dda85.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.305,
+          "am_fenrir": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 2.464,
-        "bytes": 25547,
-        "sha256": "7f154f183fc881240a0a75207d1e7d059ec8b3fb05b4159fb6c49ca936c78910"
+        "delivery": "interruption",
+        "speed": 1.017,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Oh! I didn't hear you come in. Please wait by the door.",
+        "duration": 3.195,
+        "bytes": 32987,
+        "sha256": "2ded4898411955ee3a342176e7407ccc010f6fb3ee31b855999843528b7ba10a"
       },
       {
-        "file": "m-ee6524aa-alt.mp3",
+        "file": "m-906dda85-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.19,
+          "am_fenrir": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 2.226,
-        "bytes": 23147,
-        "sha256": "472a06a41a2715233648ee731dda0a42bc37dcef3718a8a71b71cd29fc509a7a"
+        "delivery": "interruption",
+        "speed": 1.062,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Oh! I didn't hear you come in. Please wait by the door.",
+        "duration": 3.157,
+        "bytes": 32507,
+        "sha256": "54c8d3466922a68e26bfcff6c307354e086ef02ca576e99a144c1e4e0f904cfd"
       }
     ]
   },
@@ -1858,6 +2755,7 @@
     "text": "Oh! Excuse me. Can I help you?",
     "gender": "female",
     "key": "f-ee6524aa",
+    "category": "interruption",
     "spokenText": "Oh! Excuse me. Can I help you?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1866,61 +2764,76 @@
         "file": "f-ee6524aa.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.305,
+          "af_bella": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 2.196,
-        "bytes": 22907,
-        "sha256": "f1c9fa1245e92e6a08ca17af286de6d8fdf93b228723c62c96b8c1b356a025ee"
+        "delivery": "interruption",
+        "speed": 1.035,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Oh! Excuse me. Can I help you?",
+        "duration": 2.504,
+        "bytes": 26027,
+        "sha256": "9aec13b00e98d14f0f94a0717761186428b88ce7100c43f143650652d4ebde58"
       },
       {
         "file": "f-ee6524aa-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.19,
+          "af_bella": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 2.134,
-        "bytes": 22187,
-        "sha256": "459b35efdf93c9bf15a64299ab8dfc5737482c71383e1d6daad915efa5757564"
+        "delivery": "interruption",
+        "speed": 1.08,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Oh! Excuse me. Can I help you?",
+        "duration": 2.535,
+        "bytes": 26267,
+        "sha256": "cf82f9cd9cc1bcc4287041ee3685e526db285559f387cd2f9f39d11a675d99c4"
       }
     ]
   },
   {
-    "text": "Excuse me. You startled me.",
+    "text": "Oh! Excuse me. Can I help you?",
     "gender": "male",
-    "key": "m-315b28a4",
-    "spokenText": "Excuse me. You startled me.",
+    "key": "m-ee6524aa",
+    "category": "interruption",
+    "spokenText": "Oh! Excuse me. Can I help you?",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
     "variants": [
       {
-        "file": "m-315b28a4.mp3",
+        "file": "m-ee6524aa.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 1
+          "am_michael": 0.305,
+          "am_fenrir": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 2.458,
-        "bytes": 25547,
-        "sha256": "13eb76cc575aac17a71ca1b97e056bdb028e00276ce626f4c598a58a805e1f2f"
+        "delivery": "interruption",
+        "speed": 1.035,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Oh! Excuse me. Can I help you?",
+        "duration": 2.357,
+        "bytes": 24587,
+        "sha256": "2e4195b149c93094efd712365ed6ea0602bd22dae080ee770af23b77cad2efca"
       },
       {
-        "file": "m-315b28a4-alt.mp3",
+        "file": "m-ee6524aa-alt.mp3",
         "voice": "am_michael",
         "voiceBlend": {
-          "am_michael": 0.88,
-          "am_fenrir": 0.12
+          "am_michael": 0.19,
+          "am_fenrir": 0.81
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.06,
-        "duration": 2.114,
-        "bytes": 22187,
-        "sha256": "5c07705c8c350f5de2a81ebbfad4a95ef9ba9bb81c0b462d148468c687e4b681"
+        "delivery": "interruption",
+        "speed": 1.08,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Oh! Excuse me. Can I help you?",
+        "duration": 1.844,
+        "bytes": 19307,
+        "sha256": "c765b99ce7e77f7b439deeb0027d6091d5f01dd572199e8271a7109b6c1fedf3"
       }
     ]
   },
@@ -1928,6 +2841,7 @@
     "text": "Excuse me. You startled me.",
     "gender": "female",
     "key": "f-315b28a4",
+    "category": "interruption",
     "spokenText": "Excuse me. You startled me.",
     "synthetic": true,
     "engine": "Kokoro 82M v1.0",
@@ -1936,26 +2850,2398 @@
         "file": "f-315b28a4.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 1
+          "af_heart": 0.305,
+          "af_bella": 0.695
         },
-        "delivery": "alert, polite interruption",
-        "speed": 1.02,
-        "duration": 1.952,
-        "bytes": 20507,
-        "sha256": "0402e3957a9e2e5a141cd85347b0261f569f8a811d6941d155a673bd4db4c4d7"
+        "delivery": "interruption",
+        "speed": 1.017,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Excuse me. You startled me.",
+        "duration": 2.059,
+        "bytes": 21467,
+        "sha256": "56706d456aab6babad4df80971e7e110d68a71b6a0d5aafcbf5a928406837902"
       },
       {
         "file": "f-315b28a4-alt.mp3",
         "voice": "af_heart",
         "voiceBlend": {
-          "af_heart": 0.88,
-          "af_bella": 0.12
+          "af_heart": 0.19,
+          "af_bella": 0.81
         },
-        "delivery": "alert, polite interruption",
+        "delivery": "interruption",
+        "speed": 1.062,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Excuse me. You startled me.",
+        "duration": 2.088,
+        "bytes": 21707,
+        "sha256": "0e68f768151851e98ddd4aaa21e135f339968febb56222a60b05c4810d1351b8"
+      }
+    ]
+  },
+  {
+    "text": "Excuse me. You startled me.",
+    "gender": "male",
+    "key": "m-315b28a4",
+    "category": "interruption",
+    "spokenText": "Excuse me. You startled me.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-315b28a4.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.305,
+          "am_fenrir": 0.695
+        },
+        "delivery": "interruption",
+        "speed": 1.017,
+        "sentencePause": 0.23,
+        "clausePause": 0.075,
+        "spokenText": "Excuse me. You startled me.",
+        "duration": 1.927,
+        "bytes": 20267,
+        "sha256": "ce2924ee768bb9030f607885c87f68791b5975903f1bc820adad018c93d1ee45"
+      },
+      {
+        "file": "m-315b28a4-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.19,
+          "am_fenrir": 0.81
+        },
+        "delivery": "interruption",
+        "speed": 1.062,
+        "sentencePause": 0.255,
+        "clausePause": 0.09,
+        "spokenText": "Excuse me. You startled me.",
+        "duration": 1.813,
+        "bytes": 19067,
+        "sha256": "6ed7c6d7bbdaa59b6fdb1ef3d9a3d9debd5b9a1671ff3a40d89b3e70af0e94ec"
+      }
+    ]
+  },
+  {
+    "text": "I am going to check your temperature. Please hold still for a moment.",
+    "gender": "female",
+    "key": "f-64bf9e13",
+    "category": "clinician",
+    "spokenText": "I'm going to check your temperature. Please hold still for a moment.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-64bf9e13.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.815,
+          "af_bella": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.966,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "I'm going to check your temperature. Please hold still for a moment.",
+        "duration": 3.813,
+        "bytes": 38987,
+        "sha256": "9b6c67adc4d1238717590f83d8d27af13794eb56f2b2a30ef61c106e5604c74a"
+      },
+      {
+        "file": "f-64bf9e13-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.7,
+          "af_bella": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 1.011,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "I'm going to check your temperature. Please hold still for a moment.",
+        "duration": 3.71,
+        "bytes": 38027,
+        "sha256": "a2a75da0dbe611035103ba2dada45148a13a943ac1650cff8f1456a01a68f394"
+      }
+    ]
+  },
+  {
+    "text": "I am going to check your temperature. Please hold still for a moment.",
+    "gender": "male",
+    "key": "m-64bf9e13",
+    "category": "clinician",
+    "spokenText": "I'm going to check your temperature. Please hold still for a moment.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-64bf9e13.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.815,
+          "am_fenrir": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.966,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "I'm going to check your temperature. Please hold still for a moment.",
+        "duration": 4.243,
+        "bytes": 43307,
+        "sha256": "001d1d1d15d4040fbcc2d47ff9cd9637c13bf6eed4531cfcd66427836848d2c2"
+      },
+      {
+        "file": "m-64bf9e13-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.7,
+          "am_fenrir": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 1.011,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "I'm going to check your temperature. Please hold still for a moment.",
+        "duration": 4.047,
+        "bytes": 41387,
+        "sha256": "ddd635e1d8b1736a2f1eda3686576e73dea7da03a01822b7afc0a5d8e51de50f"
+      }
+    ]
+  },
+  {
+    "text": "Okay. I have been feeling hot and cold all afternoon.",
+    "gender": "female",
+    "key": "f-f1c69901",
+    "category": "clinical-patient",
+    "spokenText": "Okay. I've been feeling hot and cold all afternoon.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-f1c69901.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.505,
+          "af_bella": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.949,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "Okay. I've been feeling hot and cold all afternoon.",
+        "duration": 3.429,
+        "bytes": 35147,
+        "sha256": "c76dbf6ed9e8cb4ee359b243f19f4367f6e0f42c2514b1fca4aa84b32754a5f9"
+      },
+      {
+        "file": "f-f1c69901-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.39,
+          "af_bella": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.994,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "Okay. I've been feeling hot and cold all afternoon.",
+        "duration": 3.348,
+        "bytes": 34427,
+        "sha256": "50438a7c66614edc1d5faf49fefc513b8c72d3c02bdf3685c472d81b06120abc"
+      }
+    ]
+  },
+  {
+    "text": "Okay. I have been feeling hot and cold all afternoon.",
+    "gender": "male",
+    "key": "m-f1c69901",
+    "category": "clinical-patient",
+    "spokenText": "Okay. I've been feeling hot and cold all afternoon.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-f1c69901.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.505,
+          "am_fenrir": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.949,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "Okay. I've been feeling hot and cold all afternoon.",
+        "duration": 3.513,
+        "bytes": 36107,
+        "sha256": "cde381e8e8b463d3d6d0668a9226e903d81ecaaaa8e477492aa25a12750946cc"
+      },
+      {
+        "file": "m-f1c69901-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.39,
+          "am_fenrir": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.994,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "Okay. I've been feeling hot and cold all afternoon.",
+        "duration": 3.519,
+        "bytes": 36107,
+        "sha256": "b34105cee8041f9fd09c03df39a30b75b181d5fab3d74ca784fc0a5c04c6f82b"
+      }
+    ]
+  },
+  {
+    "text": "Open your mouth a little, please. This will only take a second.",
+    "gender": "female",
+    "key": "f-37ebbf04",
+    "category": "clinician",
+    "spokenText": "Open your mouth a little, please. This'll only take a second.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-37ebbf04.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.815,
+          "af_bella": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.96,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "Open your mouth a little, please. This'll only take a second.",
+        "duration": 3.873,
+        "bytes": 39707,
+        "sha256": "3548c491bb2503fb59c20f083b063404c0f3f5ebe5278d096ffc577a16210be4"
+      },
+      {
+        "file": "f-37ebbf04-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.7,
+          "af_bella": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 1.005,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "Open your mouth a little, please. This'll only take a second.",
+        "duration": 3.805,
+        "bytes": 38987,
+        "sha256": "7d809f2da39c48dedcb9a22231923fca2737a86381ce04462a5c41d212acaca6"
+      }
+    ]
+  },
+  {
+    "text": "Open your mouth a little, please. This will only take a second.",
+    "gender": "male",
+    "key": "m-37ebbf04",
+    "category": "clinician",
+    "spokenText": "Open your mouth a little, please. This'll only take a second.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-37ebbf04.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.815,
+          "am_fenrir": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.96,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "Open your mouth a little, please. This'll only take a second.",
+        "duration": 4.304,
+        "bytes": 44027,
+        "sha256": "8d286884198cd89428be4314f8353d7aa2ea002a969b3afad07b7e3f2d81fb90"
+      },
+      {
+        "file": "m-37ebbf04-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.7,
+          "am_fenrir": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 1.005,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "Open your mouth a little, please. This'll only take a second.",
+        "duration": 4.243,
+        "bytes": 43307,
+        "sha256": "31123ee37d0871ed5fa13ca45098277174f0656f6c3a6cab518177a8b688e1d0"
+      }
+    ]
+  },
+  {
+    "text": "Like this? Please be gentle.",
+    "gender": "female",
+    "key": "f-b4830685",
+    "category": "clinical-patient",
+    "spokenText": "Like this? Please be gentle.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-b4830685.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.505,
+          "af_bella": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.949,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "Like this? Please be gentle.",
+        "duration": 2.201,
+        "bytes": 22907,
+        "sha256": "a3ed857dd84d6d62dac77f3d544f55e00844737197b9027a4457a426d98a5836"
+      },
+      {
+        "file": "f-b4830685-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.39,
+          "af_bella": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.994,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "Like this? Please be gentle.",
+        "duration": 2.155,
+        "bytes": 22427,
+        "sha256": "71f64e405e6de7fcead5b6f578d7d58ec7ae03bef39363d3adda95c2a25138f7"
+      }
+    ]
+  },
+  {
+    "text": "Like this? Please be gentle.",
+    "gender": "male",
+    "key": "m-b4830685",
+    "category": "clinical-patient",
+    "spokenText": "Like this? Please be gentle.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-b4830685.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.505,
+          "am_fenrir": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.949,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "Like this? Please be gentle.",
+        "duration": 2.179,
+        "bytes": 22667,
+        "sha256": "a50b1661adcbaab482db5420890c70a1145581f97e92a4bc1d9a5b80b0210ec7"
+      },
+      {
+        "file": "m-b4830685-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.39,
+          "am_fenrir": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.994,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "Like this? Please be gentle.",
+        "duration": 2.122,
+        "bytes": 22187,
+        "sha256": "cef5db187f4d7f9108824537ffb8902815414fe7939d9399861ac36b7a045ef3"
+      }
+    ]
+  },
+  {
+    "text": "Let your arm rest here. The cuff will feel a little tight.",
+    "gender": "female",
+    "key": "f-efbeca85",
+    "category": "clinician",
+    "spokenText": "Let your arm rest here. The cuff will feel a little tight.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-efbeca85.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.815,
+          "af_bella": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.966,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "Let your arm rest here. The cuff will feel a little tight.",
+        "duration": 3.311,
+        "bytes": 33947,
+        "sha256": "b180bdc9aa09e5176b8574c720276819f5c1d18384215a35e08ac2105aebc703"
+      },
+      {
+        "file": "f-efbeca85-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.7,
+          "af_bella": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 1.011,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "Let your arm rest here. The cuff will feel a little tight.",
+        "duration": 3.241,
+        "bytes": 33467,
+        "sha256": "168ff74d6c60c6e9f95e16a9ada9750bd9ef1e8bf551e40bc8b9ce2eb238f2cc"
+      }
+    ]
+  },
+  {
+    "text": "Let your arm rest here. The cuff will feel a little tight.",
+    "gender": "male",
+    "key": "m-efbeca85",
+    "category": "clinician",
+    "spokenText": "Let your arm rest here. The cuff will feel a little tight.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-efbeca85.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.815,
+          "am_fenrir": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.966,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "Let your arm rest here. The cuff will feel a little tight.",
+        "duration": 3.785,
+        "bytes": 38747,
+        "sha256": "5bb3e1f5bf2d8962916264b1e76341953b5819f46bb7625bdcc1f830ba13d8e0"
+      },
+      {
+        "file": "m-efbeca85-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.7,
+          "am_fenrir": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 1.011,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "Let your arm rest here. The cuff will feel a little tight.",
+        "duration": 3.621,
+        "bytes": 37067,
+        "sha256": "56eb512b06b2b029210030ad46f668fdce7abe02627594320274e18fe7d92a45"
+      }
+    ]
+  },
+  {
+    "text": "All right. Tell me when I can move again.",
+    "gender": "female",
+    "key": "f-69761cfd",
+    "category": "clinical-patient",
+    "spokenText": "All right. Tell me when I can move again.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-69761cfd.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.505,
+          "af_bella": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.961,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "All right. Tell me when I can move again.",
+        "duration": 2.453,
+        "bytes": 25547,
+        "sha256": "8b7afb556c021ae8f0e9f031e8ad3e068e6ec8c6fb8b3f9143cc8e7cbaf5ce14"
+      },
+      {
+        "file": "f-69761cfd-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.39,
+          "af_bella": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 1.006,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "All right. Tell me when I can move again.",
+        "duration": 2.473,
+        "bytes": 25787,
+        "sha256": "77398a537dc87f159c68d378be803d7a57f565ad96a045a9b2efac980cde832a"
+      }
+    ]
+  },
+  {
+    "text": "All right. Tell me when I can move again.",
+    "gender": "male",
+    "key": "m-69761cfd",
+    "category": "clinical-patient",
+    "spokenText": "All right. Tell me when I can move again.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-69761cfd.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.505,
+          "am_fenrir": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.961,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "All right. Tell me when I can move again.",
+        "duration": 2.572,
+        "bytes": 26747,
+        "sha256": "085ca57796b4e90848c027fa2d048f22b474d67ce6456daf1bb2a92b54abbdd6"
+      },
+      {
+        "file": "m-69761cfd-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.39,
+          "am_fenrir": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 1.006,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "All right. Tell me when I can move again.",
+        "duration": 2.605,
+        "bytes": 26987,
+        "sha256": "54eb63043b23f834c415517d70392b3f7df668e7a7d42b285d3540ab3246bc9d"
+      }
+    ]
+  },
+  {
+    "text": "Just a few more seconds. Keep breathing normally.",
+    "gender": "female",
+    "key": "f-9bf1d565",
+    "category": "clinician",
+    "spokenText": "Just a few more seconds. Keep breathing normally.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-9bf1d565.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.815,
+          "af_bella": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.936,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "Just a few more seconds. Keep breathing normally.",
+        "duration": 3.123,
+        "bytes": 32267,
+        "sha256": "2c94f83dd93c2b2587a8bacaf5f70fca58414000541790ada78a6d8d5a20f6d5"
+      },
+      {
+        "file": "f-9bf1d565-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.7,
+          "af_bella": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 0.981,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "Just a few more seconds. Keep breathing normally.",
+        "duration": 3.078,
+        "bytes": 31787,
+        "sha256": "cf9b338ee9f6edc1f0060ac06e7d9deb8ef1468da19c46a78944454e4f34f754"
+      }
+    ]
+  },
+  {
+    "text": "Just a few more seconds. Keep breathing normally.",
+    "gender": "male",
+    "key": "m-9bf1d565",
+    "category": "clinician",
+    "spokenText": "Just a few more seconds. Keep breathing normally.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-9bf1d565.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.815,
+          "am_fenrir": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.936,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "Just a few more seconds. Keep breathing normally.",
+        "duration": 3.379,
+        "bytes": 34667,
+        "sha256": "5857fe202fef2db3465601cdf4f82e502c2b22d0ba5100fee62b983a7ca802d5"
+      },
+      {
+        "file": "m-9bf1d565-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.7,
+          "am_fenrir": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 0.981,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "Just a few more seconds. Keep breathing normally.",
+        "duration": 3.309,
+        "bytes": 33947,
+        "sha256": "7a99bacb2a27be3800f045d4b14807ee312b2950ad11e197098ada8110b97373"
+      }
+    ]
+  },
+  {
+    "text": "Is it supposed to squeeze this much?",
+    "gender": "female",
+    "key": "f-44e43634",
+    "category": "clinical-patient",
+    "spokenText": "Is it supposed to squeeze this much?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-44e43634.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.505,
+          "af_bella": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.931,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "Is it supposed to squeeze this much?",
+        "duration": 2.082,
+        "bytes": 21707,
+        "sha256": "974fb0bb6e81f5e74d30ffaa80e87a1b9c752ab546975d8d2bce7606d6f7b60b"
+      },
+      {
+        "file": "f-44e43634-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.39,
+          "af_bella": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.976,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "Is it supposed to squeeze this much?",
+        "duration": 2.084,
+        "bytes": 21707,
+        "sha256": "7856394c53cf55f7d6b31a92d5774b986e690f01d9552dade266e7ff2162128b"
+      }
+    ]
+  },
+  {
+    "text": "Is it supposed to squeeze this much?",
+    "gender": "male",
+    "key": "m-44e43634",
+    "category": "clinical-patient",
+    "spokenText": "Is it supposed to squeeze this much?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-44e43634.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.505,
+          "am_fenrir": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.931,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "Is it supposed to squeeze this much?",
+        "duration": 2.128,
+        "bytes": 22187,
+        "sha256": "84068e88aa701ab1d63d03352d4209b2ca462fe8a7c8efb3f9b38197757fe214"
+      },
+      {
+        "file": "m-44e43634-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.39,
+          "am_fenrir": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.976,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "Is it supposed to squeeze this much?",
+        "duration": 2.068,
+        "bytes": 21707,
+        "sha256": "3d7fcab87f6eb8b7b77abb3a4027616c7f87b14ced14d2bc344205980cbabe9f"
+      }
+    ]
+  },
+  {
+    "text": "Take a slow breath in for me. And breathe out.",
+    "gender": "female",
+    "key": "f-f5f13bce",
+    "category": "clinician",
+    "spokenText": "Take a slow breath in for me. And breathe out.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-f5f13bce.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.815,
+          "af_bella": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.93,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "Take a slow breath in for me. And breathe out.",
+        "duration": 3.045,
+        "bytes": 31307,
+        "sha256": "789791a6985e5592f35d03ce47c438bb59cc6acea8d5d45e8ab0e77e58c9022a"
+      },
+      {
+        "file": "f-f5f13bce-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.7,
+          "af_bella": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 0.975,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "Take a slow breath in for me. And breathe out.",
+        "duration": 2.936,
+        "bytes": 30347,
+        "sha256": "c57187912c893dc3d9125ad913044f54c9334d930a0b45a1a52c7989d7faa8ae"
+      }
+    ]
+  },
+  {
+    "text": "Take a slow breath in for me. And breathe out.",
+    "gender": "male",
+    "key": "m-f5f13bce",
+    "category": "clinician",
+    "spokenText": "Take a slow breath in for me. And breathe out.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-f5f13bce.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.815,
+          "am_fenrir": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.93,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "Take a slow breath in for me. And breathe out.",
+        "duration": 3.146,
+        "bytes": 32507,
+        "sha256": "ca596cd773fbb58d4cd2be58ad2f3fb6989cc9d0401650c3dc501740c5dd9663"
+      },
+      {
+        "file": "m-f5f13bce-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.7,
+          "am_fenrir": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 0.975,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "Take a slow breath in for me. And breathe out.",
+        "duration": 3.051,
+        "bytes": 31547,
+        "sha256": "5040703079af916db50ff2a67811eda9c532cd5512e39c32486d4aea81763873"
+      }
+    ]
+  },
+  {
+    "text": "It hurts a little when I breathe in.",
+    "gender": "female",
+    "key": "f-9ffbd8b4",
+    "category": "clinical-patient",
+    "spokenText": "It hurts a little when I breathe in.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-9ffbd8b4.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.505,
+          "af_bella": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.949,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "It hurts a little when I breathe in.",
+        "duration": 2.031,
+        "bytes": 21227,
+        "sha256": "85d6aa4a321b31e31c7c2c9d5c09b661be06333453da1da5108e35975baf3a09"
+      },
+      {
+        "file": "f-9ffbd8b4-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.39,
+          "af_bella": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.994,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "It hurts a little when I breathe in.",
+        "duration": 2.003,
+        "bytes": 20987,
+        "sha256": "e6289cebbcca09a738e358e75437b42d3b0bcc0595e289ef9f2b53219af71b3f"
+      }
+    ]
+  },
+  {
+    "text": "It hurts a little when I breathe in.",
+    "gender": "male",
+    "key": "m-9ffbd8b4",
+    "category": "clinical-patient",
+    "spokenText": "It hurts a little when I breathe in.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-9ffbd8b4.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.505,
+          "am_fenrir": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.949,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "It hurts a little when I breathe in.",
+        "duration": 2.065,
+        "bytes": 21707,
+        "sha256": "ec3b4d3ff6bab72641ef730bcdca32475280638712fae7e7468c9d0b9b85ef15"
+      },
+      {
+        "file": "m-9ffbd8b4-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.39,
+          "am_fenrir": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.994,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "It hurts a little when I breathe in.",
+        "duration": 2.036,
+        "bytes": 21227,
+        "sha256": "0350802b27d7a403e9274d9b3a38c6f5a8010deae63755908d0ceb3ed2820468"
+      }
+    ]
+  },
+  {
+    "text": "I am going to listen to your heart. Try to relax your shoulders.",
+    "gender": "female",
+    "key": "f-60782d26",
+    "category": "clinician",
+    "spokenText": "I'm going to listen to your heart. Try to relax your shoulders.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-60782d26.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.815,
+          "af_bella": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.936,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "I'm going to listen to your heart. Try to relax your shoulders.",
+        "duration": 3.971,
+        "bytes": 40667,
+        "sha256": "01a14d52794933f2cad8d8df36c4f9e32fc308dc63cdea775772e4dcb2c23154"
+      },
+      {
+        "file": "f-60782d26-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.7,
+          "af_bella": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 0.981,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "I'm going to listen to your heart. Try to relax your shoulders.",
+        "duration": 3.826,
+        "bytes": 39227,
+        "sha256": "50ec309f0345235901500a5f7e129e4e0639e2dda295e99b667900b98cd4b0bd"
+      }
+    ]
+  },
+  {
+    "text": "I am going to listen to your heart. Try to relax your shoulders.",
+    "gender": "male",
+    "key": "m-60782d26",
+    "category": "clinician",
+    "spokenText": "I'm going to listen to your heart. Try to relax your shoulders.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-60782d26.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.815,
+          "am_fenrir": 0.185
+        },
+        "delivery": "clinician",
+        "speed": 0.936,
+        "sentencePause": 0.28,
+        "clausePause": 0.1,
+        "spokenText": "I'm going to listen to your heart. Try to relax your shoulders.",
+        "duration": 4.303,
+        "bytes": 44027,
+        "sha256": "902141b57b299f50e1e608e5ba893d773bd0c756f67fb079bac0b09431182fad"
+      },
+      {
+        "file": "m-60782d26-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.7,
+          "am_fenrir": 0.3
+        },
+        "delivery": "clinician",
+        "speed": 0.981,
+        "sentencePause": 0.305,
+        "clausePause": 0.115,
+        "spokenText": "I'm going to listen to your heart. Try to relax your shoulders.",
+        "duration": 4.168,
+        "bytes": 42587,
+        "sha256": "c522d89022545cb350de27271081997c1d0727c5f17f193ea0dbe46d5f7d0f92"
+      }
+    ]
+  },
+  {
+    "text": "Okay, doctor. My heart has been racing.",
+    "gender": "female",
+    "key": "f-8a68248c",
+    "category": "clinical-patient",
+    "spokenText": "Okay, doctor. My heart has been racing.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-8a68248c.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.505,
+          "af_bella": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.925,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "Okay, doctor. My heart has been racing.",
+        "duration": 3.108,
+        "bytes": 32027,
+        "sha256": "e88bc529568643d26f5e5bc17af1f2e4ddbe091c654a0cd8647825b17a17da1b"
+      },
+      {
+        "file": "f-8a68248c-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.39,
+          "af_bella": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.97,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "Okay, doctor. My heart has been racing.",
+        "duration": 2.974,
+        "bytes": 30587,
+        "sha256": "d248bbb3e3c86d30b9f7fb07ba14cdd85557cd9ec3315cf6e45d85d25f3cda33"
+      }
+    ]
+  },
+  {
+    "text": "Okay, doctor. My heart has been racing.",
+    "gender": "male",
+    "key": "m-8a68248c",
+    "category": "clinical-patient",
+    "spokenText": "Okay, doctor. My heart has been racing.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-8a68248c.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.505,
+          "am_fenrir": 0.495
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.925,
+        "sentencePause": 0.25,
+        "clausePause": 0.12,
+        "spokenText": "Okay, doctor. My heart has been racing.",
+        "duration": 3.024,
+        "bytes": 31067,
+        "sha256": "74c07e1b5b1d0c9e2258782fce52adec96e0a2fa0613cb611301d18491c3bd89"
+      },
+      {
+        "file": "m-8a68248c-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.39,
+          "am_fenrir": 0.61
+        },
+        "delivery": "clinical-patient",
+        "speed": 0.97,
+        "sentencePause": 0.275,
+        "clausePause": 0.135,
+        "spokenText": "Okay, doctor. My heart has been racing.",
+        "duration": 2.943,
+        "bytes": 30347,
+        "sha256": "171104f57ca18b96cf9ae81569a0b21c7751b237e2d09ae896ad13bc9d2df3fb"
+      }
+    ]
+  },
+  {
+    "text": "Ow... please, that really hurts.",
+    "gender": "female",
+    "key": "f-e6dbba47",
+    "category": "pain",
+    "spokenText": "Ow! Please... that really hurts.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-e6dbba47.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.195,
+          "af_bella": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.901,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "Ow! Please... that really hurts.",
+        "duration": 2.832,
+        "bytes": 29147,
+        "sha256": "2adeffd7d1da8613a3cd38708103d048818e64983a1c86ece740fa6588c5671f"
+      },
+      {
+        "file": "f-e6dbba47-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.08,
+          "af_bella": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.946,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "Ow... please. That really hurts.",
+        "duration": 2.944,
+        "bytes": 30347,
+        "sha256": "cee738d02d4119982fd9c5750ee1aedd5617176d24f29a4453a6367c68c6b296"
+      }
+    ]
+  },
+  {
+    "text": "Ow... please, that really hurts.",
+    "gender": "male",
+    "key": "m-e6dbba47",
+    "category": "pain",
+    "spokenText": "Ow! Please... that really hurts.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-e6dbba47.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.195,
+          "am_fenrir": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.901,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "Ow! Please... that really hurts.",
+        "duration": 2.351,
+        "bytes": 24347,
+        "sha256": "aee0d62555397ccc47ca2e14baeef03eaed58f096df06c11bf7592a0378d6c7e"
+      },
+      {
+        "file": "m-e6dbba47-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.08,
+          "am_fenrir": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.946,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "Ow... please. That really hurts.",
+        "duration": 2.907,
+        "bytes": 30107,
+        "sha256": "4a2066b0cbdc36075961a15a5495ec41392afb676dd6536ae0c956a1469a6006"
+      }
+    ]
+  },
+  {
+    "text": "Could I have something for the pain? Maybe Acamol?",
+    "gender": "female",
+    "key": "f-bd226516",
+    "category": "pain",
+    "spokenText": "Could I have something for the pain? Maybe Ah-kah-mol?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-bd226516.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.195,
+          "af_bella": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.889,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "Could I have something for the pain? Maybe Ah-kah-mol?",
+        "duration": 3.371,
+        "bytes": 34667,
+        "sha256": "d19118ec1bbe2ca434b6a5d3ddbea5211eb1694d948457c7a4e0b09446a024ac"
+      },
+      {
+        "file": "f-bd226516-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.08,
+          "af_bella": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.934,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "Could I have something for the pain? Maybe Ah-kah-mol?",
+        "duration": 3.311,
+        "bytes": 33947,
+        "sha256": "d5e25b20882975a190def230b8c442a9f2c5a60e9d93718239208a35ebc6605c"
+      }
+    ]
+  },
+  {
+    "text": "Could I have something for the pain? Maybe Acamol?",
+    "gender": "male",
+    "key": "m-bd226516",
+    "category": "pain",
+    "spokenText": "Could I have something for the pain? Maybe Ah-kah-mol?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-bd226516.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.195,
+          "am_fenrir": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.889,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "Could I have something for the pain? Maybe Ah-kah-mol?",
+        "duration": 3.591,
+        "bytes": 36827,
+        "sha256": "156b0c947c0f695d790d2c1d5403dff60eaa8758c84505cf9702c41c45baa295"
+      },
+      {
+        "file": "m-bd226516-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.08,
+          "am_fenrir": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.934,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "Could I have something for the pain? Maybe Ah-kah-mol?",
+        "duration": 3.509,
+        "bytes": 36107,
+        "sha256": "b478875911f9bad69f58f581879fe863db4c55bf48d65a6bc07e1bdf3be68afc"
+      }
+    ]
+  },
+  {
+    "text": "My head is spinning. Can someone help me sit down?",
+    "gender": "female",
+    "key": "f-ab1e0289",
+    "category": "pain",
+    "spokenText": "My head's spinning... can someone help me sit down?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-ab1e0289.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.195,
+          "af_bella": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.895,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "My head's spinning... can someone help me sit down?",
+        "duration": 3.354,
+        "bytes": 34427,
+        "sha256": "1303af7697ca4af85d5f2ff1987f36b552a513ef8326ae7defcf0a843f9966bd"
+      },
+      {
+        "file": "f-ab1e0289-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.08,
+          "af_bella": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.94,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "Oh... my head's spinning. Can someone help me sit down?",
+        "duration": 4.275,
+        "bytes": 43787,
+        "sha256": "f8a2e283070b752af07f07557db08cbe3691ed053e1a3d303d701b23170b7054"
+      }
+    ]
+  },
+  {
+    "text": "My head is spinning. Can someone help me sit down?",
+    "gender": "male",
+    "key": "m-ab1e0289",
+    "category": "pain",
+    "spokenText": "My head's spinning... can someone help me sit down?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-ab1e0289.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.195,
+          "am_fenrir": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.895,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "My head's spinning... can someone help me sit down?",
+        "duration": 3.639,
+        "bytes": 37307,
+        "sha256": "9c2233b0839aa7e2a1af25deb56f0f03cf3116677ba97d5ab7eff251fb7ad677"
+      },
+      {
+        "file": "m-ab1e0289-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.08,
+          "am_fenrir": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.94,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "Oh... my head's spinning. Can someone help me sit down?",
+        "duration": 3.537,
+        "bytes": 36347,
+        "sha256": "9c4220d2e00a7b84148f38d4369f9759933164f57973c2d5f3b42de5ece673ab"
+      }
+    ]
+  },
+  {
+    "text": "Please, can you call the nurse? The pain is getting worse.",
+    "gender": "female",
+    "key": "f-d5628d22",
+    "category": "pain",
+    "spokenText": "Please, can you call the nurse? The pain is getting worse.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-d5628d22.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.195,
+          "af_bella": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.901,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "Please, can you call the nurse? The pain is getting worse.",
+        "duration": 3.843,
+        "bytes": 39467,
+        "sha256": "08715c6977f153c9dec74d3d7ae98641bcf239134dbb8933e064a3520d796f1d"
+      },
+      {
+        "file": "f-d5628d22-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.08,
+          "af_bella": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.946,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "Please, can you call the nurse? The pain is getting worse.",
+        "duration": 3.702,
+        "bytes": 38027,
+        "sha256": "edc2d99ba9d387650680ce96daa901ceb2daaf6d41f24c2a9a7eabe0b71dfa3e"
+      }
+    ]
+  },
+  {
+    "text": "Please, can you call the nurse? The pain is getting worse.",
+    "gender": "male",
+    "key": "m-d5628d22",
+    "category": "pain",
+    "spokenText": "Please, can you call the nurse? The pain is getting worse.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-d5628d22.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.195,
+          "am_fenrir": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.901,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "Please, can you call the nurse? The pain is getting worse.",
+        "duration": 3.729,
+        "bytes": 38267,
+        "sha256": "ebc1e8b6069cfa7e6f558ee544eb6ff4d9769108058c402126910be3f8761601"
+      },
+      {
+        "file": "m-d5628d22-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.08,
+          "am_fenrir": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.946,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "Please, can you call the nurse? The pain is getting worse.",
+        "duration": 3.708,
+        "bytes": 38027,
+        "sha256": "262607070b3d581c5923a1a7762f87938f0b550fba1c8b88dd004d1b13b6e885"
+      }
+    ]
+  },
+  {
+    "text": "I feel sick. I need a moment.",
+    "gender": "female",
+    "key": "f-7e02d7b8",
+    "category": "pain",
+    "spokenText": "I feel sick. I need a moment.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-7e02d7b8.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.195,
+          "af_bella": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.895,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "I feel sick. I need a moment.",
+        "duration": 2.364,
+        "bytes": 24587,
+        "sha256": "3fcc7b87bf7af164eab48f4bd1e2cb9109ce95158648f091bad4f4168f922fbc"
+      },
+      {
+        "file": "f-7e02d7b8-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.08,
+          "af_bella": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.94,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "I feel sick. I need a moment.",
+        "duration": 2.337,
+        "bytes": 24347,
+        "sha256": "a0e366ed73ce22e30f712fd99f7396fa13e5aae8e20562a2cfdb10a4acabbfef"
+      }
+    ]
+  },
+  {
+    "text": "I feel sick. I need a moment.",
+    "gender": "male",
+    "key": "m-7e02d7b8",
+    "category": "pain",
+    "spokenText": "I feel sick. I need a moment.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-7e02d7b8.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.195,
+          "am_fenrir": 0.805
+        },
+        "delivery": "pain",
+        "speed": 0.895,
+        "sentencePause": 0.31,
+        "clausePause": 0.14,
+        "spokenText": "I feel sick. I need a moment.",
+        "duration": 2.385,
+        "bytes": 24827,
+        "sha256": "c89fa8a947adfe5c1adc807e35eea31d6f129152ee668243b4e038584cf4b1eb"
+      },
+      {
+        "file": "m-7e02d7b8-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.08,
+          "am_fenrir": 0.92
+        },
+        "delivery": "pain",
+        "speed": 0.94,
+        "sentencePause": 0.335,
+        "clausePause": 0.155,
+        "spokenText": "I feel sick. I need a moment.",
+        "duration": 2.371,
+        "bytes": 24587,
+        "sha256": "ca0b4e967520653db89bece6dd2612cb58018b43bc15870cbe70e73e2d85d575"
+      }
+    ]
+  },
+  {
+    "text": "Did you hear that?",
+    "gender": "female",
+    "key": "f-d926a6d",
+    "category": "suspicion",
+    "spokenText": "Did you... hear that?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-d926a6d.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.265,
+          "af_bella": 0.735
+        },
+        "delivery": "suspicion",
+        "speed": 0.94,
+        "sentencePause": 0.3,
+        "clausePause": 0.14,
+        "spokenText": "Did you... hear that?",
+        "duration": 2.105,
+        "bytes": 21947,
+        "sha256": "15fcb2799c1e0923896b5cb45266e45bf03cc000eb409440e4be1d351a69f36e"
+      },
+      {
+        "file": "f-d926a6d-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.15,
+          "af_bella": 0.85
+        },
+        "delivery": "suspicion",
+        "speed": 0.985,
+        "sentencePause": 0.325,
+        "clausePause": 0.155,
+        "spokenText": "Wait. Did you hear that?",
+        "duration": 1.995,
+        "bytes": 20987,
+        "sha256": "5224df311f446e2854c6683d3ef668d8bceddea6a9572afa9fca94c91335930d"
+      }
+    ]
+  },
+  {
+    "text": "Did you hear that?",
+    "gender": "male",
+    "key": "m-d926a6d",
+    "category": "suspicion",
+    "spokenText": "Did you... hear that?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-d926a6d.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.265,
+          "am_fenrir": 0.735
+        },
+        "delivery": "suspicion",
+        "speed": 0.94,
+        "sentencePause": 0.3,
+        "clausePause": 0.14,
+        "spokenText": "Did you... hear that?",
+        "duration": 1.571,
+        "bytes": 16667,
+        "sha256": "f33ed9249ff31af5db372759cafa9228274c75aaa6fea28cd2634022b59e25bf"
+      },
+      {
+        "file": "m-d926a6d-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.15,
+          "am_fenrir": 0.85
+        },
+        "delivery": "suspicion",
+        "speed": 0.985,
+        "sentencePause": 0.325,
+        "clausePause": 0.155,
+        "spokenText": "Wait. Did you hear that?",
+        "duration": 1.848,
+        "bytes": 19307,
+        "sha256": "a60e0274a52f3f5527b15c21555a5b66d3c90ae75cb3213b975cb3065da397a3"
+      }
+    ]
+  },
+  {
+    "text": "That was weird.",
+    "gender": "female",
+    "key": "f-aa127262",
+    "category": "suspicion",
+    "spokenText": "That... was weird.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-aa127262.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.265,
+          "af_bella": 0.735
+        },
+        "delivery": "suspicion",
+        "speed": 0.934,
+        "sentencePause": 0.3,
+        "clausePause": 0.14,
+        "spokenText": "That... was weird.",
+        "duration": 2.126,
+        "bytes": 22187,
+        "sha256": "33e5774cf2d13fb677a3fa33bd32ac045ff8ef4c1a1daa57c5e4714acfb641c0"
+      },
+      {
+        "file": "f-aa127262-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.15,
+          "af_bella": 0.85
+        },
+        "delivery": "suspicion",
+        "speed": 0.979,
+        "sentencePause": 0.325,
+        "clausePause": 0.155,
+        "spokenText": "Huh. That was weird.",
+        "duration": 1.786,
+        "bytes": 18827,
+        "sha256": "17c04cb5ba23648182689ec2c14e497516dbc543d49cdced4243c2388838d93b"
+      }
+    ]
+  },
+  {
+    "text": "That was weird.",
+    "gender": "male",
+    "key": "m-aa127262",
+    "category": "suspicion",
+    "spokenText": "That... was weird.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-aa127262.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.265,
+          "am_fenrir": 0.735
+        },
+        "delivery": "suspicion",
+        "speed": 0.934,
+        "sentencePause": 0.3,
+        "clausePause": 0.14,
+        "spokenText": "That... was weird.",
+        "duration": 2.28,
+        "bytes": 23627,
+        "sha256": "1136ea1b7f19a4a8b103e99f64a4d80589ad932068e427529f1a5bb6783fa82d"
+      },
+      {
+        "file": "m-aa127262-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.15,
+          "am_fenrir": 0.85
+        },
+        "delivery": "suspicion",
+        "speed": 0.979,
+        "sentencePause": 0.325,
+        "clausePause": 0.155,
+        "spokenText": "Huh. That was weird.",
+        "duration": 1.425,
+        "bytes": 15227,
+        "sha256": "ad8d138db7f574f632f1e59a03134f47f3494166e9421bc973770dda1bb7c687"
+      }
+    ]
+  },
+  {
+    "text": "What was that noise? It came from down the hall.",
+    "gender": "female",
+    "key": "f-944e7e57",
+    "category": "suspicion",
+    "spokenText": "What was that noise? It came from down the hall.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-944e7e57.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.265,
+          "af_bella": 0.735
+        },
+        "delivery": "suspicion",
+        "speed": 0.946,
+        "sentencePause": 0.3,
+        "clausePause": 0.14,
+        "spokenText": "What was that noise? It came from down the hall.",
+        "duration": 2.889,
+        "bytes": 29867,
+        "sha256": "e0f59b1a718b811bd8fd1170ec1c280af1521094cdaa6013798d151438c60690"
+      },
+      {
+        "file": "f-944e7e57-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.15,
+          "af_bella": 0.85
+        },
+        "delivery": "suspicion",
+        "speed": 0.991,
+        "sentencePause": 0.325,
+        "clausePause": 0.155,
+        "spokenText": "What was that noise? It came from down the hall.",
+        "duration": 2.843,
+        "bytes": 29387,
+        "sha256": "03a4e267d963d4a0336528730c565069068302874efc27ab57dfa89575348655"
+      }
+    ]
+  },
+  {
+    "text": "What was that noise? It came from down the hall.",
+    "gender": "male",
+    "key": "m-944e7e57",
+    "category": "suspicion",
+    "spokenText": "What was that noise? It came from down the hall.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-944e7e57.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.265,
+          "am_fenrir": 0.735
+        },
+        "delivery": "suspicion",
+        "speed": 0.946,
+        "sentencePause": 0.3,
+        "clausePause": 0.14,
+        "spokenText": "What was that noise? It came from down the hall.",
+        "duration": 2.965,
+        "bytes": 30587,
+        "sha256": "01551f038f9d6a3b6f4c4ce5ea61d1680b66d7538077b1bec66a89dba9c5a9af"
+      },
+      {
+        "file": "m-944e7e57-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.15,
+          "am_fenrir": 0.85
+        },
+        "delivery": "suspicion",
+        "speed": 0.991,
+        "sentencePause": 0.325,
+        "clausePause": 0.155,
+        "spokenText": "What was that noise? It came from down the hall.",
+        "duration": 2.929,
+        "bytes": 30347,
+        "sha256": "382dce3da6db975f5db391703fc243bdd8591aed53accd446a1a8d926ada84a3"
+      }
+    ]
+  },
+  {
+    "text": "That sounded wrong. I am going to check.",
+    "gender": "female",
+    "key": "f-a62e6f69",
+    "category": "suspicion",
+    "spokenText": "That sounded wrong. I'm going to check.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-a62e6f69.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.265,
+          "af_bella": 0.735
+        },
+        "delivery": "suspicion",
+        "speed": 0.922,
+        "sentencePause": 0.3,
+        "clausePause": 0.14,
+        "spokenText": "That sounded wrong. I'm going to check.",
+        "duration": 2.615,
+        "bytes": 26987,
+        "sha256": "fb0995609b0fce7a61ed645a4469136e63b9ef041015808a29929214e1fe9255"
+      },
+      {
+        "file": "f-a62e6f69-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.15,
+          "af_bella": 0.85
+        },
+        "delivery": "suspicion",
+        "speed": 0.967,
+        "sentencePause": 0.325,
+        "clausePause": 0.155,
+        "spokenText": "That sounded wrong. I'm going to check.",
+        "duration": 2.612,
+        "bytes": 26987,
+        "sha256": "28fb403f4be3ab73f29652c2d5fabed527edf70d72cabff7f713d20df439cfd9"
+      }
+    ]
+  },
+  {
+    "text": "That sounded wrong. I am going to check.",
+    "gender": "male",
+    "key": "m-a62e6f69",
+    "category": "suspicion",
+    "spokenText": "That sounded wrong. I'm going to check.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-a62e6f69.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.265,
+          "am_fenrir": 0.735
+        },
+        "delivery": "suspicion",
+        "speed": 0.922,
+        "sentencePause": 0.3,
+        "clausePause": 0.14,
+        "spokenText": "That sounded wrong. I'm going to check.",
+        "duration": 2.613,
+        "bytes": 26987,
+        "sha256": "3f8ab651c42a82e7bbde5602cd1c4eee529fdacd56308ca5d47171f484ad9f84"
+      },
+      {
+        "file": "m-a62e6f69-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.15,
+          "am_fenrir": 0.85
+        },
+        "delivery": "suspicion",
+        "speed": 0.967,
+        "sentencePause": 0.325,
+        "clausePause": 0.155,
+        "spokenText": "That sounded wrong. I'm going to check.",
+        "duration": 2.566,
+        "bytes": 26507,
+        "sha256": "1277f1fda140b9e0640d6ccf76ffe6566bf0068cc1b0046e3608a59284f1100c"
+      }
+    ]
+  },
+  {
+    "text": "My heart is racing. Something is wrong. I need somewhere quiet.",
+    "gender": "female",
+    "key": "f-6195c494",
+    "category": "anxious",
+    "spokenText": "My heart's racing. Something's wrong... I need somewhere quiet.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-6195c494.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.145,
+          "af_bella": 0.855
+        },
+        "delivery": "anxious",
+        "speed": 1.039,
+        "sentencePause": 0.28,
+        "clausePause": 0.11,
+        "spokenText": "My heart's racing. Something's wrong... I need somewhere quiet.",
+        "duration": 3.817,
+        "bytes": 39227,
+        "sha256": "7d6e6afc1d2879b02453d500dab316845f3d7ae12056761340c4c10742063922"
+      },
+      {
+        "file": "f-6195c494-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.06,
+          "af_bella": 0.94
+        },
+        "delivery": "anxious",
+        "speed": 1.084,
+        "sentencePause": 0.305,
+        "clausePause": 0.125,
+        "spokenText": "My heart's racing... something's wrong. I need somewhere quiet.",
+        "duration": 3.865,
+        "bytes": 39707,
+        "sha256": "64b55c530efae4b2f6087d20937f1170cb71125940ac825d7e52d9f2f2037c73"
+      }
+    ]
+  },
+  {
+    "text": "My heart is racing. Something is wrong. I need somewhere quiet.",
+    "gender": "male",
+    "key": "m-6195c494",
+    "category": "anxious",
+    "spokenText": "My heart's racing. Something's wrong... I need somewhere quiet.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-6195c494.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.145,
+          "am_fenrir": 0.855
+        },
+        "delivery": "anxious",
+        "speed": 1.039,
+        "sentencePause": 0.28,
+        "clausePause": 0.11,
+        "spokenText": "My heart's racing. Something's wrong... I need somewhere quiet.",
+        "duration": 3.915,
+        "bytes": 40187,
+        "sha256": "5ffb2ec33fac69f3cfa133cbe69161df4683933a59fa89c0f49719b2c9c1f3d7"
+      },
+      {
+        "file": "m-6195c494-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.06,
+          "am_fenrir": 0.94
+        },
+        "delivery": "anxious",
+        "speed": 1.084,
+        "sentencePause": 0.305,
+        "clausePause": 0.125,
+        "spokenText": "My heart's racing... something's wrong. I need somewhere quiet.",
+        "duration": 4.348,
+        "bytes": 44507,
+        "sha256": "ffddcf08cf911b06c380e2a724bd1db56e8008550aef2b4b2c304b364e3bbf45"
+      }
+    ]
+  },
+  {
+    "text": "Come with me. We can talk away from the corridor.",
+    "gender": "female",
+    "key": "f-9d51238e",
+    "category": "reassuring",
+    "spokenText": "Come with me. We can talk away from the corridor.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-9d51238e.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.745,
+          "af_bella": 0.255
+        },
+        "delivery": "reassuring",
+        "speed": 0.951,
+        "sentencePause": 0.31,
+        "clausePause": 0.12,
+        "spokenText": "Come with me. We can talk away from the corridor.",
+        "duration": 2.947,
+        "bytes": 30347,
+        "sha256": "aa324edadd3878dea2422be15cd5c6e5fb439cae630c6b3c6933c028a4a5bd1c"
+      },
+      {
+        "file": "f-9d51238e-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.63,
+          "af_bella": 0.37
+        },
+        "delivery": "reassuring",
+        "speed": 0.996,
+        "sentencePause": 0.335,
+        "clausePause": 0.135,
+        "spokenText": "Come with me. We can talk away from the corridor.",
+        "duration": 2.912,
+        "bytes": 30107,
+        "sha256": "bd85ef03f23b6edec7b03d128debd717f4f773112f1b2b82681b493d8f92ec8a"
+      }
+    ]
+  },
+  {
+    "text": "Come with me. We can talk away from the corridor.",
+    "gender": "male",
+    "key": "m-9d51238e",
+    "category": "reassuring",
+    "spokenText": "Come with me. We can talk away from the corridor.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-9d51238e.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.745,
+          "am_fenrir": 0.255
+        },
+        "delivery": "reassuring",
+        "speed": 0.951,
+        "sentencePause": 0.31,
+        "clausePause": 0.12,
+        "spokenText": "Come with me. We can talk away from the corridor.",
+        "duration": 3.309,
+        "bytes": 33947,
+        "sha256": "4b23993a0596c34026edb33bb984d7ef07dafed4ae5129ea22f2ff24b793a901"
+      },
+      {
+        "file": "m-9d51238e-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.63,
+          "am_fenrir": 0.37
+        },
+        "delivery": "reassuring",
+        "speed": 0.996,
+        "sentencePause": 0.335,
+        "clausePause": 0.135,
+        "spokenText": "Come with me. We can talk away from the corridor.",
+        "duration": 3.281,
+        "bytes": 33707,
+        "sha256": "bc2795076d5f964d18df10551f29df42042b50de09fd47eb544c57ae42aa4500"
+      }
+    ]
+  },
+  {
+    "text": "Why are they watching me? Tell me what is going on.",
+    "gender": "female",
+    "key": "f-c80bc4ed",
+    "category": "anxious",
+    "spokenText": "Why are they watching me? Tell me... what's going on?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-c80bc4ed.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.145,
+          "af_bella": 0.855
+        },
+        "delivery": "anxious",
+        "speed": 1.039,
+        "sentencePause": 0.28,
+        "clausePause": 0.11,
+        "spokenText": "Why are they watching me? Tell me... what's going on?",
+        "duration": 3.252,
+        "bytes": 33467,
+        "sha256": "d0164f6bc782e30f3e91df41455997bc7c4eb185fe4a2e3d78b6bad38f070705"
+      },
+      {
+        "file": "f-c80bc4ed-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.06,
+          "af_bella": 0.94
+        },
+        "delivery": "anxious",
+        "speed": 1.084,
+        "sentencePause": 0.305,
+        "clausePause": 0.125,
+        "spokenText": "Why are they watching me? Tell me what's going on.",
+        "duration": 2.79,
+        "bytes": 28907,
+        "sha256": "64de38579183adcb80eafeb4a27b557736a13476a28f5451f0377cb30c4b9f7b"
+      }
+    ]
+  },
+  {
+    "text": "Why are they watching me? Tell me what is going on.",
+    "gender": "male",
+    "key": "m-c80bc4ed",
+    "category": "anxious",
+    "spokenText": "Why are they watching me? Tell me... what's going on?",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-c80bc4ed.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.145,
+          "am_fenrir": 0.855
+        },
+        "delivery": "anxious",
+        "speed": 1.039,
+        "sentencePause": 0.28,
+        "clausePause": 0.11,
+        "spokenText": "Why are they watching me? Tell me... what's going on?",
+        "duration": 3.829,
+        "bytes": 39227,
+        "sha256": "dd46205df242b0f19ab38d7a2672bf6e91c0715373754513fdb457da25ec5ed3"
+      },
+      {
+        "file": "m-c80bc4ed-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.06,
+          "am_fenrir": 0.94
+        },
+        "delivery": "anxious",
+        "speed": 1.084,
+        "sentencePause": 0.305,
+        "clausePause": 0.125,
+        "spokenText": "Why are they watching me? Tell me what's going on.",
+        "duration": 2.891,
+        "bytes": 29867,
+        "sha256": "741a7da1a79e5da03eef3929b1802be8f5050ee1d479191b7e387190d7cbb5d7"
+      }
+    ]
+  },
+  {
+    "text": "The doctor I am after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.",
+    "gender": "female",
+    "key": "f-9fb01b83",
+    "category": "reassuring",
+    "spokenText": "The doctor I'm after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-9fb01b83.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.745,
+          "af_bella": 0.255
+        },
+        "delivery": "reassuring",
+        "speed": 0.921,
+        "sentencePause": 0.31,
+        "clausePause": 0.12,
+        "spokenText": "The doctor I'm after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.",
+        "duration": 7.255,
+        "bytes": 73547,
+        "sha256": "d6755b6641ab192579b4932f91caaed93f4a71ee83b7ddf8578ab08650beabac"
+      },
+      {
+        "file": "f-9fb01b83-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.63,
+          "af_bella": 0.37
+        },
+        "delivery": "reassuring",
+        "speed": 0.966,
+        "sentencePause": 0.335,
+        "clausePause": 0.135,
+        "spokenText": "The doctor I'm after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.",
+        "duration": 7.108,
+        "bytes": 72107,
+        "sha256": "66074e4f6dd36294c7490de2d1745f68e9da339f406839608887de71c0350cfe"
+      }
+    ]
+  },
+  {
+    "text": "The doctor I am after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.",
+    "gender": "male",
+    "key": "m-9fb01b83",
+    "category": "reassuring",
+    "spokenText": "The doctor I'm after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-9fb01b83.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.745,
+          "am_fenrir": 0.255
+        },
+        "delivery": "reassuring",
+        "speed": 0.921,
+        "sentencePause": 0.31,
+        "clausePause": 0.12,
+        "spokenText": "The doctor I'm after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.",
+        "duration": 7.555,
+        "bytes": 76427,
+        "sha256": "7a34c9053bb4863b8c059751b8f536994445b0acbc271c53a48f2548136072e0"
+      },
+      {
+        "file": "m-9fb01b83-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.63,
+          "am_fenrir": 0.37
+        },
+        "delivery": "reassuring",
+        "speed": 0.966,
+        "sentencePause": 0.335,
+        "clausePause": 0.135,
+        "spokenText": "The doctor I'm after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.",
+        "duration": 7.366,
+        "bytes": 74507,
+        "sha256": "8c2c23848804dc8e1628459f6f013ba5e7eae708bfa544aad9b44f1deb644114"
+      }
+    ]
+  },
+  {
+    "text": "They are all in on it? Okay. I will wait until you make your move.",
+    "gender": "female",
+    "key": "f-4f641eaf",
+    "category": "anxious",
+    "spokenText": "They're all in on it? Okay. I'll wait until you make your move.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-4f641eaf.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.145,
+          "af_bella": 0.855
+        },
+        "delivery": "anxious",
+        "speed": 1.015,
+        "sentencePause": 0.28,
+        "clausePause": 0.11,
+        "spokenText": "They're all in on it? Okay. I'll wait until you make your move.",
+        "duration": 3.832,
+        "bytes": 39227,
+        "sha256": "5b13d734ae9dfbf7146b131d821c34bf4da5fcd3dc6ff22166b6e61c83287d66"
+      },
+      {
+        "file": "f-4f641eaf-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.06,
+          "af_bella": 0.94
+        },
+        "delivery": "anxious",
         "speed": 1.06,
-        "duration": 1.868,
-        "bytes": 19547,
-        "sha256": "01e9ea387926ff1cf285cc9108372fdcf6c1785591f46a52cefcd0f5cd8d34f7"
+        "sentencePause": 0.305,
+        "clausePause": 0.125,
+        "spokenText": "They're all in on it? Okay. I'll wait until you make your move.",
+        "duration": 3.737,
+        "bytes": 38267,
+        "sha256": "c6bd65b33acbc12d511de348139c89c74d5c8ba97c79e8f4215bc881d5f74231"
+      }
+    ]
+  },
+  {
+    "text": "They are all in on it? Okay. I will wait until you make your move.",
+    "gender": "male",
+    "key": "m-4f641eaf",
+    "category": "anxious",
+    "spokenText": "They're all in on it? Okay. I'll wait until you make your move.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-4f641eaf.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.145,
+          "am_fenrir": 0.855
+        },
+        "delivery": "anxious",
+        "speed": 1.015,
+        "sentencePause": 0.28,
+        "clausePause": 0.11,
+        "spokenText": "They're all in on it? Okay. I'll wait until you make your move.",
+        "duration": 3.975,
+        "bytes": 40667,
+        "sha256": "5c0912049c7a11ba4826d239d4b3b69f7ea198f1fff38738234ca55d2abb4c11"
+      },
+      {
+        "file": "m-4f641eaf-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.06,
+          "am_fenrir": 0.94
+        },
+        "delivery": "anxious",
+        "speed": 1.06,
+        "sentencePause": 0.305,
+        "clausePause": 0.125,
+        "spokenText": "They're all in on it? Okay. I'll wait until you make your move.",
+        "duration": 3.95,
+        "bytes": 40427,
+        "sha256": "49932eafd0c0da9be62bf531854437f9dd22f77fd6a311f87fcf923451e725f2"
+      }
+    ]
+  },
+  {
+    "text": "Stay here. Breathe slowly. I am going alone.",
+    "gender": "female",
+    "key": "f-317eeeb9",
+    "category": "reassuring",
+    "spokenText": "Stay here. Breathe slowly. I'm going alone.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "f-317eeeb9.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.745,
+          "af_bella": 0.255
+        },
+        "delivery": "reassuring",
+        "speed": 0.933,
+        "sentencePause": 0.31,
+        "clausePause": 0.12,
+        "spokenText": "Stay here. Breathe slowly. I'm going alone.",
+        "duration": 3.338,
+        "bytes": 34427,
+        "sha256": "3b263fd8d7d618d3efdadde1fe8a46e016e0b623e846ab25010c286dc6cf22a1"
+      },
+      {
+        "file": "f-317eeeb9-alt.mp3",
+        "voice": "af_heart",
+        "voiceBlend": {
+          "af_heart": 0.63,
+          "af_bella": 0.37
+        },
+        "delivery": "reassuring",
+        "speed": 0.978,
+        "sentencePause": 0.335,
+        "clausePause": 0.135,
+        "spokenText": "Stay here. Breathe slowly. I'm going alone.",
+        "duration": 3.348,
+        "bytes": 34427,
+        "sha256": "af1072e4355a5e9283ecb18d2b1ed4cd5105f094ab2916af18033ecdb47816f9"
+      }
+    ]
+  },
+  {
+    "text": "Stay here. Breathe slowly. I am going alone.",
+    "gender": "male",
+    "key": "m-317eeeb9",
+    "category": "reassuring",
+    "spokenText": "Stay here. Breathe slowly. I'm going alone.",
+    "synthetic": true,
+    "engine": "Kokoro 82M v1.0",
+    "variants": [
+      {
+        "file": "m-317eeeb9.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.745,
+          "am_fenrir": 0.255
+        },
+        "delivery": "reassuring",
+        "speed": 0.933,
+        "sentencePause": 0.31,
+        "clausePause": 0.12,
+        "spokenText": "Stay here. Breathe slowly. I'm going alone.",
+        "duration": 3.269,
+        "bytes": 33707,
+        "sha256": "4fbfb9e162f1aa7d1911525f357c0f0ec7ae10f6ab77fec6e01f213df6e97b22"
+      },
+      {
+        "file": "m-317eeeb9-alt.mp3",
+        "voice": "am_michael",
+        "voiceBlend": {
+          "am_michael": 0.63,
+          "am_fenrir": 0.37
+        },
+        "delivery": "reassuring",
+        "speed": 0.978,
+        "sentencePause": 0.335,
+        "clausePause": 0.135,
+        "spokenText": "Stay here. Breathe slowly. I'm going alone.",
+        "duration": 3.272,
+        "bytes": 33707,
+        "sha256": "3892bb5e3ba1992b5006fa21f8999dd39914a5c3a08f236bb88883aa2e55e3b7"
       }
     ]
   }

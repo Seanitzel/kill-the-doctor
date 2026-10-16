@@ -7,7 +7,7 @@ export class MissionSystems{
   constructor(engine){this.e=engine;this.scan=0;this.magnet=null;this.evacuating=false;this.navigation=[];}
   navigationFor(floor){return this.navigation[floor]||(this.navigation[floor]=new EgressNavigation(this.e.levels[floor],this.e.hospitals[floor].colliders));}
   prepare(){for(let floor=0;floor<this.e.levels.length;floor++){const nav=this.navigationFor(floor);nav.fieldFor(floor?{x:0,z:-24}:{x:0,z:33});}}
-  route(n,goal){n.path=this.navigationFor(n.floor).route(n.pos,goal);n.cursor=0;n.wait=.7;}
+  route(n,goal){const nav=this.navigationFor(n.floor);n.path=nav.route(n.pos,goal);n.cursor=n.path.length>1&&nav.clear(n.pos,{x:(n.path[1].x-11)*3,z:(n.path[1].z-11)*3})?1:0;n.wait=.7;}
   stand(n,goal){
     const e=this.e,nav=this.navigationFor(n.floor);
     if(n.lying||n.seated||!e.canStand(n.pos.x,n.pos.z,.24,n.floor)||!nav.route(n.pos,goal).length){
@@ -18,7 +18,7 @@ export class MissionSystems{
   startEvacuation(){
     if(this.evacuating)return;this.evacuating=true;this.e.audio.sound('alarm');this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
     for(const level of this.e.levels)for(const door of level.doors){door.locked=false;door.open=true;}
-    for(const n of this.e.npcs){if(n.dead||n.baby||n.role==='police')continue;n.evacGoal=n.floor?{x:0,z:-24}:{x:0,z:33};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.8;this.route(n,n.evacGoal);}
+    for(const n of this.e.npcs){if(n.dead||n.baby||n.role==='police')continue;if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.evacGoal=n.floor?{x:0,z:-24}:{x:0,z:33};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.8;this.route(n,n.evacGoal);}
     this.e.hooks.soundCaption?.('The alarm sounds. Staff and ambulatory patients rush toward the exits. Newborns remain protected.');
   }
   witness(n){
@@ -28,8 +28,17 @@ export class MissionSystems{
     this.route(n,goal);e.audio.gasp({x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});e.audio.speak('A weapon! I am calling security!',n.person,.8,4);
     e.notify('Weapon seen · a witness is running to report you','danger');e.hooks.soundCaption?.(`${n.name} gasps and runs to report the weapon.`);
   }
+  arrivalSpot(floor,actor){
+    const e=this.e,base=e.levels[floor].elevator;
+    for(const z of [3.6,4.2,4.8,5.4])for(const x of [0,-.6,.6,-1.2]){
+      const point={x:base.x+x,z:base.z+z};
+      if(e.canStand(point.x,point.z,.25,floor)&&!e.npcs.some(other=>other!==actor&&other.floor===floor&&!other.dead&&!other.evacuated&&!other.lying&&!other.baby&&distance(other.pos,point)<.62)&&!(e.floor===floor&&distance(e.playerPos,point)<.65))return point;
+    }
+    return null;
+  }
   prepareNPC(n){
     const e=this.e,now=e.mission.elapsed;
+    if(e.incidents?.prepareNPC(n))return true;
     if(n.reporting&&!e.mission.targetDown){
       const r=n.reporting;
       if(now>=r.deadline||now-r.started>1.5&&distance(n.pos,r.goal)<1.3){e.audio.sound('alarm');e.mission.finish(false,'Your weapon was reported before the primary target was eliminated. Police intercepted you.');e.finish();return true;}
@@ -37,7 +46,7 @@ export class MissionSystems{
     }
     if(n.evacuating){
       if(distance(n.pos,n.evacGoal)<1.2){
-        if(n.floor){n.floor=0;n.pos.set(0,0,-21);n.visual.root.visible=e.floor===0;n.evacGoal={x:0,z:33};this.route(n,n.evacGoal);}
+        if(n.floor){const arrival=this.arrivalSpot(0,n);if(!arrival){n.wait=.3;return true;}n.floor=0;n.pos.set(arrival.x,0,arrival.z);n.visual.root.visible=e.floor===0;n.evacGoal={x:0,z:33};this.route(n,n.evacGoal);}
         else{n.evacuated=true;n.visual.root.visible=false;n.path=[];}
       }else if(n.cursor>=n.path.length&&n.wait<0)this.route(n,n.evacGoal);
       return true;
@@ -50,7 +59,7 @@ export class MissionSystems{
     if(!e.mission.targetDown&&e.weaponDrawn&&this.scan<=0){
       this.scan=.18;let reporting=e.npcs.filter(n=>n.reporting&&!n.dead).length;
       for(const n of e.npcs){
-        if(reporting>=3)break;if(n.dead||n.evacuated||n.baby||n.lying||n.reporting||n.floor!==e.floor)continue;
+        if(reporting>=3)break;if(n.dead||n.evacuated||n.baby||n.lying||n.reporting||n.recruit?.state==='recruited'||n.floor!==e.floor)continue;
         const visible=distance(n.pos,e.playerPos)<11&&e.lineOfSight(n.pos,e.playerPos);
         if(seesDrawnWeapon(n.pos,e.playerPos,n.visual.root.rotation.y,visible)){this.witness(n);reporting++;}
       }

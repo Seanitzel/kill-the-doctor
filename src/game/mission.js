@@ -1,5 +1,5 @@
 import { rng, makeLayout, FLOORS } from './layout.js';
-import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,OUTFITS,HAIRSTYLE_CHOICES} from './loadout.js';
+import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,migrateCharacterSave} from './loadout.js';
 export const SAVE_KEY = 'ktd-northline-v1';
 export const UPGRADE_INFO = [
   { id: 'shoes', name: 'Lightweight footwear', description: 'Move 8% faster per level. Quieter steps reduce suspicion.', cost: 120, max: 3 },
@@ -19,20 +19,14 @@ export const STAFF = [
   { name: 'Dr. Sofia Vale', role: 'Attending', gender: 'female', hair: '#573a2d', skin: '#c58d6c', accent: '#426e79', glasses: true },
   { name: 'Nurse Jonas Beck', role: 'Senior nurse', gender: 'male', hair: '#8b7761', skin: '#dfbba0', accent: '#4a8193', glasses: false },
 ];
-export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),loadout:{weapon:'pistol',mask:false},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,quality:'high',difficulty:'standard'}};}
+export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),loadout:{weapon:'pistol',mask:false},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,quality:'high',difficulty:'standard'}};}
 export function readSave(storage) {
   const blank = defaultSave();
   try {
     const data = JSON.parse(storage.getItem(SAVE_KEY));
     if (!data || typeof data !== 'object') return blank;
     for (const k of ['coins', 'completed', 'attempts']) blank[k] = Math.max(0, Math.floor(Number(data[k]) || 0));
-    if(Array.isArray(data.unlockedCharacters))blank.unlockedCharacters=[...new Set([...blank.unlockedCharacters,...data.unlockedCharacters.filter(id=>CHARACTERS.some(c=>c.id===id))])];
-    if(blank.unlockedCharacters.includes(data.character))blank.character=data.character;
-    const profile=CHARACTERS.find(c=>c.id===blank.character);blank.appearance={...defaultAppearance(profile),jewelry:!!data.appearance?.jewelry};
-    if(typeof data.appearance?.name==='string')blank.appearance.name=data.appearance.name.slice(0,24);
-    for(const k of ['accent','hair','skin','eyes'])if(/^#[a-f0-9]{6}$/i.test(data.appearance?.[k]))blank.appearance[k]=data.appearance[k];
-    if(OUTFITS.some(o=>o.id===data.appearance?.outfit))blank.appearance.outfit=data.appearance.outfit;
-    if(HAIRSTYLE_CHOICES.some(o=>o.id===data.appearance?.hairstyle))blank.appearance.hairstyle=data.appearance.hairstyle;
+    Object.assign(blank,migrateCharacterSave(data));
     for (const u of UPGRADE_INFO) blank.upgrades[u.id] = Math.min(u.max, Math.max(0, Math.floor(Number(data.upgrades?.[u.id]) || 0)));
     blank.loadout={weapon:data.loadout?.weapon==='sniper'&&blank.upgrades.sniper?'sniper':'pistol',mask:!!data.loadout?.mask&&!!blank.upgrades.mask};
     blank.storySeen=Array.isArray(data.storySeen)?data.storySeen.filter(id=>typeof id==='string').slice(-128):[];blank.lastStory=typeof data.lastStory==='string'?data.lastStory:'';

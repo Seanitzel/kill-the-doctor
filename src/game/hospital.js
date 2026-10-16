@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { world, TILE, FLOORS, FLOOR_CODES } from './layout.js';
 import { Batcher, mesh, sign, bed, chair, desk, monitor, material } from './assets.js';
 export function buildHospital(layout, m) {
-  const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [];
+  const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [];
   const cube = (...args) => batch.box(...args);
   const collider = (x, z, w, d, object = null) => { const c = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, object }; colliders.push(c); return c; };
   batch.collider=(x,z,w,d,h,rot,type)=>{const c=footprint(x,z,w,d,h,rot,type);colliders.push(c);return c;};
@@ -85,13 +85,78 @@ export function buildHospital(layout, m) {
       cube(m.white, cx, .35, cz - 1, 3.7, .65, 1.5); cube(m.blue, cx, .9, cz + .8, .8, .18, 3.5); cube(m.steel, cx, .4, cz + 1.5, .35, .65, 2.6);
       furnitureCollider(cx, cz - 1, 3.7, 1.4,3.5); furnitureCollider(cx, cz + .8, 1, 3.5,1.05);
       desk(batch, m, minX + 1.7, maxZ - 1.5);
-    } else if (['lab', 'pharmacy', 'utility', 'morgue'].includes(room.kind)) {
+    } else if (room.kind === 'pharmacy') {
+      // A dispensary with a real customer side, a staffed service side and two
+      // clear side aisles. Both existing doors remain available for evacuation.
+      const counterZ = cz - 1.15, counterWidth = 5.1, counterDepth = .95;
+      cube(m.white, cx, .54, counterZ, counterWidth, 1.08, counterDepth);
+      cube(m.blue, cx, .65, counterZ + .486, counterWidth - .12, .55, .035);
+      cube(m.steel, cx, 1.115, counterZ, counterWidth + .08, .09, counterDepth + .06);
+      Object.assign(furnitureCollider(cx, counterZ, counterWidth + .08, counterDepth + .06, 1.16), {type:'pharmacy-counter'});
+      placeSign('PHARMACY', 'PRESCRIPTIONS / PATIENT SERVICE', cx, 2.7, counterZ + .08, 0, 4.5, .62);
+      placeSign('+  PHARMACY', 'PRESCRIPTIONS', cx, .69, counterZ + .509, 0, 2.7, .39);
+      // Checkout terminal, paper prescription tray and a bag ready for collection.
+      cube(m.dark, cx + .95, 1.21, counterZ, .36, .11, .34);
+      cube(m.steel, cx + .95, 1.35, counterZ - .06, .055, .3, .055);
+      cube(m.dark, cx + .95, 1.49, counterZ - .06, .45, .32, .06);
+      cube(m.monitor, cx + .95, 1.49, counterZ - .023, .39, .26, .012);
+      Object.assign(collider(cx + .95, counterZ - .06, .46, .35), {minY:1.16,maxY:1.66,type:'pharmacy-terminal'});
+      cube(m.steel, cx - 1.38, 1.19, counterZ, .53, .055, .38);
+      cube(m.linen, cx - 1.38, 1.225, counterZ, .43, .02, .3);
+      cube(m.linen, cx - .45, 1.34, counterZ, .25, .35, .16);
+      cube(m.blue, cx - .45, 1.36, counterZ + .085, .12, .07, .012);
+      let boxes = 0, bottles = 0;
+      const packageColors = [m.blue, m.green, m.red, m.linen];
+      for (const side of [-1, 1]) {
+        const shelfX = side < 0 ? minX + .6 : maxX - .6;
+        const productX = shelfX - side * .23;
+        for (let bay = 0; bay < 4; bay++) {
+          const shelfZ = minZ + 2.1 + bay * 3.05;
+          // Open shelves: the back panel and end panels leave every product
+          // visible from the aisle rather than burying stock in a solid cabinet.
+          cube(m.dark, shelfX + side*.38, 1.4, shelfZ, .035, 2.66, 2.4);
+          for(const end of [-1,1])cube(m.white,shelfX,1.4,shelfZ+end*1.23,.92,2.8,.055);
+          cube(m.white,shelfX,2.77,shelfZ,.92,.06,2.5);
+          cube(m.white,shelfX,.12,shelfZ,.92,.14,2.5);
+          Object.assign(furnitureCollider(shelfX, shelfZ, 1.05, 2.5, 2.81), {type:'pharmacy-shelf'});
+          for (let level = 0; level < 4; level++) {
+            const shelfY = .4 + level * .57;
+            cube(m.steel, shelfX, shelfY, shelfZ, .92, .045, 2.4);
+            for (let item = 0; item < 6; item++) {
+              const itemZ = shelfZ - .96 + item * .38;
+              const colour = packageColors[(bay + level + item) % packageColors.length];
+              if ((bay + level + item) % 4 === 0) {
+                const bottleY = shelfY + .16;
+                batch.cylinder(m.linen, productX, bottleY, itemZ, .087, .26, .087);
+                batch.cylinder(colour, productX, bottleY + .15, itemZ, .07, .05, .07);
+                cube(colour, productX - side * .088, bottleY, itemZ, .014, .09, .13);
+                bottles++;
+              } else {
+                const height = .26 + ((item + bay) % 3) * .045;
+                cube(m.linen, productX, shelfY + height / 2 + .025, itemZ, .23, height, .25);
+                cube(colour, productX - side * .122, shelfY + height * .72, itemZ, .014, .075, .25);
+                cube(m.white, productX - side * .126, shelfY + .10, itemZ, .017, .025, .15);
+                boxes++;
+              }
+            }
+          }
+        }
+      }
+      const frontDoor = layout.doors.find(d => d.room === room.id && d.z > cz);
+      pharmacies.push({
+        room, floor:layout.floor,
+        counter:{x:cx,z:counterZ,width:counterWidth,depth:counterDepth,height:1.16},
+        clerk:{x:cx,z:counterZ-1.05,yaw:0},
+        queue:[0,1,2].map(i=>({x:cx,z:counterZ+1.2+i*1.05,yaw:Math.PI})),
+        exit:{x:frontDoor.x,z:frontDoor.z-1.45},
+        stock:{boxes,bottles,shelfBays:8},
+      });
+    } else if (['lab', 'utility', 'morgue'].includes(room.kind)) {
       for (const x of [minX + .6, maxX - .6]) {
-        cube(m.white, x, .49, cz, 1, .98, room.h * 3 - 3); cube(m.steel, x, 1.03, cz, 1.1, .08, room.h * 3 - 3); furnitureCollider(x, cz, 1.1, room.h * 3 - 3,room.kind==='pharmacy'?2.86:room.kind==='morgue'?2.66:1.41);
+        cube(m.white, x, .49, cz, 1, .98, room.h * 3 - 3); cube(m.steel, x, 1.03, cz, 1.1, .08, room.h * 3 - 3); furnitureCollider(x, cz, 1.1, room.h * 3 - 3,room.kind==='morgue'?2.66:1.41);
         for (let i = 0; i < 4; i++) {
           const z = minZ + 2 + i * 2.7;
           if (room.kind === 'morgue') { cube(m.steel, x, 1.86, z, 1.03, 1.6, 2.4); for (let j = 0; j < 3; j++) cube(m.dark, x + (x < cx ? .54 : -.54), 1.22 + j * .48, z, .025, .03, 1.7); }
-          else if (room.kind === 'pharmacy') { cube(m.white, x, 1.96, z, .75, 1.8, 2.2); for (let j = 0; j < 3; j++) { cube(m.blue, x, 1.3 + j * .56, z + .2, .79, .03, 2.2); for (let k = 0; k < 5; k++) cube(m.linen, x, 1.48 + j * .56, z - .8 + k * .4, .38, .27, .25); } }
           else { cube(m.dark, x, 1.25, z, .56, .32, .75); cube(m.monitor, x, 1.28, z + .38, .43, .18, .02); for (let j = 0; j < 3; j++) batch.cylinder(m.glass, x, 1.16, z + 1 - j * .21, .055, .22, .055); }
         }
       }
@@ -145,5 +210,5 @@ export function buildHospital(layout, m) {
     cube(m.steel, -1.1, .5, z, .7, .85, .8); cube(m.white, -1.1, .98, z, .74, .08, .85); Object.assign(collider(-1.1,z,.75,.9),{maxY:1.04,type:'cart'});
   }
   const statics = batch.finish();
-  return { group, colliders, interactables, fixtures, wallMeshes, statics };
+  return { group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies };
 }

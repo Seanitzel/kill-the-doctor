@@ -1,0 +1,70 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {HospitalAudio,hospitalMachineBuffer,MACHINE_DURATIONS,HOSPITAL_SAMPLE_FILES} from '../src/game/audio.js';
+import {HospitalFoley} from '../src/game/foley.js';
+import {ALL_DIALOGUE_LINES,CLINICAL_CONVERSATIONS,PATIENT_PAIN_LINES,SUSPICION_LINES,RECRUIT_DIALOGUE,CONVERSATIONS} from '../src/game/life-rules.js';
+
+function context(){
+  const nodes=[],param=()=>({value:0,setTargetAtTime(v){this.value=v;},setValueAtTime(v){this.value=v;},linearRampToValueAtTime(v){this.value=v;},exponentialRampToValueAtTime(v){this.value=v;}});
+  const node=kind=>{const item={kind,connections:[],gain:param(),frequency:param(),pan:param(),delayTime:param(),playbackRate:param(),positionX:param(),positionY:param(),positionZ:param(),connect(to){this.connections.push(to);},disconnect(){this.connections.length=0;},start(){this.started=true;},stop(){this.stopped=true;},finish(){this.onended?.();}};nodes.push(item);return item;};
+  return {nodes,state:'running',sampleRate:32000,currentTime:1,bufferCount:0,close(){this.state='closed';return Promise.resolve();},
+    createBuffer(channels,length,rate){this.bufferCount++;const data=Array.from({length:channels},()=>new Float32Array(length));return {numberOfChannels:channels,length,sampleRate:rate,duration:length/rate,getChannelData:channel=>data[channel]};},
+    createBufferSource:()=>node('source'),createPanner:()=>node('panner'),createGain:()=>node('gain'),createBiquadFilter:()=>node('filter'),createConvolver:()=>node('convolver'),createDelay:()=>node('delay'),createStereoPanner:()=>node('pan')};
+}
+const owner=()=>{const audio=new HospitalAudio({volume:.5,speech:true});audio.ctx=context();audio.lowpass=audio.ctx.createBiquadFilter();return audio;};
+
+test('Each machine cue is finite, deterministic and softly bounded; the cuff contains inflation and release',()=>{
+  const ctx=context();let total=0;
+  for(const [kind,duration]of Object.entries(MACHINE_DURATIONS)){
+    const first=hospitalMachineBuffer(ctx,kind),again=hospitalMachineBuffer(ctx,kind),samples=first.getChannelData(0);total+=first.length*4;
+    assert.equal(first.numberOfChannels,1);assert.equal(first.length,Math.ceil(duration*ctx.sampleRate));assert.deepEqual(samples,again.getChannelData(0));
+    let energy=0;for(const sample of samples){assert.ok(Number.isFinite(sample)&&Math.abs(sample)<.65);energy+=sample*sample;}
+    assert.ok(energy>1);assert.equal(samples[0],0);assert.ok(Math.abs(samples.at(-1))<.002);
+  }
+  assert.ok(total<1.2*1024*1024,'four mono cues stay below 1.2 MiB at 32 kHz');
+  const cuff=hospitalMachineBuffer(ctx,'blood-pressure').getChannelData(0);
+  const energy=(start,end)=>cuff.slice(start*ctx.sampleRate,end*ctx.sampleRate).reduce((sum,v)=>sum+v*v,0);
+  assert.ok(energy(.5,2.5)>10);assert.ok(energy(3.6,4.4)>1,'air releases after the pump');
+  assert.equal(hospitalMachineBuffer(ctx,'unrecognized'),null);
+});
+
+test('Machine events reuse only four cached buffers, obey floors, and retain bounded source ownership',async()=>{
+  const audio=owner(),ctx=audio.ctx,pos={x:3,y:1,z:8,floor:0};
+  const first=audio.hospitalMachine('monitor',pos,.3),second=audio.hospitalMachine('monitor',pos,.4);
+  assert.equal(first.source.buffer,second.source.buffer);assert.equal(ctx.bufferCount,1);assert.equal(first.panner.positionX.value,3);assert.equal(first.floor,0);
+  const count=ctx.nodes.length;assert.equal(audio.hospitalMachine('monitor',{...pos,floor:2}),null);assert.equal(audio.hospitalMachine('__proto__',pos),null);assert.equal(ctx.nodes.length,count);
+  for(let i=0;i<100;i++)audio.hospitalMachine(Object.keys(MACHINE_DURATIONS)[i%4],pos,.4);
+  assert.equal(audio.clinicalBuffers.size,4);assert.equal(ctx.bufferCount,4);assert.equal(audio.activeSamples.size,24);assert.ok(first.source.stopped);assert.equal(first.source.buffer,null);
+  const records=[...audio.activeSamples];audio.stopAmbient();assert.equal(audio.activeSamples.size,0);assert.ok(records.every(record=>record.source.stopped&&record.source.buffer===null));
+  assert.equal(audio.timers.size,0);assert.equal(audio.clinicalBuffers.size,4,'finite sounds can be reused in the next round');
+  await audio.dispose();assert.equal(audio.clinicalBuffers.size,0);const after=ctx.nodes.length;assert.equal(audio.hospitalMachine('monitor',pos),null);assert.equal(ctx.nodes.length,after);
+});
+
+test('Pain uses the recorded gendered clip, respects voice settings/floors, and ends without retained nodes',async()=>{
+  const audio=owner(),ctx=audio.ctx,pos={x:2,y:1.2,z:5,floor:0};
+  audio.samples['pain-female']={duration:.469};audio.samples['pain-male']={duration:.32};
+  const female=audio.patientPain({gender:'female'},pos,.45),male=audio.patientPain({gender:'male'},pos,.4);
+  assert.equal(female.name,'pain-female');assert.equal(male.name,'pain-male');assert.equal(female.volume.gain.value,.45);
+  female.source.finish();assert.equal(female.source.buffer,null);assert.equal(female.source.onended,null);assert.ok([female.source,female.panner,female.volume].every(node=>node.connections.length===0));
+  audio.settings.speech=false;assert.equal(audio.patientPain({},pos),null);audio.settings.speech=true;assert.equal(audio.patientPain({}, {...pos,floor:1}),null);
+  audio.pause(true);assert.equal(audio.patientPain({},pos),undefined);assert.equal(audio.activeSamples.size,0);await audio.dispose();
+  for(const key of ['pain-female','pain-male']){const file=readFileSync(new URL(`../public${HOSPITAL_SAMPLE_FILES[key]}`,import.meta.url));assert.ok(file.length>3000&&file.length<10000);}
+});
+
+test('Footsteps have a gentler contact and quieter gain without softening the recorded weapon channel',()=>{
+  const ctx=context(),buffers=Object.fromEntries(['step-01','step-02','step-03','step-04','pistol-shot','rifle-shot'].map(key=>[key,{}]));
+  const foley=new HospitalFoley(ctx,ctx.createGain(),buffers),walk=foley.play('step'),run=foley.play('step',{running:true}),shot=foley.play('shot');
+  assert.ok(walk.gain.gain.value<=.42);assert.ok(run.gain.gain.value<=.58);assert.equal(walk.filter.frequency.value,4200);assert.equal(shot.filter.frequency.value,14500);assert.equal(shot.gain.gain.value,.79);foley.dispose();
+});
+
+test('Music receives a modest gain rise and keeps the original notes and timing',async()=>{
+  const audio=owner(),ctx=audio.ctx,played=[];audio.music=ctx.createGain();audio.tone=(note,length,gain,type,destination)=>{if(destination===audio.music)played.push({note,length,gain});};
+  ctx.currentTime=1;audio.update(.1,0,false,false,false,false);assert.equal(audio.music.gain.value,.192);assert.equal(audio.nextNote,3.9);assert.deepEqual(played,[{note:220,length:2.5,gain:.09}]);await audio.dispose();
+});
+
+test('Clinical, pain, suspicion, recruitment and pharmacy dialogue are included in the generated line set',()=>{
+  for(const text of [...Object.values(CLINICAL_CONVERSATIONS).flat(2),...PATIENT_PAIN_LINES,...SUSPICION_LINES,...Object.values(RECRUIT_DIALOGUE),...CONVERSATIONS.pharmacy.flat()])assert.ok(ALL_DIALOGUE_LINES.includes(text),text);
+  assert.ok(SUSPICION_LINES.includes('Did you hear that?'));assert.ok(SUSPICION_LINES.includes('That was weird.'));assert.ok(PATIENT_PAIN_LINES.some(text=>text.includes('Acamol')));
+  assert.equal(ALL_DIALOGUE_LINES.length,new Set(ALL_DIALOGUE_LINES).size);
+});

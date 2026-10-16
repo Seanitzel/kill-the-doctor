@@ -188,7 +188,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
         const name = o.material.name;
         if (person) {
           if (name.includes('Outfit_Top')) { const color = role === 'doctor' ? '#d9e4ea' : ['security','police'].includes(role) ? '#344b62' : person.accent || '#718e9c'; o.material.map = recolorCloth(o.material.map,color,assets,clothLeases); o.material.color.set('#ffffff'); }
-          if (name.includes('Outfit_Bottom')) { o.material.map = recolorCloth(o.material.map,role === 'patient' ? '#acbcc4' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
+          if (name.includes('Outfit_Bottom')) { o.material.map = recolorCloth(o.material.map,role === 'patient' ? '#acbcc4' : role==='civilian'&&person.outfit==='suit' ? person.accent||'#485766' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
           if (name.includes('Hair')) o.material.color.set(person.hair || '#3b302c');
           if (name.includes('Skin') || name.includes('Body')) o.material.color.set(person.skin || '#e0ad87');
           if (name.includes('Glasses')) o.visible = !!person.glasses;
@@ -239,6 +239,12 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       orient('RightArm','RightForeArm',[.15,-.2,.6]); orient('RightForeArm','RightHand',[.1,.5,.3]);
       orient('LeftArm','LeftForeArm',[-.12,-.25,.5]); orient('LeftForeArm','LeftHand',[-.1,.3,.4]);
       if(b.Head) b.Head.rotation.x -= .10;
+    } else if(activity==='worried'||activity==='panic') {
+      const panic=activity==='panic',tremble=Math.sin(time*(panic?19:13))*(panic?.045:.012);
+      orient('RightArm','RightForeArm',[.12,-.35,.25]);orient('RightForeArm','RightHand',[-.05,.22+tremble,.32]);
+      orient('LeftArm','LeftForeArm',[-.16,-.55,.07]);orient('LeftForeArm','LeftHand',[.02,-.12,.24]);
+      if(b.Head){b.Head.rotation.y+=Math.sin(time*(panic?2.8:1.3))*(panic?.23:.10);b.Head.rotation.z+=tremble;b.Head.rotation.x-=panic?.07:.025;}
+      if(b.Spine2)b.Spine2.rotation.x+=Math.sin(time*(panic?5.7:3.8))*(panic?.025:.008);
     } else if(activity==='eat') {
       const bite=(Math.sin(time*1.25)+1)/2;
       orient('RightArm','RightForeArm',[.06,-.28,.4]); orient('RightForeArm','RightHand',[-.06,.1+bite*.45,.3-bite*.23]);
@@ -278,7 +284,7 @@ export function renderPortrait(renderer,assets,person,role='doctor',options={}) 
     scene.add(new THREE.HemisphereLight('#e5f3ff','#6b7a89',2.5));
     const key=new THREE.DirectionalLight('#fff4e7',3);key.position.set(2,3,4);scene.add(key);
     const fill=new THREE.DirectionalLight('#b8dcfa',1.5);fill.position.set(-3,2,2);scene.add(fill);
-    const camera=new THREE.PerspectiveCamera(30,1,.01,10);if(options.fullBody){camera.position.set(0,1.05,3.9);camera.lookAt(0,.96,0);}else{camera.position.set(0,1.56,1.02);camera.lookAt(0,1.56,0);}
+    const camera=new THREE.PerspectiveCamera(30,1,.01,10);if(options.fullBody){camera.position.set(options.view==='side'?3.9:0,1.05,options.view==='back'?-3.9:options.view==='side'?.12:3.9);camera.lookAt(0,.96,0);}else{camera.position.set(options.view==='side'?1.02:0,1.56,options.view==='back'?-1.02:options.view==='side'?.03:1.02);camera.lookAt(0,1.56,0);}
     const buffer=portraitBuffer(renderer);if(renderer.xr)renderer.xr.enabled=false;
     renderer.setRenderTarget(buffer.target);renderer.setViewport(0,0,256,256);renderer.setScissorTest(false);renderer.clear();renderer.render(scene,camera);
     renderer.readRenderTargetPixels(buffer.target,0,0,256,256,buffer.pixels);

@@ -30,12 +30,59 @@ export const CONVERSATIONS = {
     ['Do you want to share the last piece of bread?', 'Yes, thanks. I missed dinner again.'],
     ['I am going to get another coffee before rounds.', 'Take a minute first. You have barely touched your food.'],
   ],
+  pharmacy: [
+    ['Hi. I am here to collect my prescription.', 'Of course. Can I check your name and date of birth?'],
+    ['Is this the queue for prescriptions?', 'Yes. The pharmacist will call you to the counter.'],
+    ['Could you explain how I should take this?', 'Let us go through the label together before you leave.'],
+  ],
 };
 export const ENTRY_REACTIONS = {
   maternity: ['Excuse me! This is a delivery room. Please give her some privacy.', 'Oh! Please wait outside. We are looking after a mother.'],
   clinical: ['Excuse me. We are examining a patient.', 'Oh! I did not hear you come in. Please wait by the door.'],
   office: ['Oh! Excuse me. Can I help you?', 'Excuse me. You startled me.'],
 };
+// The first line is the clinician; the second is the patient's response.
+export const CLINICAL_CONVERSATIONS = {
+  temperature: [
+    ['I am going to check your temperature. Please hold still for a moment.', 'Okay. I have been feeling hot and cold all afternoon.'],
+    ['Open your mouth a little, please. This will only take a second.', 'Like this? Please be gentle.'],
+  ],
+  bloodPressure: [
+    ['Let your arm rest here. The cuff will feel a little tight.', 'All right. Tell me when I can move again.'],
+    ['Just a few more seconds. Keep breathing normally.', 'Is it supposed to squeeze this much?'],
+  ],
+  heart: [
+    ['Take a slow breath in for me. And breathe out.', 'It hurts a little when I breathe in.'],
+    ['I am going to listen to your heart. Try to relax your shoulders.', 'Okay, doctor. My heart has been racing.'],
+  ],
+};
+export const PATIENT_PAIN_LINES = [
+  'Ow... please, that really hurts.',
+  'Could I have something for the pain? Maybe Acamol?',
+  'My head is spinning. Can someone help me sit down?',
+  'Please, can you call the nurse? The pain is getting worse.',
+  'I feel sick. I need a moment.',
+];
+export const SUSPICION_LINES = [
+  'Did you hear that?',
+  'That was weird.',
+  'What was that noise? It came from down the hall.',
+  'That sounded wrong. I am going to check.',
+];
+export const RECRUIT_DIALOGUE = {
+  invite: 'My heart is racing. Something is wrong. I need somewhere quiet.',
+  escort: 'Come with me. We can talk away from the corridor.',
+  question: 'Why are they watching me? Tell me what is going on.',
+  offer: 'The doctor I am after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.',
+  accept: 'They are all in on it? Okay. I will wait until you make your move.',
+  dismiss: 'Stay here. Breathe slowly. I am going alone.',
+};
+export const RECRUIT_LINES = Object.values(RECRUIT_DIALOGUE);
+export const ALL_DIALOGUE_LINES = [...new Set([
+  ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
+  ...Object.values(CLINICAL_CONVERSATIONS).flat(2), ...PATIENT_PAIN_LINES,
+  ...SUSPICION_LINES, ...RECRUIT_LINES,
+])];
 export function dialogueKey(text, gender='male') {
   let hash=2166136261;for(let i=0;i<text.length;i++)hash=Math.imul(hash^text.charCodeAt(i),16777619)>>>0;
   return `${gender==='female'?'f':'m'}-${hash.toString(16)}`;

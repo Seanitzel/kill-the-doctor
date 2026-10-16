@@ -6,6 +6,7 @@ import { Mission, readSave, writeSave, purchase, UPGRADE_INFO } from './game/mis
 import { portrait } from './game/assets.js';
 import TouchControls from './mobile/TouchControls.vue';
 import { startCameraDiagnostics } from './mobile/camera-diagnostics.js';
+import { installGameGestureGuard } from './mobile/gesture-guard.js';
 import {native,platform,touchDevice,initializeNative,nativeFeedback} from './mobile/platform.js';
 import { App as NativeApp } from '@capacitor/app';
 import './mobile/mobile.css';
@@ -19,7 +20,7 @@ import {assetUrl} from './game/asset-url.js';
 import './expansion.css';
 const viewport = ref(null), screen = ref('menu'), overlay = ref(null), ready = ref(false), loading = ref(false), error = ref(null), locked = ref(false);
 const isTouch=ref(touchDevice());let nativeCleanup=()=>{};
-function preventGameZoom(event){if(screen.value==='game'&&!overlay.value&&(event.type.startsWith('gesture')||event.touches?.length>1))event.preventDefault();}
+let removeGestureGuard=()=>{};
 let stopCameraDiagnostics=()=>{};
 let engine, toastTimer, announcementTimer, effectTimer;
 const save = reactive(readSave(localStorage));if(isTouch.value&&!localStorage.getItem('ktd-northline-v1'))save.settings.quality='balanced';
@@ -87,9 +88,9 @@ onMounted(() => {
   Object.defineProperty(window,'__northline',{configurable:true,get:()=>({platform,native,touch:isTouch.value,screen:screen.value,overlay:overlay.value,ready:ready.value,loading:loading.value,error:error.value,position:engine?.playerPos?.toArray(),yaw:engine?.yaw,paused:engine?.paused,frame:engine?.renderer.info.render.frame,fps:engine?.performance.fps,state:engine?.mission?.state,ammo:engine?.ammo,flashlight:engine?.flashlight,clues:engine?.mission?.clues.length,controls:{...engine?.touchInput},inputEvents:{...engine?.inputEvents},coins:save.coins,upgrades:{...save.upgrades},settings:{...save.settings},audio:{state:engine?.audio.ctx?.state,samples:Object.keys(engine?.audio.samples||{}),voices:engine?.audio.dialogueBuffers.size},url:location.href})});
   if(import.meta.env.DEV)stopCameraDiagnostics=startCameraDiagnostics(()=>engine);
   window.addEventListener('keydown',globalKey);
-  document.addEventListener('gesturestart',preventGameZoom,{passive:false});document.addEventListener('gesturechange',preventGameZoom,{passive:false});document.addEventListener('touchmove',preventGameZoom,{passive:false});
+  removeGestureGuard=installGameGestureGuard(document,()=>screen.value==='game'&&!overlay.value);
 });
-onBeforeUnmount(() => { stopCameraDiagnostics();nativeCleanup();engine?.dispose(); clearTimeout(toastTimer); clearTimeout(announcementTimer); clearTimeout(effectTimer); window.removeEventListener('keydown',globalKey);document.removeEventListener('gesturestart',preventGameZoom);document.removeEventListener('gesturechange',preventGameZoom);document.removeEventListener('touchmove',preventGameZoom); });
+onBeforeUnmount(() => { removeGestureGuard();stopCameraDiagnostics();nativeCleanup();engine?.dispose(); clearTimeout(toastTimer); clearTimeout(announcementTimer); clearTimeout(effectTimer); window.removeEventListener('keydown',globalKey); });
 </script>
 <template>
   <main class="game-shell" :style="{ '--impairment-blur': `${(hud.impairmentStrength || 0)*3}px` }" :class="[{ 'mobile-mode':isTouch,'native-mode':native,'has-overlay':!!overlay, 'in-game': screen === 'game', 'impaired': hud.impairment > 0 && screen === 'game', 'blackout': hud.blackout > 0 && screen === 'game', 'emergency': hud.state === 'escape' && screen === 'game' }, screen]">

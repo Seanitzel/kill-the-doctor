@@ -59,7 +59,9 @@ html,body,#app{overscroll-behavior:none}button,input,select{touch-action:manipul
 .viewport canvas{width:100%!important;height:100%!important}
 
 /* The game owns multi-touch gestures; two thumbs must never zoom the page. */
-.game-shell.in-game:not(.has-overlay){touch-action:none}
+.game-shell.in-game:not(.has-overlay),.game-shell.in-game:not(.has-overlay) *{touch-action:none}
+/* Suppress double-tap smart zoom outside gameplay while retaining menu pinch/scroll. */
+html,body,#app,.game-shell{touch-action:manipulation}
 
 /* Keep both ends of the hospital visible when Safari leaves a short landscape view. */
 @media (orientation:landscape) and (max-height:550px) {

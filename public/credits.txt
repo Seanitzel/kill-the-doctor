@@ -1,4 +1,4 @@
-KILL THE DOCTOR — NORTHLINE
+KTD — KILL THE DOCTOR
 Playable private browser prototype, October 2026.
 
 Original hospital geometry, floor layouts, medical furniture, signs, textures,
@@ -83,3 +83,19 @@ https://freesound.org/people/FreqMan/sounds/31356/
 https://creativecommons.org/licenses/by/4.0/
 Included Freesound MP3 preview as audio/witness-gasp.mp3, without further editing.
 Full source records: audio/expansion-sources.txt.
+
+KTD — NATURAL FOOTSTEPS AND WEAPON RECORDINGS
+Four hard-shoe footfalls: OwlStorm / Ashe Kirk / Owlish Media, Freesound.
+https://freesound.org/people/OwlStorm/sounds/151232/
+https://freesound.org/people/OwlStorm/sounds/151238/
+https://freesound.org/people/OwlStorm/sounds/151237/
+https://freesound.org/people/OwlStorm/sounds/151222/
+22 magnum pistol shot: michorvath, Freesound.
+https://freesound.org/people/michorvath/sounds/427594/
+Sauer 404 close shot: moosegravy, Freesound.
+https://freesound.org/people/moosegravy/sounds/431834/
+All six recordings: CC0 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+Trimmed, filtered, normalized and converted from creator-supplied MP3 previews.
+Individual source ranges, changes and hashes: audio/foley/SOURCES.txt.
+Subtle room reflections and reverb are applied at runtime, separately from music.

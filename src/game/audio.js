@@ -1,3 +1,4 @@
+import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
 import { native,nativeAnnouncement,stopNativeSpeech } from '../mobile/platform.js';
 import { dialogueKey } from './life-rules.js';
@@ -9,7 +10,7 @@ export class HospitalAudio {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         this.master = this.ctx.createGain(); this.master.gain.value = this.settings.volume * 0.45; this.master.connect(this.ctx.destination);
         this.music = this.ctx.createGain(); this.music.gain.value = 0.07; this.music.connect(this.master);
-        this.lowpass = this.ctx.createBiquadFilter(); this.lowpass.type = 'lowpass'; this.lowpass.frequency.value = 9500; this.lowpass.connect(this.master);
+        this.lowpass = this.ctx.createBiquadFilter(); this.lowpass.type = 'lowpass'; this.lowpass.frequency.value = 9500; this.lowpass.connect(this.master);this.foley=new HospitalFoley(this.ctx,this.lowpass,this.samples);
         this.droneGain = this.ctx.createGain(); this.droneGain.gain.value = 0.08; this.droneGain.connect(this.music);
         for (const freq of [55, 82.41, 110.3]) { const o = this.ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq; o.connect(this.droneGain); o.start(); }
         const noiseBuffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 2, this.ctx.sampleRate);
@@ -37,7 +38,8 @@ export class HospitalAudio {
     const source = this.ctx.createBufferSource(), filter = this.ctx.createBiquadFilter(), g = this.ctx.createGain();
     source.buffer = n; filter.frequency.value = filterFreq; g.gain.value = gain; source.connect(filter); filter.connect(g); g.connect(this.lowpass); source.start();
   }
-  sound(name) {
+  sound(name,options={}) {
+    if(['step','shot','rifle'].includes(name)&&this.enabled&&this.foley?.play(name,{...options,suppressed:!!this.settings.suppressor}))return;
     if (name === 'flicker') { this.noise(.09,.10,1800); this.tone(80,.12,.035,'triangle'); }
     if(name==='rifle'){this.noise(.32,.68,2200);this.tone(48,.32,.4,'triangle');}
     if(name==='gasp'){if(this.samples.gasp){this.sampleNodes('gasp',{x:0,y:1,z:0},.6);return;}this.noise(.35,.28,2300);this.tone(310,.17,.05,'sine');}
@@ -59,7 +61,7 @@ export class HospitalAudio {
   gasp(position){if(this.samples.gasp)this.playSample('gasp',position,.85);else this.sound('gasp');}
   async loadSamples() {
     if(this.samplePromise) return this.samplePromise;
-    this.samplePromise=Promise.allSettled(Object.entries({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3'}).map(async([name,url])=>{
+    this.samplePromise=Promise.allSettled(Object.entries({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3',...FOLEY_FILES}).map(async([name,url])=>{
       const response=await fetch(assetUrl(url));if(!response.ok && !(native && response.status === 0)) throw Error('Audio sample unavailable');this.samples[name]=await this.ctx.decodeAudioData(await response.arrayBuffer());
     }));return this.samplePromise;
   }
@@ -79,7 +81,7 @@ export class HospitalAudio {
     if(!channel&&gain>.003&&this.enabled) {channel=this.sampleNodes(name,position,0,true);if(channel)this.ambientChannels.set(key,channel);}
     if(channel) channel.volume.gain.setTargetAtTime(this.enabled?gain:0,this.ctx.currentTime,.55);
   }
-  stopAmbient() {this.voiceEpoch++;for(const record of this.activeSamples){try{record.source.stop();}catch{}}this.activeSamples.clear();this.ambientChannels.clear();}
+  stopAmbient() {this.foley?.stop();this.voiceEpoch++;for(const record of this.activeSamples){try{record.source.stop();}catch{}}this.activeSamples.clear();this.ambientChannels.clear();}
   setListener(position,direction,floor=0) {if(this.ctx&&floor!==this.listenerFloor)for(const record of this.activeSamples)if(record.floor!==undefined&&record.floor!==floor)record.volume.gain.setTargetAtTime(0,this.ctx.currentTime,.15);this.listenerFloor=floor;
     if(!this.ctx)return;const listener=this.ctx.listener;
     if(listener.positionX){listener.positionX.value=position.x;listener.positionY.value=position.y;listener.positionZ.value=position.z;listener.forwardX.value=direction.x;listener.forwardY.value=direction.y;listener.forwardZ.value=direction.z;listener.upX.value=0;listener.upY.value=1;listener.upZ.value=0;}
@@ -117,7 +119,7 @@ export class HospitalAudio {
     }
     if (emergency && now > this.nextBeep) { this.sound('alarm'); this.nextBeep = now + 2.4; }
     else if (!emergency && now > this.nextBeep) { this.tone(980, .1, .028); this.nextBeep = now + 5 + Math.random() * 3; }
-    if (moving) { this.stepClock += dt; if (this.stepClock > (running ? .27 : .46)) { this.sound('step'); this.stepClock = 0; } }
+    if (moving) { this.stepClock += dt; if (this.stepClock > (running ? .27 : .46)) { this.sound('step',{running}); this.stepClock = 0; } }
   }
-  dispose() { stopNativeSpeech();this.stopAmbient(); window.speechSynthesis?.cancel(); this.ctx?.close(); }
+  dispose() { this.foley?.dispose();stopNativeSpeech();this.stopAmbient(); window.speechSynthesis?.cancel(); this.ctx?.close(); }
 }

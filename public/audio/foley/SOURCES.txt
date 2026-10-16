@@ -1,0 +1,88 @@
+Hospital foley and weapon audio — source and editing record
+Retrieved and prepared 2026-10-16.
+All six selected recordings are licensed CC0 1.0 Universal by their creators.
+License: https://creativecommons.org/publicdomain/zero/1.0/
+No attribution is required. Optional credit: Foley by OwlStorm (Ashe Kirk / Owlish Media), michorvath and moosegravy via Freesound.
+
+Distribution format: mono 32 kHz, 16-bit PCM WAV, suitable for browser Web Audio.
+Source: each creator's public high-quality MP3 preview linked from the source page; original WAV downloads require a Freesound account. The public previews were converted to WAV and edited; these are not claimed to be original lossless masters.
+
+Footsteps are four distinct isolated hard-shoe recordings. They retain heel/toe contact and a little natural tail; they are not sneaker recordings and do not contain synthesized footfalls. Use subtle runtime room reverb/early reflections for the hospital rather than forcing a long fixed echo into every asset.
+Gunshots are field-recorded / creator-described real firearm sounds. They were shortened to the single discharge and its tail, excluding later handling. The rifle retains an early reflected/mechanical transient. No added voices or music. These are game effects, not loudness-calibrated recordings.
+
+Processing: remove leading/trailing dead space; mono downmix; high-pass 70 Hz for steps / 38 Hz for shots; low-pass 13.5 kHz; 2 ms entry and 25 ms exit fades. Footstep peaks -10 dBFS; weapon peaks -4 dBFS. All final WAVs have zero clipped samples.
+The pistol HQ MP3 has decoded intersample over-unity peaks; processing used floating-point samples and preserved headroom before the final PCM conversion.
+
+QA: inspected decoded waveforms and spectrograms. Steps have discrete impact/scrape transients and decay; shots have broadband attacks and decaying tails. No sustained speech-like harmonic passages occur in the selected ranges. Spectrograms, source-page snapshots, source previews and exact metrics are in ignored artifacts/audio-qa/ for audit. This was waveform/spectrum inspection, not a claim of a human listening session.
+
+step-01.wav
+Original title: Hard Female Footstep (1)
+Creator: OwlStorm
+Source page: https://freesound.org/people/OwlStorm/sounds/151232/
+Downloaded HQ MP3: https://cdn.freesound.org/previews/151/151232_140737-hq.mp3
+License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+Selected source range: 0.070–0.500 s
+Output duration: 0.430 s
+Output peak: -10.00 dBFS
+Output bytes: 27598
+SHA-256: 50a13df96eacf27f25ab4ba20440d7a1d553f48bbf919d1e6d3ff82fe13bebba
+
+step-02.wav
+Original title: Hard Female Footstep (2)
+Creator: OwlStorm
+Source page: https://freesound.org/people/OwlStorm/sounds/151238/
+Downloaded HQ MP3: https://cdn.freesound.org/previews/151/151238_140737-hq.mp3
+License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+Selected source range: 0.070–0.470 s
+Output duration: 0.400 s
+Output peak: -10.00 dBFS
+Output bytes: 25678
+SHA-256: 1e66dc1f72cb6f35ac5630bbe02aacb32f32b6904a00d0fcb479f8a1c37b222d
+
+step-03.wav
+Original title: Hard Female Footstep (3)
+Creator: OwlStorm
+Source page: https://freesound.org/people/OwlStorm/sounds/151237/
+Downloaded HQ MP3: https://cdn.freesound.org/previews/151/151237_140737-hq.mp3
+License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+Selected source range: 0.070–0.520 s
+Output duration: 0.450 s
+Output peak: -10.00 dBFS
+Output bytes: 28878
+SHA-256: c8e9ac900ce17fa69568c5d1bc6356319ea2e20a357e3d1d1f02f53b4004f12f
+
+step-04.wav
+Original title: Hard Female Footstep (4)
+Creator: OwlStorm
+Source page: https://freesound.org/people/OwlStorm/sounds/151222/
+Downloaded HQ MP3: https://cdn.freesound.org/previews/151/151222_140737-hq.mp3
+License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+Selected source range: 0.160–0.600 s
+Output duration: 0.440 s
+Output peak: -10.00 dBFS
+Output bytes: 28238
+SHA-256: 265ef347e675d7dd9d5f1a684d7ddc238d95aad87b3cefbf35d1cc237d2dc9fa
+
+pistol-shot.wav
+Original title: 22 magnum pistol shot
+Creator: michorvath
+Source page: https://freesound.org/people/michorvath/sounds/427594/
+Downloaded HQ MP3: https://cdn.freesound.org/previews/427/427594_3094998-hq.mp3
+License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+Selected source range: 0.180–1.630 s
+Output duration: 1.450 s
+Output peak: -4.00 dBFS
+Output bytes: 92878
+SHA-256: fef2c144f3d2f18d0c8225de4dd26370ecf8a1a0e71ae3488d10e1f756923b3c
+
+rifle-shot.wav
+Original title: Sauer 404 close shot.wav
+Creator: moosegravy
+Source page: https://freesound.org/people/moosegravy/sounds/431834/
+Downloaded HQ MP3: https://cdn.freesound.org/previews/431/431834_6138164-hq.mp3
+License: CC0 1.0 Universal, http://creativecommons.org/publicdomain/zero/1.0/
+Selected source range: 0.510–2.010 s
+Output duration: 1.500 s
+Output peak: -4.00 dBFS
+Output bytes: 96044
+SHA-256: 7cc2da6fd68e2cd3bc9989e4e6adf0fb04d663d81b4b42d922b245099d5488e0

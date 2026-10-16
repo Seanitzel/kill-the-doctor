@@ -1,4 +1,4 @@
-# Kill the Doctor — Northline
+# KTD — Kill the Doctor
 
 A complete playable hospital stealth thriller built with **Vue 3, Three.js, and Web Audio**, with native **Capacitor 8** apps for iOS and Android.
 
@@ -32,7 +32,7 @@ To preview phone controls on a desktop, append `?controls=touch` and use a lands
 ## What is playable
 
 - Six character profiles share two rigged body models, with idle, walking and running animations, customizable names, clothing, hair, skin tone and optional steel jewelry. Four profiles are free; River and Iman are coin unlocks.
-- Eight three-picture fictional hospital-rights stories rotate without repeats until the set is exhausted. Fade transitions, timed advance, continue, skip and an in-game panel of researched references are included. The sources distinguish historical findings from invented story details. Image prompts are in `public/stories/README.txt`.
+- Eight three-picture fictional revenge stories rotate without repeats until the set is exhausted. Jack, Pamela, Layla and Melanie have patient backstories that explain the promise, betrayal, discovery and motive. Fade transitions, reading time based on caption length, continue, skip and an in-game panel of researched references are included. The sources distinguish historical findings from invented story details. The original illustrations are unchanged; image prompts are in `public/stories/README.txt`.
 - Twenty-four departments across three connected floors: Emergency, Radiology, Laboratory, Pharmacy, Outpatient, Records, Cafeteria, Maintenance, Surgery, Intensive Care, Cardiology, Neurology, Maternity, Pediatrics, Patient Ward, Pathology, Oncology, Research, Renal Care, Endoscopy, Rehabilitation, Patient Advocacy, Transplant Ward and Isolation Unit.
 - Central and perimeter routes, opening doors, viewing windows, navigable rooms, and a working lift between floors.
 - Three evidence sources, rotating target assignments, matching target portraits, badge inspection, and a journal.
@@ -41,6 +41,7 @@ To preview phone controls on a desktop, append `?controls=touch` and use a lands
 - Doctors examine clothed patients in the clinical rooms, with a visible stethoscope. Room entry interrupts the examination with a startled turn and an “Excuse me” response.
 - Two clothed pregnant maternity patients, two swaddled newborns in bassinets, and bundled recordings of baby cries, distress vocalizations, and heavy breathing. Maternity sounds fade with distance and stop being audible on the other floor.
 - Layered synthesized music with gradual target proximity intensity, hospital ambience, optional spoken announcements, bundled NPC dialogue in two voices, and persistent captions.
+- Recorded hard-floor footsteps vary across four takes, with distinct pistol and rifle recordings and a short hospital room echo. Only player effects use this room response; the original music and hospital voices keep their existing mix. Clip provenance and CC0 licenses are in `public/audio/foley/SOURCES.txt`.
 - Blackouts, emergency lighting, a shadow-casting flashlight, and occasional brief light-fixture glitches.
 - A cough or sneeze warns the player before selected sick patients emit green contamination clouds. A bought, equipped face mask prevents new exposure. Base blur durations are 30 or 60 seconds, according to the patient, with a visible recovery countdown and gradual clearing over the final ten seconds. The recovery filter upgrade reduces these durations. Clean patients do not contaminate the player, and a single cloud does not repeatedly reset the timer.
 - Drawing or aiming a visible weapon causes witnesses to gasp and run to report it. A completed report before the primary objective fails the mission. Walls and facing affect detection; holstering prevents new sightings.

@@ -10,3 +10,6 @@
 
 .mobile-mode.emergency .toast{top:135px}
 @media (orientation:landscape) and (max-height:330px){.mobile-mode .hud-bottom .player-status{top:115px}.mobile-mode .player-status .operative-name{display:none}}
+
+.menu h1 .title-full{display:block;font:12px var(--mono);letter-spacing:.25em;line-height:1.5;margin-top:17px}
+.mobile-mode.menu h1 .title-full{font-size:8px;margin-top:9px}

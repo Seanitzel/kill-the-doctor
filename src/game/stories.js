@@ -13,7 +13,29 @@ export const STORY_SOURCES=[
   {id:'endometriosis',title:'Endometriosis: symptoms and delayed diagnosis',url:'https://www.who.int/news-room/fact-sheets/detail/endometriosis',publisher:'World Health Organization',note:'WHO describes diagnostic delays and the dismissal or normalization of symptoms. Melanie, her psychiatric admission and the events in her story are fictional.'},
   {id:'mri',title:'Benefits and Risks of MRI',url:'https://www.fda.gov/radiation-emitting-products/mri-magnetic-resonance-imaging/benefits-and-risks',publisher:'US FDA',note:'MRI uses no ionizing radiation. Magnetic objects can be attracted by its strong field. Northline’s fatal steel-jewelry event is a dramatized game hazard; not all jewelry is magnetic.'},
 ];
-export const STORIES=REVISED_CASEFILES;
+export const NEW_FICTIONAL_CASEFILES=[
+  {
+    id:'mara-after-the-prescription',title:'Mara — After the Prescription',theme:'Client file / Mara',
+    source:null,sourceNote:'A wholly fictional composite. No specific antibiotic or real patient is represented. The treatment reaction, paralysis, missed warning signs and concealed records are invented for this story.',
+    artId:'uninvited-observers',artPanels:[0,1,1,2],panels:[
+      ['A routine prescription','Mara came to Northline with a urinary tract infection. The doctor prescribed an antibiotic and sent her home, describing it as routine treatment. She expected a few uncomfortable days, then a return to work and ordinary life.'],
+      ['A frightening change','After starting the treatment, Mara developed burning sensations, weakness and spreading numbness. She returned to the hospital frightened by the change. Her doctor dismissed the symptoms and sent her home again. By the next morning, she could no longer move her legs.'],
+      ['The missing referral','Mara was left paralyzed from the waist down. An internal review later described a severe treatment reaction and missed signs of a neurological emergency. A nurse had requested urgent specialist assessment, but the physician cancelled it and removed the request from her discharge summary.'],
+      ['The life she lost','Mara obtained the nurse’s original note and the unedited review. She believes the doctor concealed the warning instead of responding to it. Mara wants revenge for the life she lost and the warning he erased. She has hired you, an assassin, to find the doctor at Northline and kill him.'],
+    ],
+  },
+  {
+    id:'evelyn-unwarned-dilation',title:'Evelyn — The Unwarned Walk',theme:'Client file / Nora',
+    source:null,sourceNote:'A wholly fictional composite. Evelyn, Nora, the unwarned examination, traffic accident, concealed paperwork and revenge contract are invented. This is not a documented case.',
+    artId:'stolen-choice',artPanels:[0,1,1,2],panels:[
+      ['An appointment alone','Seventy-four-year-old Evelyn went to Northline for an eye examination. Her daughter Nora had offered to come, but Evelyn expected a quick check. The doctor put drops in her eyes without first explaining that her pupils would be dilated or discussing how she would get home.'],
+      ['Sent into the glare','Her vision became blurred and the daylight painfully bright. Evelyn told the desk that she could not see clearly. Nobody arranged support, contacted Nora or explained when her sight should recover. The doctor signed her discharge and told her she could leave on her own.'],
+      ['A crossing outside','Still struggling to judge the road, Evelyn stepped into a crossing near the hospital and was struck by a car. She died later that evening. Northline called it an unrelated accident. Nora found that a warning-and-escort checklist had been completed after her mother had already left.'],
+      ['Her daughter’s contract','Nora kept Evelyn’s messages, the appointment times and a copy of the altered checklist. Nora wants revenge for the mother who never came home. She has hired you, an assassin, to find and kill the physician who sent Evelyn away, then concealed the missing warnings.'],
+    ],
+  },
+];
+export const STORIES=[...REVISED_CASEFILES,...NEW_FICTIONAL_CASEFILES];
 export function storyDuration(story,panel){
   const words=`${panel===0?story.title:story.panels[panel][0]} ${story.panels[panel][1]}`.trim().split(/\s+/).length;
   return Math.max(8500,Math.min(18000,2400+words*290));

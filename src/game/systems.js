@@ -1,6 +1,7 @@
 import {EgressNavigation} from './egress.js';
 import * as THREE from 'three';
 import {tileAt,key} from './layout.js';
+import {WITNESS_LINES} from './life-rules.js';
 import {seesDrawnWeapon} from './loadout.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export class MissionSystems{
@@ -18,15 +19,15 @@ export class MissionSystems{
   startEvacuation(){
     if(this.evacuating)return;this.evacuating=true;this.e.audio.sound('alarm');this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
     for(const level of this.e.levels)for(const door of level.doors){door.locked=false;door.open=true;}
-    for(const n of this.e.npcs){if(n.dead||n.baby||n.role==='police')continue;if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.evacGoal=n.floor?{x:0,z:-24}:{x:0,z:33};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.8;this.route(n,n.evacGoal);}
+    for(const n of this.e.npcs){if(n.dead||n.baby||n.rescuePatient||n.role==='police')continue;if(n.operationDoctor&&this.e.mission.type==='rescue'){n.reporting=null;n.path=[];n.activity='worried';continue;}if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.evacGoal=n.floor?{x:0,z:-24}:{x:0,z:33};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.8;this.route(n,n.evacGoal);}
     this.e.hooks.soundCaption?.('The alarm sounds. Staff and ambulatory patients rush toward the exits. Newborns remain protected.');
   }
-  witness(n){
-    const e=this.e;
+  witness(n,reason='weapon'){
+    const e=this.e;if(n.operationDoctor&&e.mission.type==='rescue'){e.mission.beginEscape(65);this.startEvacuation();e.notify('Operating team alerted · stop the procedure and bring the patient out','danger');return;}
     const stations=[{x:0,z:-23},{x:18,z:0},{x:-3,z:25.5}].sort((a,b)=>distance(n.pos,a)-distance(n.pos,b));
-    const goal=stations[0];this.stand(n,goal);n.reaction=.7;n.reporting={started:e.mission.elapsed,deadline:e.mission.elapsed+8+Math.min(13,distance(n.pos,goal)/2.5),goal};
-    this.route(n,goal);e.audio.gasp({x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});e.audio.speak('A weapon! I am calling security!',n.person,.8,4);
-    e.notify('Weapon seen · a witness is running to report you','danger');e.hooks.soundCaption?.(`${n.name} gasps and runs to report the weapon.`);
+    const goal=stations[0];this.stand(n,goal);n.reaction=.7;n.reporting={reason,started:e.mission.elapsed,deadline:e.mission.elapsed+8+Math.min(13,distance(n.pos,goal)/2.5),goal};
+    this.route(n,goal);e.audio.gasp({x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});e.audio.dialogue?.(WITNESS_LINES[reason]||WITNESS_LINES.weapon,n.person,.8,true,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});
+    e.notify(reason==='camera'?'Camera seen · security is reporting you':'Weapon seen · a witness is running to report you','danger');e.hooks.soundCaption?.(`${n.name} gasps and runs to report ${reason==='camera'?'the camera':'the weapon'}.`);
   }
   arrivalSpot(floor,actor){
     const e=this.e,base=e.levels[floor].elevator;
@@ -38,10 +39,11 @@ export class MissionSystems{
   }
   prepareNPC(n){
     const e=this.e,now=e.mission.elapsed;
+    if(e.objectives?.prepareNPC(n)||e.visitors?.prepareNPC(n))return true;
     if(e.incidents?.prepareNPC(n))return true;
-    if(n.reporting&&!e.mission.targetDown){
+    if(n.reporting&&(e.mission.type==='rescue'?e.mission.state!=='escape':!e.mission.targetDown)){
       const r=n.reporting;
-      if(now>=r.deadline||now-r.started>1.5&&distance(n.pos,r.goal)<1.3){e.audio.sound('alarm');e.mission.finish(false,'Your weapon was reported before the primary target was eliminated. Police intercepted you.');e.finish();return true;}
+      if(now>=r.deadline||now-r.started>1.5&&distance(n.pos,r.goal)<1.3){e.audio.sound('alarm');e.mission.finish(false,r.reason==='camera'?'Security reported your unauthorized photography before you escaped.':e.mission.type==='rescue'?'Your weapon was reported on a public floor before you reached the operating suite.':'Your weapon was reported before the primary target was eliminated. Police intercepted you.');e.finish();return true;}
       if(n.cursor>=n.path.length&&n.wait<0)this.route(n,r.goal);return true;
     }
     if(n.evacuating){
@@ -54,12 +56,12 @@ export class MissionSystems{
     return false;
   }
   update(dt){
-    const e=this.e;if(e.mission.targetDown&&!this.evacuating)this.startEvacuation();
+    const e=this.e;if((e.mission.targetDown||e.mission.type==='rescue'&&e.mission.state==='escape')&&!this.evacuating)this.startEvacuation();
     this.scan-=dt;
-    if(!e.mission.targetDown&&e.weaponDrawn&&this.scan<=0){
+    if(e.mission.state!=='escape'&&!e.mission.targetDown&&e.weaponDrawn&&this.scan<=0){
       this.scan=.18;let reporting=e.npcs.filter(n=>n.reporting&&!n.dead).length;
       for(const n of e.npcs){
-        if(reporting>=3)break;if(n.dead||n.evacuated||n.baby||n.lying||n.reporting||n.recruit?.state==='recruited'||n.floor!==e.floor)continue;
+        if(reporting>=3||e.mission.state==='escape')break;if(n.dead||n.evacuated||n.baby||n.blind||n.rescuePatient||n.lying||n.reporting||n.recruit?.state==='recruited'||n.floor!==e.floor)continue;
         const visible=distance(n.pos,e.playerPos)<11&&e.lineOfSight(n.pos,e.playerPos);
         if(seesDrawnWeapon(n.pos,e.playerPos,n.visual.root.rotation.y,visible)){this.witness(n);reporting++;}
       }
@@ -71,5 +73,5 @@ export class MissionSystems{
     }
     if(this.magnet){const m=this.magnet;m.age+=dt;e.playerPos.lerpVectors(m.from,m.to,Math.min(1,m.age/.95));e.player.root.position.copy(e.playerPos);if(m.age>=.95){e.mission.finish(false,'Steel jewelry was pulled into the MRI magnet. Remove it in the character studio before entering Radiology.');e.finish();}}
   }
-  reports(){return this.e.npcs.filter(n=>n.reporting&&!n.dead&&!n.evacuated).map(n=>({id:n.id,name:n.name,seconds:Math.max(0,Math.ceil(n.reporting.deadline-this.e.mission.elapsed))}));}
+  reports(){return this.e.npcs.filter(n=>n.reporting&&!n.dead&&!n.evacuated).map(n=>({id:n.id,name:n.name,reason:n.reporting.reason,seconds:Math.max(0,Math.ceil(n.reporting.deadline-this.e.mission.elapsed))}));}
 }

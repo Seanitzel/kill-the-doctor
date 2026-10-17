@@ -58,7 +58,7 @@ test('Only the assigned doctor starts evacuation; staff bonuses bank once after 
 });
 test('Assignments cover three floors and remain doctor-only',()=>{
   const floors=new Set();for(let i=1;i<=80;i++){const save=defaultSave();save.attempts=i;const m=new Mission(save,i);floors.add(m.target.floor);assert.match(m.target.name,/^Dr\./);}
-  assert.equal(FLOORS.length,3);assert.deepEqual([...floors].sort(),[0,1,2]);
+  assert.equal(FLOORS.length,4);assert.deepEqual([...floors].sort(),[0,1,2]);
 });
 test('Witnesses need proximity, facing and a clear view of the weapon',()=>{
   assert.equal(seesDrawnWeapon({x:0,z:0},{x:0,z:6},0,true),true);

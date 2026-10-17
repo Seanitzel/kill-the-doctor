@@ -1,8 +1,8 @@
 export const TILE = 3;
 export const SIZE = 23;
-export const FLOORS = ['Ground floor', 'First floor', 'Second floor'];
-export const FLOOR_CODES = ['G','1','2'];
-export const FLOOR_THEMES = ['Clinical & diagnostics','Specialist care','Advanced care & research'];
+export const FLOORS = ['Ground floor', 'First floor', 'Second floor', 'Basement'];
+export const FLOOR_CODES = ['G','1','2','B'];
+export const FLOOR_THEMES = ['Clinical & diagnostics','Specialist care','Advanced care & research','Restricted operating suite'];
 const roomSpecs = [
   [4, 5, 3, 5], [7, 5, 3, 5], [12, 5, 3, 5], [15, 5, 3, 5],
   [4, 12, 3, 6], [7, 12, 3, 6], [12, 12, 3, 6], [15, 12, 3, 6],
@@ -30,23 +30,28 @@ export function makeLayout(floor = 0) {
   const fill = (x, z, w, h, room = 'hall') => {
     for (let i = x; i < x + w; i++) for (let j = z; j < z + h; j++) cells.set(key(i, j), { x: i, z: j, room });
   };
+  if(floor===3)fill(10,3,2,4);
+  else {
   fill(10, 3, 2, 20); fill(2, 10, 18, 2);
   fill(2, 3, 2, 17); fill(18, 3, 2, 17);
   fill(2, 3, 18, 2); fill(2, 18, 18, 2);
   fill(8, 20, 7, 3); // entrance atrium
-  const rooms = roomSpecs.map(([x, z, w, h], i) => {
-    const [name, subtitle, kind] = departments[floor * 8 + i];
-    const room = { id: `f${floor}-r${i}`, index: i, x, z, w, h, name, subtitle, kind, floor, number: `${floor + 1}${String(i + 1).padStart(2, '0')}`, wing: i < 2 || (i >= 4 && i < 6) ? 'West' : 'East' };
+  }
+  const specs=floor===3?[[7,7,7,6]]:floor===0?[...roomSpecs,[4,20,3,3]]:roomSpecs;
+  const rooms = specs.map(([x, z, w, h], i) => {
+    const [name, subtitle, kind] = floor===3?['Restricted theatre','Authorized personnel only','rescue-theater']:i===8?['Bathroom','Toilets & washbasins','bathroom']:departments[floor * 8 + i];
+    const room = { id: `f${floor}-r${i}`, index: i, x, z, w, h, name, subtitle, kind, floor, number: floor===3?'B01':`${floor + 1}${String(i + 1).padStart(2, '0')}`, wing: i < 2 || (i >= 4 && i < 6) ? 'West' : 'East' };
     room.center = world(x + (w - 1) / 2, z + (h - 1) / 2);
     fill(x, z, w, h, room.id);
     return room;
   });
   const doors = [];
   for (const room of rooms) {
-    const x = room.x + 1, z = room.z < 10 ? room.z + room.h - 1 : room.z;
-    const otherZ = z + (room.z < 10 ? 1 : -1);
+    const x = floor===3?10:room.x+1, z = floor===3?room.z:room.z < 10 ? room.z + room.h - 1 : room.z;
+    const otherZ = z + (floor!==3&&room.z < 10 ? 1 : -1);
     doors.push({ id: `${room.id}-door`, a: key(x, z), b: key(x, otherZ), room: room.id, floor, x: world(x, z).x, z: (world(x, z).z + world(x, otherZ).z) / 2, axis: 'x', open: false, locked: false });
     // A second door to the perimeter ring lets departments connect through the hospital.
+    if(floor===3||room.kind==='bathroom')continue;
     const backZ = room.z < 10 ? room.z : room.z + room.h - 1;
     const outZ = backZ + (room.z < 10 ? -1 : 1);
     doors.push({ id: `${room.id}-back`, a: key(x, backZ), b: key(x, outZ), room: room.id, floor, x: world(x, backZ).x, z: (world(x, backZ).z + world(x, outZ).z) / 2, axis: 'x', open: true, locked: false });
@@ -66,11 +71,12 @@ export function makeLayout(floor = 0) {
       walls.push({ ...pos, axis: dx ? 'z' : 'x', door, exterior: !neighbor });
     }
   }
+  const directory=floor===3?{x:-4,z:-21}:{...world(9,20)},schedule=floor===3?{x:-4,z:-18}:{...world(17,11)};
   return { floor, cells, rooms, doors, doorEdges, walls,
     exit: { ...world(11, 22), floor: 0 },
     elevator: { ...world(11, 3), floor, label: 'Elevator / stairs' },
-    directory: { ...world(9, 20), floor, label: floor ? `${FLOORS[floor]} directory` : 'Staff directory' },
-    schedule: { ...world(17, 11), floor, label: 'Staff schedule' },
+    directory: { ...directory, floor, label: floor ? `${FLOORS[floor]} directory` : 'Staff directory' },
+    schedule: { ...schedule, floor, label: 'Staff schedule' },
   };
 }
 export function neighbors(layout, cell, allowClosed = true) {

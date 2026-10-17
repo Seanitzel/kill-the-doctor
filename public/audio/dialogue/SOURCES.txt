@@ -1,31 +1,40 @@
-Northline ambient dialogue — expressive neural speech revision 3 (2026-10-16)
+Northline bundled speech — Pocket TTS revision 4 (2026-10-17)
 
-These clips are locally generated synthetic speech, not human voice-actor recordings. No real person's custom voice clone was created or used. The two short human pain reactions live outside this folder and have separate CC0 provenance in ../expansion-sources.txt.
+These clips are synthetic performances of fictional game text, not authentic recordings of real people or medical events. No custom person's voice was cloned for this project. Short human cough, gasp, pain and panic recordings have separate provenance in ../expansion-sources.txt.
 
-The 61 unique fictional dialogue lines include everyday conversations, pharmacy questions, clinical examinations, pain requests, startled interruptions, concern about unexplained noises and the fictional recruitment encounter. Both genders are supplied for all lines: 122 text/gender keys and 244 MP3 files. All 56 original text/gender/key mappings are preserved. Caption text remains the key source; spoken renditions use contractions, brief interjections and hesitations. Acamol is spoken as Ah-kah-mol for pronunciation. The manifest records the exact rendition of each take.
+74 unique lines are supplied in both genders: 148 text/gender keys and 296 MP3 clips. Every key present in the previous 61-line release is preserved. Text covers everyday, pharmacy and clinical conversations, pain, suspicion, the fictional contact encounter, six short distress remarks, five static hospital public-address announcements, and separate weapon/camera witness warnings. Caption hashes remain exact; spoken renditions use ordinary contractions. Acamol is rendered Ah-kah-mol for pronunciation. Each variant's exact spokenText is recorded in manifest.json.
 
-Generation system:
-Kokoro 82M v1.0 model by hexgrad, model weights licensed Apache License 2.0.
-Model source and card: https://huggingface.co/hexgrad/Kokoro-82M
-Model repository: https://github.com/hexgrad/kokoro
-Voice documentation: https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md
-Kokoro-ONNX runtime 0.6.1 by thewh1teagle, MIT licensed.
-Runtime source: https://github.com/thewh1teagle/kokoro-onnx
-Model export: https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/kokoro-v1.0.onnx
-Voice styles: https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/voices-v1.0.bin
+Speech model and runtime:
+Kyutai Pocket TTS 3.3.0 runtime, MIT license.
+Primary project: https://github.com/kyutai-labs/pocket-tts
+Runtime license: https://github.com/kyutai-labs/pocket-tts/blob/main/LICENSE
+English September 2026 weights, CC BY 4.0 according to the primary model cards:
+https://huggingface.co/kyutai/pocket-tts
+https://huggingface.co/kyutai/pocket-tts-without-voice-cloning
+No-cloning model revision: 575d14372df89a4534bcb989870a34e77544b09f
 
-Licenses are included as LICENSE-Kokoro-Apache-2.0.txt and LICENSE-kokoro-onnx-MIT.txt. They describe the generation model/runtime. The generated clips are game assets; model/runtime binaries are not included in the shipped game.
+Supplied precomputed voice presets (not user-provided clones):
+Female: alba. Voice performance by Alba MacKenna, released CC BY 4.0 in Kyutai's supplied voice catalog.
+https://huggingface.co/kyutai/tts-voices/blob/main/README.md#alba-mackenna
+https://huggingface.co/kyutai/tts-voices/blob/main/alba-mackenna/casual.wav
+Male: marius. The official preset maps to the Selfie.wav voice donation, CC0 according to Kyutai's Unmute Voice Donation Project catalog.
+https://huggingface.co/kyutai/tts-voices/blob/main/README.md#voice-donations
+https://huggingface.co/kyutai/tts-voices/blob/main/voice-donations/Selfie.wav
+Official preset mapping: https://github.com/kyutai-labs/pocket-tts/blob/main/pocket_tts/utils/utils.py
+Preset embeddings: https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/tree/main/languages/english/embeddings
+No endorsement by Kyutai, Alba MacKenna or the voice donation project is implied.
 
-Performances:
-Female supplied styles af_heart and af_bella; male supplied styles am_michael and am_fenrir. Voice blending, phrase punctuation, clause/sentence pauses and inference pacing differ for conversation, clinical instructions, patients, pain, suspicion, anxiety and reassurance. Each key has KEY.mp3 and KEY-alt.mp3; alternate takes are independently synthesized. Rates range approximately 0.87–1.10. There is no playback pitch shifting, baked room echo, or artificial breath generator. Kokoro does not provide a dedicated emotion-prompt interface; these are prosody/style adjustments, not a claim of human acting or fully controllable emotional expression.
+License URLs: https://creativecommons.org/licenses/by/4.0/ and https://creativecommons.org/publicdomain/zero/1.0/
+Runtime license and attribution notice are included as LICENSE-Pocket-TTS-MIT.txt and NOTICE-Pocket-Voices-CC-BY-4.0.txt. Older Kokoro notices remain for provenance of superseded builds; the bundled revision-4 recordings use Pocket TTS. No model weights or preset embeddings are distributed in the game.
 
-manifest.json retains text/gender/key, category, spokenText, synthetic:true and engine, and records each variant's file, supplied style/blend, delivery, speed, phrase pauses, spoken rendition, duration, bytes and SHA-256. Files are mono 24 kHz, 80 kbit/s MP3. Processing: 70 Hz high-pass, 10.5 kHz low-pass, restrained -20 LUFS / -3 dBTP targets with 11 LU loudness-range allowance and tiny entry/exit padding.
+Generation:
+Each entire phrase is synthesized with its supplied preset at the model's recommended sampling temperature 0.3. Alternate takes use independent seeds and preserve the speaker preset. There is no mixed-voice style embedding, forced speech rate, runtime pitch shift or baked reverberation. The goal is more fluid whole-phrase delivery; perceived naturalness and emotion are subjective and are not guaranteed by these technical changes. Six short distress remarks are separate from the human scream cue, allowing an abrupt calm transition controlled by gameplay.
+
+Processing: mono 24 kHz, 80 kbit MP3; 70 Hz high-pass and 10.5 kHz low-pass; restrained -20 LUFS / -3 dBTP targets, 12 LU loudness range allowance; tiny entry/exit padding. manifest.json records text/gender/key, category, synthetic:true, engine/model and each variant's file, supplied voice, exact rendition, seed, temperature, normal speed, duration, bytes and SHA-256. Existing base filenames KEY.mp3 and alternate KEY-alt.mp3 stay compatible.
+
+Five static PA lines now use these bundled recordings. Announcements containing a runtime doctor name and room still use the device's available speech voice, as does the existing failure fallback when a bundled file cannot load. Captions remain available.
 
 QA:
-All dialogue and pain files are decoded and checked for finite nonempty samples and peak headroom. All expected keys and both takes are tested against file SHA-256. This is technical QA, not a claim of a human listening session or actor-grade delivery. Delivery preferences can still benefit from playback feedback.
+Expected key coverage, both takes, file hashes and whole-file decoding are checked. Each decoded output is finite/nonempty with peak headroom. This is technical QA, not a claim of a human listening session, studio voice acting or guaranteed emotional realism. Short male/female preview montages and decoded metrics are retained in ignored artifacts/audio-v4/ for review.
 
-Reproduce with scripts/generate-dialogue-audio-v2.py (the existing helper now builds revision 3 from ALL_DIALOGUE_LINES). Local models remain in ignored artifacts/audio-v2/models/; revision 3 backups, staging, logs, decoded metrics and short male/female previews are in ignored artifacts/audio-v3/. Original music notes/timing are unchanged; the game raises their bus gain by 20%.
-
-Model/export SHA-256:
-kokoro-v1.0.onnx: beb0d1848dee9a49da392cc3df26958d46cfa35d321edf434f52949153f0df3a
-voices-v1.0.bin: bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d
+Reproduce: scripts/generate-dialogue-audio-v4.py with ignored artifacts/audio-v4/venv/. Build-time setup/model downloads are isolated from application dependency manifests and shipped assets. Original music, note timing, machine cues, weapon samples and footstep samples are unchanged; this revision only reduces footstep playback gain.

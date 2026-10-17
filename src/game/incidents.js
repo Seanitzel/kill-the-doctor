@@ -2,7 +2,7 @@ import {tileAt,key,rng} from './layout.js';
 import {makePlayer} from './assets.js';
 import {seesDrawnWeapon} from './loadout.js';
 import {weaponModel} from './gear.js';
-import {SUSPICION_LINES,RECRUIT_DIALOGUE} from './life-rules.js';
+import {SUSPICION_LINES,RECRUIT_DIALOGUE,DISTRESS_LINES} from './life-rules.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const NAMES=['Jamie Cole','Dylan Hayes','Riley Brooks','Morgan Reed','Casey Ellis','Jordan Vale','Taylor Lane','Avery Quinn','Cameron Shaw','Robin West'];
 export const SHOT_MEMORY_SECONDS=120;
@@ -19,10 +19,13 @@ export function contactIdentity(round,seed){
 export class HospitalIncidents{
   constructor(engine){this.e=engine;this.contact=null;this.scan=0;this.heardSerial=0;this.nextConversation=0;}
   setup(){
-    const e=this.e;if(!contactRound(e.mission.round))return;
+    const e=this.e;if(e.mission.type!=='standard'||!contactRound(e.mission.round))return;this.arrivalAt=65+e.mission.random()*45;
+  }
+  arrive(){
+    const e=this.e;if(this.contact||!this.arrivalAt||e.mission.elapsed<this.arrivalAt||e.mission.state==='escape'||e.mission.result)return false;
     const person=contactIdentity(e.mission.round,e.mission.seed),visual=makePlayer(e.assets,person.gender,{...person,outfit:'jacket'},'civilian'),n=e.spawnNPC(person,'patient',0,{x:3,z:30},null,'unexpected-contact',{visual});
-    n.recruit={state:'panicked',nextBurst:5,speakAt:2,shotAt:0};n.activity='panic';n.speed=4.3;n.contamination=0;n.name=person.name;n.person=person;this.contact=n;
-    this.privateRoom=e.levels[0].rooms.find(r=>r.kind==='utility');
+    n.recruit={state:'panicked',nextBurst:e.mission.elapsed,speakAt:e.mission.elapsed+4,shotAt:0,phase:'calm'};n.activity='panic';n.speed=4.3;n.contamination=0;n.name=person.name;n.person=person;this.contact=n;
+    this.privateRoom=e.levels[0].rooms.find(r=>r.kind==='utility');return true;
   }
   hearShot(origin,floor){
     const e=this.e,now=e.mission.elapsed,serial=++this.heardSerial,range=e.mission.save.upgrades.suppressor?15:90;
@@ -71,8 +74,10 @@ export class HospitalIncidents{
     if(!n.recruit||n.evacuating||n.reporting||n.recruit.state==='dismissed')return false;
     const e=this.e,r=n.recruit,now=e.mission.elapsed;
     if(r.state==='panicked'){
-      if(now>=r.nextBurst){const points=[{x:-3,z:29},{x:3,z:31},{x:0,z:25}];r.nextBurst=now+8+e.mission.random()*7;r.burstUntil=now+2.6;n.activity=null;n.reaction=0;this.route(n,points[Math.floor(e.mission.random()*points.length)]);}
-      if(now>r.burstUntil||n.cursor>=n.path.length){n.activity='panic';n.path=[];}
+      if(now>=r.nextBurst){const points=[{x:-3,z:29},{x:3,z:31},{x:0,z:25}];r.nextBurst=now+11+e.mission.random()*7;r.burstUntil=now+3.5+e.mission.random()*1.5;r.phase='running';n.activity=null;n.reaction=0;this.route(n,points[Math.floor(e.mission.random()*points.length)]);if(n.floor===e.floor&&distance(n.pos,e.playerPos)<18){e.audio.distress?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},.68);e.hooks.soundCaption?.(`${n.name} cries out and runs along the corridor.`);}}
+      if(now>=r.burstUntil&&r.phase==='running'){r.phase='calm';e.audio.stopDistress?.();n.activity='rest';n.path=[];n.reaction=0;r.speakAt=now+.7;}
+      if(r.phase==='running'&&n.cursor>=n.path.length){n.activity='panic';n.path=[];}
+      if(r.phase==='calm'){n.activity='rest';n.path=[];}
       return true;
     }
     if(['escort','recruited'].includes(r.state)){
@@ -99,7 +104,7 @@ export class HospitalIncidents{
     return true;
   }
   update(dt){
-    const e=this.e,now=e.mission.elapsed;this.scan-=dt;
+    const e=this.e,now=e.mission.elapsed;this.arrive();this.scan-=dt;
     if(this.scan<=0&&!e.mission.targetDown){
       this.scan=.3;
       for(const n of e.npcs){
@@ -112,7 +117,7 @@ export class HospitalIncidents{
         }
       }
     }
-    const n=this.contact;if(n&&!n.dead&&!n.evacuated&&n.recruit.state==='panicked'&&now>=n.recruit.speakAt&&n.floor===e.floor&&distance(n.pos,e.playerPos)<10){n.recruit.speakAt=now+28;e.life?.speak(n,RECRUIT_DIALOGUE.invite,true);}
+    const n=this.contact;if(n&&!n.dead&&!n.evacuated&&n.recruit.state==='panicked'&&n.recruit.phase==='calm'&&now>=n.recruit.speakAt&&n.floor===e.floor&&distance(n.pos,e.playerPos)<15){n.recruit.speakAt=now+22;e.life?.speak(n,DISTRESS_LINES[Math.floor(e.mission.random()*DISTRESS_LINES.length)],true);}
   }
   hud(){const n=this.contact;if(!n||n.dead||n.evacuated||n.recruit.state==='dismissed'||n.recruit.state==='panicked'&&(n.floor!==this.e.floor||distance(n.pos,this.e.playerPos)>16))return null;return {name:n.name,state:n.recruit.state,label:n.recruit.state==='panicked'?'Distressed visitor nearby':n.recruit.state==='escort'?'Find an empty side room':this.e.mission.targetDown?'Covering your escape':'Waiting for your signal'};}
   dispose(){this.contact=null;this.e=null;}

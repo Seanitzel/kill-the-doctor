@@ -1,5 +1,6 @@
 import { rng, makeLayout, FLOORS } from './layout.js';
 import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,migrateCharacterSave} from './loadout.js';
+import {assignmentType,ASSIGNMENT_TYPES} from './assignment-types.js';
 export const SAVE_KEY = 'ktd-northline-v1';
 export const UPGRADE_INFO = [
   { id: 'shoes', name: 'Lightweight footwear', description: 'Move 8% faster per level. Quieter steps reduce suspicion.', cost: 120, max: 3 },
@@ -31,7 +32,7 @@ export function readSave(storage) {
     blank.loadout={weapon:data.loadout?.weapon==='sniper'&&blank.upgrades.sniper?'sniper':'pistol',mask:!!data.loadout?.mask&&!!blank.upgrades.mask};
     blank.storySeen=Array.isArray(data.storySeen)?data.storySeen.filter(id=>typeof id==='string').slice(-128):[];blank.lastStory=typeof data.lastStory==='string'?data.lastStory:'';
     const a=data.activeAssignment;
-    if(a&&a.round===blank.completed+1&&typeof a.storyId==='string'&&Number.isSafeInteger(a.seed)&&Number.isSafeInteger(a.attempt)&&a.attempt>=0)blank.activeAssignment={round:a.round,storyId:a.storyId,seed:a.seed,attempt:a.attempt,introSeen:a.introSeen===true};
+    if(a&&a.round===blank.completed+1&&typeof a.storyId==='string'&&Number.isSafeInteger(a.seed)&&Number.isSafeInteger(a.attempt)&&a.attempt>=0)blank.activeAssignment={round:a.round,storyId:a.storyId,seed:a.seed,attempt:a.attempt,introSeen:a.introSeen===true,type:ASSIGNMENT_TYPES.includes(a.type)?a.type:'standard'};
     if (data.settings) {
       blank.settings.volume = Math.min(1, Math.max(0, Number(data.settings.volume) || 0));
       blank.settings.speech = data.settings.speech !== false;
@@ -55,12 +56,13 @@ export function purchase(save, id) {
 export class Mission {
   constructor(save, seed = Date.now(), attempt = save.attempts) {
     this.save = save; this.random = rng(seed); this.seed = seed;
-    this.round = save.completed + 1;
+    this.round = save.completed + 1;this.type=assignmentType(save);this.keys=[];this.photos=[];this.photoImages={};this.operationDoctors=[];this.patientReleased=false;
     this.difficulty = save.settings.difficulty;
     const doctors=STAFF.filter(s=>s.name.startsWith('Dr.'));const targetIndex=(attempt+Math.floor(this.random()*3))%doctors.length;
-    const floor = attempt === 0 ? 0 : Math.floor(this.random() * FLOORS.length);
-    const availableRooms = makeLayout(floor).rooms.filter(r => !['cafe', 'office', 'utility', 'morgue'].includes(r.kind));
+    const floor = attempt === 0 ? 0 : Math.floor(this.random() * 3);
+    const availableRooms = makeLayout(floor).rooms.filter(r => !['cafe', 'office', 'utility', 'morgue', 'bathroom'].includes(r.kind));
     this.target = { ...doctors[targetIndex], id: 'target', floor, room: availableRooms[Math.floor(this.random() * availableRooms.length)] };
+    if(this.type!=='standard')this.target={...doctors[0],id:'operation-doctor-0',floor:3,room:makeLayout(3).rooms[0]};
     this.state = 'investigate'; this.clues = []; this.elapsed = 0; this.timer = 0;
     this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
     this.suspicion = 0; this.blackoutCount = 0;
@@ -81,27 +83,35 @@ export class Mission {
     if (this.result || npc.dead) return;
     this.shots++;
     if (npc.role === 'patient') { return this.finish(false, 'A patient was harmed. The assignment is void.'); }
+    if(this.type==='evidence')return this.finish(false,'A person was harmed. This was an evidence-only assignment.');
+    if(this.type==='rescue'){
+      if(!npc.id?.startsWith('operation-doctor-')||this.operationDoctors.includes(npc.id))return false;
+      this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;this.beginEscape(65);return true;
+    }
     if(!mayHitStaff(this,npc)){this.suspicion=Math.min(100,this.suspicion+20);return false;}
     if(npc.role==='police'){this.suspicion=100;return true;}
     this.staffKills++;
     if (npc.id === 'target') {
       this.targetDown = true; this.state = 'escape';
-      this.timer = ({ relaxed: 150, standard: 110, hard: 75 })[this.difficulty] + (this.save.upgrades.suppressor ? 15 : 0);
-      this.suspicion = 65;
+      this.beginEscape(65);
     } else { this.suspicion = Math.min(100, this.suspicion + 38); }
     return true;
   }
+  beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0);}this.suspicion=Math.max(this.suspicion,suspicion);}
+  collectKey(id){if(this.result||!['basement','theatre'].includes(id)||this.keys.includes(id))return false;this.keys.push(id);return true;}
+  photograph(id){if(this.type!=='evidence'||this.result||!['ledger','consent','theatre'].includes(id)||this.photos.includes(id))return false;this.photos.push(id);if(this.photos.length===3)this.beginEscape(0);return true;}
+  releasePatient(){if(this.type!=='rescue'||!this.targetDown||this.patientReleased||this.result)return false;this.patientReleased=true;return true;}
   tick(dt) {
     if (this.result) return;
     this.elapsed += dt;
     if (this.state === 'escape') { this.timer = Math.max(0, this.timer - dt); if (this.timer <= 0) return this.finish(false, 'Police sealed the exits before you escaped.'); }
     else this.suspicion = Math.max(0, this.suspicion - dt * 1.1);
   }
-  escape() { if (this.targetDown && !this.result) return this.finish(true, 'Assignment complete. You left the hospital before lockdown.'); }
+  escape(patientPresent=false) { if (this.type==='evidence'&&this.photos.length!==3||this.type==='rescue'&&(!this.patientReleased||!patientPresent)||this.type==='standard'&&!this.targetDown)return; if (!this.result) return this.finish(true,this.type==='rescue'?'Patient rescued. You both left the hospital before lockdown.':this.type==='evidence'?'Evidence secured. You escaped with all three photographs and no casualties.':'Assignment complete. You left the hospital before lockdown.'); }
   finish(success, reason) {
     if (this.result) return this.result;
     this.state = 'results';
-    const breakdown = success ? [
+    const breakdown = success ? this.type==='evidence'?[{label:'Verified photographs',coins:this.photos.length*100},{label:'Nonviolent escape',coins:160}]:this.type==='rescue'?[{label:'Patient rescued',coins:300},{label:'Operation stopped',coins:160},{label:'Successful escort',coins:100}]:[
       { label: 'Assigned target', coins: 140 }, { label: 'Successful escape', coins: 100 },
       { label: 'Evidence collected', coins: this.clues.length * 20 },
       { label: 'Additional staff', coins: Math.max(0, this.staffKills - 1) * STAFF_BONUS },
@@ -109,7 +119,7 @@ export class Mission {
     ] : [];
     const coins = breakdown.reduce((sum, row) => sum + row.coins, 0);
     this.save.coins += coins; this.save.attempts++; if (success) this.save.completed++;
-    this.result = { success, reason, coins, breakdown, duration: this.elapsed, targetDown: this.targetDown, escaped: success, staffKills: this.staffKills, clues: this.clues.length };
+    this.result = { type:this.type,photos:this.photos.length,rescued:this.type==='rescue'&&success,success, reason, coins, breakdown, duration: this.elapsed, targetDown: this.targetDown, escaped: success, staffKills: this.staffKills, clues: this.clues.length };
     return this.result;
   }
 }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {HospitalAudio,hospitalMachineBuffer,MACHINE_DURATIONS,HOSPITAL_SAMPLE_FILES} from '../src/game/audio.js';
 import {HospitalFoley} from '../src/game/foley.js';
-import {ALL_DIALOGUE_LINES,CLINICAL_CONVERSATIONS,PATIENT_PAIN_LINES,SUSPICION_LINES,RECRUIT_DIALOGUE,CONVERSATIONS} from '../src/game/life-rules.js';
+import {ALL_DIALOGUE_LINES,CLINICAL_CONVERSATIONS,PATIENT_PAIN_LINES,SUSPICION_LINES,RECRUIT_DIALOGUE,CONVERSATIONS,DISTRESS_LINES,ANNOUNCEMENT_LINES,WITNESS_LINES} from '../src/game/life-rules.js';
 
 function context(){
   const nodes=[],param=()=>({value:0,setTargetAtTime(v){this.value=v;},setValueAtTime(v){this.value=v;},linearRampToValueAtTime(v){this.value=v;},exponentialRampToValueAtTime(v){this.value=v;}});
@@ -52,10 +52,10 @@ test('Pain uses the recorded gendered clip, respects voice settings/floors, and 
   for(const key of ['pain-female','pain-male']){const file=readFileSync(new URL(`../public${HOSPITAL_SAMPLE_FILES[key]}`,import.meta.url));assert.ok(file.length>3000&&file.length<10000);}
 });
 
-test('Footsteps have a gentler contact and quieter gain without softening the recorded weapon channel',()=>{
+test('Footstep volume is lower while the contact filters and recorded weapon mix are preserved',()=>{
   const ctx=context(),buffers=Object.fromEntries(['step-01','step-02','step-03','step-04','pistol-shot','rifle-shot'].map(key=>[key,{}]));
   const foley=new HospitalFoley(ctx,ctx.createGain(),buffers),walk=foley.play('step'),run=foley.play('step',{running:true}),shot=foley.play('shot');
-  assert.ok(walk.gain.gain.value<=.42);assert.ok(run.gain.gain.value<=.58);assert.equal(walk.filter.frequency.value,4200);assert.equal(shot.filter.frequency.value,14500);assert.equal(shot.gain.gain.value,.79);foley.dispose();
+  assert.ok(walk.gain.gain.value<=.27);assert.ok(run.gain.gain.value<=.38);assert.equal(walk.filter.frequency.value,4200);assert.equal(shot.filter.frequency.value,14500);assert.equal(shot.gain.gain.value,.79);foley.dispose();
 });
 
 test('Music receives a modest gain rise and keeps the original notes and timing',async()=>{
@@ -64,7 +64,30 @@ test('Music receives a modest gain rise and keeps the original notes and timing'
 });
 
 test('Clinical, pain, suspicion, recruitment and pharmacy dialogue are included in the generated line set',()=>{
-  for(const text of [...Object.values(CLINICAL_CONVERSATIONS).flat(2),...PATIENT_PAIN_LINES,...SUSPICION_LINES,...Object.values(RECRUIT_DIALOGUE),...CONVERSATIONS.pharmacy.flat()])assert.ok(ALL_DIALOGUE_LINES.includes(text),text);
+  for(const text of [...Object.values(CLINICAL_CONVERSATIONS).flat(2),...PATIENT_PAIN_LINES,...SUSPICION_LINES,...Object.values(RECRUIT_DIALOGUE),...CONVERSATIONS.pharmacy.flat(),...DISTRESS_LINES,...ANNOUNCEMENT_LINES,...Object.values(WITNESS_LINES)])assert.ok(ALL_DIALOGUE_LINES.includes(text),text);
   assert.ok(SUSPICION_LINES.includes('Did you hear that?'));assert.ok(SUSPICION_LINES.includes('That was weird.'));assert.ok(PATIENT_PAIN_LINES.some(text=>text.includes('Acamol')));
   assert.equal(ALL_DIALOGUE_LINES.length,new Set(ALL_DIALOGUE_LINES).size);
+});
+
+test('Witness wording distinguishes a visible weapon from forbidden camera evidence',()=>{
+  assert.equal(WITNESS_LINES.weapon,'A weapon! I am calling security!');
+  assert.equal(WITNESS_LINES.camera,'That camera is not allowed here. I am calling security.');
+  assert.ok(!WITNESS_LINES.camera.toLowerCase().includes('weapon'));
+});
+
+test('Distress uses one finite human cue and can stop abruptly without ending unrelated sounds',async()=>{
+  const audio=owner(),pos={x:2,y:1.5,z:3,floor:0};
+  audio.samples['distress-male']={duration:1.457};audio.samples['distress-female']={duration:1.486};audio.samples.cough={duration:.9};
+  const male=audio.distress({gender:'male'},pos),female=audio.distress({gender:'female'},pos,.7),cough=audio.playSample('cough',pos);
+  assert.equal(male.source.loop,false);assert.equal(female.name,'distress-female');assert.equal(male.volume.gain.value,.8);assert.equal(male.floor,0);
+  audio.stopDistress();assert.equal(audio.activeSamples.size,1);assert.ok(male.source.stopped&&female.source.stopped);assert.equal(male.source.buffer,null);assert.equal(female.source.onended,null);assert.ok(!cough.source.stopped);
+  audio.settings.speech=false;assert.equal(audio.distress({},pos),null);audio.settings.speech=true;assert.equal(audio.distress({}, {...pos,floor:1}),null);
+  for(let i=0;i<100;i++)audio.distress({},pos);assert.equal(audio.activeSamples.size,24);audio.pause(true);assert.equal(audio.activeSamples.size,0);await audio.dispose();
+  for(const key of ['distress-female','distress-male'])assert.ok(readFileSync(new URL(`../public${HOSPITAL_SAMPLE_FILES[key]}`,import.meta.url)).length<20000);
+});
+
+test('Static PA announcements use the bundled voice path at the listener rather than device speech',()=>{
+  const audio=owner(),calls=[];audio.listenerPosition={x:7,y:2,z:8,floor:1};audio.dialogue=(...args)=>calls.push(args);audio.speak=()=>assert.fail('Device speech should not be the primary static PA voice');
+  audio.announce(ANNOUNCEMENT_LINES[0]);assert.equal(calls.length,1);assert.equal(calls[0][0],ANNOUNCEMENT_LINES[0]);assert.equal(calls[0][1].gender,'female');assert.equal(calls[0][4],audio.listenerPosition);
+  audio.dispose();
 });

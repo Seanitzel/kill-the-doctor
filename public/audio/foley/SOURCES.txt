@@ -72,3 +72,5 @@ Output bytes: 96044
 SHA-256: 7cc2da6fd68e2cd3bc9989e4e6adf0fb04d663d81b4b42d922b245099d5488e0
 
 Mix revision 2026-10-16: keep the four recorded sneaker contacts and their source ranges unchanged. Runtime walk gain .42 / run .58 (previously .61 / .79), low-pass 4.2 kHz (previously 7.2 kHz), room convolution wet .03. The original dry recordings and pistol/rifle recordings are unchanged. The quieter mix and lower cutoff reduce sharp contact clicks without stretching samples or increasing room echo.
+
+Volume-only revision 2026-10-17: runtime walk gain .27 / run .38, approximately 4 dB below the preceding .42 / .58 mix. All sneaker recordings, rates, contact variations, 4.2 kHz cutoff and room reflections remain as before. Procedural missing-sample step fallback is lowered by the same approximate amount. Weapon and soundtrack gains are unchanged in this revision.

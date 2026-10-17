@@ -1,0 +1,19 @@
+Kyutai Pocket TTS supplied preset notices
+
+Model weights (Kyutai): Creative Commons Attribution 4.0 International.
+https://huggingface.co/kyutai/pocket-tts-without-voice-cloning
+https://creativecommons.org/licenses/by/4.0/
+
+Female supplied preset alba: voice performance by Alba MacKenna, Creative Commons Attribution 4.0 International.
+Primary voice source and license declaration: https://huggingface.co/kyutai/tts-voices/blob/main/README.md#alba-mackenna
+Voice source catalog: https://huggingface.co/kyutai/tts-voices/blob/main/alba-mackenna/casual.wav
+Preset distribution: https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/tree/main/languages/english/embeddings
+
+Male supplied preset marius: based on the Selfie.wav Unmute Voice Donation Project contribution, CC0 1.0 Universal according to Kyutai's primary voice catalog.
+https://huggingface.co/kyutai/tts-voices/blob/main/README.md#voice-donations
+https://huggingface.co/kyutai/tts-voices/blob/main/voice-donations/Selfie.wav
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Changes: fictional game text synthesized using Kyutai's supplied, precomputed catalog presets; alternate seeded generations; 70 Hz high-pass, 10.5 kHz low-pass, -20 LUFS/-3 dBTP normalization targets, mono 24 kHz/80 kbit MP3 conversion. These are synthetic game performances, not authentic recordings of the supplied preset's speaker. No endorsement by any speaker, Kyutai or the voice donation project is implied. No custom person's voice was cloned for this project. Original model weights and voice embeddings are not distributed in the game.
+
+The license links above provide the complete license terms. This file is an attribution notice, not a replacement for those terms.

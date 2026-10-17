@@ -2,8 +2,9 @@ import {footprint} from './collision.js';
 import * as THREE from 'three';
 import { world, TILE, FLOORS, FLOOR_CODES } from './layout.js';
 import { Batcher, mesh, sign, bed, chair, desk, monitor, material } from './assets.js';
+import {addBathroom,addOperatingSet} from './accessibility-props.js';
 export function buildHospital(layout, m) {
-  const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [];
+  const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [], bathrooms = [], operatingSets = [];
   const cube = (...args) => batch.box(...args);
   const collider = (x, z, w, d, object = null) => { const c = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, object }; colliders.push(c); return c; };
   batch.collider=(x,z,w,d,h,rot,type)=>{const c=footprint(x,z,w,d,h,rot,type);colliders.push(c);return c;};
@@ -56,7 +57,7 @@ export function buildHospital(layout, m) {
     collider(w.x, w.z, 1.8, .18, door);
     interactables.push({ type: 'door', label: layout.rooms.find(r => r.id === door.room).name, x: w.x, z: w.z, door });
     const room = layout.rooms.find(r => r.id === door.room);
-    placeSign(`${room.number}  ${room.name}`, room.subtitle, w.x, 2.94, w.z + (room.z < 10 ? .13 : -.13), room.z < 10 ? 0 : Math.PI, 2.5, .5);
+    placeSign(`${room.number}  ${room.name}`, room.subtitle, w.x, 2.94, w.z + (room.center.z < door.z ? .13 : -.13), room.center.z < door.z ? 0 : Math.PI, 2.5, .5);
   }
   for (const room of layout.rooms) {
     const min = world(room.x, room.z), max = world(room.x + room.w - 1, room.z + room.h - 1), cx = room.center.x, cz = room.center.z;
@@ -64,7 +65,13 @@ export function buildHospital(layout, m) {
     if(room.kind==='imaging')for(const d of layout.doors.filter(d=>d.room===room.id)){const side=room.center.z<d.z?1:-1;placeSign('MRI','NO METAL',d.x+1.17,1.75,d.z+side*.15,side===1?0:Math.PI,.48,.65,{background:'#763b36'});}
     placeSign(`${room.name.toUpperCase()}`, `NORTHLINE / ${room.wing.toUpperCase()} ${room.floor + 1}`, cx, 2.65, minZ + .15, 0, 4, .65);
     const furnitureCollider=(x,z,w,d,h=2.1)=>Object.assign(collider(x,z,w,d),{minY:0,maxY:h,type:'furniture'});
-    if (['emergency', 'icu', 'ward', 'maternity', 'pediatric', 'cardio'].includes(room.kind)) {
+    if(room.kind==='bathroom'){
+      const props=addBathroom(group,{x:cx,z:cz,width:maxX-minX,depth:maxZ-minZ},m);
+      colliders.push(...props.colliders);bathrooms.push({room,floor:layout.floor,...props});
+    } else if(room.kind==='rescue-theater'){
+      const props=addOperatingSet(group,{x:cx,z:cz},m);
+      colliders.push(...props.colliders);operatingSets.push({room,floor:layout.floor,...props});
+    } else if (['emergency', 'icu', 'ward', 'maternity', 'pediatric', 'cardio'].includes(room.kind)) {
       for (let i = 0; i < 3; i++) {
         const x = minX + 1.55, z = minZ + 3 + i * 3.7;
         bed(batch,m,x,z,Math.PI/2,false);
@@ -171,7 +178,7 @@ export function buildHospital(layout, m) {
       else { cube(m.white, maxX - .7, 1.05, cz, .8, 2.1, 3); furnitureCollider(maxX - .7, cz, .85, 3); for (let i = 0; i < 4; i++) cube(m.blue, maxX - .25, .5 + i * .45, cz, .03, .025, 2.8); }
     }
     // Each wing carries a physical handover log, rather than a target marker.
-    if (room.index === 0 || room.index === 2) {
+    if (layout.floor!==3&&(room.index === 0 || room.index === 2)) {
       const x = cx+1.15, z = room.z < 10 ? maxZ + .35 : minZ - .35;
       cube(m.steel, x, 1.15, z, .075, 1.7, .075); cube(m.blue, x, 1.74, z, .65, .45, .12);
       placeSign('HANDOVER', 'READ / INSPECT', x, 1.73, z + .071, 0, .59, .38);
@@ -180,9 +187,11 @@ export function buildHospital(layout, m) {
     }
   }
   // The arrival atrium is a recognizable landmark with a reception desk and waiting seats.
+  if(layout.floor!==3){
   for (const z of [29, 31.3]) { chair(batch, m, -6, z, Math.PI / 2); chair(batch, m, 9, z, -Math.PI / 2); }
   cube(m.white, -3.8, .61, 27.8, 2.9, 1.22, .9); cube(m.blue, -3.8, .76, 28.27, 2.8, .43, .035); Object.assign(collider(-3.8,27.8,3,1),{maxY:1.23,type:'desk'});
   placeSign('+  NORTHLINE', 'MEDICAL CENTER', -3.8, 1.05, 28.29, 0, 2.1, .6);
+  }
   for (const object of [layout.directory, layout.schedule]) {
     cube(m.dark, object.x, .57, object.z, .55, 1.14, .44); cube(m.steel, object.x, 1.15, object.z, .8, .07, .6); cube(m.blue, object.x, 1.54, object.z, .9, .65, .14);
     placeSign(object === layout.directory ? 'STAFF DIRECTORY' : 'ROUNDS / SCHEDULE', 'NORTHLINE • INFORMATION', object.x, 1.54, object.z + .075, 0, .84, .59);
@@ -190,7 +199,7 @@ export function buildHospital(layout, m) {
   }
   const e = layout.elevator;
   cube(m.steel, e.x, 1.55, e.z - .65, 2.5, 3.1, .14); cube(m.dark, e.x, 1.45, e.z - .55, .025, 2.7, .02);
-  placeSign('↑  LIFT / STAIRS  ↓', 'G  CLINICAL     1  SPECIALISTS     2  ADVANCED', e.x, 3.07, e.z - .53, 0, 3.3, .5);
+  placeSign('↑  LIFT / STAIRS  ↓', layout.floor===3?'B  RESTRICTED     G  MAIN HOSPITAL':'G  CLINICAL     1  SPECIALISTS     2  ADVANCED', e.x, 3.07, e.z - .53, 0, 3.3, .5);
   placeSign(FLOOR_CODES[layout.floor], 'USE THE LIFT', e.x + 1.47, 1.68, e.z - .5, 0, .45, .65);
   interactables.push({ type: 'elevator', label:'Lift · choose floor', x: e.x, z: e.z + .9 }); collider(e.x, e.z - .65, 2.5, .16);
   if (layout.floor === 0) {
@@ -198,17 +207,18 @@ export function buildHospital(layout, m) {
     cube(m.glass,-.05,1.4,34.35,3,2.8,.1);cube(m.glass,5.05,1.4,34.35,3,2.8,.1);
     for(const x of [-1.5,1.5,4.5,6.5])cube(m.steel,x,1.4,34.35,.04,2.8,.15);
     interactables.push({ type: 'exit', label: 'Leave the hospital', x: layout.exit.x, z: layout.exit.z });
-  } else placeSign('PATIENT SERVICES', `${FLOORS[layout.floor].toUpperCase()} / NORTHLINE`, 3, 2.9, 33.25, Math.PI, 3.8, .68);
-  for (const p of [[-1.5,0],[-1.5,18],[-21,0],[21,0],[-1.5,-18]]) {
+  } else if(layout.floor!==3)placeSign('PATIENT SERVICES', `${FLOORS[layout.floor].toUpperCase()} / NORTHLINE`, 3, 2.9, 33.25, Math.PI, 3.8, .68);
+  for (const p of (layout.floor===3?[]:[[-1.5,0],[-1.5,18],[-21,0],[21,0],[-1.5,-18]])) {
     placeSign('↑  LIFT    /    WEST ←   → EAST','G: CLINICAL    1: SPECIALISTS    2: ADVANCED CARE',p[0],2.9,p[1]+.01,0,4.6,.57);
     placeSign('↓  MAIN ENTRANCE    /    EAST ←   → WEST','G: CLINICAL    1: SPECIALISTS    2: ADVANCED CARE',p[0],2.9,p[1]-.01,Math.PI,4.6,.57);
     Object.assign(collider(p[0],p[1],4.6,.06),{minY:2.615,maxY:3.185,type:'header'});
   }
   // Corridors include benches, service carts, hand sanitizers, notices and equipment.
-  for (const z of [-15, 9, 18]) {
+  for (const z of (layout.floor===3?[]:[-15, 9, 18])) {
     for (let i = 0; i < 3; i++) chair(batch, m, 5.25, z + i * .74, -Math.PI / 2);
     cube(m.steel, -1.1, .5, z, .7, .85, .8); cube(m.white, -1.1, .98, z, .74, .08, .85); Object.assign(collider(-1.1,z,.75,.9),{maxY:1.04,type:'cart'});
   }
   const statics = batch.finish();
-  return { group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies };
+  return { group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
+    disposeProps(){for(const props of [...bathrooms,...operatingSets])props.dispose();} };
 }

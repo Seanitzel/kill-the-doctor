@@ -30,7 +30,7 @@ export class HospitalLife {
   }
   setup() {
     const e=this.engine;
-    for(const floor of e.levels.map((_,i)=>i)) {
+    for(const floor of e.levels.map((_,i)=>i).filter(f=>f<3)) {
       const nurseA=this.actor(floor?'Nurse Nora Ellis':'Nurse Iris Lowe','nurse','female',floor,null,-2.8,11.2,'chat',{yaw:0});
       const nurseB=this.actor(floor?'Nurse Samir Rao':'Nurse Felix Shaw','nurse','male',floor,null,-2.8,12.9,'chat',{yaw:Math.PI});
       this.groups.push({kind:'nurses',floor,actors:[nurseA,nurseB],next:4,conversation:floor});

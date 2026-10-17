@@ -78,10 +78,30 @@ export const RECRUIT_DIALOGUE = {
   dismiss: 'Stay here. Breathe slowly. I am going alone.',
 };
 export const RECRUIT_LINES = Object.values(RECRUIT_DIALOGUE);
+// Spoken after a panic burst has stopped; the visitor's claims are fictional dialogue.
+export const DISTRESS_LINES = [
+  "I'm dying.",
+  "I'm burning up, I can't breathe.",
+  'The doctors are evil.',
+  'Please... make it stop.',
+  'Something is wrong with me.',
+  'I need help. Please, help me.',
+];
+export const ANNOUNCEMENT_LINES = [
+  'Welcome to Northline. Visitor services are located in the main atrium. Please keep all corridors clear.',
+  'A power fault has been reported. Emergency lighting is active. Please remain calm.',
+  'Code blue. Security incident reported. All staff follow emergency protocol. Police units are responding.',
+  'Police response team entering the west wing. All exits will be secured shortly.',
+  'Visitors: the staff directory is available in the entrance atrium. Please check department signage before proceeding.',
+];
+export const WITNESS_LINES = {
+  weapon:'A weapon! I am calling security!',
+  camera:'That camera is not allowed here. I am calling security.',
+};
 export const ALL_DIALOGUE_LINES = [...new Set([
   ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
   ...Object.values(CLINICAL_CONVERSATIONS).flat(2), ...PATIENT_PAIN_LINES,
-  ...SUSPICION_LINES, ...RECRUIT_LINES,
+  ...SUSPICION_LINES, ...RECRUIT_LINES, ...DISTRESS_LINES, ...ANNOUNCEMENT_LINES, ...Object.values(WITNESS_LINES),
 ])];
 export function dialogueKey(text, gender='male') {
   let hash=2166136261;for(let i=0;i<text.length;i++)hash=Math.imul(hash^text.charCodeAt(i),16777619)>>>0;

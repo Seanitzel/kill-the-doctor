@@ -4,6 +4,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 export const OUTFIT_STYLES = ['casual','jacket','tactical','suit'];
 export const HAIRSTYLES = ['original','cropped','slick','ponytail','ponytail-front','ponytail-side','afro','braids','straight','curls-short','curls-long'];
 const irisCache = new Map();
+const appearanceCaches=new WeakMap();
 
 // Ready Player Me's eye atlas has one central iris. Keep the pupil, sclera,
 // catchlights and existing iris shading rather than tinting the entire eye.
@@ -144,34 +145,68 @@ function fitOutfit(model, top, style, accent) {
     }
   }
 }
-function fitHair(model, hair, skin, hairstyle, hex) {
-  const head = model.getObjectByName('Head'); if (!head || !skin) return;
-  const headBox = new THREE.Box3().setFromPoints(coordinates(skin,model).points);
-  const hairBox = new THREE.Box3().setFromPoints(coordinates(hair,model).points);
-  const top=headBox.max.y,pony=hairstyle.startsWith('ponytail'),slick=hairstyle==='slick'||pony,factor=hairstyle==='cropped'?.57:slick?.47:.73;
-  reshape(hair, model, p => {
-    p.y=top+(slick?.012:.018)-(hairBox.max.y-p.y)*factor;
-    p.x*=hairstyle==='cropped'?.93:.96;
-    if(slick){const front=THREE.MathUtils.clamp((p.z-(headBox.min.z+headBox.max.z)/2)/.09,0,1),crown=THREE.MathUtils.clamp((p.y-(top-.12))/.132,0,1);p.x+=front*crown*.016;p.z-=.010*crown+.005*front;}
-    p.z = headBox.min.z + (p.z - hairBox.min.z) * (hairstyle === 'cropped' ? .84 : .9) - .008;
-  });
-  if (!hairstyle.startsWith('ponytail')) return;
-  const start = new THREE.Vector3(0, top-.105, headBox.min.z-.008);
-  const points=hairstyle==='ponytail-front'?[start,start.clone().add(new THREE.Vector3(.10,-.07,.015)),new THREE.Vector3(.14,top-.27,headBox.max.z+.045),new THREE.Vector3(.11,top-.43,headBox.max.z+.03)]:hairstyle==='ponytail-side'?[start,start.clone().add(new THREE.Vector3(.11,-.025,-.03)),start.clone().add(new THREE.Vector3(.17,-.17,.015)),start.clone().add(new THREE.Vector3(.15,-.35,.06))]:[start,start.clone().add(new THREE.Vector3(0,-.025,-.065)),start.clone().add(new THREE.Vector3(.012,-.13,-.103)),start.clone().add(new THREE.Vector3(.018,-.30,-.073))];
-  const path = new THREE.CatmullRomCurve3(points);
-  const geometry = new THREE.TubeGeometry(path, 18, .034, 10, false), p = geometry.getAttribute('position');
-  for (let segment = 0; segment <= 18; segment++) {
-    const center = path.getPointAt(segment / 18), taper = .95 - .74 * Math.pow(segment / 18, 2);
-    for (let ring = 0; ring <= 10; ring++) { const i=segment*11+ring; const point = new THREE.Vector3().fromBufferAttribute(p,i).sub(center).multiplyScalar(taper).add(center); p.setXYZ(i,point.x,point.y,point.z); }
+function hairMaterial(model,hex){
+  const cache=appearanceCaches.get(model)||irisCache,leases=model.userData.appearanceTextureLeases,key='hair-fibers-v1';let entry=cache.get(key);
+  if(!entry){const width=64,height=128,data=new Uint8Array(width*height*4);for(let y=0;y<height;y++)for(let x=0;x<width;x++){const value=Math.round(128+42*Math.cos(x*Math.PI/4+.15*Math.sin(y*.035))+12*Math.sin(x*1.8+y*.013)),index=(y*width+x)*4;data[index]=data[index+1]=data[index+2]=value;data[index+3]=255;}const texture=new THREE.DataTexture(data,width,height);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.magFilter=texture.minFilter=THREE.LinearFilter;texture.repeat.set(8,1);texture.needsUpdate=true;entry={texture,users:0,cache};cache.set(key,entry);}
+  if(leases&&!leases.has(entry)){entry.users++;leases.add(entry);}return clothMaterial(hex,{roughness:.64,bumpMap:entry.texture,bumpScale:.0007});
+}
+function scalpPoint(box,phi,t,sweep=false){
+  const top=box.max.y,centerZ=(box.min.z+box.max.z)/2,front=Math.sin(phi),limit=1.48-.50*front+.20*front*front,theta=t*limit;
+  return new THREE.Vector3(Math.cos(phi)*Math.sin(theta)*.092+(sweep?.003*Math.sin(theta)*Math.max(0,front):0),top-.091+Math.cos(theta)*.109,centerZ+Math.sin(phi)*Math.sin(theta)*.106);
+}
+function fittedScalp(headBox,{sweep=false}={}){
+  const vertices=[],uvs=[],indices=[],columns=64,rows=20;
+  for(let row=0;row<=rows;row++)for(let column=0;column<=columns;column++){scalpPoint(headBox,column/columns*Math.PI*2,row/rows,sweep).toArray(vertices,vertices.length);uvs.push(column/columns+row/rows*.10,row/rows);}
+  for(let row=0;row<rows;row++)for(let column=0;column<columns;column++){const a=row*(columns+1)+column,b=a+columns+1;indices.push(a,a+1,b,b,a+1,b+1);}
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+}
+function scalpPart(model,head,box,hex){
+  const top=box.max.y,centerZ=(box.min.z+box.max.z)/2,center=new THREE.Vector3(0,top-.091,centerZ),points=[];
+  const path=new THREE.CatmullRomCurve3([new THREE.Vector3(-.026,top-.041,centerZ+.102),new THREE.Vector3(-.022,top+.016,centerZ+.022),new THREE.Vector3(-.006,top+.004,centerZ-.046),new THREE.Vector3(.027,top-.054,centerZ-.101)]);
+  for(let i=0;i<=22;i++){const v=path.getPoint(i/22).sub(center),length=Math.sqrt((v.x/.092)**2+(v.y/.109)**2+(v.z/.106)**2);v.divideScalar(length).add(center);points.push(v.toArray());}
+  attachGeometry(model,head,tubePiece(points,.0011,22,4),clothMaterial(new THREE.Color(hex).multiplyScalar(.45)),'KTD swept hair part');
+}
+function fitHair(model,hair,skin,hairstyle,hex){
+  const head=model.getObjectByName('Head');if(!head||!skin)return;
+  const headBox=new THREE.Box3().setFromPoints(coordinates(skin,model).points),hairBox=new THREE.Box3().setFromPoints(coordinates(hair,model).points),top=headBox.max.y,pony=hairstyle.startsWith('ponytail');
+  if(pony){
+    hair.visible=false;attachGeometry(model,head,fittedScalp(headBox,{sweep:true}),hairMaterial(model,hex),'KTD swept ponytail base hair');scalpPart(model,head,headBox,hex);
+  }else{
+    const slick=hairstyle==='slick',factor=hairstyle==='cropped'?.57:slick?.47:.73;
+    reshape(hair,model,p=>{p.y=top+(slick?.012:.018)-(hairBox.max.y-p.y)*factor;p.x*=hairstyle==='cropped'?.93:.96;if(slick){const front=THREE.MathUtils.clamp((p.z-(headBox.min.z+headBox.max.z)/2)/.09,0,1),crown=THREE.MathUtils.clamp((p.y-(top-.12))/.132,0,1);p.x+=front*crown*.016;p.z-=.010*crown+.005*front;}p.z=headBox.min.z+(p.z-hairBox.min.z)*(hairstyle==='cropped'?.84:.9)-.008;});
   }
-  geometry.computeVertexNormals();
-  attachGeometry(model, head, geometry, clothMaterial(hex), 'KTD tied ponytail');
-  const tie = new THREE.TorusGeometry(.029,.005,6,16); tie.rotateX(Math.PI/2); tie.translate(start.x,start.y-.018,start.z-.045);
-  attachGeometry(model,head,tie,clothMaterial('#1e2b34'),'KTD hair tie');
+  if(!pony)return;
+  const frontPony=hairstyle==='ponytail-front',start=new THREE.Vector3(0,top-(frontPony?.083:.105),headBox.min.z-.012);
+  const points=frontPony?[start,new THREE.Vector3(.003,top-.18,headBox.min.z-.053),new THREE.Vector3(.012,top-.31,headBox.min.z-.066),new THREE.Vector3(.020,top-.46,headBox.min.z-.044)]:hairstyle==='ponytail-side'?[start,start.clone().add(new THREE.Vector3(.10,-.035,-.02)),start.clone().add(new THREE.Vector3(.145,-.19,.015)),start.clone().add(new THREE.Vector3(.125,-.35,.06))]:[start,start.clone().add(new THREE.Vector3(0,-.035,-.047)),start.clone().add(new THREE.Vector3(.012,-.18,-.078)),start.clone().add(new THREE.Vector3(.014,-.36,-.045))];
+  const path=new THREE.CatmullRomCurve3(points),segments=28,radial=16,geometry=new THREE.TubeGeometry(path,segments,.0185,radial,false),position=geometry.getAttribute('position');
+  for(let segment=0;segment<=segments;segment++){const center=path.getPointAt(segment/segments),taper=.97-.78*Math.pow(segment/segments,1.8);for(let ring=0;ring<=radial;ring++){const i=segment*(radial+1)+ring,groove=1+.055*Math.cos(ring/radial*Math.PI*12),point=new THREE.Vector3().fromBufferAttribute(position,i).sub(center).multiplyScalar(taper*groove).add(center);position.setXYZ(i,point.x,point.y,point.z);}}
+  const uv=geometry.getAttribute('uv');for(let i=0;i<uv.count;i++){const u=uv.getX(i);uv.setXY(i,uv.getY(i),u);}geometry.computeVertexNormals();attachGeometry(model,head,geometry,hairMaterial(model,hex),'KTD tied ponytail');
+  const tie=new THREE.TorusGeometry(.018,.0026,6,16),tiePoint=path.getPointAt(.035);tie.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),path.getTangentAt(.035)));tie.translate(...tiePoint.toArray());attachGeometry(model,head,tie,clothMaterial('#1e2b34'),'KTD hair tie');
+}
+function drapedHair(box,style){
+  const top=box.max.y,centerZ=(box.min.z+box.max.z)/2,curly=style.startsWith('curls'),short=style==='curls-short',length=short?.225:curly?.385:.39,columns=80,crownRows=12,rows=44,vertices=[],uvs=[],indices=[],edge=.86;
+  for(let row=0;row<=rows;row++)for(let column=0;column<=columns;column++){
+    const phi=column/columns*Math.PI*2,frontAngle=Math.min(phi,Math.PI*2-phi),open=frontAngle<edge,joinTheta=1.18+.37*Math.min(1,frontAngle/edge);
+    const crownT=Math.min(1,row/crownRows),theta=crownT*joinTheta;
+    let x=Math.sin(phi)*Math.sin(theta)*.094,y=top-.087+Math.cos(theta)*.108,z=centerZ+Math.cos(phi)*Math.sin(theta)*.111;
+    if(row>crownRows&&!open){const t=(row-crownRows)/(rows-crownRows),edgeWeight=Math.max(0,1-Math.abs(frontAngle-edge)/.42),wave=curly?Math.sin(t*Math.PI*6+phi*1.3)*.013*Math.sin(t*Math.PI*.8):0,layer=Math.cos(phi*19+t*1.1)*.0027*Math.sin(t*Math.PI*.8);
+      const radius=.094+.020*Math.sin(t*Math.PI/2)+layer+wave;x=Math.sin(phi)*radius;y=top-.087+Math.cos(joinTheta)*.108-t*(length+.009*Math.cos(phi*3));z=centerZ+Math.cos(phi)*(.111+layer+wave)-.024*t*t+edgeWeight*.080*Math.sin(t*Math.PI/2);
+    }
+    vertices.push(x,y,z);uvs.push(column/columns,row/rows);
+  }
+  for(let row=0;row<rows;row++)for(let column=0;column<columns;column++){const phi=(column+.5)/columns*Math.PI*2;if(row>=crownRows&&Math.min(phi,Math.PI*2-phi)<edge)continue;const a=row*(columns+1)+column,b=a+columns+1;indices.push(a,a+1,b,b,a+1,b+1);}
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();const pieces=[geometry];
+  for(const side of [-1,1]){
+    const points=[];for(let step=0;step<=24;step++){const t=step/24,turn=t*Math.PI*4.5,wave=curly?Math.sin(turn)*.011*Math.sin(t*Math.PI*.82):0;points.push([side*(.080+.018*t+wave),top-.135-t*(short?.195:.335),box.max.z-.016+.029*t+(curly?Math.cos(turn)*.009*Math.sin(t*Math.PI):0)]);}
+    const path=new THREE.CatmullRomCurve3(points.map(point=>new THREE.Vector3(...point))),lock=new THREE.TubeGeometry(path,24,.016,10,false),position=lock.getAttribute('position'),uv=lock.getAttribute('uv');
+    for(let segment=0;segment<=24;segment++){const center=path.getPointAt(segment/24),taper=1-.68*Math.pow(segment/24,3);for(let ring=0;ring<=10;ring++){const index=segment*11+ring,point=new THREE.Vector3().fromBufferAttribute(position,index).sub(center);point.x*=taper;point.z*=.48*taper;point.add(center);position.setXYZ(index,point.x,point.y,point.z);}}
+    for(let i=0;i<uv.count;i++){const u=uv.getX(i);uv.setXY(i,uv.getY(i),u);}lock.computeVertexNormals();pieces.push(lock);
+  }
+  return mergePieces(pieces,true);
 }
 
-function mergePieces(pieces){
-  const ready=pieces.map(geometry=>{const result=geometry.index?geometry.toNonIndexed():geometry.clone();for(const key of Object.keys(result.attributes))if(!['position','normal'].includes(key))result.deleteAttribute(key);return result;});
+function mergePieces(pieces,keepUV=false){
+  const ready=pieces.map(geometry=>{const result=geometry.index?geometry.toNonIndexed():geometry.clone();for(const key of Object.keys(result.attributes))if(!['position','normal',...(keepUV?['uv']:[])].includes(key))result.deleteAttribute(key);return result;});
   const merged=mergeGeometries(ready,false);for(const geometry of [...pieces,...ready])geometry.dispose();return merged;
 }
 function spherePiece(center,size,segments=8){const geometry=new THREE.SphereGeometry(1,segments,6);geometry.scale(...size);geometry.translate(...center);return geometry;}
@@ -189,11 +224,11 @@ function fitSuitSleeves(model,top,mat){
 function extendedHair(model,hair,skin,style,hex){
   if(!skin)return;const head=model.getObjectByName('Head');if(!head)return;
   const box=new THREE.Box3().setFromPoints(coordinates(skin,model).points),top=box.max.y,z=(box.min.z+box.max.z)/2;
+  if(style==='straight'||style.startsWith('curls')){hair.visible=false;attachGeometry(model,head,drapedHair(box,style),hairMaterial(model,hex),'KTD '+style+' hair');return;}
   fitHair(model,hair,skin,'cropped',hex);
   const pieces=[];
-  if(style==='afro'||style.startsWith('curls')){
-    const long=style==='curls-long',afro=style==='afro';
-    const radii=afro?[.126,.145,.122]:[.107,.121,.105],centerY=top-(afro?.077:.065);
+  if(style==='afro'){
+    const radii=[.126,.145,.122],centerY=top-.077;
     // A fitted, continuous volume closes the gaps between tight curls. The
     // front hairline stays above the brows; the back naturally covers the nape.
     const surface=(phi,t)=>{const front=Math.sin(phi),limit=1.85-.53*Math.max(0,front)+.20*Math.max(0,-front),theta=t*limit;
@@ -204,7 +239,7 @@ function extendedHair(model,hair,skin,style,hex){
     for(let row=0;row<=rows;row++)for(let column=0;column<=columns;column++)surface(column/columns*Math.PI*2,row/rows).toArray(vertices,vertices.length);
     for(let row=0;row<rows;row++)for(let column=0;column<columns;column++){const a=row*(columns+1)+column,b=a+columns+1;indices.push(a,a+1,b,b,a+1,b+1);}
     const base=new THREE.BufferGeometry();base.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));base.setIndex(indices);base.computeVertexNormals();pieces.push(base);
-    const rings=long?7:10;
+    const rings=10;
     for(let ring=0;ring<rings;ring++){const t=(ring+.2)/(rings-.5),count=6+ring*3;for(let i=0;i<count;i++){
       const phi=i/count*Math.PI*2+ring*.31,point=surface(phi,Math.min(1,t));
       const normal=new THREE.Vector3(point.x/(radii[0]*radii[0]),(point.y-centerY)/(radii[1]*radii[1]),(point.z-z)/(radii[2]*radii[2])).normalize();
@@ -212,18 +247,8 @@ function extendedHair(model,hair,skin,style,hex){
       const curl=.0095+.0018*(.5+.5*Math.sin(i*2.37+ring));
       const detail=new THREE.SphereGeometry(1,6,4);detail.scale(curl,curl*.9,curl);detail.translate(...point.toArray());pieces.push(detail);
     }}
-    if(long)for(let column=0;column<16;column++){
-      const phi=column/16*Math.PI*2,x=Math.cos(phi)*.095,zz=Math.sin(phi)*.094;
-      if(zz>.025&&Math.abs(x)<.075)continue;
-      const strand=[];for(let step=0;step<=32;step++){const t=step/32,turn=step*Math.PI*.38,columnWave=Math.sin(column*1.7)*.012;
-        strand.push([x*(1+.07*t)+Math.cos(turn)*.008,top-.105-t*(.30+columnWave),z+zz-.007+Math.sin(turn)*.008]);
-      }
-      pieces.push(tubePiece(strand,.0068,32,5));
-    }
   }else if(style==='braids'){
     for(let i=0;i<14;i++){const angle=(i/14)*Math.PI*2,x=Math.cos(angle)*.086,zz=Math.sin(angle)*.08;if(zz>.03&&Math.abs(x)<.06)continue;const points=[];for(let step=0;step<=18;step++){const t=step/18,spiral=step*2.5;points.push([x+Math.cos(spiral)*.0035,top-.035-t*(.37+(i%3)*.025),z+zz-.018+Math.sin(spiral)*.0035]);}pieces.push(tubePiece(points,.010,36,5));}
-  }else if(style==='straight'){
-    for(let i=0;i<15;i++){const angle=i/14*Math.PI*2,x=Math.cos(angle)*.091,zz=Math.sin(angle)*.087;if(zz>.035&&Math.abs(x)<.07)continue;pieces.push(tubePiece([[x,top-.045,z+zz],[x*1.10,top-.15,z+zz-.012],[x*1.16,top-.31,z+zz-.015],[x*1.12,top-.43,z+zz-.009]],.018,14,6));}
   }
   if(pieces.length)attachGeometry(model,head,mergePieces(pieces),clothMaterial(hex),'KTD '+style+' hair');
 }
@@ -234,27 +259,66 @@ function colorHair(mesh,model,hex,highlights){
   for(let i=0;i<points.length;i++){const p=points[i],streak=Math.sin(p.x*205+p.z*47);base.clone().lerp(light,streak>.65?.83:0).toArray(colors,i*3);}
   mesh.geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));mesh.material.color.set('#ffffff');mesh.material.vertexColors=true;mesh.material.needsUpdate=true;
 }
-function accessories(model,person,skin,glasses){
-  if(!person.cap&&!person.watch&&!person.purse&&(!person.tattoos||person.tattoos==='none')&&(!person.glasses||glasses))return;
+function tattooTexture(style){
+  const size=128,pixels=new Uint8Array(size*size*4);
+  const distance=(x,y,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=THREE.MathUtils.clamp(((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy),0,1);return Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy);};
+  const lines=style==='botanical'?[[[.48,.12],[.48,.88]],[[.48,.35],[.25,.22]],[[.48,.48],[.72,.34]],[[.48,.64],[.26,.52]],[[.48,.77],[.72,.63]]]:[[[.5,.10],[.76,.32]],[[.76,.32],[.5,.54]],[[.5,.54],[.24,.32]],[[.24,.32],[.5,.10]],[[.5,.44],[.74,.65]],[[.74,.65],[.5,.88]],[[.5,.88],[.26,.65]],[[.26,.65],[.5,.44]]];
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++){const u=(x+.5)/size,v=(y+.5)/size;let d=Math.min(...lines.map(([a,b])=>distance(u,v,a,b)));
+    if(style==='botanical')for(const [cx,cy,angle] of [[.27,.25,-.7],[.69,.36,.7],[.28,.55,-.7],[.69,.66,.7]]){const px=(u-cx)*Math.cos(angle)+(v-cy)*Math.sin(angle),py=-(u-cx)*Math.sin(angle)+(v-cy)*Math.cos(angle),ellipse=Math.abs(Math.hypot(px/.095,py/.039)-1)*.039;d=Math.min(d,ellipse);}
+    const alpha=THREE.MathUtils.clamp((.018-d)*size,0,1)*.92,index=(y*size+x)*4;pixels[index]=24;pixels[index+1]=33;pixels[index+2]=39;pixels[index+3]=Math.round(alpha*255);
+  }
+  const texture=new THREE.DataTexture(pixels,size,size);texture.colorSpace=THREE.SRGBColorSpace;texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearFilter;texture.needsUpdate=true;return texture;
+}
+function skinTattoo(model,source,{center,width,height,minZ,style,name}){
+  if(!source?.isSkinnedMesh)return;
+  const {points}=coordinates(source,model),uv=new Float32Array(points.length*2),indices=[],sourceIndex=source.geometry.index;
+  points.forEach((point,i)=>{uv[i*2]=(point.x-center.x)/width+.5;uv[i*2+1]=.5-(point.y-center.y)/height;});
+  for(let i=0;i<(sourceIndex?.count||points.length);i+=3){const triangle=[0,1,2].map(offset=>sourceIndex?sourceIndex.getX(i+offset):i+offset),p=triangle.map(index=>points[index]),normal=new THREE.Vector3().subVectors(p[1],p[0]).cross(new THREE.Vector3().subVectors(p[2],p[0])).normalize();
+    if(normal.z<.15||Math.max(...p.map(v=>v.x))<center.x-width*.65||Math.min(...p.map(v=>v.x))>center.x+width*.65||Math.max(...p.map(v=>v.y))<center.y-height*.65||Math.min(...p.map(v=>v.y))>center.y+height*.65||p.reduce((sum,v)=>sum+v.z,0)/3<minZ)continue;indices.push(...triangle);
+  }
+  if(!indices.length)return;
+  const geometry=source.geometry.clone();geometry.setAttribute('uv',new THREE.BufferAttribute(uv,2));geometry.setIndex(indices);
+  const material=clothMaterial('#ffffff',{map:tattooTexture(style),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,roughness:.95,side:THREE.FrontSide});
+  const decal=new THREE.SkinnedMesh(geometry,material);decal.name=name;decal.position.copy(source.position);decal.quaternion.copy(source.quaternion);decal.scale.copy(source.scale);decal.matrix.copy(source.matrix);decal.matrixAutoUpdate=source.matrixAutoUpdate;decal.bindMode=source.bindMode;decal.skeleton=source.skeleton;decal.bindMatrix.copy(source.bindMatrix);decal.bindMatrixInverse.copy(source.bindMatrixInverse);decal.userData.appearanceOwned=true;decal.userData.appearanceOwnedTexture=true;decal.frustumCulled=false;source.parent.add(decal);
+}
+function fittedGlasses(model,skin,eyeMeshes){
+  const head=model.getObjectByName('Head'),points=eyeMeshes.flatMap(mesh=>coordinates(mesh,model).points);if(!head||!points.length)return;
+  const eyeBox=new THREE.Box3().setFromPoints(points),centerX=(eyeBox.min.x+eyeBox.max.x)/2,skinBox=new THREE.Box3().setFromPoints(coordinates(skin,model).points),parts=[],lenses=[];
+  const centers=[];for(const side of [-1,1]){const sidePoints=points.filter(point=>(point.x-centerX)*side>0),box=new THREE.Box3().setFromPoints(sidePoints),center=box.getCenter(new THREE.Vector3());center.z=box.max.z+.011;center.y-=.001;centers.push(center);
+    const rim=new THREE.TorusGeometry(.024,.0023,5,20);rim.scale(1.22,.88,1);rim.translate(...center.toArray());parts.push(rim);
+    const lens=new THREE.CircleGeometry(.024,20);lens.scale(1.17,.83,1);lens.translate(center.x,center.y,center.z+.0005);lenses.push(lens);
+    const earX=side*(Math.max(Math.abs(skinBox.min.x),Math.abs(skinBox.max.x))+.001);parts.push(tubePiece([[center.x+side*.029,center.y,center.z],[earX,center.y-.003,(eyeBox.min.z+skinBox.min.z)/2],[earX,center.y-.012,skinBox.min.z+.022]],.0022,10,4));
+  }
+  const bridge=centers[0].clone().lerp(centers[1],.5);parts.push(tubePiece([[centers[0].x+.029,bridge.y+.002,bridge.z],[centerX,bridge.y+.006,bridge.z+.004],[centers[1].x-.029,bridge.y+.002,bridge.z]],.002,8,4));
+  attachGeometry(model,head,mergePieces(parts),clothMaterial('#202934',{roughness:.35}),'KTD optical frames');attachGeometry(model,head,mergePieces(lenses),clothMaterial('#abc5d4',{transparent:true,opacity:.11,depthWrite:false,roughness:.2}),'KTD optical lenses');
+}
+function accessories(model,person,skin,glasses,meshes){
+  if(!person.cap&&!person.watch&&!person.purse&&(!person.tattoos||person.tattoos==='none')&&!person.glasses)return;
   if(!skin)return;const head=model.getObjectByName('Head'),spine=model.getObjectByName('Spine1'),hips=model.getObjectByName('Hips');if(!head)return;
   const box=new THREE.Box3().setFromPoints(coordinates(skin,model).points),top=box.max.y,front=box.max.z-.009,z=(box.min.z+box.max.z)/2;
-  if(person.glasses&&!glasses){const pieces=[];for(const side of [-1,1]){const rim=new THREE.TorusGeometry(.025,.0028,5,16);rim.scale(1.24,.88,1);rim.translate(side*.035,top-.104,front);pieces.push(rim);pieces.push(tubePiece([[side*.068,top-.104,front],[side*.085,top-.104,z],[side*.079,top-.122,box.min.z+.015]],.0025,8,4));}pieces.push(tubePiece([[-.007,top-.10,front],[0,top-.096,front+.002],[.007,top-.10,front]],.0025,5,4));attachGeometry(model,head,mergePieces(pieces),clothMaterial('#242b34',{roughness:.4}),'KTD optical frames');}
-  if(person.cap){const crown=new THREE.SphereGeometry(1,14,8,0,Math.PI*2,0,Math.PI*.53);crown.scale(.111,.072,.114);crown.translate(0,top-.052,z-.008);const brim=spherePiece([0,top-.052,front+.036],[.113,.007,.077],12);attachGeometry(model,head,mergePieces([crown,brim]),clothMaterial(person.accent||'#34495a'),'KTD baseball cap');}
+  if(glasses)glasses.visible=false;
+  if(person.glasses)fittedGlasses(model,skin,meshes.filter(mesh=>mesh.material?.name.includes('Wolf3D_Eye')));
+  if(person.cap){
+    for(const mesh of meshes)if(mesh.material?.name.includes('Wolf3D_Hair'))mesh.visible=false;
+    const crown=new THREE.SphereGeometry(1,24,12,0,Math.PI*2,0,Math.PI*.56);crown.scale(.105,.056,.111);crown.translate(0,top-.033,z-.008);
+    const band=new THREE.TorusGeometry(1,.045,5,28);band.scale(.101,.109,.075);band.rotateX(Math.PI/2);band.translate(0,top-.041,z-.008);
+    const peak=spherePiece([0,top-.041,front+.001],[.082,.004,.029],16);attachGeometry(model,head,mergePieces([crown,band,peak]),clothMaterial(person.accent||'#34495a'),'KTD plain cap');
+    if(person.hairstyle==='afro')model.getObjectByName('KTD afro hair')?.traverse(mesh=>{mesh.visible=false;});
+  }
   if(person.watch){const hand=model.getObjectByName('LeftHand'),fore=model.getObjectByName('LeftForeArm');if(hand&&fore){const wrist=bonePoint(model,'LeftHand'),elbow=bonePoint(model,'LeftForeArm'),direction=wrist.clone().sub(elbow).normalize(),center=wrist.clone().addScaledVector(direction,-.035);const band=new THREE.TorusGeometry(.031,.0065,6,14);band.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),direction));band.translate(...center.toArray());attachGeometry(model,fore,band,clothMaterial('#222b32'),'KTD wristwatch band');const face=new THREE.BoxGeometry(.032,.027,.012);face.translate(center.x,center.y,center.z+.034);attachGeometry(model,fore,face,clothMaterial('#bdc8cc',{metalness:.7,roughness:.3}),'KTD wristwatch');const dial=new THREE.BoxGeometry(.023,.018,.002);dial.translate(center.x,center.y,center.z+.041);attachGeometry(model,fore,dial,clothMaterial('#1a3441'),'KTD watch dial');}}
   if(person.purse&&hips&&spine){const waist=bonePoint(model,'Hips').y,shoulder=bonePoint(model,'Neck')?.y||waist+.5;const bag=new THREE.BoxGeometry(.175,.17,.065,1,1,1);bag.translate(.245,waist-.10,.035);attachGeometry(model,hips,bag,clothMaterial('#6b413a'),'KTD crossbody purse');const flap=new THREE.BoxGeometry(.16,.07,.008);flap.translate(.245,waist-.055,.072);attachGeometry(model,hips,flap,clothMaterial('#8a5a4b'),'KTD purse flap');const strap=tubePiece([[-.14,shoulder-.02,.02],[-.04,waist+.31,.16],[.13,waist+.12,.15],[.245,waist-.05,.06]],.008,18,5);attachGeometry(model,spine,strap,clothMaterial('#51332e'),'KTD purse strap');}
   if(person.tattoos&&person.tattoos!=='none'){
-    const ink=clothMaterial('#29323a',{roughness:1}),pieces=[],x=.092,y=top-.235,zz=z-.012;
-    if(person.tattoos==='botanical'){pieces.push(tubePiece([[x,y-.025,zz],[x+.002,y,zz+.004],[x,y+.035,zz+.006]],.0015,8,4));for(let i=0;i<4;i++){const leaf=new THREE.SphereGeometry(1,6,4);leaf.scale(.0015,.009,.004);leaf.rotateX((i%2?1:-1)*.5);leaf.translate(x+.001,y-.01+i*.012,zz+(i%2?.006:-.002));pieces.push(leaf);}}
-    else for(let i=0;i<3;i++){const ring=new THREE.TorusGeometry(.009+i*.001,.0014,4,8);ring.rotateY(Math.PI/2);ring.translate(x,y+i*.015,zz);pieces.push(ring);}
-    attachGeometry(model,head,mergePieces(pieces),ink,'KTD '+person.tattoos+' neck tattoo');
-    const fore=model.getObjectByName('RightForeArm'),wrist=bonePoint(model,'RightHand');if(fore&&wrist){const marks=[];for(let i=0;i<3;i++){const ring=new THREE.TorusGeometry(.027,.0017,4,14);ring.rotateY(Math.PI/2);ring.translate(wrist.x+(i*.009+.028),wrist.y,wrist.z);marks.push(ring);}attachGeometry(model,fore,mergePieces(marks),ink,'KTD '+person.tattoos+' wrist tattoo');}
+    skinTattoo(model,skin,{center:new THREE.Vector3(-.018,top-.238,0),width:.043,height:.057,minZ:.015,style:person.tattoos,name:'KTD '+person.tattoos+' neck tattoo'});
+    const wrist=bonePoint(model,'RightHand'),body=meshes.find(mesh=>mesh.material?.name.includes('Wolf3D_Body'));
+    if(wrist&&body)skinTattoo(model,body,{center:new THREE.Vector3(wrist.x+.035,wrist.y,0),width:.047,height:.035,minZ:wrist.z+.008,style:person.tattoos,name:'KTD '+person.tattoos+' wrist tattoo'});
   }
+
 }
 
 export function applyAppearance(model, person, role = 'civilian', cache = irisCache) {
   if (!person || role !== 'civilian') return;
   model.updateMatrixWorld(true);
-  const leases=model.userData.appearanceTextureLeases=new Set();
+  const leases=model.userData.appearanceTextureLeases=new Set();appearanceCaches.set(model,cache);
   const meshes=[]; model.traverse(object=>{if(object.isMesh)meshes.push(object);});
   const find=name=>meshes.find(mesh=>mesh.material?.name.includes(name));
   if (/^#[\da-f]{6}$/i.test(person.eyes || '')) for(const mesh of meshes) if(mesh.material?.name.includes('Wolf3D_Eye')) {
@@ -266,16 +330,16 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
   if(hair){const style=person.hairstyle||'original',hex=person.hair||'#342b25';if(['cropped','slick','ponytail','ponytail-front','ponytail-side'].includes(style))fitHair(model,hair,skin,style,hex);else if(['afro','braids','straight','curls-short','curls-long'].includes(style))extendedHair(model,hair,skin,style,hex);
     colorHair(hair,model,hex,person.highlights);model.traverse(object=>{if(object.userData.appearanceOwned&&/hair$|ponytail$/.test(object.name))colorHair(object,model,hex,person.highlights);});}
   if(person.refined&&skin){skin.material.roughness=.67;for(const mesh of meshes)if(mesh.material?.name.includes('Eye'))mesh.material.roughness=.24;}
-  accessories(model,person,skin,find('Glasses'));
+  accessories(model,person,skin,find('Glasses'),meshes);
 }
 
 export function disposeAppearance(model) {
-  if(!model)return;
+  if(!model)return;appearanceCaches.delete(model);
   const leases=model.userData.appearanceTextureLeases;
   if(leases){for(const entry of leases){entry.users=Math.max(0,entry.users-1);trimIrisCache(entry.cache);}leases.clear();delete model.userData.appearanceTextureLeases;}
-  const geometries=new Set(),materials=new Set(),remove=[];
-  model.traverse(object=>{if(object.userData.appearanceOwned){geometries.add(object.geometry);for(const material of Array.isArray(object.material)?object.material:[object.material])if(material)materials.add(material);remove.push(object);}else if(object.userData.appearanceGeometryOwned){geometries.add(object.geometry);delete object.userData.appearanceGeometryOwned;}});
-  for(const geometry of geometries)geometry.dispose();for(const material of materials)material.dispose();for(const object of remove)object.removeFromParent();
+  const geometries=new Set(),materials=new Set(),textures=new Set(),remove=[];
+  model.traverse(object=>{if(object.userData.appearanceOwned){geometries.add(object.geometry);for(const material of Array.isArray(object.material)?object.material:[object.material])if(material){materials.add(material);if(object.userData.appearanceOwnedTexture&&material.map)textures.add(material.map);}remove.push(object);}else if(object.userData.appearanceGeometryOwned){geometries.add(object.geometry);delete object.userData.appearanceGeometryOwned;}});
+  for(const geometry of geometries)geometry.dispose();for(const material of materials)material.dispose();for(const texture of textures)texture.dispose();for(const object of remove)object.removeFromParent();
 }
 
 // Generated iris atlases are shared by avatars and portraits. Clear only after

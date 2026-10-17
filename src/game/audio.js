@@ -1,10 +1,10 @@
 import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
 import { native,nativeAnnouncement,stopNativeSpeech } from '../mobile/platform.js';
-import { dialogueKey } from './life-rules.js';
-const AUDIO_REVISION='2.2.0';
+import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
+const AUDIO_REVISION='2.3.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
-export const HOSPITAL_SAMPLE_FILES=Object.freeze({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3',...FOLEY_FILES});
+export const HOSPITAL_SAMPLE_FILES=Object.freeze({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
 const disconnect=node=>{try{node?.disconnect();}catch{}};
 
@@ -118,7 +118,7 @@ export class HospitalAudio {
     if(name==='sneeze'){this.noise(.17,.16,1600);this.delay(()=>this.noise(.3,.3,3200),190);}
     if(name==='magnet'){this.tone(90,1.1,.25,'sawtooth');this.noise(.8,.18,500);}
     if (name === 'shot') { this.noise(.22, this.settings.suppressor ? .25 : .6, 3400); this.tone(62, .2, .4, 'triangle'); }
-    if (name === 'step') this.noise(.065, .075, 550);
+    if (name === 'step') this.noise(.065, .048, 550);
     if (name === 'door') { this.noise(.25, .07, 300); this.tone(130, .12, .04, 'triangle'); }
     if (name === 'clue') { this.tone(523, .22, .12); this.delay(() => this.tone(784, .3, .1), 130); }
     if (name === 'blackout') { this.noise(.6, .25, 250); this.tone(38, 1.2, .28, 'triangle'); }
@@ -140,6 +140,11 @@ export class HospitalAudio {
     if(!this.settings.speech||position.floor!==undefined&&position.floor!==this.listenerFloor)return null;
     return this.playSample(person.gender==='female'?'pain-female':'pain-male',position,Math.min(1,gain));
   }
+  distress(person={},position=this.listenerPosition,gain=.8){
+    if(!this.settings.speech||position.floor!==undefined&&position.floor!==this.listenerFloor)return null;
+    return this.playSample(person.gender==='female'?'distress-female':'distress-male',position,Math.min(1,gain));
+  }
+  stopDistress(){for(const record of [...this.activeSamples])if(record.name.startsWith('distress-'))this.releaseSample(record,true);}
   gasp(position){if(this.samples.gasp)this.playSample('gasp',position,.85);else this.sound('gasp');}
   async loadSamples() {
     if(!this.ownsContext(this.ctx))return;
@@ -245,7 +250,7 @@ export class HospitalAudio {
       this.sampleNodes(`voice-${key}`,position||{x:0,y:1,z:0},gain*.9,false,buffer);
     }catch(error){if(error?.name!=='AbortError'&&this.voiceIsCurrent(epoch,ctx,position))this.speak(text,person,gain,urgent?4:1);}
   }
-  announce(text) {if(this.disposed)return;if(native){if(this.enabled&&this.settings.speech&&this.settings.volume)nativeAnnouncement(text,this.settings.volume*.65);return;}this.speak(text,{gender:'female'},.8,/Code blue|Police|Security incident/i.test(text)?5:3);}
+  announce(text) {if(this.disposed)return;if(ANNOUNCEMENT_LINES.includes(text))return this.dialogue(text,{gender:'female'},.8,true,this.listenerPosition);if(native){if(this.enabled&&this.settings.speech&&this.settings.volume)nativeAnnouncement(text,this.settings.volume*.65);return;}this.speak(text,{gender:'female'},.8,/Code blue|Police|Security incident/i.test(text)?5:3);}
   update(dt, proximity, emergency, impairment, moving, running,footfalls=null) {
     if (!this.ctx || !this.enabled || this.disposed) return;
     const now = this.ctx.currentTime;

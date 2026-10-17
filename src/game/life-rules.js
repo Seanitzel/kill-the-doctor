@@ -93,6 +93,7 @@ export const ANNOUNCEMENT_LINES = [
   'Code blue. Security incident reported. All staff follow emergency protocol. Police units are responding.',
   'Police response team entering the west wing. All exits will be secured shortly.',
   'Visitors: the staff directory is available in the entrance atrium. Please check department signage before proceeding.',
+  'Attention medical staff. Please return to your assigned departments. Your next consultation is waiting.',
 ];
 export const WITNESS_LINES = {
   weapon:'A weapon! I am calling security!',

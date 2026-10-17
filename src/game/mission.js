@@ -20,7 +20,7 @@ export const STAFF = [
   { name: 'Dr. Sofia Vale', role: 'Attending', gender: 'female', hair: '#573a2d', skin: '#c58d6c', accent: '#426e79', glasses: true },
   { name: 'Nurse Jonas Beck', role: 'Senior nurse', gender: 'male', hair: '#8b7761', skin: '#dfbba0', accent: '#4a8193', glasses: false },
 ];
-export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),loadout:{weapon:'pistol',mask:false},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,quality:'high',difficulty:'standard'}};}
+export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),loadout:{weapon:'pistol',mask:false},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
 export function readSave(storage) {
   const blank = defaultSave();
   try {
@@ -32,11 +32,13 @@ export function readSave(storage) {
     blank.loadout={weapon:data.loadout?.weapon==='sniper'&&blank.upgrades.sniper?'sniper':'pistol',mask:!!data.loadout?.mask&&!!blank.upgrades.mask};
     blank.storySeen=Array.isArray(data.storySeen)?data.storySeen.filter(id=>typeof id==='string').slice(-128):[];blank.lastStory=typeof data.lastStory==='string'?data.lastStory:'';
     const a=data.activeAssignment;
-    if(a&&a.round===blank.completed+1&&typeof a.storyId==='string'&&Number.isSafeInteger(a.seed)&&Number.isSafeInteger(a.attempt)&&a.attempt>=0)blank.activeAssignment={round:a.round,storyId:a.storyId,seed:a.seed,attempt:a.attempt,introSeen:a.introSeen===true,type:ASSIGNMENT_TYPES.includes(a.type)?a.type:'standard'};
+    // The case and target persist; watching its intro belongs to this page session.
+    if(a&&a.round===blank.completed+1&&typeof a.storyId==='string'&&Number.isSafeInteger(a.seed)&&Number.isSafeInteger(a.attempt)&&a.attempt>=0)blank.activeAssignment={round:a.round,storyId:a.storyId,seed:a.seed,attempt:a.attempt,introSeen:false,type:ASSIGNMENT_TYPES.includes(a.type)?a.type:'standard'};
     if (data.settings) {
       blank.settings.volume = Math.min(1, Math.max(0, Number(data.settings.volume) || 0));
       blank.settings.speech = data.settings.speech !== false;
       blank.settings.sensitivity = Math.min(2, Math.max(0.3, Number(data.settings.sensitivity) || 1));
+      for(const [setting,min,max] of [['brightness',.75,1.75],['flashlightBrightness',.5,2.5]]){const value=Number(data.settings[setting]);if(Number.isFinite(value))blank.settings[setting]=Math.min(max,Math.max(min,value));}
       if (['high', 'balanced', 'low'].includes(data.settings.quality)) blank.settings.quality = data.settings.quality;
       if (['relaxed', 'standard', 'hard'].includes(data.settings.difficulty)) blank.settings.difficulty = data.settings.difficulty;
     }

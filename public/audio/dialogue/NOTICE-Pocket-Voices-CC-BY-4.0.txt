@@ -1,3 +1,5 @@
+Historical notice: these supplied Pocket TTS presets were used in revision 4. Revision 5 replaces them with original Qwen-designed identities. This notice is retained for provenance of earlier builds.
+
 Kyutai Pocket TTS supplied preset notices
 
 Model weights (Kyutai): Creative Commons Attribution 4.0 International.

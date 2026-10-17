@@ -1,5 +1,5 @@
 import { assetUrl } from './asset-url.js';
-import {applyAppearance,disposeAppearance,disposeAppearanceCache} from './appearance.js';
+import {applyAppearance,disposeAppearance,disposeAppearanceCache,NURSE_UNIFORM,staffBadgeTexture} from './appearance.js';
 import {animationFootfalls} from './movement.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -124,9 +124,9 @@ export function portrait(person) {
 export function makeHuman(person, role = 'doctor') {
   const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
   const skin = material(person.skin || '#c79776'); const hair = material(person.hair || '#2b2725');
-  const outfit = material(role === 'patient' ? '#8098a2' : role === 'security' || role === 'police' ? '#263c51' : person.accent || '#568195');
+  const outfit = material(role === 'nurse' ? '#9bcce6' : role === 'patient' ? '#8098a2' : role === 'security' || role === 'police' ? '#263c51' : person.accent || '#568195');
   const coat = material(role === 'doctor' ? '#dde3e2' : outfit.color);
-  const pants = material(role === 'patient' ? '#a1b2b8' : '#324654'); const shoes = material('#15212a');
+  const pants = material(role==='nurse'?'#9bcce6':role === 'patient' ? '#a1b2b8' : '#324654'); const shoes = material('#15212a');
   const torso = mesh('capsule', coat, [.54, .42, .32], [0, 1.15, 0], body); // capsule base height = 2
   const head = mesh('sphere', skin, [.155, .215, .17], [0, 1.77, 0], body);
   mesh('cylinder', skin, [.065, .15, .065], [0, 1.54, 0], body);
@@ -145,6 +145,9 @@ export function makeHuman(person, role = 'doctor') {
     mesh('box', material('#456c84'), [.065, .03, .04], [.16, 1.28, .219], body);
     mesh('box', material('#324552'), [.014, .25, .02], [-.14, 1.39, .184], body);
   }
+  if(role==='nurse'){
+    const card=new THREE.Mesh(new THREE.PlaneGeometry(.115,.067),material('#ffffff',{map:staffBadgeTexture(person)}));card.position.set(.12,1.28,.167);card.name='KTD nurse name badge';card.userData.appearanceOwned=true;card.userData.appearanceOwnedTexture=true;card.userData.staffName=person.name||'Northline nurse';card.userData.staffRole='NURSE';body.add(card);
+  }
   const limbs = [];
   for (const side of [-1, 1]) {
     const arm = new THREE.Group(); arm.position.set(side * .31, 1.43, 0); body.add(arm);
@@ -153,7 +156,7 @@ export function makeHuman(person, role = 'doctor') {
     mesh('capsule', pants, [.21, .34, .22], [0, -.36, 0], leg); mesh('box', shoes, [.22, .13, .35], [0, -.75, .055], leg);
     limbs.push({ arm, leg, side });
   }
-  return { root, body, limbs, dispose: avatarDisposer(root), animate(time, speed) {
+  return { root, body, limbs, dispose: avatarDisposer(root,{model:body}), animate(time, speed) {
     const swing = Math.sin(time * (speed > 3 ? 10 : 6)) * Math.min(.65, speed * .16);
     for (const l of limbs) { l.arm.rotation.x = swing * l.side; l.leg.rotation.x = -swing * l.side; }
     body.position.y = speed > .1 ? Math.abs(Math.sin(time * 6)) * .025 : Math.sin(time * 1.8) * .005;
@@ -187,8 +190,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
         o.material = o.material.clone(); o.material.roughness = .88; o.material.metalness = 0;
         const name = o.material.name;
         if (person) {
-          if (name.includes('Outfit_Top')) { const color = role === 'doctor' ? '#d9e4ea' : ['security','police'].includes(role) ? '#344b62' : person.accent || '#718e9c'; o.material.map = recolorCloth(o.material.map,color,assets,clothLeases); o.material.color.set('#ffffff'); }
-          if (name.includes('Outfit_Bottom')) { o.material.map = recolorCloth(o.material.map,role === 'patient' ? '#acbcc4' : role==='civilian'&&person.outfit==='suit' ? person.accent||'#485766' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
+          if (name.includes('Outfit_Top')) { const color = role === 'nurse' ? NURSE_UNIFORM : role === 'doctor' ? '#d9e4ea' : ['security','police'].includes(role) ? '#344b62' : person.accent || '#718e9c'; o.material.map = recolorCloth(o.material.map,color,assets,clothLeases); o.material.color.set('#ffffff'); }
+          if (name.includes('Outfit_Bottom')) { o.material.map = recolorCloth(o.material.map,role === 'nurse' ? NURSE_UNIFORM : role === 'patient' ? '#acbcc4' : role==='civilian'&&person.outfit==='suit' ? person.accent||'#485766' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
           if (name.includes('Hair')) o.material.color.set(person.hair || '#3b302c');
           if (name.includes('Skin') || name.includes('Body')) o.material.color.set(person.skin || '#e0ad87');
           if (name.includes('Glasses')) o.visible = !!person.glasses;
@@ -209,7 +212,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
   }
   let current = '', aim = false;
   const arms = ['Right','Left'].map(side => { const arm = model.getObjectByName(`${side}Arm`), fore = model.getObjectByName(`${side}ForeArm`); if (!arm || !fore) return null; const direction = new THREE.Vector3(side === 'Right' ? .03 : -.1, -.1, .4).normalize(); return { arm, q: new THREE.Quaternion().setFromUnitVectors(fore.position.clone().normalize(), direction) }; }).filter(Boolean);
-  if (person && !['security','police','patient'].includes(role)) {
+  if (person && role==='doctor') {
     const badge = mesh('box', material('#dcebf2'), [.095,.13,.012], [.14,1.28,.21], root);
     mesh('box', material(person.accent || '#5288a2'), [.07,.03,.016], [.14,1.31,.22], root);
   }
@@ -230,10 +233,12 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     mixer.update(dt);
     if (aim) for (const item of arms) item.arm.quaternion.copy(item.q);
     return {footfalls};
-  }, poseActivity(activity, time, { seated=false, reaction=0, look=0 } = {}) {
+  }, poseActivity(activity, time, { seated=false, reaction=0, look=0,restricted=false } = {}) {
     const b=activityBones;model.updateMatrixWorld(true);
     if(seated) for(const side of ['Left','Right']) { if(b[`${side}UpLeg`]) b[`${side}UpLeg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2); if(b[`${side}Leg`]) b[`${side}Leg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2); }
     if(b.Head) b.Head.rotation.y += look + Math.sin(time*.8)*.045;
+    // Keep the safe idle/walk arms when a nearby wall or door leaves no room to gesture.
+    if(restricted)return;
     if(b.Spine) b.Spine.rotation.x += activity==='examine' ? .15 : activity==='labor' ? Math.sin(time*2.6)*.05 : 0;
     if(reaction>0) {
       orient('RightArm','RightForeArm',[.15,-.2,.6]); orient('RightForeArm','RightHand',[.1,.5,.3]);

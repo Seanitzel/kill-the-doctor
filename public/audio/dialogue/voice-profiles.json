@@ -1,0 +1,54 @@
+{
+  "female-standard": {
+    "seed": 8214,
+    "description": "A warm adult American woman with a clear midrange feminine voice and a neutral General American accent. Conversational, grounded and confident, with natural connected speech and expressive but restrained intonation. Studio recording, no background sound.",
+    "file": "female-standard-designed.wav",
+    "referenceText": "Please keep your arm still. This will only take a moment. I can hear somebody in the corridor. If you need anything, call me and I will come right back.",
+    "duration": 11.28,
+    "generationSeconds": 8.850999116897583,
+    "sampleRate": 24000,
+    "voiceId": "northline-female-standard",
+    "referenceSha256": "771ddf909ce1e5d60b25f86cd892879f7d94e43d17c4536e6c9dd6535857c90f",
+    "syntheticDesigned": true,
+    "sourceRecording": "No real-person recording; generated from the description with Qwen3-TTS VoiceDesign."
+  },
+  "male-standard": {
+    "seed": 4365,
+    "description": "An adult American man with a distinct low baritone masculine voice and a neutral General American accent. Relaxed, warm and clear, with conversational pacing and natural connected speech. Studio recording, no background sound.",
+    "file": "male-standard-designed.wav",
+    "referenceText": "Please keep your arm still. This will only take a moment. I can hear somebody in the corridor. If you need anything, call me and I will come right back.",
+    "duration": 10.32,
+    "generationSeconds": 4.062420129776001,
+    "sampleRate": 24000,
+    "voiceId": "northline-male-standard",
+    "referenceSha256": "dd10a5dab402d507231176253491b806343c5a5c82af1c9a74ebf130da7c6913",
+    "syntheticDesigned": true,
+    "sourceRecording": "No real-person recording; generated from the description with Qwen3-TTS VoiceDesign."
+  },
+  "female-southern": {
+    "seed": 1764,
+    "description": "An adult American woman from Texas, with a warm lower feminine voice and a mild authentic Southern American accent. A relaxed Texas drawl, friendly and conversational, clear intelligible words with natural connected speech. Not exaggerated. Studio recording, no background sound.",
+    "file": "female-southern-designed.wav",
+    "referenceText": "Please keep your arm still. This will only take a moment. I can hear somebody in the corridor. If you need anything, call me and I will come right back.",
+    "duration": 12.72,
+    "generationSeconds": 4.854779005050659,
+    "sampleRate": 24000,
+    "voiceId": "northline-female-southern",
+    "referenceSha256": "5d63c250593d128f7083b5fe8c4471bbe7a41fedc6932080ee26ca1d5a7bd66b",
+    "syntheticDesigned": true,
+    "sourceRecording": "No real-person recording; generated from the description with Qwen3-TTS VoiceDesign."
+  },
+  "male-southern": {
+    "seed": 9027,
+    "description": "An adult American man from Texas, with a warm deep masculine baritone voice and a mild authentic Southern American accent. A relaxed Texas drawl, friendly and grounded, clear intelligible words with natural connected speech. Not exaggerated. Studio recording, no background sound.",
+    "file": "male-southern-designed.wav",
+    "referenceText": "Please keep your arm still. This will only take a moment. I can hear somebody in the corridor. If you need anything, call me and I will come right back.",
+    "duration": 9.68,
+    "generationSeconds": 3.7317330837249756,
+    "sampleRate": 24000,
+    "voiceId": "northline-male-southern",
+    "referenceSha256": "2e87b5968884e6d713ec7f634f2addf432d6bf4d7579f0f13e5c2b32ab9c0f89",
+    "syntheticDesigned": true,
+    "sourceRecording": "No real-person recording; generated from the description with Qwen3-TTS VoiceDesign."
+  }
+}

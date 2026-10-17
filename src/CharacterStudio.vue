@@ -12,6 +12,7 @@ function update(){emit('change');clearTimeout(timer);timer=setTimeout(()=>{previ
 function view(mode){previewMode.value=mode;update();}
 function angle(mode){previewView.value=mode;update();}
 function choose(c){if(selectCharacter(props.save,c.id))update();}
+function accessoryChanged(id){if(['glasses','sunglasses'].includes(id)&&props.save.appearance[id])props.save.appearance[id==='glasses'?'sunglasses':'glasses']=false;}
 onMounted(update);watch(()=>props.save.appearance,update,{deep:true});onBeforeUnmount(()=>clearTimeout(timer));
 </script>
 <template>
@@ -21,13 +22,12 @@ onMounted(update);watch(()=>props.save.appearance,update,{deep:true});onBeforeUn
     <label class="studio-name">DISPLAY NAME<input v-model="save.appearance.name" maxlength="24" :placeholder="CHARACTERS.find(c=>c.id===save.character)?.name"/></label>
     <label v-if="save.character==='custom'" class="studio-body">CHARACTER BASE<select aria-label="Character base" v-model="save.appearance.gender"><option value="male">Masculine</option><option value="female">Feminine</option></select></label>
     <div class="style-choices"><label>OUTFIT<select aria-label="Outfit style" v-model="save.appearance.outfit"><option v-for="style in OUTFITS" :value="style.id" :key="style.id">{{style.name}}</option></select></label><label>HAIRSTYLE<select aria-label="Hairstyle" v-model="save.appearance.hairstyle"><option v-for="style in HAIRSTYLE_CHOICES" :value="style.id" :key="style.id">{{style.name}}</option></select></label></div>
-    <template v-for="row in palettes.filter(p=>p.id!=='eyes')" :key="row.id">
+    <template v-for="row in palettes" :key="row.id">
       <div class="palette-row" :data-palette="row.id"><span>{{row.title}}</span><div><button v-for="color in row.colors" :key="color" :style="{background:color}" :class="{selected:save.appearance[row.id]===color}" :aria-label="`${row.title} ${color}`" :aria-pressed="save.appearance[row.id]===color" @click="save.appearance[row.id]=color"><Check v-if="save.appearance[row.id]===color" :size="14"/></button></div></div>
       <div v-if="row.id==='hair'" class="palette-row hair-highlights" data-palette="highlights"><span>HAIR HI-LIGHTS</span><div><button class="no-highlight" :class="{selected:save.appearance.highlights==='none'}" :aria-pressed="save.appearance.highlights==='none'" aria-label="No hair hi-lights" @click="save.appearance.highlights='none'">—</button><button v-for="color in HIGHLIGHT_COLORS" :key="color" :style="{background:color}" :class="{selected:save.appearance.highlights===color}" :aria-label="`Hair hi-lights ${color}`" :aria-pressed="save.appearance.highlights===color" @click="save.appearance.highlights=color"><Check v-if="save.appearance.highlights===color" :size="14"/></button></div></div>
     </template>
     <label class="studio-body">TATTOOS<select aria-label="Tattoo style" v-model="save.appearance.tattoos"><option v-for="tattoo in TATTOO_CHOICES" :key="tattoo.id" :value="tattoo.id">{{tattoo.name}}</option></select></label>
-    <fieldset class="studio-accessories"><legend>ACCESSORIES</legend><label v-for="option in [{id:'glasses',name:'Glasses'},{id:'cap',name:'Plain cap'},{id:'watch',name:'Watch'},{id:'purse',name:'Crossbody purse'},{id:'jewelry',name:'Necklace & earrings'}]" :key="option.id"><input type="checkbox" v-model="save.appearance[option.id]"/><span>{{option.name}}</span></label></fieldset>
+    <fieldset class="studio-accessories"><legend>ACCESSORIES</legend><label v-for="option in [{id:'glasses',name:'Glasses'},{id:'sunglasses',name:'Black sunglasses'},{id:'cap',name:'Cap'},{id:'watch',name:'Watch'},{id:'purse',name:'Crossbody purse'},{id:'jewelry',name:'Necklace & earrings'}]" :key="option.id"><input type="checkbox" v-model="save.appearance[option.id]" @change="accessoryChanged(option.id)"/><span>{{option.name}}</span></label></fieldset>
     <p class="mri-explanation">Remove metal jewelry before entering MRI. This is a dramatized game hazard.</p>
-    <div class="palette-row" data-palette="eyes"><span>Eye color</span><div><button v-for="color in EYE_COLORS" :key="color" :style="{background:color}" :class="{selected:save.appearance.eyes===color}" :aria-label="`Eye color ${color}`" :aria-pressed="save.appearance.eyes===color" @click="save.appearance.eyes=color"><Check v-if="save.appearance.eyes===color" :size="14"/></button></div></div>
   </div></div>
 </template>

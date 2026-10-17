@@ -47,7 +47,7 @@ To preview phone controls on a desktop, append `?controls=touch` and use a lands
 - Nurse handovers and patient conversations with spoken dialogue and captions. Six seated cafeteria diners eat, gesture, and talk around tables with meals.
 - Doctors examine clothed patients in the clinical rooms, with a visible stethoscope. Room entry interrupts the examination with a startled turn and an “Excuse me” response.
 - Two clothed pregnant maternity patients, two swaddled newborns in bassinets, and bundled recordings of baby cries, distress vocalizations, and heavy breathing. Maternity sounds fade with distance and stop being audible on the other floor.
-- Layered synthesized music with gradual target proximity intensity, hospital ambience, optional spoken announcements, bundled Pocket TTS NPC dialogue and fixed public-address lines in male and female voices with alternate deliveries, and persistent captions.
+- Layered synthesized music with gradual target proximity intensity, hospital ambience, optional spoken announcements, bundled Qwen3-TTS NPC dialogue and fixed public-address lines in four designed voices (female/male, standard American/Southern-inspired) with stable per-character accents, and persistent captions.
 - Recorded sneakers on tile vary across four takes, synchronized to the rigged walking/running animation, with distinct pistol and rifle recordings and a subtle hospital room response. Only player effects use this room response. Footsteps have a softer contact and lower gain; the original soundtrack receives a20% bus gain rise without changing its notes or timing. Clip provenance and CC0 licenses are in `public/audio/foley/SOURCES.txt`.
 - Blackouts, emergency lighting, a shadow-casting flashlight, and occasional brief light-fixture glitches with electrical zaps. Blood-pressure cuffs, cardiac monitors, ventilators, clinical instructions and short pain reactions provide local background activity.
 - A cough or sneeze warns the player before selected sick patients emit green contamination clouds. A bought, equipped face mask prevents new exposure. Base blur durations are 30 or 60 seconds, according to the patient, with a visible recovery countdown and gradual clearing over the final ten seconds. The recovery filter upgrade reduces these durations. Clean patients do not contaminate the player, and a single cloud does not repeatedly reset the timer.
@@ -57,7 +57,7 @@ To preview phone controls on a desktop, append `?controls=touch` and use a lands
 - Optional steel jewelry triggers a dramatized fatal magnetic pull inside Radiology. This is an MRI magnet hazard, not radiation; not all real jewelry is magnetic. Remove jewelry in the studio or loadout before entering.
 - Coins, reward breakdowns, eight equipment upgrades (including a protective mask, scoped rifle, extended magazines and endurance training), new rounds, and browser-persistent progression.
 - Exhaustion settles into a steady walk until sprint is released and a recovery reserve is restored. Touch sprint switches off when depleted; the RUN control shows REST during recovery.
-- Difficulty, volume, speech, mouse sensitivity, visual quality, fullscreen, responsive menus, and touch controls.
+- Difficulty, volume, speech, camera sensitivity, scene brightness, torch brightness, visual quality, fullscreen, responsive menus, and touch controls.
 
 This is the complete browser prototype stage of the supplied GDD. Hospital geometry and equipment are modular; the lift transitions between three fully playable floor layouts. It is a foundation for further custom art and hospital expansion.
 
@@ -125,3 +125,11 @@ npm run build:pages
 The output is in `artifacts/github-pages`. Enable **GitHub Actions** as the Pages publishing source in the repository settings. GitHub Pages requires a supported paid plan for a private repository; the published game URL is publicly accessible. A public repository supports Pages on the free plan.
 
 Version 2.3 adds Mara’s antibiotic/paralysis case and Evelyn/Nora’s unwarned eye-dilation case as fictional composites. The tattoo fix uses skinned alpha decals; glasses use measured eye placement; straight and loose-curly hair have continuous layered silhouettes; the side-part ponytail stays behind the head. Hair hi-lights follow hair color and eye color is last. Dialogue uses supplied licensed Pocket TTS presets and remains synthetic. See `docs/release-2.3.md` for validation and limits.
+
+## Version 2.4
+
+Stories play before an assignment, skip repeat/failure attempts within the same page session, and play again after a refresh. The same case, mission seed and target remain intact. The contextual prompt is now a real button above the mobile look surface, supporting pointer and keyboard activation without duplicate actions.
+
+The torch follows the avatar heading instead of the offset camera. Settings include separate scene/torch brightness. Structural collision and door swing checks reserve walking-arm clearance; avatars slow near walls and doors before their running pose can intersect them. Nurses wear light-blue tops/trousers and animated name badges. Customization adds black sunglasses and a black sport cap; eye color follows skin tone.
+
+Public announcements have a two-note chime and a 350–3300 Hz telephone band. Bundled voice designs are fictional synthetic identities with standard American and Southern/Texas-inspired prompts, not a guarantee of a perfect accent or human acting. See `docs/release-2.4.md` for checks and limits.

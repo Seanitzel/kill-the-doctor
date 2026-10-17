@@ -61,10 +61,10 @@ Included high-quality public preview as audio/labor-groan.mp3.
 
 CC0: https://creativecommons.org/publicdomain/zero/1.0/
 Clinical and maternity scenes are fictional, clothed, and non-graphic. NPC dialogue is bundled as generated English speech recordings. Public-address
-announcements use the browser's installed English speech voices. Recorded cries and vocals
+announcements use bundled generated speech with a chime and telephone-band filtering. Recorded cries and vocals
 are bundled locally and positioned within the hospital through Web Audio.
 
-NPC speech recordings: locally generated Kokoro (used in earlier builds; replaced by Pocket TTS in 2.3) 82M neural speech, with female
+NPC speech recordings: locally generated Kokoro (historical builds; replaced by Pocket TTS in 2.3 and Qwen3-TTS in 2.4) 82M neural speech, with female
 af_heart and male am_michael voices plus alternate blended takes. These are
 synthetic voices, not human voice-actor recordings. Sources, model/runtime
 licenses and all 244 clip records: audio/dialogue/SOURCES.txt and manifest.json.
@@ -101,3 +101,5 @@ Subtle room reflections and reverb are applied at runtime, separately from music
 Additional short human pain reactions (CC0): MrFossy / Freesound 547209 and Guinamun / Freesound 796094. Full URLs and provenance: audio/expansion-sources.txt.
 
 KTD 2.3 voice update: NPC dialogue and fixed PA generated with Kyutai Pocket TTS (runtime MIT, model weights CC BY 4.0). Supplied Alba preset performance by Alba MacKenna, CC BY 4.0; supplied Marius preset is based on the CC0 Unmute Selfie.wav voice donation. Generated recordings are synthetic. Full attribution, source links and license text: audio/dialogue/SOURCES.txt and audio/dialogue/NOTICE-Pocket-Voices-CC-BY-4.0.txt.
+
+KTD 2.4 voice update: NPC dialogue and hospital announcements use four original synthetic voice identities designed with Qwen3-TTS (Apache 2.0), rendered with MLX Audio (MIT). Standard American and Southern/Texas-inspired descriptions guide delivery; accent labels describe the intended performance and may vary. No real-person recording was used to create or condition these identities. Source descriptions, licenses and all 300 clip records: audio/dialogue/SOURCES.txt and audio/dialogue/manifest.json. Earlier model/preset attributions above document superseded recordings. No generation model or reference-voice files are shipped in the game.

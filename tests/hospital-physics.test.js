@@ -62,9 +62,9 @@ test('Every department and all three lift approaches remain physically reachable
   }
 });
 test('Doors cannot swing into the player or trap them in the doorway',()=>{
-  const e=engine(),d=levels[0].doors[0];e.playerPos.set(d.x,0,d.z);
+  const e=engine(),d=levels[0].doors[0];d.angle=d.openAngle;e.playerPos.set(d.x,0,d.z);
   assert.equal(e.doorCanSwingTo(d,0),false);
-  assert.equal(e.doorCanSwingTo(d,-Math.PI/2),true);
+  assert.equal(e.doorCanSwingTo(d,d.openAngle),true);
   e.playerPos.set(d.x,0,d.z+2);assert.equal(e.doorCanSwingTo(d,0),true);
   e.npcs=[{floor:0,pos:{x:d.x,z:d.z},dead:false}];assert.equal(e.doorCanSwingTo(d,0),false);
 });
@@ -72,7 +72,7 @@ test('Every door swings into its own room, away from someone approaching from th
   for(const floor of [0,1,2])for(const d of levels[floor].doors){
     const e=engine(floor),room=levels[floor].rooms.find(r=>r.id===d.room),roomSide=Math.sign(room.center.z-d.z);
     assert.equal(-Math.sign(d.openAngle),roomSide);
-    e.playerPos.set(d.x,0,d.z-roomSide*.41);
+    d.angle=0;e.playerPos.set(d.x,0,d.z-roomSide*.61);
     for(const fraction of [.05,.25,.5,.75,1])assert.ok(e.doorCanSwingTo(d,d.openAngle*fraction),d.id);
   }
 });

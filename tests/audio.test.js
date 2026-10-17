@@ -73,9 +73,9 @@ test('Every conversation has two bundled neural takes with matching text keys an
     for(const variant of entry.variants){const bytes=readFileSync(new URL(`../public/audio/dialogue/${variant.file}`,import.meta.url));assert.ok(bytes.length>1000);assert.equal(createHash('sha256').update(bytes).digest('hex'),variant.sha256);}
   }
 });
-test('Repeated dialogue alternates performances and caches both without shifting playback pitch',async()=>{
+test('Repeated dialogue keeps a character accent stable and caches standard and Southern recordings separately',async()=>{
   const audio=new HospitalAudio({volume:.5,speech:true}),requests=[],played=[],oldFetch=globalThis.fetch;
   audio.ctx={decodeAudioData:async()=>({decoded:true})};audio.sampleNodes=(key,pos,gain,loop,buffer)=>played.push({key,buffer});
   globalThis.fetch=async url=>{requests.push(url);return {ok:true,arrayBuffer:async()=>new ArrayBuffer(1)};};
-  try{for(let i=0;i<3;i++)await audio.dialogue('Excuse me.',{gender:'female'},.5);assert.equal(requests.length,2);assert.match(requests[1],/-alt\.mp3\?v=2\.3\.0$/);assert.equal(played[0].key,played[2].key);assert.notEqual(played[0].key,played[1].key);}finally{globalThis.fetch=oldFetch;}
+  try{for(const voiceRegion of ['standard','southern','standard'])await audio.dialogue('Excuse me.',{gender:'female',voiceRegion},.5);assert.equal(requests.length,2);assert.match(requests[1],/-alt\.mp3\?v=2\.4\.0$/);assert.equal(played[0].key,played[2].key);assert.notEqual(played[0].key,played[1].key);}finally{globalThis.fetch=oldFetch;}
 });

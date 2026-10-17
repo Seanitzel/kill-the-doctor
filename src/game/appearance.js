@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
+export const NURSE_UNIFORM='#c6e8fb';
 export const OUTFIT_STYLES = ['casual','jacket','tactical','suit'];
 export const HAIRSTYLES = ['original','cropped','slick','ponytail','ponytail-front','ponytail-side','afro','braids','straight','curls-short','curls-long'];
 const irisCache = new Map();
@@ -281,28 +282,33 @@ function skinTattoo(model,source,{center,width,height,minZ,style,name}){
   const material=clothMaterial('#ffffff',{map:tattooTexture(style),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,roughness:.95,side:THREE.FrontSide});
   const decal=new THREE.SkinnedMesh(geometry,material);decal.name=name;decal.position.copy(source.position);decal.quaternion.copy(source.quaternion);decal.scale.copy(source.scale);decal.matrix.copy(source.matrix);decal.matrixAutoUpdate=source.matrixAutoUpdate;decal.bindMode=source.bindMode;decal.skeleton=source.skeleton;decal.bindMatrix.copy(source.bindMatrix);decal.bindMatrixInverse.copy(source.bindMatrixInverse);decal.userData.appearanceOwned=true;decal.userData.appearanceOwnedTexture=true;decal.frustumCulled=false;source.parent.add(decal);
 }
-function fittedGlasses(model,skin,eyeMeshes){
+function fittedGlasses(model,skin,eyeMeshes,sunglasses=false){
   const head=model.getObjectByName('Head'),points=eyeMeshes.flatMap(mesh=>coordinates(mesh,model).points);if(!head||!points.length)return;
   const eyeBox=new THREE.Box3().setFromPoints(points),centerX=(eyeBox.min.x+eyeBox.max.x)/2,skinBox=new THREE.Box3().setFromPoints(coordinates(skin,model).points),parts=[],lenses=[];
   const centers=[];for(const side of [-1,1]){const sidePoints=points.filter(point=>(point.x-centerX)*side>0),box=new THREE.Box3().setFromPoints(sidePoints),center=box.getCenter(new THREE.Vector3());center.z=box.max.z+.011;center.y-=.001;centers.push(center);
-    const rim=new THREE.TorusGeometry(.024,.0023,5,20);rim.scale(1.22,.88,1);rim.translate(...center.toArray());parts.push(rim);
-    const lens=new THREE.CircleGeometry(.024,20);lens.scale(1.17,.83,1);lens.translate(center.x,center.y,center.z+.0005);lenses.push(lens);
+    if(sunglasses){
+      const outline=new THREE.Shape();outline.moveTo(-.031,.020);outline.lineTo(.031,.020);outline.quadraticCurveTo(.034,.020,.032,.013);outline.lineTo(.026,-.015);outline.quadraticCurveTo(.025,-.020,.019,-.020);outline.lineTo(-.019,-.020);outline.quadraticCurveTo(-.025,-.020,-.026,-.015);outline.lineTo(-.032,.013);outline.quadraticCurveTo(-.034,.020,-.031,.020);
+      const lensShape=new THREE.Shape();lensShape.moveTo(-.026,.015);lensShape.lineTo(.026,.015);lensShape.lineTo(.021,-.015);lensShape.lineTo(-.021,-.015);lensShape.closePath();const hole=new THREE.Path(lensShape.getPoints());outline.holes.push(hole);
+      const rim=new THREE.ExtrudeGeometry(outline,{depth:.003,bevelEnabled:false,curveSegments:4});rim.translate(center.x,center.y,center.z-.0015);parts.push(rim);const lens=new THREE.ShapeGeometry(lensShape);lens.translate(center.x,center.y,center.z+.001);lenses.push(lens);
+    }else{const rim=new THREE.TorusGeometry(.024,.0023,5,20);rim.scale(1.22,.88,1);rim.translate(...center.toArray());parts.push(rim);const lens=new THREE.CircleGeometry(.024,20);lens.scale(1.17,.83,1);lens.translate(center.x,center.y,center.z+.0005);lenses.push(lens);}
     const earX=side*(Math.max(Math.abs(skinBox.min.x),Math.abs(skinBox.max.x))+.001);parts.push(tubePiece([[center.x+side*.029,center.y,center.z],[earX,center.y-.003,(eyeBox.min.z+skinBox.min.z)/2],[earX,center.y-.012,skinBox.min.z+.022]],.0022,10,4));
   }
   const bridge=centers[0].clone().lerp(centers[1],.5);parts.push(tubePiece([[centers[0].x+.029,bridge.y+.002,bridge.z],[centerX,bridge.y+.006,bridge.z+.004],[centers[1].x-.029,bridge.y+.002,bridge.z]],.002,8,4));
-  attachGeometry(model,head,mergePieces(parts),clothMaterial('#202934',{roughness:.35}),'KTD optical frames');attachGeometry(model,head,mergePieces(lenses),clothMaterial('#abc5d4',{transparent:true,opacity:.11,depthWrite:false,roughness:.2}),'KTD optical lenses');
+  attachGeometry(model,head,mergePieces(parts),clothMaterial(sunglasses?'#080b10':'#202934',{roughness:.35}),sunglasses?'KTD sunglasses frames':'KTD optical frames');attachGeometry(model,head,mergePieces(lenses),sunglasses?clothMaterial('#080c13',{roughness:.19,metalness:.12}):clothMaterial('#abc5d4',{transparent:true,opacity:.11,depthWrite:false,roughness:.2}),sunglasses?'KTD sunglasses lenses':'KTD optical lenses');
 }
 function accessories(model,person,skin,glasses,meshes){
-  if(!person.cap&&!person.watch&&!person.purse&&(!person.tattoos||person.tattoos==='none')&&!person.glasses)return;
+  if(!person.cap&&!person.watch&&!person.purse&&(!person.tattoos||person.tattoos==='none')&&!person.glasses&&!person.sunglasses)return;
   if(!skin)return;const head=model.getObjectByName('Head'),spine=model.getObjectByName('Spine1'),hips=model.getObjectByName('Hips');if(!head)return;
   const box=new THREE.Box3().setFromPoints(coordinates(skin,model).points),top=box.max.y,front=box.max.z-.009,z=(box.min.z+box.max.z)/2;
   if(glasses)glasses.visible=false;
-  if(person.glasses)fittedGlasses(model,skin,meshes.filter(mesh=>mesh.material?.name.includes('Wolf3D_Eye')));
+  if(person.glasses||person.sunglasses)fittedGlasses(model,skin,meshes.filter(mesh=>mesh.material?.name.includes('Wolf3D_Eye')),!!person.sunglasses);
   if(person.cap){
     for(const mesh of meshes)if(mesh.material?.name.includes('Wolf3D_Hair'))mesh.visible=false;
-    const crown=new THREE.SphereGeometry(1,24,12,0,Math.PI*2,0,Math.PI*.56);crown.scale(.105,.056,.111);crown.translate(0,top-.033,z-.008);
-    const band=new THREE.TorusGeometry(1,.045,5,28);band.scale(.101,.109,.075);band.rotateX(Math.PI/2);band.translate(0,top-.041,z-.008);
-    const peak=spherePiece([0,top-.041,front+.001],[.082,.004,.029],16);attachGeometry(model,head,mergePieces([crown,band,peak]),clothMaterial(person.accent||'#34495a'),'KTD plain cap');
+    const crown=new THREE.SphereGeometry(1,28,14,0,Math.PI*2,0,Math.PI*.56);crown.scale(.108,.080,.115);crown.translate(0,top-.052,z-.008);
+    const band=new THREE.TorusGeometry(1,.035,5,28);band.scale(.105,.113,.075);band.rotateX(Math.PI/2);band.translate(0,top-.055,z-.008);
+    const bill=new THREE.Shape();bill.moveTo(-.081,front-.018);bill.quadraticCurveTo(-.100,front+.027,-.074,front+.052);bill.quadraticCurveTo(0,front+.081,.074,front+.052);bill.quadraticCurveTo(.100,front+.027,.081,front-.018);bill.closePath();
+    const peak=new THREE.ExtrudeGeometry(bill,{depth:.003,bevelEnabled:true,bevelThickness:.001,bevelSize:.001,bevelSegments:1,steps:1,curveSegments:10});peak.rotateX(Math.PI/2);peak.translate(0,top-.055,0);
+    attachGeometry(model,head,mergePieces([crown,band,peak]),clothMaterial('#0b0f15',{roughness:.86}),'KTD sport cap');
     if(person.hairstyle==='afro')model.getObjectByName('KTD afro hair')?.traverse(mesh=>{mesh.visible=false;});
   }
   if(person.watch){const hand=model.getObjectByName('LeftHand'),fore=model.getObjectByName('LeftForeArm');if(hand&&fore){const wrist=bonePoint(model,'LeftHand'),elbow=bonePoint(model,'LeftForeArm'),direction=wrist.clone().sub(elbow).normalize(),center=wrist.clone().addScaledVector(direction,-.035);const band=new THREE.TorusGeometry(.031,.0065,6,14);band.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),direction));band.translate(...center.toArray());attachGeometry(model,fore,band,clothMaterial('#222b32'),'KTD wristwatch band');const face=new THREE.BoxGeometry(.032,.027,.012);face.translate(center.x,center.y,center.z+.034);attachGeometry(model,fore,face,clothMaterial('#bdc8cc',{metalness:.7,roughness:.3}),'KTD wristwatch');const dial=new THREE.BoxGeometry(.023,.018,.002);dial.translate(center.x,center.y,center.z+.041);attachGeometry(model,fore,dial,clothMaterial('#1a3441'),'KTD watch dial');}}
@@ -315,8 +321,23 @@ function accessories(model,person,skin,glasses,meshes){
 
 }
 
+export function staffBadgeTexture(person){
+  const width=256,height=128,name=(person?.name||'Northline nurse').replace(/^Nurse\s+/i,'');
+  if(typeof document==='undefined'){const data=new Uint8Array(width*height*4);for(let i=0;i<data.length;i+=4){data[i]=238;data[i+1]=246;data[i+2]=250;data[i+3]=255;}const texture=new THREE.DataTexture(data,width,height);texture.needsUpdate=true;return texture;}
+  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.fillStyle='#f2f8fb';ctx.fillRect(0,0,width,height);ctx.fillStyle='#386b91';ctx.fillRect(0,0,width,30);ctx.fillStyle='#ffffff';ctx.font='700 18px Arial';ctx.fillText('NORTHLINE',12,21);ctx.fillStyle='#20445d';ctx.font='700 21px Arial';ctx.fillText('NURSE',12,61);ctx.font='600 22px Arial';ctx.fillText(name,12,92,232);ctx.fillStyle='#7f9fb2';ctx.fillRect(12,108,144,5);ctx.fillStyle='#c3dce9';ctx.fillRect(188,45,54,62);ctx.fillStyle='#4b7995';ctx.beginPath();ctx.arc(215,63,10,0,Math.PI*2);ctx.fill();ctx.fillRect(202,77,26,22);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
+}
+export function attachNurseBadge(model,person){
+  model.updateMatrixWorld(true);let top;model.traverse(mesh=>{if(mesh.material?.name.includes('Outfit_Top'))top=mesh;});const chest=model.getObjectByName('Spine2'),neck=bonePoint(model,'Neck');if(!top||!chest||!neck)return;
+  const shoulder=bonePoint(model,'LeftArm');const {points}=coordinates(top,model),front=surfaceAt(points,false),x=Math.min(.10,Math.abs(shoulder?.x||.165)*.60),y=neck.y-.19,width=.105,height=.065,geometry=new THREE.PlaneGeometry(width,height),position=geometry.getAttribute('position');for(let i=0;i<position.count;i++){const px=position.getX(i)+x,py=position.getY(i)+y;position.setXYZ(i,px,py,front(px,py)+.002);}geometry.computeVertexNormals();
+  const badge=attachGeometry(model,chest,geometry,clothMaterial('#ffffff',{map:staffBadgeTexture(person),roughness:.66}),'KTD nurse name badge');badge.userData.appearanceOwnedTexture=true;badge.userData.staffName=person?.name||'Northline nurse';badge.userData.staffRole='NURSE';
+  const clip=new THREE.BoxGeometry(.016,.013,.006);clip.translate(x,y+height/2+.005,front(x,y+height/2)+.002);attachGeometry(model,chest,clip,clothMaterial('#667c8b',{metalness:.6,roughness:.4}),'KTD nurse badge clip');
+}
+
 export function applyAppearance(model, person, role = 'civilian', cache = irisCache) {
-  if (!person || role !== 'civilian') return;
+  if(!person)return;
+  if(role==='nurse'){attachNurseBadge(model,person);return;}
+  if(role!=='civilian')return;
   model.updateMatrixWorld(true);
   const leases=model.userData.appearanceTextureLeases=new Set();appearanceCaches.set(model,cache);
   const meshes=[]; model.traverse(object=>{if(object.isMesh)meshes.push(object);});

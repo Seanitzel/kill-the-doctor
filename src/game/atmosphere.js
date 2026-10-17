@@ -186,8 +186,8 @@ export class HospitalLife {
       if(n.animationVisible!==false&&(n.activity||n.worriedUntil>now)&&n.activity!=='newborn') {
         const pose=emergency&&!n.lying?'chat':n.worriedUntil>now&&!n.lying?'worried':n.activity;
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
-        n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0});
-      }else if(n.animationVisible!==false&&n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction});
+        n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
+      }else if(n.animationVisible!==false&&n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
       if(n.contamination&&n.nextCough<=now&&e.coughCooldown<=0&&dist(e.playerPos,n.pos)<3.1&&e.lineOfSight(e.playerPos,n.pos))this.beginCough(n);
     }
     for(const item of this.cases) {

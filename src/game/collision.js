@@ -1,4 +1,5 @@
 // Shared physical bounds for movement, doors, camera clearance, and shot occlusion.
+export const STRUCTURE_CLEARANCE=.48;
 export function footprint(x,z,width,depth,height=1.2,rotation=0,type='furniture'){
   const c=Math.abs(Math.cos(rotation)),s=Math.abs(Math.sin(rotation));
   const halfX=(c*width+s*depth)/2,halfZ=(s*width+c*depth)/2;

@@ -28,8 +28,9 @@ test('Touch sprint turns off on exhaustion and requires a recovery reserve',()=>
 test('One case and target persist through failures, reloads and retries; success unlocks a new case',()=>{
   let save=defaultSave();const first=prepareAssignment(save,()=>.3,1234);markIntroSeen(save);
   const original=new Mission(save,first.seed,first.attempt);original.finish(false,'Retry');
+  assert.equal(prepareAssignment(save).introSeen,true,'Repeat or failed assignments skip the intro in this page session');
   save=readSave({getItem:()=>JSON.stringify(save)});const retry=prepareAssignment(save,()=>.8,9876);
-  assert.equal(retry.story.id,first.story.id);assert.equal(retry.seed,1234);assert.equal(retry.introSeen,true);assert.equal(save.storySeen.length,1);
+  assert.equal(retry.story.id,first.story.id);assert.equal(retry.seed,1234);assert.equal(retry.introSeen,false,'Refreshing shows the same case introduction again');assert.equal(save.storySeen.length,1);
   const retried=new Mission(save,retry.seed,retry.attempt);assert.deepEqual(retried.target,original.target);
   retried.targetDown=true;retried.escape();const next=prepareAssignment(save,()=>.3,5555);
   assert.equal(next.round,2);assert.notEqual(next.story.id,first.story.id);assert.equal(next.introSeen,false);assert.equal(next.seed,5555);

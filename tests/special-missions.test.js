@@ -16,7 +16,7 @@ import {disposeObjectResources} from '../src/game/resources.js';
 function saveFor(type){const save=defaultSave();selectAssignmentType(save,type);prepareAssignment(save,()=>.5,123);return save;}
 test('Special mission selection produces a complete stable assignment and campaign rotation advances',()=>{
   const save=saveFor('rescue'),a=prepareAssignment(save);assert.equal(a.type,'rescue');assert.equal(a.seed,123);assert.equal(a.story.id,'special-rescue');markIntroSeen(save);save.attempts++;assert.equal(prepareAssignment(save).seed,123);
-  const restored=readSave({getItem:()=>JSON.stringify(save)});assert.equal(prepareAssignment(restored).type,'rescue');assert.equal(prepareAssignment(restored).introSeen,true);
+  const restored=readSave({getItem:()=>JSON.stringify(save)});assert.equal(prepareAssignment(restored).type,'rescue');assert.equal(prepareAssignment(restored).introSeen,false);
   save.completed=1;assert.equal(assignmentType(save),'standard');save.completed=2;assert.equal(assignmentType(save),'evidence');save.completed=4;assert.equal(scheduledType(5),'rescue');assert.equal(selectAssignmentType(save,'bogus'),false);
 });
 test('Evidence assignments require three distinct photographs, no casualties and a final escape',()=>{

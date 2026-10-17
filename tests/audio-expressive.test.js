@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {HospitalAudio,hospitalMachineBuffer,MACHINE_DURATIONS,HOSPITAL_SAMPLE_FILES} from '../src/game/audio.js';
+import {HospitalAudio,hospitalMachineBuffer,MACHINE_DURATIONS,HOSPITAL_SAMPLE_FILES,announcementChimeBuffer} from '../src/game/audio.js';
 import {HospitalFoley} from '../src/game/foley.js';
 import {ALL_DIALOGUE_LINES,CLINICAL_CONVERSATIONS,PATIENT_PAIN_LINES,SUSPICION_LINES,RECRUIT_DIALOGUE,CONVERSATIONS,DISTRESS_LINES,ANNOUNCEMENT_LINES,WITNESS_LINES} from '../src/game/life-rules.js';
 
 function context(){
   const nodes=[],param=()=>({value:0,setTargetAtTime(v){this.value=v;},setValueAtTime(v){this.value=v;},linearRampToValueAtTime(v){this.value=v;},exponentialRampToValueAtTime(v){this.value=v;}});
-  const node=kind=>{const item={kind,connections:[],gain:param(),frequency:param(),pan:param(),delayTime:param(),playbackRate:param(),positionX:param(),positionY:param(),positionZ:param(),connect(to){this.connections.push(to);},disconnect(){this.connections.length=0;},start(){this.started=true;},stop(){this.stopped=true;},finish(){this.onended?.();}};nodes.push(item);return item;};
+  const node=kind=>{const item={kind,connections:[],gain:param(),frequency:param(),pan:param(),delayTime:param(),playbackRate:param(),positionX:param(),positionY:param(),positionZ:param(),connect(to){this.connections.push(to);},disconnect(){this.connections.length=0;},start(time){this.started=true;this.startTime=time;},stop(){this.stopped=true;},finish(){this.onended?.();}};nodes.push(item);return item;};
   return {nodes,state:'running',sampleRate:32000,currentTime:1,bufferCount:0,close(){this.state='closed';return Promise.resolve();},
     createBuffer(channels,length,rate){this.bufferCount++;const data=Array.from({length:channels},()=>new Float32Array(length));return {numberOfChannels:channels,length,sampleRate:rate,duration:length/rate,getChannelData:channel=>data[channel]};},
     createBufferSource:()=>node('source'),createPanner:()=>node('panner'),createGain:()=>node('gain'),createBiquadFilter:()=>node('filter'),createConvolver:()=>node('convolver'),createDelay:()=>node('delay'),createStereoPanner:()=>node('pan')};
@@ -89,5 +89,27 @@ test('Distress uses one finite human cue and can stop abruptly without ending un
 test('Static PA announcements use the bundled voice path at the listener rather than device speech',()=>{
   const audio=owner(),calls=[];audio.listenerPosition={x:7,y:2,z:8,floor:1};audio.dialogue=(...args)=>calls.push(args);audio.speak=()=>assert.fail('Device speech should not be the primary static PA voice');
   audio.announce(ANNOUNCEMENT_LINES[0]);assert.equal(calls.length,1);assert.equal(calls[0][0],ANNOUNCEMENT_LINES[0]);assert.equal(calls[0][1].gender,'female');assert.equal(calls[0][4],audio.listenerPosition);
+  assert.equal(calls[0][5].publicAddress,true);assert.equal(calls[0][5].announcementSerial,1);
   audio.dispose();
+});
+
+test('PA has two finite chime notes before telephone-filtered speech and releases every scheduled node',async()=>{
+  const audio=owner(),ctx=audio.ctx;audio.dialogueBuffer=async()=>({duration:3});
+  const voice=await audio.announce(ANNOUNCEMENT_LINES[0]),chime=[...audio.activeSamples].find(record=>record.name==='pa-chime');
+  assert.ok(chime);assert.ok(voice.source.startTime>=chime.source.startTime+.77);assert.equal(voice.panner,null);
+  assert.deepEqual(voice.filters.map(node=>[node.type,node.frequency.value]),[['highpass',350],['lowpass',3300]]);
+  const buffer=announcementChimeBuffer(ctx),data=buffer.getChannelData(0),energy=(a,b)=>data.slice(a*ctx.sampleRate,b*ctx.sampleRate).reduce((sum,n)=>sum+n*n,0);
+  assert.ok(energy(.02,.2)>10);assert.ok(energy(.36,.55)>10);assert.ok(data.every(Number.isFinite));assert.ok(buffer.duration<1);
+  const records=[...audio.activeSamples];audio.pause(true);assert.equal(audio.activeSamples.size,0);assert.ok(records.every(record=>record.source.stopped&&record.source.buffer===null));assert.ok(records.flatMap(record=>[record.source,record.volume,...record.filters]).every(node=>node.connections.length===0));
+  await audio.dispose();assert.equal(audio.paChimeBuffer,null);
+});
+
+test('A newer PA cancels stale loading and scheduled announcements without canceling nearby dialogue',async()=>{
+  const audio=owner(),resolvers=[];audio.dialogueBuffer=()=>new Promise(resolve=>resolvers.push(resolve));
+  audio.samples.cough={duration:.4};const other=audio.playSample('cough',{x:0,y:1,z:0},.2);
+  const first=audio.announce(ANNOUNCEMENT_LINES[0]),second=audio.announce(ANNOUNCEMENT_LINES[1]);
+  resolvers[0]({duration:3});await first;assert.equal(audio.activeSamples.size,1);
+  resolvers[1]({duration:3});await second;assert.equal(audio.activeSamples.size,3);
+  const records=[...audio.activeSamples].filter(record=>record.publicAddress);const third=audio.announce(ANNOUNCEMENT_LINES[2]);assert.ok(records.every(record=>record.source.stopped));assert.equal(audio.activeSamples.size,1);assert.ok(!other.source.stopped);
+  audio.pause(true);resolvers[2]({duration:3});await third;assert.equal(audio.activeSamples.size,0);await audio.dispose();
 });

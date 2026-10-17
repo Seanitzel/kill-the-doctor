@@ -18,14 +18,15 @@ export const OUTFITS=[{id:'casual',name:'Casual shirt'},{id:'jacket',name:'Field
 export const HAIRSTYLE_CHOICES=[{id:'original',name:'Signature cut'},{id:'cropped',name:'Cropped'},{id:'slick',name:'Slicked back'},{id:'ponytail',name:'Back ponytail'},{id:'ponytail-front',name:'Side-part ponytail'},{id:'ponytail-side',name:'Side ponytail'},{id:'afro',name:'Natural afro'},{id:'braids',name:'Long braids'},{id:'straight',name:'Long straight'},{id:'curls-short',name:'Short curls'},{id:'curls-long',name:'Long curls'}];
 export const TATTOO_CHOICES=[{id:'none',name:'No tattoos'},{id:'botanical',name:'Botanical ink'},{id:'geometric',name:'Geometric ink'}];
 const validHex=value=>typeof value==='string'&&/^#[a-f0-9]{6}$/i.test(value);
-export function defaultAppearance(c=CHARACTERS[0]){return {name:'',gender:c.gender||'male',accent:c.accent,hair:c.hair,skin:c.skin,eyes:EYE_COLORS[0],outfit:c.id==='male'?'suit':'casual',hairstyle:c.id==='female'?'slick':'original',highlights:'none',tattoos:'none',glasses:false,cap:false,watch:false,purse:false,jewelry:false};}
+export function defaultAppearance(c=CHARACTERS[0]){return {name:'',gender:c.gender||'male',accent:c.accent,hair:c.hair,skin:c.skin,eyes:EYE_COLORS[0],outfit:c.id==='male'?'suit':'casual',hairstyle:c.id==='female'?'slick':'original',highlights:'none',tattoos:'none',glasses:false,sunglasses:false,cap:false,watch:false,purse:false,jewelry:false};}
 export function normalizeAppearance(value={},base=CHARACTERS[0]){
   value=value&&typeof value==='object'?value:{};const result=defaultAppearance(base);if(typeof value.name==='string')result.name=value.name.slice(0,24);
   if(['male','female'].includes(value.gender))result.gender=value.gender;
   for(const key of ['accent','hair','skin','eyes'])if(validHex(value[key]))result[key]=value[key];
   if(value.highlights==='none'||validHex(value.highlights))result.highlights=value.highlights;
   for(const [key,options] of [['outfit',OUTFITS],['hairstyle',HAIRSTYLE_CHOICES],['tattoos',TATTOO_CHOICES]])if(options.some(option=>option.id===value[key]))result[key]=value[key];
-  for(const key of ['glasses','cap','watch','purse','jewelry'])result[key]=value[key]===true;
+  for(const key of ['glasses','sunglasses','cap','watch','purse','jewelry'])result[key]=value[key]===true;
+  if(result.sunglasses)result.glasses=false;
   return result;
 }
 export function migrateCharacterSave(data){

@@ -1,40 +1,45 @@
-Northline bundled speech — Pocket TTS revision 4 (2026-10-17)
+Northline bundled dialogue — original American / Southern voice designs, revision 5 (2026-10-18)
 
-These clips are synthetic performances of fictional game text, not authentic recordings of real people or medical events. No custom person's voice was cloned for this project. Short human cough, gasp, pain and panic recordings have separate provenance in ../expansion-sources.txt.
+These are synthetic performances of fictional game dialogue, not recordings of real people. No real-person reference recording was used to create or condition the four new voice identities. Human cough, gasp, pain and scream effects remain separate recordings with provenance in ../expansion-sources.txt.
 
-74 unique lines are supplied in both genders: 148 text/gender keys and 296 MP3 clips. Every key present in the previous 61-line release is preserved. Text covers everyday, pharmacy and clinical conversations, pain, suspicion, the fictional contact encounter, six short distress remarks, five static hospital public-address announcements, and separate weapon/camera witness warnings. Caption hashes remain exact; spoken renditions use ordinary contractions. Acamol is rendered Ah-kah-mol for pronunciation. Each variant's exact spokenText is recorded in manifest.json.
+75 unique lines, both genders and both designed regions: 150 text/gender keys, 300 mono MP3 files. Original dialogue keys remain exact. The additional static medical-staff paging line is included. Whole phrases cover conversations, clinical care, pain, suspicion, distress, recruitment, witness reports and all six fixed hospital announcements.
 
-Speech model and runtime:
-Kyutai Pocket TTS 3.3.0 runtime, MIT license.
-Primary project: https://github.com/kyutai-labs/pocket-tts
-Runtime license: https://github.com/kyutai-labs/pocket-tts/blob/main/LICENSE
-English September 2026 weights, CC BY 4.0 according to the primary model cards:
-https://huggingface.co/kyutai/pocket-tts
-https://huggingface.co/kyutai/pocket-tts-without-voice-cloning
-No-cloning model revision: 575d14372df89a4534bcb989870a34e77544b09f
+Four original synthetic identities:
+- northline-female-standard: adult feminine midrange, warm and clear, described as General American.
+- northline-male-standard: adult masculine low baritone, warm and relaxed, described as General American.
+- northline-female-southern: adult lower feminine register, described with a mild Southern American/Texas-inspired drawl.
+- northline-male-southern: adult deep masculine baritone, described with a mild Southern American/Texas-inspired drawl.
+Accent labels describe the intended design direction. They are not a certification of regional authenticity, a claim of a perfect Texas accent, or a guarantee of perceived realism. The exact descriptions/seeds and generated reference hashes are included in voice-profiles.json. No named real speaker is represented or endorsed.
 
-Supplied precomputed voice presets (not user-provided clones):
-Female: alba. Voice performance by Alba MacKenna, released CC BY 4.0 in Kyutai's supplied voice catalog.
-https://huggingface.co/kyutai/tts-voices/blob/main/README.md#alba-mackenna
-https://huggingface.co/kyutai/tts-voices/blob/main/alba-mackenna/casual.wav
-Male: marius. The official preset maps to the Selfie.wav voice donation, CC0 according to Kyutai's Unmute Voice Donation Project catalog.
-https://huggingface.co/kyutai/tts-voices/blob/main/README.md#voice-donations
-https://huggingface.co/kyutai/tts-voices/blob/main/voice-donations/Selfie.wav
-Official preset mapping: https://github.com/kyutai-labs/pocket-tts/blob/main/pocket_tts/utils/utils.py
-Preset embeddings: https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/tree/main/languages/english/embeddings
-No endorsement by Kyutai, Alba MacKenna or the voice donation project is implied.
+Filename and identity contract:
+KEY.mp3 uses the standard designed identity; KEY-alt.mp3 uses the Southern designed identity for the same gender. These are now two stable regional identities, not random alternate takes. Gameplay keeps each actor in one region; public address uses standard. Every line of an identity is conditioned on the same wholly synthetic reference, created from its written description. There is no runtime pitch or speech-rate shifting. Captions retain original text; renditions use conversational contractions. Acamol is spoken as Ah-kah-mol for clarity.
 
-License URLs: https://creativecommons.org/licenses/by/4.0/ and https://creativecommons.org/publicdomain/zero/1.0/
-Runtime license and attribution notice are included as LICENSE-Pocket-TTS-MIT.txt and NOTICE-Pocket-Voices-CC-BY-4.0.txt. Older Kokoro notices remain for provenance of superseded builds; the bundled revision-4 recordings use Pocket TTS. No model weights or preset embeddings are distributed in the game.
+Models and licenses:
+Original Qwen3-TTS 12 Hz 1.7B VoiceDesign and Base models, Qwen team, Apache License 2.0:
+https://github.com/QwenLM/Qwen3-TTS
+https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign
+https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base
+https://github.com/QwenLM/Qwen3-TTS/blob/main/LICENSE
+Official documentation describes voice creation from text and the design-then-reuse workflow. This project uses only our newly generated reference voices in that workflow.
 
-Generation:
-Each entire phrase is synthesized with its supplied preset at the model's recommended sampling temperature 0.3. Alternate takes use independent seeds and preserve the speaker preset. There is no mixed-voice style embedding, forced speech rate, runtime pitch shift or baked reverberation. The goal is more fluid whole-phrase delivery; perceived naturalness and emotion are subjective and are not guaranteed by these technical changes. Six short distress remarks are separate from the human scream cue, allowing an abrupt calm transition controlled by gameplay.
+MLX-community 4-bit conversions of those models, Apache 2.0 model-card declarations:
+https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-4bit
+VoiceDesign revision: 5c390979e4b93af5f2932f90742ca99c7dd04687
+https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit
+Base revision: 37e955a1deb861c088ae5f3a67043185f3d1a60c
 
-Processing: mono 24 kHz, 80 kbit MP3; 70 Hz high-pass and 10.5 kHz low-pass; restrained -20 LUFS / -3 dBTP targets, 12 LU loudness range allowance; tiny entry/exit padding. manifest.json records text/gender/key, category, synthetic:true, engine/model and each variant's file, supplied voice, exact rendition, seed, temperature, normal speed, duration, bytes and SHA-256. Existing base filenames KEY.mp3 and alternate KEY-alt.mp3 stay compatible.
+MLX Audio 0.5.9 runtime by Blaizzy and contributors, MIT:
+https://github.com/Blaizzy/mlx-audio
+https://github.com/Blaizzy/mlx-audio/blob/main/LICENSE
+Included license texts: LICENSE-Qwen3-TTS-Apache-2.0.txt and LICENSE-MLX-Audio-MIT.txt.
+No model weights, software runtime or voice conditioning embeddings are shipped in the game. Previous Pocket/Kokoro license notices remain solely for provenance of superseded builds; those supplied speaker identities are not used by this revision.
 
-Five static PA lines now use these bundled recordings. Announcements containing a runtime doctor name and room still use the device's available speech voice, as does the existing failure fallback when a bundled file cannot load. Captions remain available.
+Preparation:
+VoiceDesign creates a complete 9–13 second reference phrase from each original text description and fixed seed. Base speech generation then reuses that identity and the generated reference transcript. Fixed-caption keys and the base/-alt filename convention remain compatible. The manifest records exact text/gender/key, category, synthetic:true, engine/model and every file's voiceId, voiceRegion, intended accent, design description, syntheticDesigned:true, reference SHA-256, spokenText, seed, normal speed, duration, bytes and file SHA-256.
+
+Output processing: mono 24 kHz, 80 kbit MP3; 70 Hz high-pass and 10.5 kHz low-pass, restrained -20 LUFS / -3 dB true-peak targets with 12 LU loudness range allowance, tiny entry/exit padding. No baked room reverb, telephone filter or pitch shifting. Hospital announcements receive their public-address treatment at runtime.
 
 QA:
-Expected key coverage, both takes, file hashes and whole-file decoding are checked. Each decoded output is finite/nonempty with peak headroom. This is technical QA, not a claim of a human listening session, studio voice acting or guaranteed emotional realism. Short male/female preview montages and decoded metrics are retained in ignored artifacts/audio-v4/ for review.
+Expected line coverage, all text/gender keys, four stable identities, both regional files and file SHA-256 are checked. Every output is decoded and checked for finite nonempty samples/headroom. Short generated identity references and representative output phrases receive automated speech-transcription checks. This is technical QA; it is not a human listening session, actor-grade performance claim, or verified-accent judgment. Review previews are retained for listening feedback.
 
-Reproduce: scripts/generate-dialogue-audio-v4.py with ignored artifacts/audio-v4/venv/. Build-time setup/model downloads are isolated from application dependency manifests and shipped assets. Original music, note timing, machine cues, weapon samples and footstep samples are unchanged; this revision only reduces footstep playback gain.
+Reproduce with scripts/generate-dialogue-audio-v5.py in the isolated build environment artifacts/audio-v5/venv/. The helper includes the original descriptions, seeds and reference text, pins converted-model revisions, generates synthetic references if missing, stages the complete set, and replaces live assets only after full success. Reference WAVs, model downloads, staging, metrics, transcriptions and preview montages remain in ignored artifacts/audio-v5/. Application dependencies and the music/foley recordings are unchanged.

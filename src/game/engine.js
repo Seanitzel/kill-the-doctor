@@ -1,5 +1,5 @@
 import {makeNavigation,segmentBox} from './navigation.js';
-import {obstacleBounds,circleOverlaps,cameraFraction,segmentHit3D,blocksBody,interactionScore} from './collision.js';
+import {obstacleBounds,circleOverlaps,cameraFraction,segmentHit3D,blocksBody,interactionScore,STRUCTURE_CLEARANCE} from './collision.js';
 import * as THREE from 'three';
 import { makeLayout, TILE, world, tileAt, key, findPath, edgeKey, FLOORS, FLOOR_THEMES } from './layout.js';
 import {profileFor,weaponInfo,maskProtects,STAFF_BONUS} from './loadout.js';
@@ -68,6 +68,7 @@ export class GameEngine {
       keydown: e => {
         if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
         const k = e.code;
+        if(['Space','Enter'].includes(k)&&e.target.closest?.('button,a,[role="button"]'))return;
         if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(k)) e.preventDefault();
         if (!e.repeat) {
           if (k === 'Escape') { if (this.mission && !this.mission.result) this.hooks.pause?.(); }
@@ -118,6 +119,7 @@ export class GameEngine {
   }
   applySettings(settings) {
     this.settings = settings; this.audio.setSettings(settings);
+    this.renderer.toneMappingExposure=1.16*THREE.MathUtils.clamp(settings.brightness??1,.75,1.75);
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.mobile ? settings.quality==='high'?1.3:settings.quality==='balanced'?1:.75 : settings.quality === 'high' ? 1.7 : settings.quality === 'balanced' ? 1.25 : 1));
     this.renderer.shadowMap.enabled = settings.quality !== 'low';if(this.mobile){this.flash.shadow.mapSize.set(512,512);this.overhead.shadow.mapSize.set(512,512);} this.resize();
   }
@@ -161,6 +163,8 @@ export class GameEngine {
   }
   spawnNPC(person, role, floor, pos, room, id, options = {}) {
       const visual = options.visual || makePlayer(this.assets, person.gender || 'male', person, role);
+      // Finish the initial idle fade before an avatar can appear in a doorway.
+      visual.animate?.(0,0,.35);
       const candidates = [...this.navLayouts[floor].cells.values()].filter(c => !room || c.room === room.id);
       const nearest = candidates.map(c => world(c.x,c.z)).sort((a,b) => distance(a,pos)-distance(b,pos))[0];
       const spawnPos = options.fixed ? pos : nearest || pos; visual.root.position.set(spawnPos.x, 0, spawnPos.z); this.scene.add(visual.root);
@@ -330,8 +334,9 @@ export class GameEngine {
   }
   canStand(x,z,radius=.3,floor=this.floor){
     const cell=tileAt(x,z);if(!this.levels[floor].cells.has(key(cell.x,cell.z)))return false;
-    return !this.hospitals[floor].colliders.some(c=>{const b=obstacleBounds(c);return blocksBody(b)&&circleOverlaps(x,z,radius,b);});
+    return !this.hospitals[floor].colliders.some(c=>{const b=obstacleBounds(c);return blocksBody(b)&&circleOverlaps(x,z,(c.object||c.type==='wall')?Math.max(radius,STRUCTURE_CLEARANCE):radius,b);});
   }
+  nearStructure(pos,floor,radius=1.5){return (this.hospitals?.[floor]?.colliders||[]).some(c=>(c.object||c.type==='wall')&&blocksBody(c)&&circleOverlaps(pos.x,pos.z,radius,obstacleBounds(c)));}
   canMoveTo(x,z){
     if(!this.canStand(x,z))return false;
     for(const n of this.npcs){
@@ -360,7 +365,7 @@ export class GameEngine {
     const f = this.touchInput.forward + Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) - Number(this.keys.has('KeyS') || this.keys.has('ArrowDown'));
     const strafe = this.touchInput.strafe + Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA'));
     const moving = f !== 0 || strafe !== 0; this.crouched = this.keys.has('KeyC') || this.touchInput.crouch;
-    const sprint=advanceSprint(this,{dt,moving,allowed:!this.crouched&&!this.aiming,requested:this.keys.has('ShiftLeft')||this.keys.has('ShiftRight')||this.touchInput.sprint});
+    const sprint=advanceSprint(this,{dt,moving,allowed:!this.crouched&&!this.aiming&&!this.nearStructure(this.playerPos,this.floor),requested:this.keys.has('ShiftLeft')||this.keys.has('ShiftRight')||this.touchInput.sprint});
     const {running}=sprint;Object.assign(this,sprint);
     if(this.sprintExhausted)this.touchInput.sprint=false;
     const modifier = 1 + this.mission.save.upgrades.shoes * .08;
@@ -415,11 +420,19 @@ export class GameEngine {
     const lookHeight=this.mobile&&!aiming?THREE.MathUtils.lerp((this.crouched?1.2:1.6)-.45,focus.y,close):focus.y;
     const look=focus.clone().setY(lookHeight+this.pitch*(this.mobile&&!aiming?THREE.MathUtils.lerp(2,6,close):ahead)).add(new THREE.Vector3(Math.sin(orbitYaw)*ahead+Math.cos(orbitYaw)*side,0,Math.cos(orbitYaw)*ahead-Math.sin(orbitYaw)*side));
     this.camera.lookAt(look); this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, scoped?19:THREE.MathUtils.clamp((this.mobile ? (aiming ? 52 : 60)+close*12 : (aiming ? 48 : 58)+close*10)/Math.sqrt(zoom),36,82), Math.min(1, dt * 9)); this.camera.updateProjectionMatrix();
-    this.flash.position.copy(focus).add(new THREE.Vector3(Math.sin(this.yaw) * .35, -.15, Math.cos(this.yaw) * .35)); this.flash.target.position.copy(look);
+    this.updateTorch();
     this.rim.position.copy(focus).add(new THREE.Vector3(0, 1, 0));
     // Hide the avatar as a whole so proximity never overrides hidden glasses,
     // hair parts, or the player's accessory choices.
     this.player.root.visible=horizontal>1.1&&!scoped;
+  }
+  updateTorch(){
+    // Body-mounted light follows the character, not the offset shoulder camera.
+    const yaw=this.player.root.rotation.y,forward=this.lightDirection||=new THREE.Vector3();
+    forward.set(Math.sin(yaw),0,Math.cos(yaw));
+    this.flash.position.copy(this.playerPos).addScaledVector(forward,.24);this.flash.position.y=(this.crouched?1.2:1.55);
+    if(this.aiming){const ray=this.aimRay();this.flash.target.position.copy(ray.origin).addScaledVector(ray.direction,15);}
+    else{forward.y=THREE.MathUtils.clamp(this.pitch,-.47,.5);forward.normalize();this.flash.target.position.copy(this.flash.position).addScaledVector(forward,15);}
   }
   updateNPCs(dt) {
     const mission = this.mission;
@@ -460,6 +473,7 @@ export class GameEngine {
         if (door && !door.locked && dist < 4) door.open = true;
         if(directed)for(const leaf of this.levels[n.floor].doors)if(!leaf.locked&&Math.hypot(n.pos.x-leaf.x,n.pos.z-leaf.z)<2.4)leaf.open=true;
         speed=n.evacuating?4+(n.id.length%5)*.12:n.reporting?4.1:hostile?mission.difficulty==='hard'?3.6:2.65:n.speed;
+        if(speed>3.7&&this.nearStructure(n.pos,n.floor))speed=3.2;
         const dx=p.x-n.pos.x,dz=p.z-n.pos.z,step=Math.min(dist,speed*dt),nx=n.pos.x+dx/Math.max(dist,.001)*step,nz=n.pos.z+dz/Math.max(dist,.001)*step;
         if(this.npcCanMoveTo(n,nx,nz)){n.pos.x=nx;n.pos.z=nz;n.blocked=0;if(dist<speed*dt+.04)n.cursor++;}
         else{
@@ -490,22 +504,25 @@ export class GameEngine {
     this.policeSpawned = true; this.say('Police response team entering the west wing. All exits will be secured shortly.', 'SECURITY RESPONSE');
   }
   doorCanSwingTo(d,angle,floor=this.floor){
-    const bounds=obstacleBounds({object:{...d,angle}});
-    if(floor===this.floor&&circleOverlaps(this.playerPos.x,this.playerPos.z,.31,bounds))return false;
-    return !this.npcs.some(n=>n.floor===floor&&!n.dead&&!n.evacuated&&!n.lying&&!n.baby&&circleOverlaps(n.pos.x,n.pos.z,.24,bounds));
+    const start=d.angle??0,steps=Math.max(1,Math.ceil(Math.abs(angle-start)/.06));
+    for(let step=1;step<=steps;step++){
+      const bounds=obstacleBounds({object:{...d,angle:start+(angle-start)*step/steps}});
+      if(floor===this.floor&&circleOverlaps(this.playerPos.x,this.playerPos.z,STRUCTURE_CLEARANCE,bounds))return false;
+      if(this.npcs.some(n=>n.floor===floor&&!n.dead&&!n.evacuated&&!n.lying&&!n.baby&&circleOverlaps(n.pos.x,n.pos.z,STRUCTURE_CLEARANCE,bounds)))return false;
+    }
+    return true;
   }
   updateEnvironment(dt) {
     this.blackout = Math.max(0, this.blackout - dt); this.impairment = Math.max(0, this.impairment - dt); this.coughCooldown -= dt;
     if (this.mission.elapsed > this.nextBlackout && this.mission.state !== 'escape') { this.triggerBlackout(); this.nextBlackout = this.mission.elapsed + 75 + this.mission.random() * 40; }
     if (this.mission.elapsed > this.nextPA && this.mission.state !== 'escape') {
-      const name = this.mission.target.name;
-      this.say(this.mission.clues.length ? `${name}, please return to ${this.mission.target.room.name}. Your next consultation is waiting.` : 'Visitors: the staff directory is available in the entrance atrium. Please check department signage before proceeding.');
+      this.say(this.mission.clues.length ? 'Attention medical staff. Please return to your assigned departments. Your next consultation is waiting.' : 'Visitors: the staff directory is available in the entrance atrium. Please check department signage before proceeding.');
       this.nextPA = this.mission.elapsed + 45;
     }
     if (this.mission.state === 'escape' && this.mission.timer < 45 && !this.policeSpawned) this.spawnPolice();
     if (this.reloading > 0) { this.reloading -= dt; if (this.reloading <= 0) { const refill = Math.min(weaponInfo(this.mission.save,this.weaponKind).capacity-this.ammo,this.reserve); this.ammo += refill; this.reserve -= refill; this.reloading = 0; } }
     this.shotCooldown = Math.max(0, this.shotCooldown - dt); this.muzzle.intensity = Math.max(0, this.muzzle.intensity - dt * 100);
-    for(const level of this.levels)for(const d of level.doors){const angle=THREE.MathUtils.damp(d.angle,d.open?d.openAngle:0,9,dt);if(this.doorCanSwingTo(d,angle,level.floor))d.angle=angle;d.pivot.rotation.y=d.angle;}
+    for(const level of this.levels)for(const d of level.doors){const angle=THREE.MathUtils.damp(d.angle,d.open?d.openAngle:0,9,dt);if(angle!==d.angle&&this.doorCanSwingTo(d,angle,level.floor))d.angle=angle;d.pivot.rotation.y=d.angle;}
   }
   updateLights() {
     const dark = this.blackout > 0, emergency = this.mission?.state === 'escape';
@@ -525,7 +542,7 @@ export class GameEngine {
       light.color.set(emergency && i % 3 === 0 ? '#ef7373' : '#d5edff');
     });
     this.overhead.position.copy(near[0] || lightAnchor); this.overhead.target.position.copy(lightAnchor); this.overhead.target.position.y = 0; this.overhead.intensity = dark ? 0 : 18*(this.life?.flicker?.fixture.distanceTo(this.overhead.position)<.5?flicker:1);
-    this.flash.visible = this.flashlight; this.flash.intensity = 45 + (this.mission?.save.upgrades.light || 0) * 20; this.flash.distance = 24 + (this.mission?.save.upgrades.light || 0) * 5;
+    this.flash.visible = this.flashlight; this.flash.intensity = (45 + (this.mission?.save.upgrades.light || 0) * 20)*THREE.MathUtils.clamp(this.settings.flashlightBrightness??1,.5,2.5); this.flash.distance = 24 + (this.mission?.save.upgrades.light || 0) * 5;
     this.beam.visible = this.flashlight && dark;
     const beamDirection=this.lightDirection.copy(this.flash.target.position).sub(this.flash.position).normalize(); this.beam.position.copy(this.flash.position).addScaledVector(beamDirection,5);this.beam.quaternion.setFromUnitVectors(DOWN,beamDirection);
     this.beacon.visible = emergency; this.beacon.position.set(this.playerPos.x,this.playerPos.y+3.35,this.playerPos.z+6);
@@ -565,9 +582,9 @@ export class GameEngine {
     // Raycasting must use the same camera transform as the rendered crosshair.
     this.camera.updateMatrixWorld(true);
     const raycaster = new THREE.Raycaster();
-    const canvas=this.renderer.domElement.getBoundingClientRect();
-    const crosshair=this.container.parentElement.querySelector('.reticle')?.getBoundingClientRect();
-    const point=crosshair?new THREE.Vector2(((crosshair.left+crosshair.width/2-canvas.left)/canvas.width)*2-1,1-((crosshair.top+crosshair.height/2-canvas.top)/canvas.height)*2):new THREE.Vector2(0,0);
+    const canvas=this.renderer?.domElement?.getBoundingClientRect();
+    const crosshair=this.container?.parentElement?.querySelector('.reticle')?.getBoundingClientRect();
+    const point=canvas?.width&&canvas.height&&crosshair?new THREE.Vector2(((crosshair.left+crosshair.width/2-canvas.left)/canvas.width)*2-1,1-((crosshair.top+crosshair.height/2-canvas.top)/canvas.height)*2):new THREE.Vector2(0,0);
     raycaster.setFromCamera(point,this.camera);
     return raycaster.ray.clone();
   }

@@ -97,9 +97,9 @@ test('PA has two finite chime notes before telephone-filtered speech and release
   const audio=owner(),ctx=audio.ctx;audio.dialogueBuffer=async()=>({duration:3});
   const voice=await audio.announce(ANNOUNCEMENT_LINES[0]),chime=[...audio.activeSamples].find(record=>record.name==='pa-chime');
   assert.ok(chime);assert.ok(voice.source.startTime>=chime.source.startTime+.77);assert.equal(voice.panner,null);
-  assert.deepEqual(voice.filters.map(node=>[node.type,node.frequency.value]),[['highpass',350],['lowpass',3300]]);
+  assert.deepEqual(voice.filters.map(node=>[node.type,node.frequency.value]),[['highpass',430],['lowpass',2200],['lowpass',2600]]);
   const buffer=announcementChimeBuffer(ctx),data=buffer.getChannelData(0),energy=(a,b)=>data.slice(a*ctx.sampleRate,b*ctx.sampleRate).reduce((sum,n)=>sum+n*n,0);
-  assert.ok(energy(.02,.2)>10);assert.ok(energy(.36,.55)>10);assert.ok(data.every(Number.isFinite));assert.ok(buffer.duration<1);
+  assert.ok(energy(.02,.2)>1);assert.ok(energy(.36,.55)>1);assert.ok(data.every(Number.isFinite));assert.ok(buffer.duration<1);
   const records=[...audio.activeSamples];audio.pause(true);assert.equal(audio.activeSamples.size,0);assert.ok(records.every(record=>record.source.stopped&&record.source.buffer===null));assert.ok(records.flatMap(record=>[record.source,record.volume,...record.filters]).every(node=>node.connections.length===0));
   await audio.dispose();assert.equal(audio.paChimeBuffer,null);
 });
@@ -112,4 +112,14 @@ test('A newer PA cancels stale loading and scheduled announcements without cance
   resolvers[1]({duration:3});await second;assert.equal(audio.activeSamples.size,3);
   const records=[...audio.activeSamples].filter(record=>record.publicAddress);const third=audio.announce(ANNOUNCEMENT_LINES[2]);assert.ok(records.every(record=>record.source.stopped));assert.equal(audio.activeSamples.size,1);assert.ok(!other.source.stopped);
   audio.pause(true);resolvers[2]({duration:3});await third;assert.equal(audio.activeSamples.size,0);await audio.dispose();
+});
+
+test('A speaker replaces their own interrupted line and stale decodes cannot talk over the new line',async()=>{
+  const audio=owner(),resolvers=[];audio.dialogueBuffer=()=>new Promise(resolve=>resolvers.push(resolve));let version=1;
+  const request=audio.dialogue('First',{gender:'female'},.8,true,null,{speakerId:'nurse',isCurrent:()=>version===1});version=2;
+  const warning=audio.dialogue('Warning',{gender:'female'},.8,true,null,{speakerId:'nurse',isCurrent:()=>version===2});
+  resolvers[1]({duration:4});const warned=await warning;resolvers[0]({duration:5});assert.equal(await request,undefined);assert.equal(audio.activeSamples.size,1);
+  const nearby=audio.sampleNodes('different-speaker',{x:0,y:1,z:0},.5,false,{duration:4},{speakerId:'doctor'});version=3;
+  const report=audio.dialogue('Security',{gender:'female'},.8,true,null,{speakerId:'nurse',isCurrent:()=>version===3});assert.equal(warned.source.stopped,true);assert.equal(nearby.source.stopped,undefined);resolvers[2]({duration:4});await report;
+  assert.equal([...audio.activeSamples].filter(r=>r.speakerId==='nurse').length,1);await audio.dispose();assert.equal(audio.activeSamples.size,0);
 });

@@ -176,6 +176,12 @@ export async function loadCharacters({textureLimit=1024,clothTextureLimit=512}={
   downsizeCharacterTextures(assets,textureLimit);
   return assets;
 }
+// Separate enter/leave speeds prevent a noisy collision-limited speed from
+// resetting Walk/Run on alternate frames. A stop still selects Idle immediately.
+export function locomotionForSpeed(speed,current='Idle') {
+  if(!Number.isFinite(speed)||speed<=(current==='Idle'?.18:.12))return 'Idle';
+  return speed>(current==='Run'?3.55:3.85)?'Run':'Walk';
+}
 export function makePlayer(assets, gender, person = null, role = 'civilian') {
   const source = assets?.[gender];
   if (!source) return makeHuman(person || { gender, accent: '#2d3f4a', hair: '#312b26', skin: '#ca9b7a' }, role);
@@ -225,31 +231,69 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     const rotation=new THREE.Quaternion().setFromUnitVectors(tip.position.clone().normalize(),new THREE.Vector3(...direction).normalize());
     bone.quaternion.copy(relative.invert().multiply(rotation));bone.updateMatrixWorld(true);
   };
+  const pointInModel=bone=>model.worldToLocal(bone.getWorldPosition(new THREE.Vector3()));
+  const reachHead=(time)=>{
+    const shoulder=activityBones.RightArm,elbow=activityBones.RightForeArm,hand=activityBones.RightHand,head=activityBones.Head;
+    if(!shoulder||!elbow||!hand||!head)return;
+    const start=pointInModel(shoulder),target=pointInModel(head).add(new THREE.Vector3(-.085,.055,.025));
+    // A small temple tap, with the elbow below and outside the hand. Solve the
+    // two links rather than aiming a straight forearm through the face.
+    target.x-=Math.max(0,Math.sin(time*7))*.018;
+    const upper=elbow.position.length(),lower=hand.position.length(),toward=target.clone().sub(start),distance=Math.min(toward.length(),upper+lower-.002);
+    toward.normalize();const bend=new THREE.Vector3(-1,-.4,.12).addScaledVector(toward,-new THREE.Vector3(-1,-.4,.12).dot(toward)).normalize();
+    const along=(upper*upper-lower*lower+distance*distance)/(2*distance),out=Math.sqrt(Math.max(0,upper*upper-along*along));
+    const elbowTarget=start.clone().addScaledVector(toward,along).addScaledVector(bend,out);
+    orient('RightArm','RightForeArm',elbowTarget.sub(start).toArray());
+    orient('RightForeArm','RightHand',target.sub(pointInModel(elbow)).toArray());
+  };
   return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt) {
-    const next = speed > 3.7 ? 'Run' : speed > .15 ? 'Walk' : 'Idle';
+    const next = locomotionForSpeed(speed,current);
     if (next !== current && actions[next]) { actions[current]?.fadeOut(.18); actions[next].reset().fadeIn(.18).play(); current = next; }
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.65, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
     const action=actions[next],footfalls=speed>.15&&action?animationFootfalls(action.time,dt,action.timeScale,action.getClip().duration):0;
     mixer.update(dt);
     if (aim) for (const item of arms) item.arm.quaternion.copy(item.q);
-    return {footfalls};
+    return {footfalls,animation:current};
   }, poseActivity(activity, time, { seated=false, reaction=0, look=0,restricted=false } = {}) {
     const b=activityBones;model.updateMatrixWorld(true);
     if(seated) for(const side of ['Left','Right']) { if(b[`${side}UpLeg`]) b[`${side}UpLeg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2); if(b[`${side}Leg`]) b[`${side}Leg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2); }
     if(b.Head) b.Head.rotation.y += look + Math.sin(time*.8)*.045;
+    let mouth=0,brow=0,smile=0;
+    const expressions=()=>model.traverse(o=>{if(o.morphTargetDictionary)for(const [name,index]of Object.entries(o.morphTargetDictionary)){
+      if(/jawOpen|mouthOpen/i.test(name))o.morphTargetInfluences[index]=mouth;
+      else if(/browInnerUp/i.test(name))o.morphTargetInfluences[index]=brow;
+      else if(/mouthSmile/i.test(name))o.morphTargetInfluences[index]=smile;
+    }});
     // Keep the safe idle/walk arms when a nearby wall or door leaves no room to gesture.
-    if(restricted)return;
+    if(restricted){expressions();return;}
     if(b.Spine) b.Spine.rotation.x += activity==='examine' ? .15 : activity==='labor' ? Math.sin(time*2.6)*.05 : 0;
     if(reaction>0) {
       orient('RightArm','RightForeArm',[.15,-.2,.6]); orient('RightForeArm','RightHand',[.1,.5,.3]);
       orient('LeftArm','LeftForeArm',[-.12,-.25,.5]); orient('LeftForeArm','LeftHand',[-.1,.3,.4]);
       if(b.Head) b.Head.rotation.x -= .10;
-    } else if(activity==='worried'||activity==='panic') {
-      const panic=activity==='panic',tremble=Math.sin(time*(panic?19:13))*(panic?.045:.012);
+    } else if(['worried','panic','tremble','scream'].includes(activity)) {
+      const panic=activity==='panic'||activity==='scream',tremble=Math.sin(time*(panic?19:13))*(panic?.045:.012);
       orient('RightArm','RightForeArm',[.12,-.35,.25]);orient('RightForeArm','RightHand',[-.05,.22+tremble,.32]);
       orient('LeftArm','LeftForeArm',[-.16,-.55,.07]);orient('LeftForeArm','LeftHand',[.02,-.12,.24]);
       if(b.Head){b.Head.rotation.y+=Math.sin(time*(panic?2.8:1.3))*(panic?.23:.10);b.Head.rotation.z+=tremble;b.Head.rotation.x-=panic?.07:.025;}
       if(b.Spine2)b.Spine2.rotation.x+=Math.sin(time*(panic?5.7:3.8))*(panic?.025:.008);
+      if(activity==='scream'){mouth=.7;brow=.65;if(b.Head)b.Head.rotation.x-=.10;}
+    } else if(activity==='headTap') {
+      if(b.Head){b.Head.rotation.z-=.055;b.Head.rotation.x+=.04;}
+      b.Head?.updateMatrixWorld(true);reachHead(time);
+      orient('LeftArm','LeftForeArm',[-.12,-.6,.04]);orient('LeftForeArm','LeftHand',[.02,-.3,.1]);brow=.55;
+    } else if(activity==='laugh') {
+      const chuckle=Math.sin(time*9);
+      orient('RightArm','RightForeArm',[.10,-.4,.12]);orient('RightForeArm','RightHand',[-.14,.14,.22]);
+      orient('LeftArm','LeftForeArm',[-.12,-.5,.04]);orient('LeftForeArm','LeftHand',[.04,-.12,.18]);
+      if(b.Spine2)b.Spine2.rotation.x+=.025+chuckle*.023;
+      if(b.Head){b.Head.rotation.x-=.07+chuckle*.025;b.Head.rotation.z+=Math.sin(time*2)*.025;}
+      mouth=.20+Math.max(0,chuckle)*.25;smile=.7;
+    } else if(activity==='selftalk'||activity==='selfTalk') {
+      const mutter=Math.sin(time*7);
+      orient('RightArm','RightForeArm',[.08,-.45,.1]);orient('RightForeArm','RightHand',[-.02,.02,.2]);
+      if(b.Head){b.Head.rotation.x+=.07;b.Head.rotation.y+=Math.sin(time*.8)*.13;}
+      mouth=.05+Math.max(0,mutter)*.17;brow=.4;
     } else if(activity==='eat') {
       const bite=(Math.sin(time*1.25)+1)/2;
       orient('RightArm','RightForeArm',[.06,-.28,.4]); orient('RightForeArm','RightHand',[-.06,.1+bite*.45,.3-bite*.23]);
@@ -267,9 +311,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     } else if(activity==='rest') {
       orient('RightArm','RightForeArm',[.15,-.6,.02]); orient('LeftArm','LeftForeArm',[-.15,-.6,.02]);
     }
-    model.traverse(o=>{if(o.morphTargetDictionary) for(const [name,index] of Object.entries(o.morphTargetDictionary)) {
-      if(/jawOpen|mouthOpen|browInnerUp/i.test(name)) o.morphTargetInfluences[index]=reaction ? .4 : activity==='labor' ? .35+.15*Math.sin(time*2.4) : 0;
-    }});
+    if(reaction){mouth=.4;brow=.4;}else if(activity==='labor'){mouth=.35+.15*Math.sin(time*2.4);brow=.5;}
+    expressions();
   } };
 }
 const portraitBuffers=new WeakMap();

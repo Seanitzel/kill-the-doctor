@@ -2,7 +2,7 @@ import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
 import { native,stopNativeSpeech } from '../mobile/platform.js';
 import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
-const AUDIO_REVISION='2.4.0';
+const AUDIO_REVISION='2.5.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
 export const HOSPITAL_SAMPLE_FILES=Object.freeze({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
@@ -21,7 +21,7 @@ export function announcementChimeBuffer(ctx){
   const buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*.88),ctx.sampleRate),data=buffer.getChannelData(0);
   for(let i=0;i<data.length;i++){
     const time=i/ctx.sampleRate;let sample=0;
-    for(const [start,freq] of [[.015,783.99],[.355,659.25]]){const t=time-start;if(t>=0&&t<.5){const envelope=Math.min(1,t/.007)*Math.exp(-t*9);sample+=envelope*(Math.sin(2*Math.PI*freq*t)*.2+Math.sin(2*Math.PI*freq*2.001*t)*.04);}}
+    for(const [start,freq] of [[.015,392],[.355,329.63]]){const t=time-start;if(t>=0&&t<.5){const envelope=Math.min(1,t/.03)**2*Math.exp(-t*8);sample+=envelope*(Math.sin(2*Math.PI*freq*t)*.095+Math.sin(2*Math.PI*freq*2.001*t)*.004);}}
     data[i]=sample*Math.min(1,(data.length-i)/(ctx.sampleRate*.03));
   }
   return buffer;
@@ -188,15 +188,15 @@ export class HospitalAudio {
     const sample=buffer||this.samples[name];if(!this.ownsContext(this.ctx)||!this.enabled||!sample)return null;
     const source=this.ctx.createBufferSource(),panner=options.publicAddress?null:this.ctx.createPanner(),volume=this.ctx.createGain(),filters=[];source.buffer=sample;source.loop=loop;
     if(options.publicAddress){
-      const high=this.ctx.createBiquadFilter(),low=this.ctx.createBiquadFilter();high.type='highpass';high.frequency.value=350;low.type='lowpass';low.frequency.value=3300;
-      source.connect(high);high.connect(low);low.connect(volume);filters.push(high,low);
+      const high=this.ctx.createBiquadFilter(),low=this.ctx.createBiquadFilter(),speaker=this.ctx.createBiquadFilter();high.type='highpass';high.frequency.value=430;low.type='lowpass';low.frequency.value=2200;speaker.type='lowpass';speaker.frequency.value=2600;
+      source.connect(high);high.connect(low);low.connect(speaker);speaker.connect(volume);filters.push(high,low,speaker);
     }else{
       panner.panningModel='HRTF';panner.distanceModel='inverse';panner.refDistance=4;panner.maxDistance=25;panner.rolloffFactor=.65;
       panner.positionX.value=position.x;panner.positionY.value=position.y||1;panner.positionZ.value=position.z;
       source.connect(panner);panner.connect(volume);
     }
     volume.gain.value=gain;volume.connect(this.lowpass);
-    const record={source,panner,volume,filters,name,publicAddress:!!options.publicAddress,floor:options.publicAddress?undefined:position.floor};this.activeSamples.add(record);
+    const record={source,panner,volume,filters,name,speakerId:options.speakerId,publicAddress:!!options.publicAddress,floor:options.publicAddress?undefined:position.floor};this.activeSamples.add(record);
     source.onended=()=>this.releaseSample(record);
     if(this.activeSamples.size>24)this.releaseSample([...this.activeSamples].find(item=>!item.source.loop)||this.activeSamples.values().next().value,true);
     try{source.start(this.ctx.currentTime+(options.startDelay||0));}catch{this.releaseSample(record,true);return null;}return record;
@@ -265,16 +265,18 @@ export class HospitalAudio {
   }
   async dialogue(text,person,gain,urgent=false,position=null,options={}) {
     if(this.disposed||!this.enabled||!this.settings.speech||!this.settings.volume)return;
+    if(options.isCurrent&&!options.isCurrent())return;
+    if(options.speakerId)for(const record of [...this.activeSamples])if(record.speakerId===options.speakerId)this.releaseSample(record,true);
     const ctx=this.ctx,baseKey=dialogueKey(text,person.gender),epoch=this.voiceEpoch;
     if(!this.ownsContext(ctx)){if(!options.publicAddress)this.speak(text,person,gain,urgent?4:1);return;}
     const key=baseKey+(dialogueRegion(person)==='southern'?'-alt':'');
     try {
       const pending=this.dialogueBuffer(key,ctx);if(!pending)return;const buffer=await pending;
-      if(!this.voiceIsCurrent(epoch,ctx,position))return;
+      if(!this.voiceIsCurrent(epoch,ctx,position)||options.isCurrent&&!options.isCurrent())return;
       if(options.publicAddress&&options.announcementSerial!==this.announcementSerial)return;
       if(options.publicAddress){this.paChimeBuffer||=announcementChimeBuffer(ctx);this.sampleNodes('pa-chime',position||this.listenerPosition,.65,false,this.paChimeBuffer,{publicAddress:true});}
       return this.sampleNodes(`voice-${key}`,position||{x:0,y:1,z:0},gain*.9,false,buffer,{...options,startDelay:options.publicAddress?.78:0});
-    }catch(error){if(!options.publicAddress&&error?.name!=='AbortError'&&this.voiceIsCurrent(epoch,ctx,position))this.speak(text,person,gain,urgent?4:1);}
+    }catch(error){if(!options.publicAddress&&(!options.isCurrent||options.isCurrent())&&error?.name!=='AbortError'&&this.voiceIsCurrent(epoch,ctx,position))this.speak(text,person,gain,urgent?4:1);}
   }
   announce(text) {
     if(this.disposed||!ANNOUNCEMENT_LINES.includes(text))return;

@@ -20,7 +20,7 @@ export const STAFF = [
   { name: 'Dr. Sofia Vale', role: 'Attending', gender: 'female', hair: '#573a2d', skin: '#c58d6c', accent: '#426e79', glasses: true },
   { name: 'Nurse Jonas Beck', role: 'Senior nurse', gender: 'male', hair: '#8b7761', skin: '#dfbba0', accent: '#4a8193', glasses: false },
 ];
-export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),loadout:{weapon:'pistol',mask:false},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
+export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],loadout:{weapon:'pistol',mask:false},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
 export function readSave(storage) {
   const blank = defaultSave();
   try {

@@ -1,0 +1,871 @@
+{
+  "date": "2026-10-18",
+  "tool": "Built-in image_gen",
+  "mode": "Original image generation; no CLI/API fallback",
+  "compression": "Pillow WebP quality85 method6; original dimensions retained. No retouching or generated-image editing.",
+  "fictionNotice": "All illustrated people and cases are fictional. These are not photographs documenting real patients or incidents.",
+  "assets": [
+    {
+      "id": "trial-without-consent",
+      "artId": "case-jack-v25",
+      "file": "case-jack-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        433,
+        868,
+        1310,
+        1774
+      ],
+      "bytes": 145410,
+      "originalImageId": "exec-d9462b6b-5f53-430d-8407-b0c83e977ae0.png",
+      "sceneBriefs": [
+        "A clinician calmly offers the man an unlabelled injection in an ordinary consultation room; he listens with trust.",
+        "An unlabelled syringe and concealed research clipboard on a clinical tray, with the same man waiting unaware in the background; no injection puncture shown.",
+        "The man asks at a records window and is refused access; an older clinician turns a folder away from him.",
+        "The man studies research records and prepares a sealed case folder at a dim table, determined expression."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-year-old Asian man with wavy dark hair and a blue hospital shirt. SCENE 1 (TOP): A clinician calmly offers the man an unlabelled injection in an ordinary consultation room; he listens with trust. SCENE 2 (MIDDLE 1): An unlabelled syringe and concealed research clipboard on a clinical tray, with the same man waiting unaware in the background; no injection puncture shown. SCENE 3 (MIDDLE 2): The man asks at a records window and is refused access; an older clinician turns a folder away from him. SCENE 4 (BOTTOM): The man studies research records and prepares a sealed case folder at a dim table, determined expression."
+    },
+    {
+      "id": "stolen-choice",
+      "artId": "case-pamela-v25",
+      "file": "case-pamela-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        428,
+        887,
+        1321,
+        1774
+      ],
+      "bytes": 143550,
+      "originalImageId": "exec-0596ce17-1f83-4810-aeb2-b6bd8a7af72c.png",
+      "sceneBriefs": [
+        "The woman consults a surgeon before planned abdominal surgery, fully dressed, signed routine paperwork on the desk.",
+        "The same woman returns exhausted and in abdominal discomfort while the surgeon dismissively turns away from her concerns.",
+        "A different clinician shows the woman an ultrasound screen and a medical chart, explaining an unexpected finding; no anatomy labels or organs visible.",
+        "The woman and an advocate compare altered surgical records at a desk and collect them into an evidence folder."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a forty-year-old woman with straight black hair and a modest charcoal cardigan. SCENE 1 (TOP): The woman consults a surgeon before planned abdominal surgery, fully dressed, signed routine paperwork on the desk. SCENE 2 (MIDDLE 1): The same woman returns exhausted and in abdominal discomfort while the surgeon dismissively turns away from her concerns. SCENE 3 (MIDDLE 2): A different clinician shows the woman an ultrasound screen and a medical chart, explaining an unexpected finding; no anatomy labels or organs visible. SCENE 4 (BOTTOM): The woman and an advocate compare altered surgical records at a desk and collect them into an evidence folder."
+    },
+    {
+      "id": "switched-cradles",
+      "artId": "case-layla-v25",
+      "file": "case-layla-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        443,
+        887,
+        1330,
+        1774
+      ],
+      "bytes": 148952,
+      "originalImageId": "exec-f2f71a22-1173-46ef-a8a5-46ca1a9077b4.png",
+      "sceneBriefs": [
+        "The mother in a maternity bed receives a fully swaddled newborn from a nurse, trusting and exhausted.",
+        "Years later the same mother sits with her twelve-year-old child and a genetic counsellor, surprised by the results folder before them.",
+        "Close composition of the mother comparing two newborn wristbands and conflicting identification files with an advocate; the child is not present.",
+        "The mother at home gathers the infant records and an old baby photograph into a case folder, determined to find answers."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a woman with warm olive skin and curly dark hair, thirty at birth and in her early forties in the later scenes. SCENE 1 (TOP): The mother in a maternity bed receives a fully swaddled newborn from a nurse, trusting and exhausted. SCENE 2 (MIDDLE 1): Years later the same mother sits with her twelve-year-old child and a genetic counsellor, surprised by the results folder before them. SCENE 3 (MIDDLE 2): Close composition of the mother comparing two newborn wristbands and conflicting identification files with an advocate; the child is not present. SCENE 4 (BOTTOM): The mother at home gathers the infant records and an old baby photograph into a case folder, determined to find answers."
+    },
+    {
+      "id": "uninvited-observers",
+      "artId": "case-melanie-v25",
+      "file": "case-melanie-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        443,
+        887,
+        1331,
+        1774
+      ],
+      "bytes": 130364,
+      "originalImageId": "exec-7df22f86-9368-4d87-ba01-7d4952e641a5.png",
+      "sceneBriefs": [
+        "The sixteen-year-old girl sits fully dressed beside her worried parents in a consultation room, clutching her abdomen while a doctor dismisses her pain.",
+        "The same young woman, older now, waits with a thick stack of appointment folders while another clinician repeats the first doctor’s dismissive notes.",
+        "A sympathetic specialist explains a gynecological diagnosis to the twenty-one-year-old woman using a plain clinical folder; no anatomical exposure or intimate examination.",
+        "The woman collects six years of appointment records at a quiet desk, frustrated but resolute, with a case folder ready."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a young woman with light brown skin, dark shoulder-length curls and a plain navy top, sixteen in the first scene and twenty-one in the later scenes. SCENE 1 (TOP): The sixteen-year-old girl sits fully dressed beside her worried parents in a consultation room, clutching her abdomen while a doctor dismisses her pain. SCENE 2 (MIDDLE 1): The same young woman, older now, waits with a thick stack of appointment folders while another clinician repeats the first doctor’s dismissive notes. SCENE 3 (MIDDLE 2): A sympathetic specialist explains a gynecological diagnosis to the twenty-one-year-old woman using a plain clinical folder; no anatomical exposure or intimate examination. SCENE 4 (BOTTOM): The woman collects six years of appointment records at a quiet desk, frustrated but resolute, with a case folder ready."
+    },
+    {
+      "id": "locked-discharge",
+      "artId": "case-nadia-v25",
+      "file": "case-nadia-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        442,
+        887,
+        1329,
+        1774
+      ],
+      "bytes": 167622,
+      "originalImageId": "exec-86932cfa-bf26-41f6-92bd-945f1189793f.png",
+      "sceneBriefs": [
+        "The mother holding a fully swaddled baby and a packed bag is stopped at the hospital exit by an administrator presenting a bill folder.",
+        "The mother begs a consultant for help in a maternity corridor while her fully covered newborn rests in a bassinet; urgent concern, no distressing infant close-up.",
+        "A quiet empty bassinet with a folded blanket in the foreground; the grieving mother sits with a supportive relative in the background, no body shown.",
+        "The same mother and an advocate compare detention orders with nursing records and gather a case file, restrained sorrow and determination."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-year-old Black mother with dark curly hair and a pale knit cardigan. SCENE 1 (TOP): The mother holding a fully swaddled baby and a packed bag is stopped at the hospital exit by an administrator presenting a bill folder. SCENE 2 (MIDDLE 1): The mother begs a consultant for help in a maternity corridor while her fully covered newborn rests in a bassinet; urgent concern, no distressing infant close-up. SCENE 3 (MIDDLE 2): A quiet empty bassinet with a folded blanket in the foreground; the grieving mother sits with a supportive relative in the background, no body shown. SCENE 4 (BOTTOM): The same mother and an advocate compare detention orders with nursing records and gather a case file, restrained sorrow and determination."
+    },
+    {
+      "id": "missing-truth",
+      "artId": "case-daniel-donor-v25",
+      "file": "case-daniel-donor-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        485,
+        943,
+        1536
+      ],
+      "bytes": 151074,
+      "originalImageId": "exec-deb5818e-9110-437e-86c5-898771ec2ac9.png",
+      "sceneBriefs": [
+        "The man listens to a sharply dressed medical intermediary who offers a payment envelope and a hospital appointment folder in a discreet office.",
+        "The same man recovers weakly in a hospital bed, fully covered by a blanket; his empty wallet and missing-document folder sit at bedside, no wounds visible.",
+        "Now dressed in his olive jacket, he compares transplant paperwork and a money ledger with an advocate and prepares a case against the surgeon."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a financially struggling man in his late thirties with short brown hair and a faded olive jacket. SCENE 1 (TOP): The man listens to a sharply dressed medical intermediary who offers a payment envelope and a hospital appointment folder in a discreet office. SCENE 2 (MIDDLE 1): The same man recovers weakly in a hospital bed, fully covered by a blanket; his empty wallet and missing-document folder sit at bedside, no wounds visible. SCENE 3 (BOTTOM): Now dressed in his olive jacket, he compares transplant paperwork and a money ledger with an advocate and prepares a case against the surgeon."
+    },
+    {
+      "id": "language-barrier",
+      "artId": "case-elena-consent-v25",
+      "file": "case-elena-consent-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        481,
+        970,
+        1536
+      ],
+      "bytes": 156408,
+      "originalImageId": "exec-4b13adf0-1ead-4cc0-b0e1-39140ae86660.png",
+      "sceneBriefs": [
+        "A rushed clinician points to unfamiliar signature paperwork while the woman hesitates and asks for an interpreter.",
+        "The woman wakes fully covered in a recovery bed, confused; a consultant holds the signed form while two adult trainees stand unobtrusively behind him.",
+        "An independent interpreter explains the altered form to the same woman at a desk; they gather the original and completed pages into a case folder."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a middle-aged migrant woman with dark curls and a modest green sweater. SCENE 1 (TOP): A rushed clinician points to unfamiliar signature paperwork while the woman hesitates and asks for an interpreter. SCENE 2 (MIDDLE 1): The woman wakes fully covered in a recovery bed, confused; a consultant holds the signed form while two adult trainees stand unobtrusively behind him. SCENE 3 (BOTTOM): An independent interpreter explains the altered form to the same woman at a desk; they gather the original and completed pages into a case folder."
+    },
+    {
+      "id": "denied-care",
+      "artId": "case-jonah-v25",
+      "file": "case-jonah-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        512,
+        1024,
+        1536
+      ],
+      "bytes": 136486,
+      "originalImageId": "exec-4df8f61e-c931-40a8-8565-aadf329bd382.png",
+      "sceneBriefs": [
+        "The man trusts a reassuring clinician during a low-cost clinic consultation, routine blood-test supplies and appointment paperwork on the desk.",
+        "The same man waits increasingly weak in a hospital chair while the clinician records observations without providing the promised treatment.",
+        "The man and an advocate discover a concealed treatment instruction in his medical file and prepare the documents for a case."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: an older man with short gray hair, a weathered face and an olive coat. SCENE 1 (TOP): The man trusts a reassuring clinician during a low-cost clinic consultation, routine blood-test supplies and appointment paperwork on the desk. SCENE 2 (MIDDLE 1): The same man waits increasingly weak in a hospital chair while the clinician records observations without providing the promised treatment. SCENE 3 (BOTTOM): The man and an advocate discover a concealed treatment instruction in his medical file and prepare the documents for a case."
+    },
+    {
+      "id": "alex-fatal-attraction",
+      "artId": "case-alex-mri-v25",
+      "file": "case-alex-mri-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        443,
+        887,
+        1330,
+        1774
+      ],
+      "bytes": 131760,
+      "originalImageId": "exec-4fb29509-d67f-4930-9858-f24ef7a90a81.png",
+      "sceneBriefs": [
+        "The two adult brothers arrive outside an MRI scanner room; Daniel wears a small steel necklace over his plain shirt while Alex accompanies him.",
+        "After a tragic incident, Alex sits grieving outside the now-closed MRI room; the scanner is visible through glass, a small metal necklace lies on an equipment tray, no injured person shown.",
+        "Alex examines ignored magnetic-safety checklists with a concerned nurse in the radiology department, the MRI room in the background.",
+        "Alex gathers the safety complaints and his brother’s photograph into a sealed case folder at a quiet table."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: Alex, a thirty-year-old man with short dark hair and a brown jacket; his younger brother Daniel is twenty with short dark hair. SCENE 1 (TOP): The two adult brothers arrive outside an MRI scanner room; Daniel wears a small steel necklace over his plain shirt while Alex accompanies him. SCENE 2 (MIDDLE 1): After a tragic incident, Alex sits grieving outside the now-closed MRI room; the scanner is visible through glass, a small metal necklace lies on an equipment tray, no injured person shown. SCENE 3 (MIDDLE 2): Alex examines ignored magnetic-safety checklists with a concerned nurse in the radiology department, the MRI room in the background. SCENE 4 (BOTTOM): Alex gathers the safety complaints and his brother’s photograph into a sealed case folder at a quiet table."
+    },
+    {
+      "id": "grace-last-dose",
+      "artId": "case-grace-v25",
+      "file": "case-grace-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        473,
+        980,
+        1536
+      ],
+      "bytes": 144436,
+      "originalImageId": "exec-42eed1e4-de84-4425-9e6f-8d49d8a393c7.png",
+      "sceneBriefs": [
+        "Grace sits with her recovering brother in a hospital bed while a senior clinician brings a replacement medication cup; ordinary clothed clinical scene.",
+        "Months later Grace compares a prescription and an allergy warning wristband with an advocate, realizing the original order was changed.",
+        "Grace gathers the contradictory prescriptions and her brother’s photograph into a case folder, sorrowful and determined."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: Grace, a Black woman in her early thirties with curly hair and a dark cardigan; her brother is a young Black man. SCENE 1 (TOP): Grace sits with her recovering brother in a hospital bed while a senior clinician brings a replacement medication cup; ordinary clothed clinical scene. SCENE 2 (MIDDLE 1): Months later Grace compares a prescription and an allergy warning wristband with an advocate, realizing the original order was changed. SCENE 3 (BOTTOM): Grace gathers the contradictory prescriptions and her brother’s photograph into a case folder, sorrowful and determined."
+    },
+    {
+      "id": "victoria-unwanted-operation",
+      "artId": "case-victoria-v25",
+      "file": "case-victoria-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        486,
+        963,
+        1536
+      ],
+      "bytes": 140464,
+      "originalImageId": "exec-de1d4a00-d75f-4ee3-b4a4-42ad144eddfe.png",
+      "sceneBriefs": [
+        "The woman discusses a planned gynecological procedure with a surgeon in a consultation room, fully clothed and trusting.",
+        "The woman in a recovery consultation receives unexpected news from a nurse while examining an inadequate consent form, no procedure or anatomy shown.",
+        "The woman and an advocate gather consent records and earlier patient complaints into an evidence folder, determined expression."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a twenty-eight-year-old woman with an auburn bob and a pale blue blouse. SCENE 1 (TOP): The woman discusses a planned gynecological procedure with a surgeon in a consultation room, fully clothed and trusting. SCENE 2 (MIDDLE 1): The woman in a recovery consultation receives unexpected news from a nurse while examining an inadequate consent form, no procedure or anatomy shown. SCENE 3 (BOTTOM): The woman and an advocate gather consent records and earlier patient complaints into an evidence folder, determined expression."
+    },
+    {
+      "id": "ethan-experimental-drug",
+      "artId": "case-ethan-v25",
+      "file": "case-ethan-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        444,
+        887,
+        1330,
+        1774
+      ],
+      "bytes": 173966,
+      "originalImageId": "exec-06cf315b-40f6-43dc-9460-16245b22d4a5.png",
+      "sceneBriefs": [
+        "The man hears an encouraging research proposal from a clinician and considers a trial consent folder.",
+        "Several weeks later the man sits weakly in a clinical chair, struggling with a trembling hand while an assistant notices his concern; no injury shown.",
+        "The man reviews concealed adverse-event reports with an advocate; a lucrative research contract lies among the papers, all text indistinct.",
+        "The man gathers the trial reports into a case folder at home, resolved to challenge the researcher who concealed the risks."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-five-year-old South Asian man with short black hair, simple glasses and a gray sweater. SCENE 1 (TOP): The man hears an encouraging research proposal from a clinician and considers a trial consent folder. SCENE 2 (MIDDLE 1): Several weeks later the man sits weakly in a clinical chair, struggling with a trembling hand while an assistant notices his concern; no injury shown. SCENE 3 (MIDDLE 2): The man reviews concealed adverse-event reports with an advocate; a lucrative research contract lies among the papers, all text indistinct. SCENE 4 (BOTTOM): The man gathers the trial reports into a case folder at home, resolved to challenge the researcher who concealed the risks."
+    },
+    {
+      "id": "olivia-wrong-diagnosis",
+      "artId": "case-olivia-v25",
+      "file": "case-olivia-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        493,
+        968,
+        1536
+      ],
+      "bytes": 137456,
+      "originalImageId": "exec-fd0becb5-a8e4-4412-b83f-4b3cf676e06c.png",
+      "sceneBriefs": [
+        "The woman holds her head in discomfort in an emergency consultation while a clinician sends her away with routine paperwork.",
+        "A different doctor compassionately explains a brain-imaging scan to the same woman in a quiet consultation room, no medical details or readable text.",
+        "The woman compares earlier rejected imaging requests with the later scan and collects them into a case folder."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a woman in her thirties with warm brown skin, long dark hair and a navy coat. SCENE 1 (TOP): The woman holds her head in discomfort in an emergency consultation while a clinician sends her away with routine paperwork. SCENE 2 (MIDDLE 1): A different doctor compassionately explains a brain-imaging scan to the same woman in a quiet consultation room, no medical details or readable text. SCENE 3 (BOTTOM): The woman compares earlier rejected imaging requests with the later scan and collects them into a case folder."
+    },
+    {
+      "id": "sophia-wrong-floor",
+      "artId": "case-sophia-v25",
+      "file": "case-sophia-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        511,
+        1025,
+        1536
+      ],
+      "bytes": 157848,
+      "originalImageId": "exec-2ce9a584-033a-4425-8c2e-68ce21c3ecc5.png",
+      "sceneBriefs": [
+        "The mother recovering in an intensive-care bed looks toward a neonatal-unit window, separated from her premature fully swaddled baby in an incubator.",
+        "The mother and an investigator compare mismatched newborn identity bands and two medication charts at a neonatal records desk; no infant injury shown.",
+        "The grieving mother collects the contradictory infant charts and a tiny folded blanket beside a case folder, restrained and dignified."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-year-old East Asian mother with black shoulder-length hair and a pale cardigan. SCENE 1 (TOP): The mother recovering in an intensive-care bed looks toward a neonatal-unit window, separated from her premature fully swaddled baby in an incubator. SCENE 2 (MIDDLE 1): The mother and an investigator compare mismatched newborn identity bands and two medication charts at a neonatal records desk; no infant injury shown. SCENE 3 (BOTTOM): The grieving mother collects the contradictory infant charts and a tiny folded blanket beside a case folder, restrained and dignified."
+    },
+    {
+      "id": "marcus-invisible-infection",
+      "artId": "case-marcus-v25",
+      "file": "case-marcus-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        510,
+        1024,
+        1536
+      ],
+      "bytes": 142620,
+      "originalImageId": "exec-60803a8e-4103-403a-9dfe-f799866548e2.png",
+      "sceneBriefs": [
+        "The man returns weak and feverish to a hospital consultation while his surgeon dismisses his symptoms as normal recovery.",
+        "The same man recovers in a hospital bed after emergency treatment, fully covered, while a concerned clinician reviews infection-control paperwork.",
+        "The man and an advocate compare earlier departmental infection warnings with his discharge documents and assemble a case folder."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a forty-year-old Black man with close-cropped hair and a dark blue shirt. SCENE 1 (TOP): The man returns weak and feverish to a hospital consultation while his surgeon dismisses his symptoms as normal recovery. SCENE 2 (MIDDLE 1): The same man recovers in a hospital bed after emergency treatment, fully covered, while a concerned clinician reviews infection-control paperwork. SCENE 3 (BOTTOM): The man and an advocate compare earlier departmental infection warnings with his discharge documents and assemble a case folder."
+    },
+    {
+      "id": "rebecca-fertility-fraud",
+      "artId": "case-rebecca-v25",
+      "file": "case-rebecca-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        495,
+        990,
+        1536
+      ],
+      "bytes": 137698,
+      "originalImageId": "exec-b98fd534-0535-4b62-a75f-1f25e7166749.png",
+      "sceneBriefs": [
+        "The couple discuss fertility treatment with a specialist, hopeful and holding hands in a consultation room.",
+        "Years later the same parents review genetic results beside a framed family photograph of their daughter; shock and concern, no child distressed in the scene.",
+        "The woman and an advocate compare fertility consent records with genetic findings and prepare a case file against the specialist."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-five-year-old East Asian woman with a black bob, alongside her husband with short dark hair. SCENE 1 (TOP): The couple discuss fertility treatment with a specialist, hopeful and holding hands in a consultation room. SCENE 2 (MIDDLE 1): Years later the same parents review genetic results beside a framed family photograph of their daughter; shock and concern, no child distressed in the scene. SCENE 3 (BOTTOM): The woman and an advocate compare fertility consent records with genetic findings and prepare a case file against the specialist."
+    },
+    {
+      "id": "noah-phantom-surgery",
+      "artId": "case-noah-v25",
+      "file": "case-noah-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        501,
+        961,
+        1536
+      ],
+      "bytes": 164266,
+      "originalImageId": "exec-1534eb35-490d-41e8-9b94-a0921656dbf8.png",
+      "sceneBriefs": [
+        "The man guards his painful lower back while discussing a recommended operation with a respected surgeon.",
+        "A second specialist points out discrepancies between back-imaging scans and an operative report, while the same man listens, worried.",
+        "The man gathers the conflicting surgery report, second opinion and earlier patient complaints into a case folder."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a forty-five-year-old white man with a short brown beard and a gray shirt. SCENE 1 (TOP): The man guards his painful lower back while discussing a recommended operation with a respected surgeon. SCENE 2 (MIDDLE 1): A second specialist points out discrepancies between back-imaging scans and an operative report, while the same man listens, worried. SCENE 3 (BOTTOM): The man gathers the conflicting surgery report, second opinion and earlier patient complaints into a case folder."
+    },
+    {
+      "id": "amara-price-of-life",
+      "artId": "case-amara-v25",
+      "file": "case-amara-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        511,
+        1006,
+        1536
+      ],
+      "bytes": 158170,
+      "originalImageId": "exec-881bd082-c536-4118-afb1-f64c402f222d.png",
+      "sceneBriefs": [
+        "Amara holds her frail mother’s hand beside a transplant-ward bed while they wait for donor news, a folder on the bedside table.",
+        "Years later Amara and an advocate discover a payment ledger and altered transplant waiting-list records in a hospital office.",
+        "Amara assembles the transplant evidence beside a framed photograph of her mother, grieving but determined."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: Amara, a thirty-year-old Black woman with braided dark hair and a rust-brown cardigan, with her elderly mother. SCENE 1 (TOP): Amara holds her frail mother’s hand beside a transplant-ward bed while they wait for donor news, a folder on the bedside table. SCENE 2 (MIDDLE 1): Years later Amara and an advocate discover a payment ledger and altered transplant waiting-list records in a hospital office. SCENE 3 (BOTTOM): Amara assembles the transplant evidence beside a framed photograph of her mother, grieving but determined."
+    },
+    {
+      "id": "james-wrong-limb",
+      "artId": "case-james-v25",
+      "file": "case-james-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        511,
+        1024,
+        1536
+      ],
+      "bytes": 155768,
+      "originalImageId": "exec-50f130fc-8bd3-48b3-aa7b-4512d0a2ccc6.png",
+      "sceneBriefs": [
+        "Before surgery, the man discusses his injured left leg with a surgeon; his LEFT leg has a modest external support, all injuries covered.",
+        "Afterward the same man sits clothed in rehabilitation with an unexpected support on his RIGHT leg, comparing surgical paperwork with a concerned second clinician.",
+        "The man collects his consent form and an earlier wrong-site complaint into a case folder while seated beside a walking aid."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-five-year-old man with light brown skin, short dark hair and a trimmed beard. SCENE 1 (TOP): Before surgery, the man discusses his injured left leg with a surgeon; his LEFT leg has a modest external support, all injuries covered. SCENE 2 (MIDDLE 1): Afterward the same man sits clothed in rehabilitation with an unexpected support on his RIGHT leg, comparing surgical paperwork with a concerned second clinician. SCENE 3 (BOTTOM): The man collects his consent form and an earlier wrong-site complaint into a case folder while seated beside a walking aid."
+    },
+    {
+      "id": "elena-phantom-billing",
+      "artId": "case-elena-billing-v25",
+      "file": "case-elena-billing-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        443,
+        887,
+        1330,
+        1774
+      ],
+      "bytes": 161378,
+      "originalImageId": "exec-2e2be744-43d5-4516-b946-3473e5efc7bd.png",
+      "sceneBriefs": [
+        "The widow sits at her kitchen table beside her late husband’s photograph, opening an unexpectedly large hospital bill.",
+        "The woman compares conflicting medical records and invoices with an advocate, discovering procedures that do not match her husband’s care.",
+        "A former billing employee quietly gives the woman a folder of questionable invoices and signature records in a private office.",
+        "The widow gathers the records and her husband’s photograph into a case file, determined to confront the physician’s fraud."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a fifty-year-old widow with short graying auburn hair and a dark blue cardigan. SCENE 1 (TOP): The widow sits at her kitchen table beside her late husband’s photograph, opening an unexpectedly large hospital bill. SCENE 2 (MIDDLE 1): The woman compares conflicting medical records and invoices with an advocate, discovering procedures that do not match her husband’s care. SCENE 3 (MIDDLE 2): A former billing employee quietly gives the woman a folder of questionable invoices and signature records in a private office. SCENE 4 (BOTTOM): The widow gathers the records and her husband’s photograph into a case file, determined to confront the physician’s fraud."
+    },
+    {
+      "id": "david-forgotten-allergy",
+      "artId": "case-david-v25",
+      "file": "case-david-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        509,
+        1023,
+        1536
+      ],
+      "bytes": 125036,
+      "originalImageId": "exec-014f098f-bac8-4349-8c5a-a34ff1a0703b.png",
+      "sceneBriefs": [
+        "The injured but fully clothed man tells an admission nurse about an allergy while she attaches a prominent plain red warning wristband; no wounds.",
+        "After a prolonged recovery the man and an advocate examine the warning wristband alongside the preoperative chart and medication order.",
+        "The man gathers the dated allergy warning and disputed anaesthetic record into an evidence folder at a quiet table."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-year-old man with short brown hair and a charcoal top. SCENE 1 (TOP): The injured but fully clothed man tells an admission nurse about an allergy while she attaches a prominent plain red warning wristband; no wounds. SCENE 2 (MIDDLE 1): After a prolonged recovery the man and an advocate examine the warning wristband alongside the preoperative chart and medication order. SCENE 3 (BOTTOM): The man gathers the dated allergy warning and disputed anaesthetic record into an evidence folder at a quiet table."
+    },
+    {
+      "id": "isabella-trial-never-ended",
+      "artId": "case-isabella-v25",
+      "file": "case-isabella-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        512,
+        1024,
+        1536
+      ],
+      "bytes": 148530,
+      "originalImageId": "exec-81d555c3-9486-4416-a605-22c46800718d.png",
+      "sceneBriefs": [
+        "The woman in a neurology clinic asks a researcher to stop an experimental treatment; he urges her to continue, while she looks increasingly concerned.",
+        "The same woman discovers a trial-suspension notice in a confidential folder while comparing it with her ongoing treatment appointments.",
+        "The woman and an advocate collect the suspension notice and treatment records into a case file against the researcher."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a forty-five-year-old woman with medium-brown skin, short dark hair streaked with gray and a blue shawl. SCENE 1 (TOP): The woman in a neurology clinic asks a researcher to stop an experimental treatment; he urges her to continue, while she looks increasingly concerned. SCENE 2 (MIDDLE 1): The same woman discovers a trial-suspension notice in a confidential folder while comparing it with her ongoing treatment appointments. SCENE 3 (BOTTOM): The woman and an advocate collect the suspension notice and treatment records into a case file against the researcher."
+    },
+    {
+      "id": "peter-declared-dead",
+      "artId": "case-peter-v25",
+      "file": "case-peter-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        512,
+        1023,
+        1536
+      ],
+      "bytes": 157766,
+      "originalImageId": "exec-93dddf02-f25e-44b5-94f5-a97b1a5bf742.png",
+      "sceneBriefs": [
+        "In a quiet emergency room a vigilant nurse notices the man moving on a stretcher and urgently calls for care; no resuscitation, injury or dead body shown.",
+        "Now recovered and dressed in a dark sweater, the man compares a closed hospital inquiry with earlier ignored complaints at a records desk.",
+        "The man and the nurse who intervened assemble the emergency notes and investigation records into a case file."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a fifty-five-year-old man with short graying hair and a hospital gown fully covered with a blanket. SCENE 1 (TOP): In a quiet emergency room a vigilant nurse notices the man moving on a stretcher and urgently calls for care; no resuscitation, injury or dead body shown. SCENE 2 (MIDDLE 1): Now recovered and dressed in a dark sweater, the man compares a closed hospital inquiry with earlier ignored complaints at a records desk. SCENE 3 (BOTTOM): The man and the nurse who intervened assemble the emergency notes and investigation records into a case file."
+    },
+    {
+      "id": "chloe-missing-diagnosis",
+      "artId": "case-chloe-v25",
+      "file": "case-chloe-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        512,
+        1002,
+        1536
+      ],
+      "bytes": 152976,
+      "originalImageId": "exec-82890ac5-2cb7-49cf-99fd-09c743334168.png",
+      "sceneBriefs": [
+        "The woman uses a walking aid in a consultation while a dismissive doctor writes notes without properly examining her.",
+        "A different specialist listens carefully and explains a newly identified condition using a plain scan and folder, as the woman looks relieved and upset.",
+        "The woman and an advocate compare the first doctor’s unsupported notes with the later findings and build an evidence folder."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a twenty-eight-year-old Black woman with shoulder-length braids and a blue coat. SCENE 1 (TOP): The woman uses a walking aid in a consultation while a dismissive doctor writes notes without properly examining her. SCENE 2 (MIDDLE 1): A different specialist listens carefully and explains a newly identified condition using a plain scan and folder, as the woman looks relieved and upset. SCENE 3 (BOTTOM): The woman and an advocate compare the first doctor’s unsupported notes with the later findings and build an evidence folder."
+    },
+    {
+      "id": "anthony-transplant-sold",
+      "artId": "case-anthony-v25",
+      "file": "case-anthony-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        484,
+        968,
+        1536
+      ],
+      "bytes": 141566,
+      "originalImageId": "exec-15812e17-ed29-4881-a888-15a31679090e.png",
+      "sceneBriefs": [
+        "The man sits with his frail sister in a transplant-ward bed while a clinician discusses the waiting-list folder, both anxious.",
+        "After her death, a hospital employee privately shows the man altered transplant records and payment evidence, no body or organs shown.",
+        "The man collects the payment documents and his sister’s photograph into a case file identifying the surgeon’s approvals."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-year-old man with olive skin and short brown hair; his younger sister has dark shoulder-length hair. SCENE 1 (TOP): The man sits with his frail sister in a transplant-ward bed while a clinician discusses the waiting-list folder, both anxious. SCENE 2 (MIDDLE 1): After her death, a hospital employee privately shows the man altered transplant records and payment evidence, no body or organs shown. SCENE 3 (BOTTOM): The man collects the payment documents and his sister’s photograph into a case file identifying the surgeon’s approvals."
+    },
+    {
+      "id": "emily-unnecessary-amputation",
+      "artId": "case-emily-v25",
+      "file": "case-emily-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        491,
+        969,
+        1536
+      ],
+      "bytes": 168812,
+      "originalImageId": "exec-f8a1c342-6ea0-4137-9a0b-ab46443e5a2d.png",
+      "sceneBriefs": [
+        "The woman listens fearfully as a surgeon recommends an urgent operation for her foot, which remains fully covered beneath a hospital blanket.",
+        "After recovering from an amputation, she sits in a wheelchair with a blanket covering both legs while another specialist reviews tests and the earlier surgery decision; no stump, injury or exposed anatomy.",
+        "The woman in her wheelchair assembles her test results and earlier patient complaints into a case folder, thoughtful and determined."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-year-old woman with a red bob and a plain green cardigan. SCENE 1 (TOP): The woman listens fearfully as a surgeon recommends an urgent operation for her foot, which remains fully covered beneath a hospital blanket. SCENE 2 (MIDDLE 1): After recovering from an amputation, she sits in a wheelchair with a blanket covering both legs while another specialist reviews tests and the earlier surgery decision; no stump, injury or exposed anatomy. SCENE 3 (BOTTOM): The woman in her wheelchair assembles her test results and earlier patient complaints into a case folder, thoughtful and determined."
+    },
+    {
+      "id": "samuel-silent-ward",
+      "artId": "case-samuel-v25",
+      "file": "case-samuel-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        512,
+        1024,
+        1536
+      ],
+      "bytes": 141406,
+      "originalImageId": "exec-1071ef87-0d66-481a-87f5-55f72a1fac9c.png",
+      "sceneBriefs": [
+        "Samuel visits his elderly father in a quiet psychiatric hospital room; the father holds his abdomen in discomfort and asks for help, fully clothed.",
+        "After the father’s death, Samuel and a nurse compare unaddressed physical-warning notes with the attending physician’s account in a consultation office.",
+        "Samuel gathers the nursing notes and his father’s photograph into a case folder at home."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: Samuel, a forty-year-old East Asian man with short dark hair; his elderly father has gray hair. SCENE 1 (TOP): Samuel visits his elderly father in a quiet psychiatric hospital room; the father holds his abdomen in discomfort and asks for help, fully clothed. SCENE 2 (MIDDLE 1): After the father’s death, Samuel and a nurse compare unaddressed physical-warning notes with the attending physician’s account in a consultation office. SCENE 3 (BOTTOM): Samuel gathers the nursing notes and his father’s photograph into a case folder at home."
+    },
+    {
+      "id": "natalie-hospital-secret",
+      "artId": "case-natalie-v25",
+      "file": "case-natalie-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        488,
+        981,
+        1536
+      ],
+      "bytes": 116208,
+      "originalImageId": "exec-32c4bc47-701e-4cca-92b3-b7a52bd8bbdb.png",
+      "sceneBriefs": [
+        "On a night shift the student notices an unauthorized procedure listed on a clipboard outside a curtained room with a fully covered sedated adult patient; no procedure shown.",
+        "At a hospital management desk the student is stripped of her training badge while a senior official pushes her complaint folder aside.",
+        "Years later the same woman in ordinary clothes gathers her preserved report and supporting records into a case file against the senior surgeon."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a twenty-four-year-old Latina medical student with tied-back black hair and a white student coat. SCENE 1 (TOP): On a night shift the student notices an unauthorized procedure listed on a clipboard outside a curtained room with a fully covered sedated adult patient; no procedure shown. SCENE 2 (MIDDLE 1): At a hospital management desk the student is stripped of her training badge while a senior official pushes her complaint folder aside. SCENE 3 (BOTTOM): Years later the same woman in ordinary clothes gathers her preserved report and supporting records into a case file against the senior surgeon."
+    },
+    {
+      "id": "lucas-contaminated-ward",
+      "artId": "case-lucas-v25",
+      "file": "case-lucas-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        488,
+        1022,
+        1536
+      ],
+      "bytes": 158472,
+      "originalImageId": "exec-317764ed-b8ff-4587-8c26-9120c0a673e2.png",
+      "sceneBriefs": [
+        "The man recovers weakly in a cancer-ward bed while a clinician notices that several surrounding patients are also unwell, all fully covered.",
+        "A microbiologist tests a hospital water sample beside exposed maintenance pipes, a concerned clinician holding a report, no biological imagery.",
+        "The recovered man compares the original water-system report with a rewritten version and collects them into a case file."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a forty-five-year-old Black man with a short beard and a plain knitted cap during cancer treatment. SCENE 1 (TOP): The man recovers weakly in a cancer-ward bed while a clinician notices that several surrounding patients are also unwell, all fully covered. SCENE 2 (MIDDLE 1): A microbiologist tests a hospital water sample beside exposed maintenance pipes, a concerned clinician holding a report, no biological imagery. SCENE 3 (BOTTOM): The recovered man compares the original water-system report with a rewritten version and collects them into a case file."
+    },
+    {
+      "id": "michael-organ-sold",
+      "artId": "case-michael-v25",
+      "file": "case-michael-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        443,
+        887,
+        1330,
+        1774
+      ],
+      "bytes": 158274,
+      "originalImageId": "exec-e494b2fb-fda8-42c0-9b38-476dc22ea84b.png",
+      "sceneBriefs": [
+        "Three adult generations meet in a transplant consultation: the adult son offers to donate a kidney, the grandfather sits frail in a chair, and Michael supports them.",
+        "After his father’s death, Michael and his adult son sit grieving beside an empty hospital bed with a folded blanket; no body shown.",
+        "The two men and an advocate compare transplant records with a closed medical transport container and payment ledger, discovering the donation was diverted; no organ visible.",
+        "Michael gathers the evidence and a three-generation family photograph into a case folder, his son beside him."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: Michael, a fifty-year-old man with short gray hair; his adult son is twenty-five and his elderly father is seventy-five. SCENE 1 (TOP): Three adult generations meet in a transplant consultation: the adult son offers to donate a kidney, the grandfather sits frail in a chair, and Michael supports them. SCENE 2 (MIDDLE 1): After his father’s death, Michael and his adult son sit grieving beside an empty hospital bed with a folded blanket; no body shown. SCENE 3 (MIDDLE 2): The two men and an advocate compare transplant records with a closed medical transport container and payment ledger, discovering the donation was diverted; no organ visible. SCENE 4 (BOTTOM): Michael gathers the evidence and a three-generation family photograph into a case folder, his son beside him."
+    },
+    {
+      "id": "sarah-silent-witness",
+      "artId": "case-sarah-v25",
+      "file": "case-sarah-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        443,
+        886,
+        1330,
+        1774
+      ],
+      "bytes": 161204,
+      "originalImageId": "exec-b599989d-f101-4cf5-b06f-586498540aa1.png",
+      "sceneBriefs": [
+        "Sarah sleeps in a coma in a quiet intensive-care room, fully covered by a blanket; her sister sits beside her while a clinician compassionately discusses a disturbing examination result. No sexual act, exposure or pregnancy body emphasis.",
+        "Rachel and a safeguarding nurse examine an earlier ignored warning and missing ward-access records at a private desk, serious institutional investigation; no assault shown.",
+        "Sarah is now awake, fully dressed under a blanket in a recovery chair, receiving compassionate support while Rachel holds her hand; survivor-centred care, no sexualized imagery.",
+        "Rachel gathers the safeguarding records into a case folder while Sarah rests safely in the background."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: Sarah, an adult woman with long brown hair; her sister Rachel looks similar with shoulder-length brown hair. SCENE 1 (TOP): Sarah sleeps in a coma in a quiet intensive-care room, fully covered by a blanket; her sister sits beside her while a clinician compassionately discusses a disturbing examination result. No sexual act, exposure or pregnancy body emphasis. SCENE 2 (MIDDLE 1): Rachel and a safeguarding nurse examine an earlier ignored warning and missing ward-access records at a private desk, serious institutional investigation; no assault shown. SCENE 3 (MIDDLE 2): Sarah is now awake, fully dressed under a blanket in a recovery chair, receiving compassionate support while Rachel holds her hand; survivor-centred care, no sexualized imagery. SCENE 4 (BOTTOM): Rachel gathers the safeguarding records into a case folder while Sarah rests safely in the background."
+    },
+    {
+      "id": "daniel-unqualified-hands",
+      "artId": "case-daniel-trainee-v25",
+      "file": "case-daniel-trainee-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        443,
+        887,
+        1330,
+        1774
+      ],
+      "bytes": 147128,
+      "originalImageId": "exec-d7077e84-40eb-4230-bfe8-eaeadfbae736.png",
+      "sceneBriefs": [
+        "A senior supervisor gives the trainee a complex patient’s folder and walks away; the fully dressed adult patient waits with neck pain on an examination bench.",
+        "The trainee looks alarmed beside the seated adult patient after something has gone wrong; a nurse arrives to help, no manipulation, injury or invasive procedure shown.",
+        "In a management office the trainee is dismissed while the absent supervisor blames him and retains the clinical files.",
+        "Years later the former trainee gathers altered clinic reports and repeated unsafe-assignment records into a case folder."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a young white male chiropractic trainee with short brown hair and a plain blue polo shirt. SCENE 1 (TOP): A senior supervisor gives the trainee a complex patient’s folder and walks away; the fully dressed adult patient waits with neck pain on an examination bench. SCENE 2 (MIDDLE 1): The trainee looks alarmed beside the seated adult patient after something has gone wrong; a nurse arrives to help, no manipulation, injury or invasive procedure shown. SCENE 3 (MIDDLE 2): In a management office the trainee is dismissed while the absent supervisor blames him and retains the clinical files. SCENE 4 (BOTTOM): Years later the former trainee gathers altered clinic reports and repeated unsafe-assignment records into a case folder."
+    },
+    {
+      "id": "mara-after-the-prescription",
+      "artId": "case-mara-v25",
+      "file": "case-mara-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        443,
+        887,
+        1330,
+        1774
+      ],
+      "bytes": 156968,
+      "originalImageId": "exec-e4d21e33-f37c-4601-b858-bbbc115b75b5.png",
+      "sceneBriefs": [
+        "The woman receives a routine antibiotic prescription and a small plain medication box during a consultation with a doctor.",
+        "The same woman struggles to rise from a waiting-room chair, alarmed by leg weakness, while a dismissive clinician turns away.",
+        "The woman now uses a wheelchair with a blanket over her legs; a nurse compassionately reviews a missing specialist referral with her.",
+        "The woman in her wheelchair gathers the nurse’s original note and an unedited review into a case folder, determined expression."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: a thirty-five-year-old Latina woman with long dark hair and a dark teal sweater. SCENE 1 (TOP): The woman receives a routine antibiotic prescription and a small plain medication box during a consultation with a doctor. SCENE 2 (MIDDLE 1): The same woman struggles to rise from a waiting-room chair, alarmed by leg weakness, while a dismissive clinician turns away. SCENE 3 (MIDDLE 2): The woman now uses a wheelchair with a blanket over her legs; a nurse compassionately reviews a missing specialist referral with her. SCENE 4 (BOTTOM): The woman in her wheelchair gathers the nurse’s original note and an unedited review into a case folder, determined expression."
+    },
+    {
+      "id": "evelyn-unwarned-dilation",
+      "artId": "case-evelyn-v25",
+      "file": "case-evelyn-v25.webp",
+      "width": 887,
+      "height": 1774,
+      "panelCount": 4,
+      "cuts": [
+        0,
+        443,
+        887,
+        1330,
+        1774
+      ],
+      "bytes": 163084,
+      "originalImageId": "exec-080ad78e-26b9-45c9-bffb-8beb08f35516.png",
+      "sceneBriefs": [
+        "The elderly woman sits at an eye-examination device while a clinician prepares plain eye drops without discussing discharge arrangements.",
+        "The same elderly woman exits the hospital into bright daylight, shading her eyes and struggling with glare; soft optical blur represents her unclear vision.",
+        "A hospital-adjacent crosswalk after an accident: a car stopped at a distance, a dropped blue handbag and glasses near the curb, emergency staff helping off-frame; no impact, injury or body shown.",
+        "Her adult daughter Nora sits with her mother’s photograph, messages and a discharge checklist, assembling an evidence folder with restrained grief."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 2048 pixels tall, containing 4 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: Evelyn, a seventy-four-year-old woman with short gray hair, simple glasses and a blue cardigan; her daughter Nora is forty-five. SCENE 1 (TOP): The elderly woman sits at an eye-examination device while a clinician prepares plain eye drops without discussing discharge arrangements. SCENE 2 (MIDDLE 1): The same elderly woman exits the hospital into bright daylight, shading her eyes and struggling with glare; soft optical blur represents her unclear vision. SCENE 3 (MIDDLE 2): A hospital-adjacent crosswalk after an accident: a car stopped at a distance, a dropped blue handbag and glasses near the curb, emergency staff helping off-frame; no impact, injury or body shown. SCENE 4 (BOTTOM): Her adult daughter Nora sits with her mother’s photograph, messages and a discharge checklist, assembling an evidence folder with restrained grief."
+    },
+    {
+      "id": "special-rescue",
+      "artId": "brief-rescue-v25",
+      "file": "brief-rescue-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        507,
+        1032,
+        1536
+      ],
+      "bytes": 142660,
+      "originalImageId": "exec-bab88ef5-9e7a-48bd-93cd-715a95e88d50.png",
+      "sceneBriefs": [
+        "A worried ward assistant discreetly calls the visitor from a quiet hospital corridor at night; an anxious but fully covered awake patient is visible beyond a distant restricted-room window.",
+        "A tabletop with two distinct metal keys beside a plain access pass, a records folder and a maintenance cabinet; clear mission preparation, no readable text.",
+        "The visitor escorts the fully clothed rescued adult patient through the hospital’s main entrance toward dawn, calm support and freedom; no weapons or violence."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: an ordinary undercover hospital visitor in a charcoal jacket, a fully clothed adult patient and two senior clinicians. SCENE 1 (TOP): A worried ward assistant discreetly calls the visitor from a quiet hospital corridor at night; an anxious but fully covered awake patient is visible beyond a distant restricted-room window. SCENE 2 (MIDDLE 1): A tabletop with two distinct metal keys beside a plain access pass, a records folder and a maintenance cabinet; clear mission preparation, no readable text. SCENE 3 (BOTTOM): The visitor escorts the fully clothed rescued adult patient through the hospital’s main entrance toward dawn, calm support and freedom; no weapons or violence."
+    },
+    {
+      "id": "special-evidence",
+      "artId": "brief-evidence-v25",
+      "file": "brief-evidence-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        480,
+        961,
+        1536
+      ],
+      "bytes": 167652,
+      "originalImageId": "exec-5b6732d4-bada-4b0c-9d42-58391ea8ccd7.png",
+      "sceneBriefs": [
+        "The advocate shows the visitor conflicting consent records at a quiet hospital desk, explaining the need for documentary proof.",
+        "The visitor photographs a hospital ledger, a consent folder and a distant active but nongraphic operating room using a smartphone camera; composed as three evidence objects within one coherent scene, no visible procedure.",
+        "The visitor leaves the main hospital entrance holding a phone containing three distinct evidence thumbnails, daylight ahead, no weapons or violence."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: an ordinary undercover hospital visitor in a charcoal jacket and a concerned patient advocate. SCENE 1 (TOP): The advocate shows the visitor conflicting consent records at a quiet hospital desk, explaining the need for documentary proof. SCENE 2 (MIDDLE 1): The visitor photographs a hospital ledger, a consent folder and a distant active but nongraphic operating room using a smartphone camera; composed as three evidence objects within one coherent scene, no visible procedure. SCENE 3 (BOTTOM): The visitor leaves the main hospital entrance holding a phone containing three distinct evidence thumbnails, daylight ahead, no weapons or violence."
+    },
+    {
+      "id": "ending-male",
+      "artId": "evidence-ending-male-v25",
+      "file": "evidence-ending-male-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        512,
+        1024,
+        1536
+      ],
+      "bytes": 148742,
+      "originalImageId": "exec-4e91090c-16ea-4d27-9673-65166eee8b86.png",
+      "sceneBriefs": [
+        "The protagonist arrives at a modest city police station at dawn carrying a smartphone and a slim evidence folder, welcomed by a uniformed officer at the public counter; no legible signs.",
+        "At the police desk the same protagonist submits exactly THREE printed photographs: one hospital ledger, one consent document, one nongraphic operating-room view. A uniformed investigator accepts them, no readable words.",
+        "The officer gives the same protagonist a receipt and a sealed reward envelope, the three evidence photographs now safely filed on the desk, restrained relief and acknowledgement."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: an ordinary thirty-year-old male protagonist with short dark hair, a charcoal jacket and dark trousers. SCENE 1 (TOP): The protagonist arrives at a modest city police station at dawn carrying a smartphone and a slim evidence folder, welcomed by a uniformed officer at the public counter; no legible signs. SCENE 2 (MIDDLE 1): At the police desk the same protagonist submits exactly THREE printed photographs: one hospital ledger, one consent document, one nongraphic operating-room view. A uniformed investigator accepts them, no readable words. SCENE 3 (BOTTOM): The officer gives the same protagonist a receipt and a sealed reward envelope, the three evidence photographs now safely filed on the desk, restrained relief and acknowledgement."
+    },
+    {
+      "id": "ending-female",
+      "artId": "evidence-ending-female-v25",
+      "file": "evidence-ending-female-v25.webp",
+      "width": 1024,
+      "height": 1536,
+      "panelCount": 3,
+      "cuts": [
+        0,
+        512,
+        1025,
+        1536
+      ],
+      "bytes": 155024,
+      "originalImageId": "exec-65fade1a-0e6c-424b-9374-346c62a371db.png",
+      "sceneBriefs": [
+        "The protagonist arrives at a modest city police station at dawn carrying a smartphone and a slim evidence folder, welcomed by a uniformed officer at the public counter; no legible signs.",
+        "At the police desk the same protagonist submits exactly THREE printed photographs: one hospital ledger, one consent document, one nongraphic operating-room view. A uniformed investigator accepts them, no readable words.",
+        "The officer gives the same protagonist a receipt and a sealed reward envelope, the three evidence photographs now safely filed on the desk, restrained relief and acknowledgement."
+      ],
+      "prompt": "Use case: illustration-story. Asset type: fictional hospital-game cinematic story strip. Create ONE portrait image, 1024 pixels wide and 1536 pixels tall, containing 3 equal-height wide cinematic scenes stacked vertically in the exact order below. Each scene must be self-contained, no borders or gutters, no character crosses a seam. Each scene is a WIDE 2:1 composition at 1024x512. Style: grounded cinematic photorealism with subtle painterly finish, natural skin texture and fabric grain, sophisticated slate-blue hospital light, restrained warm skin, quiet serious emotions, strong readable compositions. Fictional ordinary people, no celebrities. Preserve the same main person's face, hair, skin tone and clothing consistently through all scenes unless a stated time jump requires aging. No visible words, letters, numbers, logos or watermarks; papers have indistinct marks only. No guns, no violence shown, no gore, no exposed medical anatomy, no invasive procedure, no nudity. The final scene of each client story shows the CLIENT assembling a case; the client is not the playable assassin. Main subject: an ordinary thirty-year-old female protagonist with dark shoulder-length hair, a charcoal jacket and dark trousers. SCENE 1 (TOP): The protagonist arrives at a modest city police station at dawn carrying a smartphone and a slim evidence folder, welcomed by a uniformed officer at the public counter; no legible signs. SCENE 2 (MIDDLE 1): At the police desk the same protagonist submits exactly THREE printed photographs: one hospital ledger, one consent document, one nongraphic operating-room view. A uniformed investigator accepts them, no readable words. SCENE 3 (BOTTOM): The officer gives the same protagonist a receipt and a sealed reward envelope, the three evidence photographs now safely filed on the desk, restrained relief and acknowledgement."
+    }
+  ]
+}

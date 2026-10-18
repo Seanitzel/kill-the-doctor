@@ -1,8 +1,8 @@
-Northline bundled dialogue — original American / Southern voice designs, revision 5 (2026-10-18)
+Northline bundled dialogue — original American / Southern voice designs, revision 5 with game 2.5 additions (2026-10-18)
 
 These are synthetic performances of fictional game dialogue, not recordings of real people. No real-person reference recording was used to create or condition the four new voice identities. Human cough, gasp, pain and scream effects remain separate recordings with provenance in ../expansion-sources.txt.
 
-75 unique lines, both genders and both designed regions: 150 text/gender keys, 300 mono MP3 files. Original dialogue keys remain exact. The additional static medical-staff paging line is included. Whole phrases cover conversations, clinical care, pain, suspicion, distress, recruitment, witness reports and all six fixed hospital announcements.
+86 unique lines, both genders and both designed regions: 172 text/gender keys, 344 mono MP3 files. Original dialogue keys remain exact. Whole phrases cover conversations, clinical care, pain, suspicion, distress, recruitment, witness reports, six fixed hospital announcements and four named-patient pages. Game 2.5 adds three room-privacy/security warnings, three anxious self-talk phrases and one short nervous-chuckle phrase. All 44 added clips reuse the same four fictional reference identities; the preceding 300 clips are preserved.
 
 Four original synthetic identities:
 - northline-female-standard: adult feminine midrange, warm and clear, described as General American.
@@ -43,3 +43,7 @@ QA:
 Expected line coverage, all text/gender keys, four stable identities, both regional files and file SHA-256 are checked. Every output is decoded and checked for finite nonempty samples/headroom. Short generated identity references and representative output phrases receive automated speech-transcription checks. This is technical QA; it is not a human listening session, actor-grade performance claim, or verified-accent judgment. Review previews are retained for listening feedback.
 
 Reproduce with scripts/generate-dialogue-audio-v5.py in the isolated build environment artifacts/audio-v5/venv/. The helper includes the original descriptions, seeds and reference text, pins converted-model revisions, generates synthetic references if missing, stages the complete set, and replaces live assets only after full success. Reference WAVs, model downloads, staging, metrics, transcriptions and preview montages remain in ignored artifacts/audio-v5/. Application dependencies and the music/foley recordings are unchanged.
+
+Game 2.5 additions are prepared by scripts/generate-dialogue-audio-v25.py, which generates only missing text/gender keys from src/game/dialogue-v25.js and preserves the existing manifest entries and recordings. It validates the existing four reference hashes, stages new files in ignored artifacts/audio-v6/, and promotes the merged manifest after every new clip succeeds. The chuckle is generated synthetic speech, not a human laughter recording or an imitation of a named individual. PA microphone muffling and chimes are applied at runtime rather than baked into these recordings.
+
+The four named-patient pages reference existing signed departments and room numbers: Outpatient 105, Cardiology 203, Neurology 204 and Rehabilitation 305. Sixteen superseded page recordings with unassigned room numbers were removed; all original 300 recordings and the other 28 game 2.5 additions are preserved. The replacement page transcripts were checked in all four designed identities.

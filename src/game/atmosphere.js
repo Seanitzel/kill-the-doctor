@@ -1,3 +1,5 @@
+import {RoomPrivacy} from './room-privacy.js';
+import {ROOM_WARNING_LINES} from './dialogue-v25.js';
 import {addInfusion} from './care-props.js';
 import {createCableGeometry,updateCableGeometry} from './dynamic-cable.js';
 import {footprint} from './collision.js';
@@ -10,8 +12,8 @@ export class HospitalLife {
   constructor(engine) {
     this.infusions=[];this.nextClinical=9;this.nextMachine=2;this.nextPain=18;this.listenerDirection=new THREE.Vector3();this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
     this.props=new THREE.Group();this.props.name='hospital-life-props';engine.scene.add(this.props);
-    this.lastRoom=null;this.roomReactions=new Map();this.nextAmbient=0;this.nextMaternity=0;
-    this.nextFlicker=8+engine.mission.random()*7;this.flicker=null;
+    this.lastRoom=null;this.roomReactions=new Map();this.privacy=new RoomPrivacy();this.nextAmbient=0;this.nextMaternity=0;
+    this.nextFlicker=45+engine.mission.random()*35;this.flicker=null;
     this.flickerCover=new THREE.Mesh(new THREE.BoxGeometry(1.235,.015,.565),new THREE.MeshBasicMaterial({color:'#172733'}));this.flickerCover.visible=false;this.props.add(this.flickerCover);
     this.setup();
   }
@@ -112,18 +114,27 @@ export class HospitalLife {
     this.dialogues=this.dialogues.filter(d=>d.actor!==actor&&d.until>e.mission.elapsed);
     this.dialogues.push({actor,text,until:e.mission.elapsed+Math.max(4.5,text.length*.07)});
     this.history.push({speaker:actor.name,text,time:e.mission.elapsed});if(this.history.length>30)this.history.shift();
-    e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos)),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor});
+    const voiceVersion=actor.voiceVersion=(actor.voiceVersion||0)+1;
+    e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos)),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor},{speakerId:actor.id,isCurrent:()=>!this.disposed&&actor.voiceVersion===voiceVersion});
     actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07);
   }
-  reactToEntry(room) {
-    const e=this.engine,now=e.mission.elapsed;
-    if(!room || (!CLINICAL_KINDS.includes(room.kind) && room.kind!=='office') || (this.roomReactions.get(room.id)||-100)+30>now)return;
-    const witnesses=e.npcs.filter(n=>n.room?.id===room.id&&!n.dead&&['doctor','nurse'].includes(n.role));
-    const closest=witnesses.sort((a,b)=>dist(e.playerPos,a.pos)-dist(e.playerPos,b.pos))[0];if(!closest)return;
-    this.roomReactions.set(room.id,now);closest.reaction=3.8;closest.wait=5;closest.path=[];closest.cursor=0;
-    closest.visual.root.rotation.y=Math.atan2(e.playerPos.x-closest.pos.x,e.playerPos.z-closest.pos.z);
-    const phrases=room.kind==='maternity'?ENTRY_REACTIONS.maternity:CLINICAL_KINDS.includes(room.kind)?ENTRY_REACTIONS.clinical:ENTRY_REACTIONS.office;
-    this.speak(closest,phrases[Math.floor(e.mission.random()*phrases.length)],true);this.nextAmbient=now+6;
+  privacyWitness(room){
+    if(!room||(!CLINICAL_KINDS.includes(room.kind)&&room.kind!=='office'))return null;
+    const e=this.engine;
+    return e.npcs.filter(n=>n.room?.id===room.id&&n.floor===e.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===room.id&&!n.dead&&!n.evacuated&&!n.reporting&&['doctor','nurse'].includes(n.role)).sort((a,b)=>(a.role==='nurse'?0:1)-(b.role==='nurse'?0:1)||dist(e.playerPos,a.pos)-dist(e.playerPos,b.pos))[0]||null;
+  }
+  privacyResponse(actor,action){
+    if(!actor||!action)return;const e=this.engine;
+    actor.reaction=3.8;actor.wait=5;actor.path=[];actor.cursor=0;
+    actor.visual.root.rotation.y=Math.atan2(e.playerPos.x-actor.pos.x,e.playerPos.z-actor.pos.z);
+    this.speak(actor,ROOM_WARNING_LINES[action],true);this.nextAmbient=e.mission.elapsed+9;
+    this.queue=this.queue.filter(line=>line.actor!==actor);
+    if(action==='warning')e.notify('Patient privacy · leave this room before staff call security','warning');
+    if(action==='security')e.systems?.witness(actor,'privacy');
+  }
+  reactToEntry(room){
+    const actor=this.privacyWitness(room);if(!actor){this.privacy.leave();return;}
+    this.privacyResponse(actor,this.privacy.enter(`${this.engine.floor}:${room.id}`,this.engine.mission.elapsed));
   }
   triggerFlicker(duration=1.65) {
     const e=this.engine,fixtures=e.hospitals[e.floor].fixtures;
@@ -180,14 +191,15 @@ export class HospitalLife {
     const e=this.engine,now=e.mission.elapsed,emergency=e.mission.state==='escape';
     const cell=e.levels[e.floor].cells.get(`${Math.round(e.playerPos.x/3+11)},${Math.round(e.playerPos.z/3+11)}`),room=e.levels[e.floor].rooms.find(r=>r.id===cell?.room);
     const roomKey=room?.id||`hall-${e.floor}`;
-    if(roomKey!==this.lastRoom){this.lastRoom=roomKey;if(room&&!emergency)this.reactToEntry(room);}
+    if(roomKey!==this.lastRoom){this.lastRoom=roomKey;if(!emergency)this.reactToEntry(room);else this.privacy.leave();}
+    if(!emergency&&room)this.privacyResponse(this.privacyWitness(room),this.privacy.update(`${e.floor}:${room.id}`,now));
     for(const n of e.npcs) {
       if(n.dead||n.evacuated||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
-      if(n.animationVisible!==false&&(n.activity||n.worriedUntil>now)&&n.activity!=='newborn') {
+      if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&(n.activity||n.worriedUntil>now)&&n.activity!=='newborn') {
         const pose=emergency&&!n.lying?'chat':n.worriedUntil>now&&!n.lying?'worried':n.activity;
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
         n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
-      }else if(n.animationVisible!==false&&n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
+      }else if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
       if(n.contamination&&n.nextCough<=now&&e.coughCooldown<=0&&dist(e.playerPos,n.pos)<3.1&&e.lineOfSight(e.playerPos,n.pos))this.beginCough(n);
     }
     for(const item of this.cases) {
@@ -228,7 +240,7 @@ export class HospitalLife {
       if(now>=this.nextMaternity&&gain>.08){e.audio.playSample('labor',this.laborSource,gain*.7);e.audio.playSample('breathing',this.laborSource,gain*.35);this.nextMaternity=now+15+e.mission.random()*8;e.hooks.soundCaption?.('A mother cries out. Newborns are crying in the nursery.');}
     }
     e.audio.setListener(e.camera.position,e.camera.getWorldDirection(this.listenerDirection),e.floor);
-    if(now>=this.nextFlicker&&!e.blackout){this.triggerFlicker();this.nextFlicker=now+12+e.mission.random()*17;}
+    if(now>=this.nextFlicker&&!e.blackout){this.triggerFlicker();this.nextFlicker=now+55+e.mission.random()*50;}
     const flicker=this.flickerLevel();this.flickerCover.visible=flicker<1;
     if(this.flicker){this.flickerCover.position.copy(this.flicker.fixture);this.flickerCover.position.y=3.502;}
     for(let i=this.pendingCoughs.length-1;i>=0;i--){const warning=this.pendingCoughs[i];if(now>=warning.ready){this.pendingCoughs.splice(i,1);if(!warning.patient.dead&&!warning.patient.evacuated)this.emitCloud(warning.patient);}}
@@ -239,6 +251,6 @@ export class HospitalLife {
     for(const {floor,obstacle} of this.addedColliders){const list=this.engine.hospitals[floor].colliders,index=list.indexOf(obstacle);if(index>=0)list.splice(index,1);}
     this.engine.audio.stopAmbient();for(const infusion of this.infusions)infusion.dispose();this.infusions.length=0;this.engine.scene.remove(this.props);
     this.props.traverse(o=>{if(o.userData.lifeOwned||o===this.flickerCover||o.isPoints){o.geometry?.dispose();o.material?.dispose();}});
-    this.clouds.forEach(c=>c.texture.dispose());this.props.clear();for(const list of [this.clouds,this.groups,this.cases,this.queue,this.dialogues,this.history,this.pendingCoughs,this.addedColliders])list.length=0;this.roomReactions.clear();
+    this.clouds.forEach(c=>c.texture.dispose());this.props.clear();for(const list of [this.clouds,this.groups,this.cases,this.queue,this.dialogues,this.history,this.pendingCoughs,this.addedColliders])list.length=0;this.roomReactions.clear();this.privacy.dispose();
   }
 }

@@ -1,3 +1,4 @@
+import {ADDITIONAL_DIALOGUE_LINES,PATIENT_PAGE_LINES} from './dialogue-v25.js';
 export function exposureDuration(patient, filterLevel = 0) {
   const duration = Number(patient?.contamination) || 0;
   if (![30,60].includes(duration)) return 0;
@@ -88,6 +89,7 @@ export const DISTRESS_LINES = [
   'I need help. Please, help me.',
 ];
 export const ANNOUNCEMENT_LINES = [
+  ...PATIENT_PAGE_LINES,
   'Welcome to Northline. Visitor services are located in the main atrium. Please keep all corridors clear.',
   'A power fault has been reported. Emergency lighting is active. Please remain calm.',
   'Code blue. Security incident reported. All staff follow emergency protocol. Police units are responding.',
@@ -100,7 +102,7 @@ export const WITNESS_LINES = {
   camera:'That camera is not allowed here. I am calling security.',
 };
 export const ALL_DIALOGUE_LINES = [...new Set([
-  ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
+  ...ADDITIONAL_DIALOGUE_LINES, ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
   ...Object.values(CLINICAL_CONVERSATIONS).flat(2), ...PATIENT_PAIN_LINES,
   ...SUSPICION_LINES, ...RECRUIT_LINES, ...DISTRESS_LINES, ...ANNOUNCEMENT_LINES, ...Object.values(WITNESS_LINES),
 ])];

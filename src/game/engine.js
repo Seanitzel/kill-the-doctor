@@ -1,3 +1,4 @@
+import {PATIENT_PAGE_LINES} from './dialogue-v25.js';
 import {makeNavigation,segmentBox} from './navigation.js';
 import {obstacleBounds,circleOverlaps,cameraFraction,segmentHit3D,blocksBody,interactionScore,STRUCTURE_CLEARANCE} from './collision.js';
 import * as THREE from 'three';
@@ -132,7 +133,7 @@ export class GameEngine {
     this.mission = mission;this.cameraZoom=1; this.playerPos.set(0, 0, 30); this.yaw = Math.PI; this.pitch = -.06;this.player.root.position.copy(this.playerPos);
     this.setFloor(0); this.paused = true; this.aiming = false;this.weaponDrawn=false;this.weaponSlots={};this.setWeapon(mission.save.loadout?.weapon||'pistol',true); this.keys.clear(); this.crouched = false;
     const info=weaponInfo(mission.save);this.ammo=info.capacity;this.reserve=info.reserve;this.reloading=0;this.shotCooldown=0;this.maxStamina=100+(mission.save.upgrades.vitals||0)*25;this.stamina=this.maxStamina;this.sprintExhausted=false;this.sprintReleased=true;this.impairment=0;this.blackout=0;this.flashlight=false;
-    this.nextBlackout = 28 + mission.random() * 25; this.nextPA = 18; this.coughCooldown = 3; this.impairmentTotal=0; this.exposureSource=null; this.policeSpawned = false; this.captureTime = 0;
+    this.nextBlackout = 150 + mission.random() * 90; this.nextPA = 85 + mission.random()*35;this.paPageIndex=0; this.coughCooldown = 3; this.impairmentTotal=0; this.exposureSource=null; this.policeSpawned = false; this.captureTime = 0;
     this.visited = new Set(); this.npcClock = 0;
     for(const layout of this.levels)for(const d of layout.doors){d.open=d.id.endsWith('-back');d.angle=d.open?d.openAngle:0;d.pivot.rotation.y=d.angle;}
     this.spawnNPCs();this.life=new HospitalLife(this);this.visitors=new HospitalVisitors(this);this.systems=new MissionSystems(this);this.incidents=new HospitalIncidents(this);this.incidents.setup();this.objectives=new AssignmentObjectives(this);this.systems.prepare();this.playerGear.update(mission.save); this.player.root.visible = true;
@@ -189,10 +190,12 @@ export class GameEngine {
       for (const [i, p] of [[0, world(10, 8)], [1, world(3, 14)]]) spawn({ skin: '#bd9275', hair: '#302b26' }, 'security', floor, p, null, `security-${floor}-${i}`);
     }
   }
-  say(text, label = 'PUBLIC ADDRESS') { this.hooks.announcement?.({ text, label }); this.audio.announce(text); }
+  say(text, label = 'PUBLIC ADDRESS') { if(this.mission)this.nextPA=Math.max(this.nextPA||0,this.mission.elapsed+75);this.hooks.announcement?.({ text, label }); this.audio.announce(text); }
   notify(text, kind = 'info') { this.hooks.notify?.({ text, kind }); }
   toggleFlash() { this.flashlight = !this.flashlight; this.audio.tone(450, .04, .035); this.emitHUD(); }
-  triggerBlackout(duration = 16) {
+  setTorchBrightness(value,persist=true){if(!Number.isFinite(value))return false;this.settings.flashlightBrightness=Math.min(2.5,Math.max(.5,value));this.flashlight=true;if(persist)this.commitTorchBrightness();return true;}
+  commitTorchBrightness(){this.emitHUD();this.hooks.persist?.();}
+  triggerBlackout(duration = 10) {
     this.blackout = duration; this.mission.blackoutCount++; this.audio.sound('blackout');
     this.say('A power fault has been reported. Emergency lighting is active. Please remain calm.', 'POWER INTERRUPTION'); this.notify(this.mobile ? 'Power interrupted · Tap LIGHT to use your flashlight' : 'Power interrupted · F to use your flashlight', 'warning');
   }
@@ -458,6 +461,7 @@ export class GameEngine {
         }
         n.path = findPath(layout, start, end); n.cursor = 1; n.wait = mission.random() * 5 + 2; n.routine++;
       }
+      const previousX=n.pos.x,previousZ=n.pos.z;
       let destination = n.activity || n.reaction ? null : n.path[n.cursor];
       if(directed&&destination){
         const opening=this.levels[n.floor].doors.find(leaf=>!leaf.locked&&Math.hypot(n.pos.x-leaf.x,n.pos.z-leaf.z)<2.6&&Math.abs(leaf.angle-leaf.openAngle)>.02);
@@ -486,6 +490,7 @@ export class GameEngine {
         }
         n.visual.root.rotation.y=Math.atan2(dx,dz);
       }
+      speed=Math.hypot(n.pos.x-previousX,n.pos.z-previousZ)/Math.max(dt,.001);n.movementSpeed=speed;
       if(this.npcSphere){this.npcSphere.center.copy(n.pos);this.npcSphere.center.y+=.9;}
       n.animationVisible=local&&d<30&&(d<6||!this.viewFrustum||this.viewFrustum.intersectsSphere(this.npcSphere));
       if(n.animationVisible){
@@ -514,10 +519,10 @@ export class GameEngine {
   }
   updateEnvironment(dt) {
     this.blackout = Math.max(0, this.blackout - dt); this.impairment = Math.max(0, this.impairment - dt); this.coughCooldown -= dt;
-    if (this.mission.elapsed > this.nextBlackout && this.mission.state !== 'escape') { this.triggerBlackout(); this.nextBlackout = this.mission.elapsed + 75 + this.mission.random() * 40; }
+    if (this.mission.elapsed > this.nextBlackout && this.mission.state !== 'escape') { this.triggerBlackout(); this.nextBlackout = this.mission.elapsed + 210 + this.mission.random() * 120; }
     if (this.mission.elapsed > this.nextPA && this.mission.state !== 'escape') {
-      this.say(this.mission.clues.length ? 'Attention medical staff. Please return to your assigned departments. Your next consultation is waiting.' : 'Visitors: the staff directory is available in the entrance atrium. Please check department signage before proceeding.');
-      this.nextPA = this.mission.elapsed + 45;
+      const pages=[...PATIENT_PAGE_LINES,'Attention medical staff. Please return to your assigned departments. Your next consultation is waiting.'];this.say(pages[(this.paPageIndex||0)%pages.length]);this.paPageIndex=(this.paPageIndex||0)+1;
+      this.nextPA = this.mission.elapsed + 95 + this.mission.random()*55;
     }
     if (this.mission.state === 'escape' && this.mission.timer < 45 && !this.policeSpawned) this.spawnPolice();
     if (this.reloading > 0) { this.reloading -= dt; if (this.reloading <= 0) { const refill = Math.min(weaponInfo(this.mission.save,this.weaponKind).capacity-this.ammo,this.reserve); this.ammo += refill; this.reserve -= refill; this.reloading = 0; } }
@@ -555,7 +560,7 @@ export class GameEngine {
     const room = this.levels[this.floor].rooms.find(r => r.id === cell?.room);
     const objective = this.objectives?.hud().label || (this.mission.state === 'escape' ? 'Return to the main entrance' : this.mission.identified ? 'Eliminate the confirmed target' : this.mission.clues.length ? `Investigate ${this.mission.target.room.name}` : 'Find the staff directory');
     const prompt = !i ? null : { type: i.type, text:['mission-key','release-patient','photo-subject'].includes(i.type)?i.label:i.type==='npc'&&i.npc.keyCarrier&&!this.mission.keys.includes('theatre')?'Lift theatre key · crouch behind nurse': i.type === 'door' ? `${i.door.locked?'Unlock':i.door.open ? 'Close' : 'Open'} · ${i.label}` : i.type === 'npc' ? i.npc.recruit ? this.incidents?.prompt(i.npc) || 'Talk' : i.npc.role === 'patient' ? 'Patient · protected' : 'Inspect badge' : i.label };
-    this.hooks.hud?.({ state: this.mission.state, objective, location: room?.name || (this.playerPos.z > 26 ? 'Main atrium' : this.playerPos.x < -6 ? 'West passage' : this.playerPos.x > 9 ? 'East passage' : 'Central concourse'), floor: this.floor, x: this.playerPos.x, z: this.playerPos.z, yaw: this.yaw, timer: this.mission.timer, elapsed: this.mission.elapsed, stamina:this.stamina/(this.maxStamina||100)*100,sprintEnabled:this.touchInput.sprint,sprintExhausted:this.sprintExhausted,weaponName:this.mission.type==='evidence'?'EVIDENCE CAMERA':weaponInfo(this.mission.save,this.weaponKind).name,weaponKind:this.weaponKind,weaponDrawn:this.weaponDrawn,scoped:this.aiming&&this.weaponKind==='sniper',masked:maskProtects(this.mission.save),hasMask:!!this.mission.save.upgrades.mask,reports:this.systems?.reports()||[],bonus:this.mission.type==='standard'?Math.max(0,this.mission.staffKills-1)*STAFF_BONUS:0,evacuated:this.npcs.filter(n=>n.evacuated).length,magnet:!!this.systems?.magnet,suspicion: this.mission.suspicion, flashlight: this.flashlight, blackout: this.blackout, impairment: this.impairment, impairmentStrength: recoveryStrength(this.impairment,this.impairmentTotal), exposureSource:this.exposureSource, dialogues:this.life?.dialogueHUD()||[],assignment:this.objectives?.hud(),contact:this.incidents?.hud()||null,cameraZoom:this.cameraZoom, aiming: this.aiming, ammo: this.ammo, reserve: this.reserve, reloading: this.reloading > 0, prompt, proximity: this.proximity(), crouched: this.crouched, targetConfirmed: this.mission.identified, clues: this.mission.clues.length });
+    this.hooks.hud?.({ state: this.mission.state, objective, location: room?.name || (this.playerPos.z > 26 ? 'Main atrium' : this.playerPos.x < -6 ? 'West passage' : this.playerPos.x > 9 ? 'East passage' : 'Central concourse'), floor: this.floor, x: this.playerPos.x, z: this.playerPos.z, yaw: this.yaw, timer: this.mission.timer, elapsed: this.mission.elapsed, stamina:this.stamina/(this.maxStamina||100)*100,sprintEnabled:this.touchInput.sprint,sprintExhausted:this.sprintExhausted,weaponName:this.mission.type==='evidence'?'EVIDENCE CAMERA':weaponInfo(this.mission.save,this.weaponKind).name,weaponKind:this.weaponKind,weaponDrawn:this.weaponDrawn,scoped:this.aiming&&this.weaponKind==='sniper',masked:maskProtects(this.mission.save),hasMask:!!this.mission.save.upgrades.mask,reports:this.systems?.reports()||[],bonus:this.mission.type==='standard'?Math.max(0,this.mission.staffKills-1)*STAFF_BONUS:0,evacuated:this.npcs.filter(n=>n.evacuated).length,magnet:!!this.systems?.magnet,suspicion: this.mission.suspicion, flashlight: this.flashlight,flashlightBrightness:this.settings.flashlightBrightness||1, blackout: this.blackout, impairment: this.impairment, impairmentStrength: recoveryStrength(this.impairment,this.impairmentTotal), exposureSource:this.exposureSource, dialogues:this.life?.dialogueHUD()||[],assignment:this.objectives?.hud(),contact:this.incidents?.hud()||null,cameraZoom:this.cameraZoom, aiming: this.aiming, ammo: this.ammo, reserve: this.reserve, reloading: this.reloading > 0, prompt, proximity: this.proximity(), crouched: this.crouched, targetConfirmed: this.mission.identified, clues: this.mission.clues.length });
   }
   frame() {
     if(this.disposed||document.hidden)return;

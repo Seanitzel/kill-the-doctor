@@ -36,6 +36,1011 @@ export const NEW_FICTIONAL_CASEFILES=[
   },
 ];
 export const STORIES=[...REVISED_CASEFILES,...NEW_FICTIONAL_CASEFILES];
+// Dedicated scene mappings are populated after their generated assets pass QA.
+// Legacy fields stay intact for saved profiles and older asset references.
+export const STORY_ART={
+  "case-jack-v25": {
+    "file": "case-jack-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      433,
+      868,
+      1310,
+      1774
+    ]
+  },
+  "case-pamela-v25": {
+    "file": "case-pamela-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      428,
+      887,
+      1321,
+      1774
+    ]
+  },
+  "case-layla-v25": {
+    "file": "case-layla-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      443,
+      887,
+      1330,
+      1774
+    ]
+  },
+  "case-melanie-v25": {
+    "file": "case-melanie-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      443,
+      887,
+      1331,
+      1774
+    ]
+  },
+  "case-nadia-v25": {
+    "file": "case-nadia-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      442,
+      887,
+      1329,
+      1774
+    ]
+  },
+  "case-daniel-donor-v25": {
+    "file": "case-daniel-donor-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      485,
+      943,
+      1536
+    ]
+  },
+  "case-elena-consent-v25": {
+    "file": "case-elena-consent-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      481,
+      970,
+      1536
+    ]
+  },
+  "case-jonah-v25": {
+    "file": "case-jonah-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      512,
+      1024,
+      1536
+    ]
+  },
+  "case-alex-mri-v25": {
+    "file": "case-alex-mri-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      443,
+      887,
+      1330,
+      1774
+    ]
+  },
+  "case-grace-v25": {
+    "file": "case-grace-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      473,
+      980,
+      1536
+    ]
+  },
+  "case-victoria-v25": {
+    "file": "case-victoria-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      486,
+      963,
+      1536
+    ]
+  },
+  "case-ethan-v25": {
+    "file": "case-ethan-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      444,
+      887,
+      1330,
+      1774
+    ]
+  },
+  "case-olivia-v25": {
+    "file": "case-olivia-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      493,
+      968,
+      1536
+    ]
+  },
+  "case-sophia-v25": {
+    "file": "case-sophia-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      511,
+      1025,
+      1536
+    ]
+  },
+  "case-marcus-v25": {
+    "file": "case-marcus-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      510,
+      1024,
+      1536
+    ]
+  },
+  "case-rebecca-v25": {
+    "file": "case-rebecca-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      495,
+      990,
+      1536
+    ]
+  },
+  "case-noah-v25": {
+    "file": "case-noah-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      501,
+      961,
+      1536
+    ]
+  },
+  "case-amara-v25": {
+    "file": "case-amara-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      511,
+      1006,
+      1536
+    ]
+  },
+  "case-james-v25": {
+    "file": "case-james-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      511,
+      1024,
+      1536
+    ]
+  },
+  "case-elena-billing-v25": {
+    "file": "case-elena-billing-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      443,
+      887,
+      1330,
+      1774
+    ]
+  },
+  "case-david-v25": {
+    "file": "case-david-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      509,
+      1023,
+      1536
+    ]
+  },
+  "case-isabella-v25": {
+    "file": "case-isabella-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      512,
+      1024,
+      1536
+    ]
+  },
+  "case-peter-v25": {
+    "file": "case-peter-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      512,
+      1023,
+      1536
+    ]
+  },
+  "case-chloe-v25": {
+    "file": "case-chloe-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      512,
+      1002,
+      1536
+    ]
+  },
+  "case-anthony-v25": {
+    "file": "case-anthony-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      484,
+      968,
+      1536
+    ]
+  },
+  "case-emily-v25": {
+    "file": "case-emily-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      491,
+      969,
+      1536
+    ]
+  },
+  "case-samuel-v25": {
+    "file": "case-samuel-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      512,
+      1024,
+      1536
+    ]
+  },
+  "case-natalie-v25": {
+    "file": "case-natalie-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      488,
+      981,
+      1536
+    ]
+  },
+  "case-lucas-v25": {
+    "file": "case-lucas-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      488,
+      1022,
+      1536
+    ]
+  },
+  "case-michael-v25": {
+    "file": "case-michael-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      443,
+      887,
+      1330,
+      1774
+    ]
+  },
+  "case-sarah-v25": {
+    "file": "case-sarah-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      443,
+      886,
+      1330,
+      1774
+    ]
+  },
+  "case-daniel-trainee-v25": {
+    "file": "case-daniel-trainee-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      443,
+      887,
+      1330,
+      1774
+    ]
+  },
+  "case-mara-v25": {
+    "file": "case-mara-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      443,
+      887,
+      1330,
+      1774
+    ]
+  },
+  "case-evelyn-v25": {
+    "file": "case-evelyn-v25.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      443,
+      887,
+      1330,
+      1774
+    ]
+  },
+  "brief-rescue-v25": {
+    "file": "brief-rescue-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      507,
+      1032,
+      1536
+    ]
+  },
+  "brief-evidence-v25": {
+    "file": "brief-evidence-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      480,
+      961,
+      1536
+    ]
+  },
+  "evidence-ending-male-v25": {
+    "file": "evidence-ending-male-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      512,
+      1024,
+      1536
+    ]
+  },
+  "evidence-ending-female-v25": {
+    "file": "evidence-ending-female-v25.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      512,
+      1025,
+      1536
+    ]
+  }
+};
+export const STORY_VISUALS={
+  "trial-without-consent": [
+    {
+      "artId": "case-jack-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-jack-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-jack-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-jack-v25",
+      "panel": 3
+    }
+  ],
+  "stolen-choice": [
+    {
+      "artId": "case-pamela-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-pamela-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-pamela-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-pamela-v25",
+      "panel": 3
+    }
+  ],
+  "switched-cradles": [
+    {
+      "artId": "case-layla-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-layla-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-layla-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-layla-v25",
+      "panel": 3
+    }
+  ],
+  "uninvited-observers": [
+    {
+      "artId": "case-melanie-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-melanie-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-melanie-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-melanie-v25",
+      "panel": 3
+    }
+  ],
+  "locked-discharge": [
+    {
+      "artId": "case-nadia-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-nadia-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-nadia-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-nadia-v25",
+      "panel": 3
+    }
+  ],
+  "missing-truth": [
+    {
+      "artId": "case-daniel-donor-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-daniel-donor-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-daniel-donor-v25",
+      "panel": 2
+    }
+  ],
+  "language-barrier": [
+    {
+      "artId": "case-elena-consent-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-elena-consent-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-elena-consent-v25",
+      "panel": 2
+    }
+  ],
+  "denied-care": [
+    {
+      "artId": "case-jonah-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-jonah-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-jonah-v25",
+      "panel": 2
+    }
+  ],
+  "alex-fatal-attraction": [
+    {
+      "artId": "case-alex-mri-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-alex-mri-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-alex-mri-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-alex-mri-v25",
+      "panel": 3
+    }
+  ],
+  "grace-last-dose": [
+    {
+      "artId": "case-grace-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-grace-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-grace-v25",
+      "panel": 2
+    }
+  ],
+  "victoria-unwanted-operation": [
+    {
+      "artId": "case-victoria-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-victoria-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-victoria-v25",
+      "panel": 2
+    }
+  ],
+  "ethan-experimental-drug": [
+    {
+      "artId": "case-ethan-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-ethan-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-ethan-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-ethan-v25",
+      "panel": 3
+    }
+  ],
+  "olivia-wrong-diagnosis": [
+    {
+      "artId": "case-olivia-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-olivia-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-olivia-v25",
+      "panel": 2
+    }
+  ],
+  "sophia-wrong-floor": [
+    {
+      "artId": "case-sophia-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-sophia-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-sophia-v25",
+      "panel": 2
+    }
+  ],
+  "marcus-invisible-infection": [
+    {
+      "artId": "case-marcus-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-marcus-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-marcus-v25",
+      "panel": 2
+    }
+  ],
+  "rebecca-fertility-fraud": [
+    {
+      "artId": "case-rebecca-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-rebecca-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-rebecca-v25",
+      "panel": 2
+    }
+  ],
+  "noah-phantom-surgery": [
+    {
+      "artId": "case-noah-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-noah-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-noah-v25",
+      "panel": 2
+    }
+  ],
+  "amara-price-of-life": [
+    {
+      "artId": "case-amara-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-amara-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-amara-v25",
+      "panel": 2
+    }
+  ],
+  "james-wrong-limb": [
+    {
+      "artId": "case-james-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-james-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-james-v25",
+      "panel": 2
+    }
+  ],
+  "elena-phantom-billing": [
+    {
+      "artId": "case-elena-billing-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-elena-billing-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-elena-billing-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-elena-billing-v25",
+      "panel": 3
+    }
+  ],
+  "david-forgotten-allergy": [
+    {
+      "artId": "case-david-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-david-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-david-v25",
+      "panel": 2
+    }
+  ],
+  "isabella-trial-never-ended": [
+    {
+      "artId": "case-isabella-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-isabella-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-isabella-v25",
+      "panel": 2
+    }
+  ],
+  "peter-declared-dead": [
+    {
+      "artId": "case-peter-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-peter-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-peter-v25",
+      "panel": 2
+    }
+  ],
+  "chloe-missing-diagnosis": [
+    {
+      "artId": "case-chloe-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-chloe-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-chloe-v25",
+      "panel": 2
+    }
+  ],
+  "anthony-transplant-sold": [
+    {
+      "artId": "case-anthony-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-anthony-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-anthony-v25",
+      "panel": 2
+    }
+  ],
+  "emily-unnecessary-amputation": [
+    {
+      "artId": "case-emily-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-emily-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-emily-v25",
+      "panel": 2
+    }
+  ],
+  "samuel-silent-ward": [
+    {
+      "artId": "case-samuel-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-samuel-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-samuel-v25",
+      "panel": 2
+    }
+  ],
+  "natalie-hospital-secret": [
+    {
+      "artId": "case-natalie-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-natalie-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-natalie-v25",
+      "panel": 2
+    }
+  ],
+  "lucas-contaminated-ward": [
+    {
+      "artId": "case-lucas-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-lucas-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-lucas-v25",
+      "panel": 2
+    }
+  ],
+  "michael-organ-sold": [
+    {
+      "artId": "case-michael-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-michael-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-michael-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-michael-v25",
+      "panel": 3
+    }
+  ],
+  "sarah-silent-witness": [
+    {
+      "artId": "case-sarah-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-sarah-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-sarah-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-sarah-v25",
+      "panel": 3
+    }
+  ],
+  "daniel-unqualified-hands": [
+    {
+      "artId": "case-daniel-trainee-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-daniel-trainee-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-daniel-trainee-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-daniel-trainee-v25",
+      "panel": 3
+    }
+  ],
+  "mara-after-the-prescription": [
+    {
+      "artId": "case-mara-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-mara-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-mara-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-mara-v25",
+      "panel": 3
+    }
+  ],
+  "evelyn-unwarned-dilation": [
+    {
+      "artId": "case-evelyn-v25",
+      "panel": 0
+    },
+    {
+      "artId": "case-evelyn-v25",
+      "panel": 1
+    },
+    {
+      "artId": "case-evelyn-v25",
+      "panel": 2
+    },
+    {
+      "artId": "case-evelyn-v25",
+      "panel": 3
+    }
+  ],
+  "special-rescue": [
+    {
+      "artId": "brief-rescue-v25",
+      "panel": 0
+    },
+    {
+      "artId": "brief-rescue-v25",
+      "panel": 1
+    },
+    {
+      "artId": "brief-rescue-v25",
+      "panel": 2
+    }
+  ],
+  "special-evidence": [
+    {
+      "artId": "brief-evidence-v25",
+      "panel": 0
+    },
+    {
+      "artId": "brief-evidence-v25",
+      "panel": 1
+    },
+    {
+      "artId": "brief-evidence-v25",
+      "panel": 2
+    }
+  ]
+};
+export function specialBriefVisuals(type){return STORY_VISUALS[`special-${type}`]||[];}
+export function storyVisual(story,index){
+  const visual=story.visuals?.[index]||STORY_VISUALS[story.id]?.[index];
+  const art=visual&&STORY_ART[visual.artId];
+  if(art){
+    const panel=Math.max(0,Math.min(art.cuts.length-2,visual.panel??index));
+    return {src:`stories/${art.file}`,artId:visual.artId,panel,width:art.width,height:art.height,crop:[art.cuts[panel]+4,art.cuts[panel+1]-4]};
+  }
+  const artId=story.artId||story.id,cuts=STORY_CROPS[artId]||[0,512,1024,1536];
+  const panel=Math.max(0,Math.min(cuts.length-2,story.artPanels?.[index]??Math.min(index,2)));
+  return {src:`stories/${artId}.png`,artId,panel,width:1024,height:1536,crop:[cuts[panel]+5,cuts[panel+1]-5]};
+}
 export function storyDuration(story,panel){
   const words=`${panel===0?story.title:story.panels[panel][0]} ${story.panels[panel][1]}`.trim().split(/\s+/).length;
   return Math.max(8500,Math.min(18000,2400+words*290));

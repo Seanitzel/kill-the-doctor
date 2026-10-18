@@ -1,6 +1,7 @@
 <script setup>
 import { ref,watch,onMounted,onBeforeUnmount } from 'vue';
 import { Crosshair,Hand,Flashlight,RotateCcw,Footprints,Map,BookOpen,Pause,ArrowDown,Target,Shield } from 'lucide-vue-next';
+import {TorchGesture} from './torch-gesture.js';
 import {LookGesture} from './look-gesture.js';
 import { stickVector } from './input.js';
 import { nativeFeedback } from './platform.js';
@@ -8,6 +9,11 @@ const props=defineProps({engine:Object,hud:Object});
 const emit=defineEmits(['map','journal','pause']);
 const knob=ref({x:0,y:0}),sprint=ref(false),crouch=ref(false),looking=ref(false);
 watch(()=>props.hud.sprintEnabled,value=>{if(value!==undefined)sprint.value=value;});
+const torchGesture=new TorchGesture(),adjustingTorch=ref(false);
+function lightStart(event){event.preventDefault();event.stopPropagation();if(torchGesture.start(event.pointerId,event.clientY,props.hud.flashlightBrightness||1))event.currentTarget.setPointerCapture(event.pointerId);}
+function lightMove(event){const value=torchGesture.move(event.pointerId,event.clientY);if(value===null)return;event.preventDefault();adjustingTorch.value=true;props.engine.setTorchBrightness(value,false);}
+function lightEnd(event){const dragged=torchGesture.end(event.pointerId);if(dragged===null)return;adjustingTorch.value=false;if(event.type==='pointerup'){if(dragged)props.engine.commitTorchBrightness();else action('light');}else if(dragged)props.engine.commitTorchBrightness();}
+function lightKey(event){if(event.key==='ArrowUp'||event.key==='ArrowDown'){event.preventDefault();props.engine.setTorchBrightness((props.hud.flashlightBrightness||1)+(event.key==='ArrowUp'?.1:-.1));}}
 let movePointer=null,firePointer=null,lastFire=null;
 const lookGesture=new LookGesture({look:(x,y)=>props.engine.lookTouch(x,y),zoom:ratio=>props.engine.zoomTouch(ratio)});
 function move(event){if(event.pointerId!==movePointer)return;event.preventDefault();const r=event.currentTarget.getBoundingClientRect();const vector=stickVector(event.clientX-r.left-r.width/2,event.clientY-r.top-r.height/2,44);knob.value={x:vector.x,y:vector.y};props.engine.setTouchMove(vector.forward,vector.strafe);}
@@ -23,7 +29,7 @@ function keyboardFire(event){if(event.detail===0)props.engine.requestTouchShot()
 function buttonAction(event,name){if(event.type==='pointerdown'||event.detail===0)action(name);}
 function toolAction(event,name){if(event.type==='pointerdown'||event.detail===0)emit(name);}
 function action(name){nativeFeedback();if(name==='aim')props.engine.toggleAim();else if(name==='draw')props.engine.toggleWeapon();else if(name==='weapon')props.engine.switchWeapon();else if(name==='mask')props.engine.toggleMask();else if(name==='run'){sprint.value=!sprint.value;props.engine.touchInput.sprint=sprint.value;}else if(name==='crouch'){crouch.value=!crouch.value;props.engine.touchInput.crouch=crouch.value;}else if(name==='use')props.engine.interact();else if(name==='light')props.engine.toggleFlash();else if(name==='reload')props.engine.reload();}
-function resetGestures(){movePointer=firePointer=null;lastFire=null;lookGesture.reset();knob.value={x:0,y:0};looking.value=sprint.value=crouch.value=false;props.engine?.resetTouch();}
+function resetGestures(){if(torchGesture.dragged)props.engine?.commitTorchBrightness();torchGesture.reset();adjustingTorch.value=false;movePointer=firePointer=null;lastFire=null;lookGesture.reset();knob.value={x:0,y:0};looking.value=sprint.value=crouch.value=false;props.engine?.resetTouch();}
 onMounted(()=>{window.addEventListener('resize',resetGestures);window.addEventListener('blur',resetGestures);window.visualViewport?.addEventListener('resize',resetGestures);});
 onBeforeUnmount(()=>{window.removeEventListener('resize',resetGestures);window.removeEventListener('blur',resetGestures);window.visualViewport?.removeEventListener('resize',resetGestures);resetGestures();});
 </script>
@@ -38,7 +44,7 @@ onBeforeUnmount(()=>{window.removeEventListener('resize',resetGestures);window.r
       <button class="phone-use" data-testid="touch-use" aria-label="Interact" :class="{available:hud.prompt}" @pointerdown.prevent="buttonAction($event,'use')" @click="buttonAction($event,'use')"><Hand :size="21"/><small>USE</small></button>
       <button data-testid="touch-aim" aria-label="Toggle aim" :aria-pressed="hud.aiming" :class="{active:hud.aiming}" @pointerdown.prevent="buttonAction($event,'aim')" @click="buttonAction($event,'aim')"><Crosshair :size="22"/><small>AIM</small></button>
       <button class="phone-fire" data-testid="touch-fire" :aria-label="hud.assignment?.type==='evidence'?'Take evidence photograph':'Fire weapon'" @pointerdown="fireStart" @pointermove="fireMove" @pointerup="fireEnd" @pointercancel="fireEnd" @lostpointercapture="fireEnd" @click="keyboardFire"><Target :size="28"/><small>{{hud.assignment?.type==='evidence'?'PHOTO':'FIRE'}}</small><b>{{hud.assignment?.type==='evidence'?`${hud.assignment.photos.length}/3`:hud.ammo}}</b></button>
-      <button aria-label="Toggle flashlight" :aria-pressed="hud.flashlight" :class="{active:hud.flashlight}" @pointerdown.prevent="buttonAction($event,'light')" @click="buttonAction($event,'light')"><Flashlight :size="20"/><small>LIGHT</small></button>
+      <button class="phone-light" data-testid="touch-light" :aria-label="`Flashlight ${Math.round((hud.flashlightBrightness||1)/2.5*100)} percent. Tap to toggle, drag up or down to adjust brightness`" :aria-pressed="hud.flashlight" :class="{active:hud.flashlight,adjusting:adjustingTorch}" @pointerdown="lightStart" @pointermove="lightMove" @pointerup="lightEnd" @pointercancel="lightEnd" @lostpointercapture="lightEnd" @keydown="lightKey" @click="buttonAction($event,'light')"><Flashlight :size="20"/><small>{{adjustingTorch?`${Math.round((hud.flashlightBrightness||1)/2.5*100)}%`:'LIGHT ↕'}}</small><output v-if="adjustingTorch" class="torch-level">{{Math.round((hud.flashlightBrightness||1)/2.5*100)}}%<small>BRIGHTNESS</small></output></button>
       <button v-if="hud.assignment?.type!=='evidence'" data-testid="touch-reload" aria-label="Reload weapon" @pointerdown.prevent="buttonAction($event,'reload')" @click="buttonAction($event,'reload')"><RotateCcw :size="20"/><small>{{hud.reloading?'LOADING':'RELOAD'}}</small></button>
     </div>
   </div>

@@ -34,8 +34,13 @@ export function migrateCharacterSave(data){
   const base=legacy||CHARACTERS.find(c=>c.id===id),appearance=normalizeAppearance(data.appearance,base);
   if(legacy){appearance.gender=legacy.gender;if(!appearance.name.trim())appearance.name=legacy.name;}
   const customAppearance=normalizeAppearance(data.customAppearance|| (id==='custom'?appearance:{}),CHARACTERS[2]);
-  return {character:id,unlockedCharacters:CHARACTERS.map(c=>c.id),appearance,customAppearance};
+  return {character:id,unlockedCharacters:CHARACTERS.map(c=>c.id),appearance,customAppearance,customSlots:normalizeCustomSlots(data.customSlots)};
 }
+export function normalizeCustomSlots(value){return Array.from({length:3},(_,i)=>value?.[i]&&typeof value[i]==='object'?normalizeAppearance(value[i],CHARACTERS[2]):null);}
+export function saveCustomSlot(save,index){if(!Number.isInteger(index)||index<0||index>2)return false;save.customSlots=normalizeCustomSlots(save.customSlots);save.customSlots[index]=normalizeAppearance(profileFor(save),CHARACTERS[2]);return true;}
+export function loadCustomSlot(save,index){if(!Number.isInteger(index)||index<0||index>2||!save.customSlots?.[index])return false;save.character='custom';save.appearance=normalizeAppearance(save.customSlots[index],CHARACTERS[2]);save.customAppearance={...save.appearance};return true;}
+export function clearCustomSlot(save,index){if(!Number.isInteger(index)||index<0||index>2)return false;save.customSlots=normalizeCustomSlots(save.customSlots);save.customSlots[index]=null;return true;}
+export function selectHairstyle(save){save.appearance.cap=false;}
 export function profileFor(save){const base=CHARACTERS.find(c=>c.id===save.character)||CHARACTERS[0],appearance=normalizeAppearance(save.appearance,base);return {...base,...appearance,gender:base.id==='custom'?appearance.gender:base.gender,name:appearance.name.trim()||base.name,refined:true};}
 export function selectCharacter(save,id){const c=CHARACTERS.find(c=>c.id===id);if(!c)return false;if(save.character==='custom')save.customAppearance=normalizeAppearance(save.appearance,CHARACTERS[2]);save.character=id;save.appearance=id==='custom'?normalizeAppearance(save.customAppearance,CHARACTERS[2]):defaultAppearance(c);save.unlockedCharacters=CHARACTERS.map(c=>c.id);return true;}
 export function unlockCharacter(save,id){return CHARACTERS.some(c=>c.id===id)&&!save.unlockedCharacters?.includes(id)?selectCharacter(save,id):false;}

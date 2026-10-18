@@ -1,3 +1,4 @@
+import {JAMIE_SELF_TALK_LINES,JAMIE_LAUGH_LINE} from './dialogue-v25.js';
 import {tileAt,key,rng} from './layout.js';
 import {makePlayer} from './assets.js';
 import {seesDrawnWeapon} from './loadout.js';
@@ -25,7 +26,7 @@ export class HospitalIncidents{
     const e=this.e;if(this.contact||!this.arrivalAt||e.mission.elapsed<this.arrivalAt||e.mission.state==='escape'||e.mission.result)return false;
     const person=contactIdentity(e.mission.round,e.mission.seed),visual=makePlayer(e.assets,person.gender,{...person,outfit:'jacket'},'civilian'),n=e.spawnNPC(person,'patient',0,{x:3,z:30},null,'unexpected-contact',{visual});
     n.recruit={state:'panicked',nextBurst:e.mission.elapsed,speakAt:e.mission.elapsed+4,shotAt:0,phase:'calm'};n.activity='panic';n.speed=4.3;n.contamination=0;n.name=person.name;n.person=person;this.contact=n;
-    this.privateRoom=e.levels[0].rooms.find(r=>r.kind==='utility');return true;
+    this.privateRoom=e.levels[0].rooms.find(r=>r.kind==='bathroom');return true;
   }
   hearShot(origin,floor){
     const e=this.e,now=e.mission.elapsed,serial=++this.heardSerial,range=e.mission.save.upgrades.suppressor?15:90;
@@ -38,7 +39,7 @@ export class HospitalIncidents{
   roomAt(position,floor){const cell=tileAt(position.x,position.z),id=this.e.levels[floor].cells.get(key(cell.x,cell.z))?.room;return this.e.levels[floor].rooms.find(r=>r.id===id);}
   privateTogether(n){
     const e=this.e;if(n.floor!==e.floor||distance(n.pos,e.playerPos)>3.2)return false;
-    const room=this.roomAt(e.playerPos,e.floor);if(!room||!['office','utility','morgue'].includes(room.kind)||this.roomAt(n.pos,n.floor)?.id!==room.id)return false;
+    const room=this.roomAt(e.playerPos,e.floor);if(!room||room.kind!=='bathroom'||this.roomAt(n.pos,n.floor)?.id!==room.id)return false;
     return !e.npcs.some(other=>other!==n&&!other.dead&&!other.evacuated&&other.floor===e.floor&&this.roomAt(other.pos,other.floor)?.id===room.id);
   }
   prompt(n){const state=n.recruit.state;return state==='panicked'?`Talk to ${n.name.split(' ')[0]}`:state==='escort'?'Talk in private':state==='recruited'?'Talk to your contact':'Visitor · protected';}
@@ -46,15 +47,15 @@ export class HospitalIncidents{
     if(n.recruit.state==='panicked')this.e.hooks.contact?.({id:n.id,name:n.name,stage:'invite'});
     else if(n.recruit.state==='escort'){
       if(this.privateTogether(n))this.e.hooks.contact?.({id:n.id,name:n.name,stage:'offer'});
-      else this.e.notify(`Lead ${n.name.split(' ')[0]} into an empty office or Maintenance, then use TALK.`);
+      else this.e.notify(`Lead ${n.name.split(' ')[0]} into the empty ground-floor bathroom, then use TALK.`);
     }else if(n.recruit.state==='recruited')this.e.notify(this.e.mission.targetDown?`${n.name.split(' ')[0]} is covering your escape.`:`${n.name.split(' ')[0]} is waiting for you to eliminate the primary target.`);
     else this.e.notify('The visitor wants to be left alone.');
   }
   choose(choice){
     const n=this.contact;if(!n||n.dead)return false;const e=this.e,state=n.recruit.state;
     if(choice==='escort'&&state==='panicked'){
-      n.recruit.state='escort';n.activity=null;n.path=[];n.reaction=0;n.reporting=null;n.wait=0;n.recruit.nextRoute=0;
-      e.notify(`Find an empty office or Maintenance. ${n.name.split(' ')[0]} will follow you.`);return true;
+      n.recruit.state='escort';n.speed=3.1;e.audio.stopDistress?.();n.activity=null;n.path=[];n.reaction=0;n.reporting=null;n.wait=0;n.recruit.nextRoute=0;
+      e.notify(`Find the empty bathroom off the ground-floor atrium. ${n.name.split(' ')[0]} will follow you.`);return true;
     }
     if(choice==='recruit'&&state==='escort'&&this.privateTogether(n)){
       n.recruit.state='recruited';n.activity=null;n.reaction=0;n.reporting=null;n.path=[];n.wait=0;n.recruit.nextRoute=0;
@@ -74,10 +75,18 @@ export class HospitalIncidents{
     if(!n.recruit||n.evacuating||n.reporting||n.recruit.state==='dismissed')return false;
     const e=this.e,r=n.recruit,now=e.mission.elapsed;
     if(r.state==='panicked'){
-      if(now>=r.nextBurst){const points=[{x:-3,z:29},{x:3,z:31},{x:0,z:25}];r.nextBurst=now+11+e.mission.random()*7;r.burstUntil=now+3.5+e.mission.random()*1.5;r.phase='running';n.activity=null;n.reaction=0;this.route(n,points[Math.floor(e.mission.random()*points.length)]);if(n.floor===e.floor&&distance(n.pos,e.playerPos)<18){e.audio.distress?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},.68);e.hooks.soundCaption?.(`${n.name} cries out and runs along the corridor.`);}}
-      if(now>=r.burstUntil&&r.phase==='running'){r.phase='calm';e.audio.stopDistress?.();n.activity='rest';n.path=[];n.reaction=0;r.speakAt=now+.7;}
-      if(r.phase==='running'&&n.cursor>=n.path.length){n.activity='panic';n.path=[];}
-      if(r.phase==='calm'){n.activity='rest';n.path=[];}
+      if(now>=r.nextBurst){
+        const points=[{x:-3,z:27},{x:0,z:18},{x:3,z:31}].sort((a,b)=>distance(n.pos,b)-distance(n.pos,a));
+        r.nextBurst=now+15+e.mission.random()*9;r.burstUntil=now+4+e.mission.random()*2;r.phase='running';r.bursts=(r.bursts||0)+1;
+        n.activity=null;n.reaction=0;n.worriedUntil=0;this.route(n,points[0]);
+        if(n.floor===e.floor&&distance(n.pos,e.playerPos)<18){e.audio.distress?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},.55);e.hooks.soundCaption?.(`${n.name} cries out and runs along the corridor.`);}
+      }
+      if(r.phase==='running'&&(now>=r.burstUntil||n.cursor>=n.path.length)){
+        r.phase='calm';r.calmStarted=now;r.gesture=['selftalk','laugh','headTap','panic'][(r.bursts-1)%4];
+        e.audio.stopDistress?.();n.path=[];n.reaction=0;r.speakAt=now+1.2;
+      }
+      if(r.phase==='running')n.activity=null;
+      else{const age=now-(r.calmStarted??now);n.activity=age<1.2?'rest':age<5?r.gesture:'panic';}
       return true;
     }
     if(['escort','recruited'].includes(r.state)){
@@ -117,8 +126,8 @@ export class HospitalIncidents{
         }
       }
     }
-    const n=this.contact;if(n&&!n.dead&&!n.evacuated&&n.recruit.state==='panicked'&&n.recruit.phase==='calm'&&now>=n.recruit.speakAt&&n.floor===e.floor&&distance(n.pos,e.playerPos)<15){n.recruit.speakAt=now+22;e.life?.speak(n,DISTRESS_LINES[Math.floor(e.mission.random()*DISTRESS_LINES.length)],true);}
+    const n=this.contact;if(n&&!n.dead&&!n.evacuated&&n.recruit.state==='panicked'&&n.recruit.phase==='calm'&&now>=n.recruit.speakAt&&n.floor===e.floor&&distance(n.pos,e.playerPos)<15){n.recruit.speakAt=now+22;const lines=n.recruit.gesture==='selftalk'?JAMIE_SELF_TALK_LINES:DISTRESS_LINES;e.life?.speak(n,n.recruit.gesture==='laugh'?JAMIE_LAUGH_LINE:lines[Math.floor(e.mission.random()*lines.length)],true);}
   }
-  hud(){const n=this.contact;if(!n||n.dead||n.evacuated||n.recruit.state==='dismissed'||n.recruit.state==='panicked'&&(n.floor!==this.e.floor||distance(n.pos,this.e.playerPos)>16))return null;return {name:n.name,state:n.recruit.state,label:n.recruit.state==='panicked'?'Distressed visitor nearby':n.recruit.state==='escort'?'Find an empty side room':this.e.mission.targetDown?'Covering your escape':'Waiting for your signal'};}
+  hud(){const n=this.contact;if(!n||n.dead||n.evacuated||n.recruit.state==='dismissed'||n.recruit.state==='panicked'&&(n.floor!==this.e.floor||distance(n.pos,this.e.playerPos)>16))return null;return {name:n.name,state:n.recruit.state,label:n.recruit.state==='panicked'?'Distressed visitor nearby':n.recruit.state==='escort'?'Lead your contact to the bathroom':this.e.mission.targetDown?'Covering your escape':'Waiting for your signal'};}
   dispose(){this.contact=null;this.e=null;}
 }

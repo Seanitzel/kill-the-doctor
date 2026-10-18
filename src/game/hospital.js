@@ -3,6 +3,34 @@ import * as THREE from 'three';
 import { world, TILE, FLOORS, FLOOR_CODES } from './layout.js';
 import { Batcher, mesh, sign, bed, chair, desk, monitor, material } from './assets.js';
 import {addBathroom,addOperatingSet} from './accessibility-props.js';
+export function liftWallPlacement(layout){
+  const e=layout.elevator;
+  const wall=layout.walls.filter(w=>w.axis==='x'&&!w.door&&w.z<e.z&&Math.abs(w.x-e.x)<TILE/2).sort((a,b)=>b.z-a.z)[0];
+  return {x:e.x,wallZ:wall?.z??e.z-TILE/2,faceZ:(wall?.z??e.z-TILE/2)+.13};
+}
+export function buildLift(layout,m){
+  const placement=liftWallPlacement(layout),{x,faceZ}=placement,group=new THREE.Group();
+  group.name='Northline wall-mounted lift';group.userData.liftPlacement=placement;
+  const box=(name,mat,size,pos)=>{const object=mesh('box',mat,size,pos,group);object.name=name;return object;};
+  // Mount against the actual north wall, beyond its shallow handrail. The old
+  // cell-relative offset left an 85cm gap behind a freestanding metal slab.
+  box('Lift recessed door surround',m.dark,[2.52,2.75,.05],[x,1.395,faceZ+.025]);
+  for(const side of [-1,1]){
+    box('Lift brushed-steel jamb',m.steel,[.10,2.80,.13],[x+side*1.31,1.40,faceZ+.065]);
+    box(side<0?'Lift left sliding door':'Lift right sliding door',m.steel,[1.235,2.63,.045],[x+side*.6225,1.345,faceZ+.060]);
+  }
+  box('Lift door header',m.steel,[2.72,.115,.13],[x,2.745,faceZ+.065]);
+  box('Lift center seam',m.dark,[.015,2.63,.006],[x,1.345,faceZ+.085]);
+  box('Lift threshold',m.steel,[2.72,.035,.19],[x,.025,faceZ+.085]);
+  box('Lift overhead sign backing',m.dark,[3.30,.50,.025],[x,3.08,faceZ-.015]);
+  const header=sign('↑  LIFT / STAIRS  ↓',layout.floor===3?'B  RESTRICTED     G  MAIN HOSPITAL':'G  CLINICAL     1  SPECIALISTS     2  ADVANCED',3.3,.5);
+  header.name='Lift floor directory';header.position.set(x,3.08,faceZ);group.add(header);
+  box('Lift call panel',m.dark,[.24,.42,.035],[x+1.55,1.28,faceZ+.018]);
+  box('Lift call button',m.steel,[.075,.075,.018],[x+1.55,1.24,faceZ+.043]);
+  box('Lift call indicator',m.light,[.035,.018,.009],[x+1.55,1.39,faceZ+.042]);
+  const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);
+  return group;
+}
 export function buildHospital(layout, m) {
   const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [], bathrooms = [], operatingSets = [];
   const cube = (...args) => batch.box(...args);
@@ -198,10 +226,10 @@ export function buildHospital(layout, m) {
     interactables.push({ type: object === layout.directory ? 'directory' : 'schedule', label: object.label, x: object.x, z: object.z }); Object.assign(collider(object.x,object.z,.9,.55),{maxY:1.9,type:'terminal'});
   }
   const e = layout.elevator;
-  cube(m.steel, e.x, 1.55, e.z - .65, 2.5, 3.1, .14); cube(m.dark, e.x, 1.45, e.z - .55, .025, 2.7, .02);
-  placeSign('↑  LIFT / STAIRS  ↓', layout.floor===3?'B  RESTRICTED     G  MAIN HOSPITAL':'G  CLINICAL     1  SPECIALISTS     2  ADVANCED', e.x, 3.07, e.z - .53, 0, 3.3, .5);
-  placeSign(FLOOR_CODES[layout.floor], 'USE THE LIFT', e.x + 1.47, 1.68, e.z - .5, 0, .45, .65);
-  interactables.push({ type: 'elevator', label:'Lift · choose floor', x: e.x, z: e.z + .9 }); collider(e.x, e.z - .65, 2.5, .16);
+  const lift=buildLift(layout,m);group.add(lift);
+  const liftFace=lift.userData.liftPlacement.faceZ;
+  interactables.push({ type: 'elevator', label:'Lift · choose floor', x: e.x, z: e.z + .9 });
+  Object.assign(collider(e.x,liftFace+.06,2.72,.14),{minY:0,maxY:2.81,type:'lift'});
   if (layout.floor === 0) {
     placeSign('EXIT  ↓','MAIN ENTRANCE',3,2.9,33.25,Math.PI,2.7,.68,{background:'#315a68'});
     cube(m.glass,-.05,1.4,34.35,3,2.8,.1);cube(m.glass,5.05,1.4,34.35,3,2.8,.1);

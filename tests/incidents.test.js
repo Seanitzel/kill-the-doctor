@@ -26,7 +26,7 @@ test('Suppressors reduce hearing distance and seen shots do not create confused 
   assert.ok(near.noiseConcern);assert.equal(far.noiseConcern,undefined);assert.equal(seen.noiseConcern,undefined);
 });
 test('The contact must be escorted to an empty side room before accepting the offer',()=>{
-  const e=fixture(),room=e.levels[0].rooms.find(r=>r.kind==='utility'),n=person('contact',0,0,10);n.recruit={state:'panicked'};e.npcs=[n];e.incidents.contact=n;
+  const e=fixture(),room=e.levels[0].rooms.find(r=>r.kind==='bathroom'),n=person('contact',0,0,10);n.recruit={state:'panicked'};e.npcs=[n];e.incidents.contact=n;
   assert.equal(e.incidents.choose('recruit'),false);assert.equal(e.incidents.choose('escort'),true);assert.equal(e.incidents.choose('recruit'),false);
   e.playerPos.set(room.center.x,0,room.center.z);n.pos.set(room.center.x+1,0,room.center.z);const stranger=person('stranger',0,room.center.x-1,room.center.z);e.npcs.push(stranger);assert.equal(e.incidents.privateTogether(n),false);
   stranger.evacuated=true;assert.equal(e.incidents.privateTogether(n),true);assert.equal(e.incidents.choose('recruit'),true);assert.equal(n.recruit.state,'recruited');assert.equal(n.recruit.weapon.visible,false);
@@ -61,7 +61,7 @@ test('The contact physically follows into a private room and waits for the prima
   const previousDocument=globalThis.document;globalThis.document={createElement:()=>({getContext:()=>({fillRect(){},fillText(){}})})};
   let hospitals;const levels=[0,1,2].map(makeLayout),materials=Object.fromEntries(['floor','ceiling','steel','light','dark','stripe','wall','glass','trim','blue','white','linen','chair','wood','monitor','red','green'].map(name=>[name,new THREE.MeshBasicMaterial()]));
   try{hospitals=levels.map(layout=>buildHospital(layout,materials));}finally{globalThis.document=previousDocument;}
-  const e=Object.create(GameEngine.prototype),save=defaultSave(),room=levels[0].rooms.find(r=>r.kind==='utility');
+  const e=Object.create(GameEngine.prototype),save=defaultSave(),room=levels[0].rooms.find(r=>r.kind==='bathroom');
   Object.assign(e,{mission:new Mission(save,123),levels,hospitals,navLayouts:levels.map((level,i)=>makeNavigation(level,hospitals[i].colliders)),scene:new THREE.Scene(),effects:[],npcs:[],floor:0,playerPos:new THREE.Vector3(room.center.x,0,room.center.z),player:{root:new THREE.Group()},keys:new Set(),captureTime:0,time:0,hooks:{},muzzle:{intensity:0},blackout:0,impairment:0,coughCooldown:999,nextBlackout:Infinity,nextPA:Infinity,shotCooldown:0,audio:{sound(){},speak(){},gasp(){}},notify(){},say(){},emitHUD(){},finish(){}});
   e.systems=new MissionSystems(e);e.incidents=new HospitalIncidents(e);e.incidents.setup();e.mission.elapsed=e.incidents.arrivalAt;e.incidents.arrive();const contact=e.incidents.contact;assert.ok(contact);assert.equal(e.incidents.choose('escort'),true);
   for(let frame=0;frame<1200&&!e.incidents.privateTogether(contact);frame++){e.time+=1/30;e.mission.elapsed+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);assert.equal(e.canStand(contact.pos.x,contact.pos.z,.21,contact.floor),true);}

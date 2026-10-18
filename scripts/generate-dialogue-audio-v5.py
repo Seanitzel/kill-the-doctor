@@ -23,9 +23,11 @@ DESIGNED_PROFILES={'female-standard': {'seed': 8214, 'description': 'A warm adul
 def jobs():
     code="""
 import{ALL_DIALOGUE_LINES,ENTRY_REACTIONS,CLINICAL_CONVERSATIONS,PATIENT_PAIN_LINES,SUSPICION_LINES,RECRUIT_DIALOGUE,DISTRESS_LINES,ANNOUNCEMENT_LINES,WITNESS_LINES,dialogueKey}from'./src/game/life-rules.js';
+import{PATIENT_PAGE_LINES,ROOM_WARNING_LINES,JAMIE_SELF_TALK_LINES,JAMIE_LAUGH_LINE}from'./src/game/dialogue-v25.js';
 const categories=new Map();for(const text of Object.values(ENTRY_REACTIONS).flat())categories.set(text,'interruption');
 for(const pairs of Object.values(CLINICAL_CONVERSATIONS))for(const[doctor,patient]of pairs){categories.set(doctor,'clinician');categories.set(patient,'clinical-patient');}
 for(const[texts,category]of[[PATIENT_PAIN_LINES,'pain'],[SUSPICION_LINES,'suspicion'],[Object.values(RECRUIT_DIALOGUE),'recruitment'],[DISTRESS_LINES,'distress'],[ANNOUNCEMENT_LINES,'announcement'],[Object.values(WITNESS_LINES),'witness']])for(const text of texts)categories.set(text,category);
+for(const[texts,category]of[[PATIENT_PAGE_LINES,'announcement'],[Object.values(ROOM_WARNING_LINES),'room-warning'],[JAMIE_SELF_TALK_LINES,'anxious-self-talk'],[[JAMIE_LAUGH_LINE],'nervous-chuckle']])for(const text of texts)categories.set(text,category);
 console.log(JSON.stringify(ALL_DIALOGUE_LINES.flatMap(text=>['female','male'].map(gender=>({text,gender,key:dialogueKey(text,gender),category:categories.get(text)||'conversation'})))));
 """
     return json.loads(subprocess.check_output([NODE,'--input-type=module','-e',code],cwd=ROOT))

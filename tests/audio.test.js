@@ -77,5 +77,5 @@ test('Repeated dialogue keeps a character accent stable and caches standard and 
   const audio=new HospitalAudio({volume:.5,speech:true}),requests=[],played=[],oldFetch=globalThis.fetch;
   audio.ctx={decodeAudioData:async()=>({decoded:true})};audio.sampleNodes=(key,pos,gain,loop,buffer)=>played.push({key,buffer});
   globalThis.fetch=async url=>{requests.push(url);return {ok:true,arrayBuffer:async()=>new ArrayBuffer(1)};};
-  try{for(const voiceRegion of ['standard','southern','standard'])await audio.dialogue('Excuse me.',{gender:'female',voiceRegion},.5);assert.equal(requests.length,2);assert.match(requests[1],/-alt\.mp3\?v=2\.4\.0$/);assert.equal(played[0].key,played[2].key);assert.notEqual(played[0].key,played[1].key);}finally{globalThis.fetch=oldFetch;}
+  try{for(const voiceRegion of ['standard','southern','standard'])await audio.dialogue('Excuse me.',{gender:'female',voiceRegion},.5);assert.equal(requests.length,2);assert.match(requests[1],/-alt\.mp3\?v=2\.5\.0$/);assert.equal(played[0].key,played[2].key);assert.notEqual(played[0].key,played[1].key);}finally{globalThis.fetch=oldFetch;}
 });

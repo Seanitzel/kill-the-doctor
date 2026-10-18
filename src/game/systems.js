@@ -26,8 +26,8 @@ export class MissionSystems{
     const e=this.e;if(n.operationDoctor&&e.mission.type==='rescue'){e.mission.beginEscape(65);this.startEvacuation();e.notify('Operating team alerted · stop the procedure and bring the patient out','danger');return;}
     const stations=[{x:0,z:-23},{x:18,z:0},{x:-3,z:25.5}].sort((a,b)=>distance(n.pos,a)-distance(n.pos,b));
     const goal=stations[0];this.stand(n,goal);n.reaction=.7;n.reporting={reason,started:e.mission.elapsed,deadline:e.mission.elapsed+8+Math.min(13,distance(n.pos,goal)/2.5),goal};
-    this.route(n,goal);e.audio.gasp({x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});e.audio.dialogue?.(WITNESS_LINES[reason]||WITNESS_LINES.weapon,n.person,.8,true,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});
-    e.notify(reason==='camera'?'Camera seen · security is reporting you':'Weapon seen · a witness is running to report you','danger');e.hooks.soundCaption?.(`${n.name} gasps and runs to report ${reason==='camera'?'the camera':'the weapon'}.`);
+    this.route(n,goal);if(reason!=='privacy'){e.audio.gasp({x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});e.audio.dialogue?.(WITNESS_LINES[reason]||WITNESS_LINES.weapon,n.person,.8,true,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});}
+    e.notify(reason==='privacy'?'Patient privacy ignored · staff are calling security':reason==='camera'?'Camera seen · security is reporting you':'Weapon seen · a witness is running to report you','danger');e.hooks.soundCaption?.(reason==='privacy'?`${n.name} heads to the security station to report the repeated intrusion.`:`${n.name} gasps and runs to report ${reason==='camera'?'the camera':'the weapon'}.`);
   }
   arrivalSpot(floor,actor){
     const e=this.e,base=e.levels[floor].elevator;
@@ -43,7 +43,7 @@ export class MissionSystems{
     if(e.incidents?.prepareNPC(n))return true;
     if(n.reporting&&(e.mission.type==='rescue'?e.mission.state!=='escape':!e.mission.targetDown)){
       const r=n.reporting;
-      if(now>=r.deadline||now-r.started>1.5&&distance(n.pos,r.goal)<1.3){e.audio.sound('alarm');e.mission.finish(false,r.reason==='camera'?'Security reported your unauthorized photography before you escaped.':e.mission.type==='rescue'?'Your weapon was reported on a public floor before you reached the operating suite.':'Your weapon was reported before the primary target was eliminated. Police intercepted you.');e.finish();return true;}
+      if(now>=r.deadline||now-r.started>1.5&&distance(n.pos,r.goal)<1.3){e.audio.sound('alarm');e.mission.finish(false,r.reason==='privacy'?'Staff reported the repeated intrusion. Security escorted you out of the hospital.':r.reason==='camera'?'Security reported your unauthorized photography before you escaped.':e.mission.type==='rescue'?'Your weapon was reported on a public floor before you reached the operating suite.':'Your weapon was reported before the primary target was eliminated. Police intercepted you.');e.finish();return true;}
       if(n.cursor>=n.path.length&&n.wait<0)this.route(n,r.goal);return true;
     }
     if(n.evacuating){

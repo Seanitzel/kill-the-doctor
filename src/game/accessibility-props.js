@@ -103,7 +103,7 @@ export function attachMobilityCane(visual,{hand=null,side=1,length=1.2}={},mater
   const handle={root,colliders:[],dispose:kit.dispose,update(time=0,speed=0){
     parent.updateMatrixWorld(true);
     if(anchor){anchor.getWorldPosition(grip);parent.worldToLocal(grip);}else grip.set(side*.30,.95,.12);
-    const sweep=Math.sin(time*(speed>.1?3.2:1.25))*(speed>.1?.27:.06);
+    const sweep=Math.sin(time*(speed>.1?1.55: .8))*(speed>.1?.29:.045);
     tip.set(grip.x+side*.10+sweep,.035,grip.z+.66);
     direction.copy(tip).sub(grip);const distance=direction.length();
     root.position.copy(grip);root.quaternion.setFromUnitVectors(down,direction.normalize());root.scale.set(1,distance/length,1);

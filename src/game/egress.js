@@ -13,7 +13,7 @@ export class EgressNavigation{
       return footprint(p.x+Math.cos(a)*.86,p.z-Math.sin(a)*.86,1.72,.1,2.6,a,'door');
     });
     this.obstacles=this.bodyObstacles.map(c=>{const radius=['wall','door'].includes(c.type)?STRUCTURE_CLEARANCE+.02:RADIUS;return {minX:c.minX-radius,maxX:c.maxX+radius,minZ:c.minZ-radius,maxZ:c.maxZ+radius,minY:0,maxY:2};});
-    for(let gx=-48;gx<=45;gx++)for(let gz=-44;gz<=57;gz++){
+    for(let gx=-48;gx<=45;gx++)for(let gz=-44;gz<=67;gz++){
       const point={x:gx*STEP,z:gz*STEP},cell=tileAt(point.x,point.z);
       if(!layout.cells.has(key(cell.x,cell.z))||!this.clear(point,point))continue;
       this.nodes.set(key(gx,gz),{gx,gz,point,edges:[]});

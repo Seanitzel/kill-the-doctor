@@ -47,7 +47,7 @@ test('Target identification, firing, emergency countdown, escape, rewards and up
   await aimAt(page,'target');await page.evaluate(()=>{const e=window.__ktd.engine,n=e.npcs.find(n=>n.id==='target');e.camera.lookAt(n.pos.x,1.15,n.pos.z);e.shoot();});
   await expect(page.locator('.countdown')).toBeVisible();expect(await page.evaluate(()=>window.__ktd.mission.targetDown)).toBe(true);
   await page.screenshot({path:'artifacts/emergency.png'});
-  await position(page,0,33);await page.keyboard.press('e');await expect(page.getByRole('heading',{name:'OUT OF THE BUILDING.'})).toBeVisible();
+  await position(page,0,38);await page.keyboard.press('e');await expect(page.getByRole('heading',{name:'OUT OF THE BUILDING.'})).toBeVisible();
   const coins=await page.evaluate(()=>window.__ktd.save.coins);expect(coins).toBeGreaterThan(240);
   await page.getByRole('button',{name:'Upgrade equipment'}).click();await page.locator('.upgrade-grid article').first().getByRole('button').click();
   expect(await page.evaluate(()=>window.__ktd.save.upgrades.shoes)).toBe(1);expect(await page.evaluate(()=>window.__ktd.save.coins)).toBe(coins-120);

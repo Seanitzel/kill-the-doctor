@@ -11,7 +11,7 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const Y=new THREE.Vector3(0,1,0);
 export class HospitalLife {
   constructor(engine) {
-    this.infusions=[];this.nextClinical=9;this.nextMachine=2;this.nextPain=18;this.listenerDirection=new THREE.Vector3();this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
+    this.infusions=[];this.nextSneeze=12;this.nextClinical=9;this.nextMachine=2;this.nextPain=18;this.listenerDirection=new THREE.Vector3();this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
     this.props=new THREE.Group();this.props.name='hospital-life-props';engine.scene.add(this.props);
     this.lastRoom=null;this.roomReactions=new Map();this.privacy=new RoomPrivacy();this.nextAmbient=0;this.nextMaternity=0;
     this.nextFlicker=45+engine.mission.random()*35;this.flicker=null;
@@ -177,9 +177,17 @@ export class HospitalLife {
   beginCough(patient){
     const e=this.engine;if(!patient.contamination||this.pendingCoughs.some(p=>p.patient===patient))return false;
     const sound=e.mission.random()<.3?'sneeze':'cough';patient.coughing=1.5;patient.nextCough=e.mission.elapsed+65+e.mission.random()*20;
-    e.audio.patientWarning?.(sound,{x:patient.pos.x,y:1.5,z:patient.pos.z,floor:patient.floor});
+    if(sound==='sneeze'&&!patient.lying)this.sneeze(patient);
+    else e.audio.patientWarning?.(sound,{x:patient.pos.x,y:1.5,z:patient.pos.z,floor:patient.floor});
     e.hooks.soundCaption?.(`A nearby patient ${sound==='sneeze'?'sneezes':'coughs'}. Keep your distance or put on a mask.`);
     this.pendingCoughs.push({patient,ready:e.mission.elapsed+.85});return true;
+  }
+  sneeze(patient){
+    const e=this.engine,now=e.mission.elapsed;if(patient.dead||patient.lying||patient.baby)return false;
+    patient.sneezeUntil=now+2.5;patient.sneezeApology=now+1.25;patient.reaction=1.7;
+    if(!patient.tissue){const hand=patient.visual.hand||patient.visual.root;patient.tissue=mesh('box',material('#f2f0e9'),[.083,.065,.008],[-.018,.018,.035],hand);patient.tissue.name='Paper tissue covering nose';}
+    patient.tissue.visible=true;
+    e.audio.patientWarning?.('sneeze',{x:patient.pos.x,y:1.5,z:patient.pos.z,floor:patient.floor});e.hooks.soundCaption?.('A passing patient sneezes into a tissue.');return true;
   }
   emitCloud(patient) {
     const e=this.engine;if(!patient.contamination)return null;
@@ -228,8 +236,15 @@ export class HospitalLife {
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
         n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
       }else if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
+      if(n.activity==='drink'&&!n.heldCoffeeCup&&n.visual.hand){const cup=new THREE.Group();cup.name='Coffee held during break';n.visual.hand.add(cup);cup.position.set(-.025,.02,.07);mesh('cylinder',material('#eeeade'),[.048,.09,.048],[0,0,0],cup);mesh('cylinder',material('#403027'),[.041,.004,.041],[0,.046,0],cup);mesh('box',material('#eeeade'),[.034,.04,.012],[.05,0,0],cup);n.heldCoffeeCup=cup;}
+      if(n.heldCoffeeCup)n.heldCoffeeCup.visible=n.activity==='drink';
+      if(n.sneezeUntil){
+        if(now<n.sneezeUntil){n.visual.poseActivity?.('sneeze',e.time,{restricted:!!e.nearStructure?.(n.pos,n.floor,.65)});if(now>=n.sneezeApology){n.sneezeApology=Infinity;this.speak(n,'Oh, sorry. Excuse me.');}}
+        else{n.tissue&&(n.tissue.visible=false);n.sneezeUntil=0;}
+      }
       if(n.contamination&&n.nextCough<=now&&e.coughCooldown<=0&&dist(e.playerPos,n.pos)<3.1&&e.lineOfSight(e.playerPos,n.pos))this.beginCough(n);
     }
+    if(!emergency&&now>=this.nextSneeze){const candidates=e.npcs.filter(n=>n.floor===e.floor&&n.role==='patient'&&!n.lying&&!n.baby&&!n.dead&&!n.evacuated&&!n.blind&&!n.recruit&&dist(n.pos,e.playerPos)<9&&dist(n.pos,e.playerPos)>1.5);if(candidates.length)this.sneeze(candidates[Math.floor(e.mission.random()*candidates.length)]);this.nextSneeze=now+35+e.mission.random()*35;}
     for(const item of this.cases) {
       if(item.completed){item.cable.visible=item.disc.visible=false;continue;}
       const local=item.room.floor===e.floor,alive=!item.doctor.dead&&!item.doctor.evacuating;item.cable.visible=item.disc.visible=local&&alive&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;

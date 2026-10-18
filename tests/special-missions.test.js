@@ -56,7 +56,7 @@ test('Quiet key theft requires crouching behind a nurse and no seeing witnesses'
 test('The rescued patient walks around solid operating furniture, uses the lift and follows to the main exit',()=>{
   const e=worldFixture();try{e.floor=3;for(const n of e.npcs.filter(n=>n.operationDoctor)){e.mission.eliminate(n);n.dead=true;}e.systems.startEvacuation();assert.equal(e.objectives.release(),true);const n=e.objectives.patient;e.playerPos.set(0,0,-20);
     function advance(until,max=1800){for(let i=0;i<max&&!until();i++){e.time+=1/30;e.mission.elapsed+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);assert.equal(e.canStand(n.pos.x,n.pos.z,.21,n.floor),true);}}
-    advance(()=>Math.hypot(n.pos.x,n.pos.z+20)<2.2);assert.ok(Math.hypot(n.pos.x,n.pos.z+20)<2.2,JSON.stringify(n.pos));e.floor=0;e.playerPos.set(0,0,-20);advance(()=>n.floor===0);assert.equal(n.floor,0);e.playerPos.set(0,0,33);advance(()=>e.objectives.patientPresent());assert.equal(e.objectives.patientPresent(),true);assert.equal(e.mission.escape(true).success,true);
+    advance(()=>Math.hypot(n.pos.x,n.pos.z+20)<2.2);assert.ok(Math.hypot(n.pos.x,n.pos.z+20)<2.2,JSON.stringify(n.pos));e.floor=0;e.playerPos.set(0,0,-20);advance(()=>n.floor===0);assert.equal(n.floor,0);e.playerPos.set(e.levels[0].exit.x,0,e.levels[0].exit.z);advance(()=>e.objectives.patientPresent());assert.equal(e.objectives.patientPresent(),true);assert.equal(e.mission.escape(true).success,true);
   }finally{dispose(e);}
 });
 test('Two cane visitors stay solid, carry finite grounded canes and cannot visually report a weapon',()=>{

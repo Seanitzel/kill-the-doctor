@@ -1,3 +1,4 @@
+import {campaignChallenge} from './campaign.js';
 import { rng, makeLayout, FLOORS } from './layout.js';
 import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,migrateCharacterSave} from './loadout.js';
 import {assignmentType,ASSIGNMENT_TYPES} from './assignment-types.js';
@@ -59,7 +60,7 @@ export class Mission {
   constructor(save, seed = Date.now(), attempt = save.attempts) {
     this.save = save; this.random = rng(seed); this.seed = seed;
     this.round = save.completed + 1;this.type=assignmentType(save);this.keys=[];this.photos=[];this.photoImages={};this.operationDoctors=[];this.patientReleased=false;
-    this.difficulty = save.settings.difficulty;
+    this.difficulty = save.settings.difficulty;this.challenge=campaignChallenge(this.round,this.difficulty);
     const doctors=STAFF.filter(s=>s.name.startsWith('Dr.'));const targetIndex=(attempt+Math.floor(this.random()*3))%doctors.length;
     const floor = attempt === 0 ? 0 : Math.floor(this.random() * 3);
     const availableRooms = makeLayout(floor).rooms.filter(r => !['cafe', 'office', 'utility', 'morgue', 'bathroom'].includes(r.kind));
@@ -73,14 +74,14 @@ export class Mission {
     if (this.clues.some(c => c.type === type) || this.result) return null;
     const target = this.target;
     const clues = {
-      directory: { title: 'Department confirmed', text: `${target.name} is assigned to ${target.room.name}, ${target.room.wing} wing, ${FLOORS[target.floor].toLowerCase()}.`, source: 'Northline staff directory' },
+      directory: { title: this.type==='standard'&&this.challenge.scheduleRequired?'Restricted staff allocation':'Department confirmed', text: this.type==='standard'&&this.challenge.scheduleRequired?`${target.name} works on the ${FLOORS[target.floor].toLowerCase()}, ${target.room.wing} wing. Exact allocations are restricted. Find the paper rota in Records while its custodian is on a coffee break.`:`${target.name} is assigned to ${target.room.name}, ${target.room.wing} wing, ${FLOORS[target.floor].toLowerCase()}.`, source: 'Nhalewick staff directory' },
       schedule: { title: 'Rounds schedule', text: `${target.name} is on consultation rounds in room ${target.room.number}. Look for ${target.glasses ? 'dark-rimmed glasses and ' : ''}${target.accent === '#47758a' ? 'slate-blue' : 'blue'} scrubs.`, source: 'Staff allocation terminal' },
       log: { title: 'Location verified', text: `The latest handover places ${target.name} inside ${target.room.name}, room ${target.room.number}. Their badge must match before you act.`, source: `${target.room.wing} wing handover log` },
     };
     if (!clues[type]) return null;
     const c = { ...clues[type], type, time: this.elapsed }; this.clues.push(c); return c;
   }
-  identify() { if (!this.targetDown && !this.result) { this.identified = true; this.state = 'discovered'; } }
+  identify() { if(this.challenge.verifyHandover&&!this.clues.some(c=>c.type==='log'))return false;if (!this.targetDown && !this.result) { this.identified = true; this.state = 'discovered'; } }
   eliminate(npc) {
     if (this.result || npc.dead) return;
     this.shots++;
@@ -99,7 +100,7 @@ export class Mission {
     } else { this.suspicion = Math.min(100, this.suspicion + 38); }
     return true;
   }
-  beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0);}this.suspicion=Math.max(this.suspicion,suspicion);}
+  beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]*this.challenge.escapeScale+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0);}this.suspicion=Math.max(this.suspicion,suspicion);}
   collectKey(id){if(this.result||!['basement','theatre'].includes(id)||this.keys.includes(id))return false;this.keys.push(id);return true;}
   photograph(id){if(this.type!=='evidence'||this.result||!['ledger','consent','theatre'].includes(id)||this.photos.includes(id))return false;this.photos.push(id);if(this.photos.length===3)this.beginEscape(0);return true;}
   releasePatient(){if(this.type!=='rescue'||!this.targetDown||this.patientReleased||this.result)return false;this.patientReleased=true;return true;}

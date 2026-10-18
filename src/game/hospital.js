@@ -10,7 +10,7 @@ export function liftWallPlacement(layout){
 }
 export function buildLift(layout,m){
   const placement=liftWallPlacement(layout),{x,faceZ}=placement,group=new THREE.Group();
-  group.name='Northline wall-mounted lift';group.userData.liftPlacement=placement;
+  group.name='Nhalewick wall-mounted lift';group.userData.liftPlacement=placement;
   const box=(name,mat,size,pos)=>{const object=mesh('box',mat,size,pos,group);object.name=name;return object;};
   // Mount against the actual north wall, beyond its shallow handrail. The old
   // cell-relative offset left an 85cm gap behind a freestanding metal slab.
@@ -39,6 +39,7 @@ export function buildHospital(layout, m) {
   const placeSign = (text, sub, x, y, z, rot = 0, w = 2.6, h = .65, opts = {}) => { const s = sign(text, sub, w, h, opts); s.position.set(x, y, z); s.rotation.y = rot; group.add(s); return s; };
   for (const cell of layout.cells.values()) {
     const { x, z } = world(cell.x, cell.z);
+    if(layout.floor===0&&cell.z>=23){cube(m.dark,x,-.075,z,TILE,.15,TILE);continue;}
     cube(m.floor, x, -.075, z, TILE, .15, TILE); cube(m.ceiling, x, 3.68, z, TILE, .12, TILE);
     if ((cell.x + cell.z) % 3 === 0) {
       cube(m.steel, x, 3.58, z, 1.35, .09, .67); cube(m.light, x, 3.52, z, 1.23, .025, .56);
@@ -91,7 +92,7 @@ export function buildHospital(layout, m) {
     const min = world(room.x, room.z), max = world(room.x + room.w - 1, room.z + room.h - 1), cx = room.center.x, cz = room.center.z;
     const minX = min.x - 1.5, maxX = max.x + 1.5, minZ = min.z - 1.5, maxZ = max.z + 1.5;
     if(room.kind==='imaging')for(const d of layout.doors.filter(d=>d.room===room.id)){const side=room.center.z<d.z?1:-1;placeSign('MRI','NO METAL',d.x+1.17,1.75,d.z+side*.15,side===1?0:Math.PI,.48,.65,{background:'#763b36'});}
-    placeSign(`${room.name.toUpperCase()}`, `NORTHLINE / ${room.wing.toUpperCase()} ${room.floor + 1}`, cx, 2.65, minZ + .15, 0, 4, .65);
+    placeSign(`${room.name.toUpperCase()}`, `NHALEWICK / ${room.wing.toUpperCase()} ${room.floor + 1}`, cx, 2.65, minZ + .15, 0, 4, .65);
     const furnitureCollider=(x,z,w,d,h=2.1)=>Object.assign(collider(x,z,w,d),{minY:0,maxY:h,type:'furniture'});
     if(room.kind==='bathroom'){
       const props=addBathroom(group,{x:cx,z:cz,width:maxX-minX,depth:maxZ-minZ},m);
@@ -218,11 +219,11 @@ export function buildHospital(layout, m) {
   if(layout.floor!==3){
   for (const z of [29, 31.3]) { chair(batch, m, -6, z, Math.PI / 2); chair(batch, m, 9, z, -Math.PI / 2); }
   cube(m.white, -3.8, .61, 27.8, 2.9, 1.22, .9); cube(m.blue, -3.8, .76, 28.27, 2.8, .43, .035); Object.assign(collider(-3.8,27.8,3,1),{maxY:1.23,type:'desk'});
-  placeSign('+  NORTHLINE', 'MEDICAL CENTER', -3.8, 1.05, 28.29, 0, 2.1, .6);
+  placeSign('+  NHALEWICK', 'MEDICAL CENTER', -3.8, 1.05, 28.29, 0, 2.1, .6);
   }
   for (const object of [layout.directory, layout.schedule]) {
     cube(m.dark, object.x, .57, object.z, .55, 1.14, .44); cube(m.steel, object.x, 1.15, object.z, .8, .07, .6); cube(m.blue, object.x, 1.54, object.z, .9, .65, .14);
-    placeSign(object === layout.directory ? 'STAFF DIRECTORY' : 'ROUNDS / SCHEDULE', 'NORTHLINE • INFORMATION', object.x, 1.54, object.z + .075, 0, .84, .59);
+    placeSign(object === layout.directory ? 'STAFF DIRECTORY' : 'ROUNDS / SCHEDULE', 'NHALEWICK • INFORMATION', object.x, 1.54, object.z + .075, 0, .84, .59);
     interactables.push({ type: object === layout.directory ? 'directory' : 'schedule', label: object.label, x: object.x, z: object.z }); Object.assign(collider(object.x,object.z,.9,.55),{maxY:1.9,type:'terminal'});
   }
   const e = layout.elevator;
@@ -232,10 +233,18 @@ export function buildHospital(layout, m) {
   Object.assign(collider(e.x,liftFace+.06,2.72,.14),{minY:0,maxY:2.81,type:'lift'});
   if (layout.floor === 0) {
     placeSign('EXIT  ↓','MAIN ENTRANCE',3,2.9,33.25,Math.PI,2.7,.68,{background:'#315a68'});
-    cube(m.glass,-.05,1.4,34.35,3,2.8,.1);cube(m.glass,5.05,1.4,34.35,3,2.8,.1);
-    for(const x of [-1.5,1.5,4.5,6.5])cube(m.steel,x,1.4,34.35,.04,2.8,.15);
+    // A real 6m portal joins the atrium to an exterior forecourt. The old
+    // glass facade was drawn over a solid exterior wall and had no doors.
+    const entry=new THREE.Group();entry.name='Main entrance sliding glass doors';group.add(entry);
+    for(const x of [-1.5,4.5])mesh('box',m.steel,[.10,2.85,.19],[x,1.425,34.5],entry);
+    mesh('box',m.steel,[6.1,.13,.25],[1.5,2.85,34.5],entry);
+    const leaves=[];for(const side of [-1,1]){const leaf=new THREE.Group();leaf.position.set(1.5+side*1.5,0,34.5);entry.add(leaf);mesh('box',m.glass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of [-1.5,1.5])mesh('box',m.steel,[.045,2.7,.075],[x,1.4,0],leaf);for(const y of [.07,1.1,2.73])mesh('box',m.steel,[3,.045,.075],[0,y,0],leaf);leaf.userData.side=side;leaves.push(leaf);}
+    group.userData.entrance={leaves,open:false,amount:0};
+    placeSign('EXIT  ↓','TO THE FORECOURT',1.5,3.05,34.4,Math.PI,3.8,.46,{background:'#315a68'});
+    cube(m.dark,1.5,.01,37,5.7,.015,4.8);
+    placeSign('NHALEWICK','EXTERIOR FORECOURT',1.5,2.8,40.35,Math.PI,4,.55);
     interactables.push({ type: 'exit', label: 'Leave the hospital', x: layout.exit.x, z: layout.exit.z });
-  } else if(layout.floor!==3)placeSign('PATIENT SERVICES', `${FLOORS[layout.floor].toUpperCase()} / NORTHLINE`, 3, 2.9, 33.25, Math.PI, 3.8, .68);
+  } else if(layout.floor!==3)placeSign('PATIENT SERVICES', `${FLOORS[layout.floor].toUpperCase()} / NHALEWICK`, 3, 2.9, 33.25, Math.PI, 3.8, .68);
   for (const p of (layout.floor===3?[]:[[-1.5,0],[-1.5,18],[-21,0],[21,0],[-1.5,-18]])) {
     placeSign('↑  LIFT    /    WEST ←   → EAST','G: CLINICAL    1: SPECIALISTS    2: ADVANCED CARE',p[0],2.9,p[1]+.01,0,4.6,.57);
     placeSign('↓  MAIN ENTRANCE    /    EAST ←   → WEST','G: CLINICAL    1: SPECIALISTS    2: ADVANCED CARE',p[0],2.9,p[1]-.01,Math.PI,4.6,.57);
@@ -247,6 +256,6 @@ export function buildHospital(layout, m) {
     cube(m.steel, -1.1, .5, z, .7, .85, .8); cube(m.white, -1.1, .98, z, .74, .08, .85); Object.assign(collider(-1.1,z,.75,.9),{maxY:1.04,type:'cart'});
   }
   const statics = batch.finish();
-  return { group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
+  return { entrances:group.userData.entrance?[group.userData.entrance]:[], group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
     disposeProps(){for(const props of [...bathrooms,...operatingSets])props.dispose();} };
 }

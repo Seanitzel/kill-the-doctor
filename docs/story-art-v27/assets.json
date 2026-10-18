@@ -1,0 +1,45 @@
+[
+  {
+    "storyId": "stolen-choice",
+    "artId": "case-pamela-v27",
+    "file": "case-pamela-v27.webp",
+    "width": 887,
+    "height": 1774,
+    "cuts": [
+      0,
+      428,
+      887,
+      1321,
+      1774
+    ],
+    "bytes": 212822
+  },
+  {
+    "storyId": "denied-care",
+    "artId": "case-jonah-v27",
+    "file": "case-jonah-v27.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      512,
+      1024,
+      1536
+    ],
+    "bytes": 183790
+  },
+  {
+    "storyId": "isabella-trial-never-ended",
+    "artId": "case-isabella-v27",
+    "file": "case-isabella-v27.webp",
+    "width": 1024,
+    "height": 1536,
+    "cuts": [
+      0,
+      512,
+      1024,
+      1536
+    ],
+    "bytes": 208966
+  }
+]

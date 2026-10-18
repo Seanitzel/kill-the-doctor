@@ -36,6 +36,7 @@ export function makeLayout(floor = 0) {
   fill(2, 3, 2, 17); fill(18, 3, 2, 17);
   fill(2, 3, 18, 2); fill(2, 18, 18, 2);
   fill(8, 20, 7, 3); // entrance atrium
+  if(floor===0)fill(11,23,2,2); // exterior forecourt beyond the real exit doors
   }
   const specs=floor===3?[[7,7,7,6]]:floor===0?[...roomSpecs,[4,20,3,3]]:roomSpecs;
   const rooms = specs.map(([x, z, w, h], i) => {
@@ -73,7 +74,7 @@ export function makeLayout(floor = 0) {
   }
   const directory=floor===3?{x:-4,z:-21}:{...world(9,20)},schedule=floor===3?{x:-4,z:-18}:{...world(17,11)};
   return { floor, cells, rooms, doors, doorEdges, walls,
-    exit: { ...world(11, 22), floor: 0 },
+    exit: { ...world(11, floor===0?24:22), floor: 0 },
     elevator: { ...world(11, 3), floor, label: 'Elevator / stairs' },
     directory: { ...directory, floor, label: floor ? `${FLOORS[floor]} directory` : 'Staff directory' },
     schedule: { ...schedule, floor, label: 'Staff schedule' },

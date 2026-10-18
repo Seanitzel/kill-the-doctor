@@ -145,3 +145,11 @@ Upper floors 1 and 2 have wall-mounted contamination antidotes marked with a gre
 The contact follows a short, bounded movement trail with a stable stopping distance, follows through doorways and the lift, and uses recorded occasional nervous laughter. Ordinary staff use furniture-aware smoothed routes and wait clear of door swings.
 
 A primary target assigned to a clinical examination now checks a real patient. Finding their room starts a 3–5 minute consultation, shown in the target HUD and journal. The first request to wait outside allows 30 seconds before the leave/security warning; remaining another 10 seconds starts a report. Leaving cancels the active timer, while repeated intrusion during the appointment retains the existing security response. Once the appointment ends, the patient leaves and that room’s privacy restriction clears. The primary target remains vulnerable during the grace period. See `docs/release-2.6.md`.
+
+## Version 2.7 — Nhalewick
+
+The hospital is now the fictional **Nhalewick Medical Center**. Existing browser saves stay compatible. This revision fixes Retina character previews and laptop menu clipping, replaces nurse sweaters with short-sleeved scrubs, improves the black sport cap and cane movement, adds a real sliding entrance and forecourt, and steadies ordinary pedestrian passing.
+
+Later standard assignments require secretly collecting the Records rota during a doctor's coffee break; from round four, cross-check the handover log before confirming the badge. Campaign surveillance and timing grow harder each round. You can alternatively use the fictional KTD compound from Pharmacy on the verified target's named coffee beside their floor's lift; being witnessed ends the mission. The original menu-only score starts after a tap/click, and the existing in-game score is preserved. Three story casts are more diverse, and passing patients can sneeze into tissues and apologize.
+
+See [release-2.7.md](docs/release-2.7.md) for controls, validation and testing limits, and [story art prompts](docs/story-art-v27/prompts.json) for generated asset provenance.

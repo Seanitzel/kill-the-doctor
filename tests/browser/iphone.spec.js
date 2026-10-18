@@ -81,7 +81,7 @@ test('Fast turns keep the camera inside the hospital without hiding solid walls'
         views.push({clear,height:e.camera.position.y});
       }
     }
-    return {views,wallsVisible:e.hospitals[0].statics.every(m=>m.visible),blocked:!e.lineOfSight({x:0,z:33},{x:0,z:36})};
+    return {views,wallsVisible:e.hospitals[0].statics.every(m=>m.visible),blocked:!e.lineOfSight({x:6,z:33},{x:6,z:36})};
   });
   expect(result.wallsVisible).toBe(true);expect(result.blocked).toBe(true);
   for(const view of result.views){expect(view.clear).toBe(true);expect(view.height).toBeGreaterThan(1);expect(view.height).toBeLessThan(3.4);}

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
-export const NURSE_UNIFORM='#c6e8fb';
+export const NURSE_UNIFORM='#8bbbd8';
 export const OUTFIT_STYLES = ['casual','jacket','tactical','suit'];
 export const HAIRSTYLES = ['original','cropped','slick','ponytail','ponytail-front','ponytail-side','afro','braids','straight','curls-short','curls-long'];
 const irisCache = new Map();
@@ -304,11 +304,17 @@ function accessories(model,person,skin,glasses,meshes){
   if(person.glasses||person.sunglasses)fittedGlasses(model,skin,meshes.filter(mesh=>mesh.material?.name.includes('Wolf3D_Eye')),!!person.sunglasses);
   if(person.cap){
     for(const mesh of meshes)if(mesh.material?.name.includes('Wolf3D_Hair'))mesh.visible=false;
-    const crown=new THREE.SphereGeometry(1,28,14,0,Math.PI*2,0,Math.PI*.56);crown.scale(.108,.080,.115);crown.translate(0,top-.052,z-.008);
-    const band=new THREE.TorusGeometry(1,.035,5,28);band.scale(.105,.113,.075);band.rotateX(Math.PI/2);band.translate(0,top-.055,z-.008);
-    const bill=new THREE.Shape();bill.moveTo(-.081,front-.018);bill.quadraticCurveTo(-.100,front+.027,-.074,front+.052);bill.quadraticCurveTo(0,front+.081,.074,front+.052);bill.quadraticCurveTo(.100,front+.027,.081,front-.018);bill.closePath();
-    const peak=new THREE.ExtrudeGeometry(bill,{depth:.003,bevelEnabled:true,bevelThickness:.001,bevelSize:.001,bevelSegments:1,steps:1,curveSegments:10});peak.rotateX(Math.PI/2);peak.translate(0,top-.055,0);
-    attachGeometry(model,head,mergePieces([crown,band,peak]),clothMaterial('#0b0f15',{roughness:.86}),'KTD sport cap');
+    const headPoints=coordinates(skin,model).points,headBox=new THREE.Box3().setFromPoints(headPoints),cx=(headBox.min.x+headBox.max.x)/2,cz=(headBox.min.z+headBox.max.z)/2+.004;
+    const rx=(headBox.max.x-headBox.min.x)*.60,rz=(headBox.max.z-headBox.min.z)*.59,baseY=top-.085;
+    const crown=new THREE.SphereGeometry(1,32,16,0,Math.PI*2,0,Math.PI/2);crown.scale(rx,.113,rz);crown.translate(cx,baseY,cz);
+    const band=new THREE.CylinderGeometry(1,1,.018,32,1,true);band.scale(rx,1,rz);band.translate(cx,baseY+.002,cz);
+    const shape=new THREE.Shape();shape.moveTo(-rx*.90,0);shape.quadraticCurveTo(-rx*1.15,.080,-rx*.72,.112);shape.quadraticCurveTo(0,.145,rx*.72,.112);shape.quadraticCurveTo(rx*1.15,.080,rx*.90,0);shape.closePath();
+    const peak=new THREE.ExtrudeGeometry(shape,{depth:.004,bevelEnabled:true,bevelThickness:.001,bevelSize:.001,bevelSegments:1,steps:1,curveSegments:14}),positions=peak.attributes.position;
+    // The bill points toward +Z (the avatar's face), with a gentle curved drop.
+    for(let i=0;i<positions.count;i++){const x=positions.getX(i),forward=positions.getY(i),thickness=positions.getZ(i);positions.setXYZ(i,cx+x,baseY-.008-thickness-.013*(x/rx)**2-forward*.12,cz+rz*.72+forward);}
+    peak.computeVertexNormals();attachGeometry(model,head,mergePieces([crown,band,peak]),clothMaterial('#0b0f15',{roughness:.86}),'KTD sport cap');
+    const stitches=[];for(const angle of [0,Math.PI/3,Math.PI*2/3,Math.PI,Math.PI*4/3,Math.PI*5/3]){const points=[];for(let i=1;i<=10;i++){const t=i/10*Math.PI/2;points.push([cx+Math.cos(angle)*Math.sin(t)*(rx+.001),baseY+Math.cos(t)*.114,cz+Math.sin(angle)*Math.sin(t)*(rz+.001)]);}stitches.push(tubePiece(points,.0007,12,3));}
+    const button=new THREE.SphereGeometry(.008,8,6);button.scale(1,.5,1);button.translate(cx,baseY+.114,cz);stitches.push(button);attachGeometry(model,head,mergePieces(stitches),clothMaterial('#20242a'),'KTD cap seams and button');
     if(person.hairstyle==='afro')model.getObjectByName('KTD afro hair')?.traverse(mesh=>{mesh.visible=false;});
   }
   if(person.watch){const hand=model.getObjectByName('LeftHand'),fore=model.getObjectByName('LeftForeArm');if(hand&&fore){const wrist=bonePoint(model,'LeftHand'),elbow=bonePoint(model,'LeftForeArm'),direction=wrist.clone().sub(elbow).normalize(),center=wrist.clone().addScaledVector(direction,-.035);const band=new THREE.TorusGeometry(.031,.0065,6,14);band.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),direction));band.translate(...center.toArray());attachGeometry(model,fore,band,clothMaterial('#222b32'),'KTD wristwatch band');const face=new THREE.BoxGeometry(.032,.027,.012);face.translate(center.x,center.y,center.z+.034);attachGeometry(model,fore,face,clothMaterial('#bdc8cc',{metalness:.7,roughness:.3}),'KTD wristwatch');const dial=new THREE.BoxGeometry(.023,.018,.002);dial.translate(center.x,center.y,center.z+.041);attachGeometry(model,fore,dial,clothMaterial('#1a3441'),'KTD watch dial');}}
@@ -322,21 +328,58 @@ function accessories(model,person,skin,glasses,meshes){
 }
 
 export function staffBadgeTexture(person){
-  const width=256,height=128,name=(person?.name||'Northline nurse').replace(/^Nurse\s+/i,'');
+  const width=256,height=128,name=(person?.name||'Nhalewick nurse').replace(/^Nurse\s+/i,'');
   if(typeof document==='undefined'){const data=new Uint8Array(width*height*4);for(let i=0;i<data.length;i+=4){data[i]=238;data[i+1]=246;data[i+2]=250;data[i+3]=255;}const texture=new THREE.DataTexture(data,width,height);texture.needsUpdate=true;return texture;}
-  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.fillStyle='#f2f8fb';ctx.fillRect(0,0,width,height);ctx.fillStyle='#386b91';ctx.fillRect(0,0,width,30);ctx.fillStyle='#ffffff';ctx.font='700 18px Arial';ctx.fillText('NORTHLINE',12,21);ctx.fillStyle='#20445d';ctx.font='700 21px Arial';ctx.fillText('NURSE',12,61);ctx.font='600 22px Arial';ctx.fillText(name,12,92,232);ctx.fillStyle='#7f9fb2';ctx.fillRect(12,108,144,5);ctx.fillStyle='#c3dce9';ctx.fillRect(188,45,54,62);ctx.fillStyle='#4b7995';ctx.beginPath();ctx.arc(215,63,10,0,Math.PI*2);ctx.fill();ctx.fillRect(202,77,26,22);
+  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.fillStyle='#f2f8fb';ctx.fillRect(0,0,width,height);ctx.fillStyle='#386b91';ctx.fillRect(0,0,width,30);ctx.fillStyle='#ffffff';ctx.font='700 18px Arial';ctx.fillText('NHALEWICK',12,21);ctx.fillStyle='#20445d';ctx.font='700 21px Arial';ctx.fillText('NURSE',12,61);ctx.font='600 22px Arial';ctx.fillText(name,12,92,232);ctx.fillStyle='#7f9fb2';ctx.fillRect(12,108,144,5);ctx.fillStyle='#c3dce9';ctx.fillRect(188,45,54,62);ctx.fillStyle='#4b7995';ctx.beginPath();ctx.arc(215,63,10,0,Math.PI*2);ctx.fill();ctx.fillRect(202,77,26,22);
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
 }
 export function attachNurseBadge(model,person){
   model.updateMatrixWorld(true);let top;model.traverse(mesh=>{if(mesh.material?.name.includes('Outfit_Top'))top=mesh;});const chest=model.getObjectByName('Spine2'),neck=bonePoint(model,'Neck');if(!top||!chest||!neck)return;
   const shoulder=bonePoint(model,'LeftArm');const {points}=coordinates(top,model),front=surfaceAt(points,false),x=Math.min(.10,Math.abs(shoulder?.x||.165)*.60),y=neck.y-.19,width=.105,height=.065,geometry=new THREE.PlaneGeometry(width,height),position=geometry.getAttribute('position');for(let i=0;i<position.count;i++){const px=position.getX(i)+x,py=position.getY(i)+y;position.setXYZ(i,px,py,front(px,py)+.002);}geometry.computeVertexNormals();
-  const badge=attachGeometry(model,chest,geometry,clothMaterial('#ffffff',{map:staffBadgeTexture(person),roughness:.66}),'KTD nurse name badge');badge.userData.appearanceOwnedTexture=true;badge.userData.staffName=person?.name||'Northline nurse';badge.userData.staffRole='NURSE';
+  const badge=attachGeometry(model,chest,geometry,clothMaterial('#ffffff',{map:staffBadgeTexture(person),roughness:.66}),'KTD nurse name badge');badge.userData.appearanceOwnedTexture=true;badge.userData.staffName=person?.name||'Nhalewick nurse';badge.userData.staffRole='NURSE';
   const clip=new THREE.BoxGeometry(.016,.013,.006);clip.translate(x,y+height/2+.005,front(x,y+height/2)+.002);attachGeometry(model,chest,clip,clothMaterial('#667c8b',{metalness:.6,roughness:.4}),'KTD nurse badge clip');
+}
+
+// Replace the source sweater/hoodie silhouette with a collarless scrub shell.
+// It shares the original rig; exposed arm sections follow upper/forearm bones.
+export function fitNurseScrubs(model,person){
+  model.updateMatrixWorld(true);let top,head;model.traverse(m=>{if(m.material?.name.includes('Outfit_Top'))top=m;if(m.material?.name.includes('Wolf3D_Skin'))head=m;});
+  if(!top||!top.skeleton)return;
+  const neck=bonePoint(model,'Neck'),hip=bonePoint(model,'Hips'),shoulder=bonePoint(model,'LeftArm');if(!neck||!hip||!shoulder)return;
+  const radius=Math.abs(shoulder.x)+.012,waist=hip.y+.045,shoulderY=shoulder.y+.035,centerZ=neck.z+.012;
+  const vertices=[],uv=[],indices=[],segments=24;
+  const rings=[{y:waist,rx:radius*.96,rz:.117},{y:waist+.12,rx:radius,rz:.126},{y:shoulderY-.12,rx:radius*1.05,rz:.137},{y:shoulderY,rx:radius*1.04,rz:.108},{y:neck.y-.035,rx:.066,rz:.057}];
+  for(let ring=0;ring<rings.length;ring++)for(let i=0;i<=segments;i++){
+    const a=i/segments*Math.PI*2,r=rings[ring],x=Math.cos(a)*r.rx,z=Math.sin(a)*r.rz+centerZ;
+    // V dips to the upper chest in front. Back is a simple round neckline.
+    const y=r.y-(ring===rings.length-1&&Math.sin(a)>0?.085*(1-Math.abs(Math.cos(a))):0);
+    vertices.push(x,y,z);uv.push(.12,.12);
+    if(ring&&i){const b=ring*(segments+1)+i;indices.push(b,b-1,b-segments-2,b,b-segments-2,b-segments-1);}
+  }
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(indices);
+  const skinIndex=[],skinWeight=[],spine=top.skeleton.bones.findIndex(b=>b.name==='Spine2'),lower=top.skeleton.bones.findIndex(b=>b.name==='Spine');
+  for(let i=0;i<vertices.length/3;i++){const y=vertices[i*3+1],blend=THREE.MathUtils.clamp((y-waist)/Math.max(.1,shoulderY-waist),0,1);skinIndex.push(Math.max(0,spine),Math.max(0,lower),0,0);skinWeight.push(blend,1-blend,0,0);}
+  geometry.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(skinIndex,4));geometry.setAttribute('skinWeight',new THREE.Float32BufferAttribute(skinWeight,4));
+  const original=top.geometry;top.geometry=geometry;const inverse=top.matrixWorld.clone().invert().multiply(model.matrixWorld),p=geometry.attributes.position;
+  for(let i=0;i<p.count;i++){const v=new THREE.Vector3().fromBufferAttribute(p,i).applyMatrix4(inverse).applyMatrix4(inverseSkinMatrix(top,i));p.setXYZ(i,v.x,v.y,v.z);}
+  geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();top.userData.appearanceGeometryOwned=true;top.userData.scrubUniform=true;top.userData.originalTopGeometry=original;
+  top.material.side=THREE.DoubleSide;model.traverse(m=>{if(m.material?.name.includes('Outfit_Top')||m.material?.name.includes('Outfit_Bottom')){for(const key of ['map','normalMap','roughnessMap','metalnessMap','aoMap'])m.material[key]=null;m.material.color.set(NURSE_UNIFORM);m.material.needsUpdate=true;}});
+  const skinColor=head?.material.color||new THREE.Color(person.skin||'#bd9479');
+  fittedPanel(model,model.getObjectByName('Spine2'),[[-.066,neck.y-.025],[0,neck.y-.15],[.066,neck.y-.025]],()=>centerZ+.055,clothMaterial(skinColor),'KTD scrub V-neck skin',false,.002);
+  for(const side of ['Left','Right']){
+    const arm=model.getObjectByName(side+'Arm'),fore=model.getObjectByName(side+'ForeArm'),wrist=model.getObjectByName(side+'Hand');if(!arm||!fore||!wrist)continue;
+    const a=bonePoint(model,side+'Arm'),b=bonePoint(model,side+'ForeArm'),c=bonePoint(model,side+'Hand'),direction=b.clone().sub(a).normalize();
+    const sleeveStart=a.clone().addScaledVector(direction,-.018),sleeveEnd=a.clone().lerp(b,.53);
+    const section=(start,end,ra,rb,bone,mat,name)=>{const geo=new THREE.CylinderGeometry(rb,ra,start.distanceTo(end),14,1,true);geo.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),end.clone().sub(start).normalize()));geo.translate(...start.clone().lerp(end,.5).toArray());return attachGeometry(model,bone,geo,mat,name);};
+    const fabric=clothMaterial(NURSE_UNIFORM);section(sleeveStart,sleeveEnd,.077,.072,arm,fabric,'KTD scrub short sleeve '+side);
+    section(a.clone().lerp(b,.45),b,.047,.041,arm,clothMaterial(skinColor),'KTD exposed upper arm '+side);
+    section(b,c,.042,.027,fore,clothMaterial(skinColor),'KTD exposed forearm '+side);
+  }
 }
 
 export function applyAppearance(model, person, role = 'civilian', cache = irisCache) {
   if(!person)return;
-  if(role==='nurse'){attachNurseBadge(model,person);return;}
+  if(role==='nurse'){fitNurseScrubs(model,person);attachNurseBadge(model,person);return;}
   if(role!=='civilian')return;
   model.updateMatrixWorld(true);
   const leases=model.userData.appearanceTextureLeases=new Set();appearanceCaches.set(model,cache);

@@ -146,12 +146,12 @@ export function makeHuman(person, role = 'doctor') {
     mesh('box', material('#324552'), [.014, .25, .02], [-.14, 1.39, .184], body);
   }
   if(role==='nurse'){
-    const card=new THREE.Mesh(new THREE.PlaneGeometry(.115,.067),material('#ffffff',{map:staffBadgeTexture(person)}));card.position.set(.12,1.28,.167);card.name='KTD nurse name badge';card.userData.appearanceOwned=true;card.userData.appearanceOwnedTexture=true;card.userData.staffName=person.name||'Northline nurse';card.userData.staffRole='NURSE';body.add(card);
+    const card=new THREE.Mesh(new THREE.PlaneGeometry(.115,.067),material('#ffffff',{map:staffBadgeTexture(person)}));card.position.set(.12,1.28,.167);card.name='KTD nurse name badge';card.userData.appearanceOwned=true;card.userData.appearanceOwnedTexture=true;card.userData.staffName=person.name||'Nhalewick nurse';card.userData.staffRole='NURSE';body.add(card);
   }
   const limbs = [];
   for (const side of [-1, 1]) {
     const arm = new THREE.Group(); arm.position.set(side * .31, 1.43, 0); body.add(arm);
-    mesh('capsule', coat, [.15, .27, .16], [0, -.26, 0], arm); mesh('sphere', skin, [.068, .10, .065], [0, -.56, 0], arm);
+    if(role==='nurse'){mesh('capsule',coat,[.16,.12,.17],[0,-.12,0],arm);mesh('capsule',skin,[.11,.16,.12],[0,-.36,0],arm);}else mesh('capsule', coat, [.15, .27, .16], [0, -.26, 0], arm); mesh('sphere', skin, [.068, .10, .065], [0, -.56, 0], arm);
     const leg = new THREE.Group(); leg.position.set(side * .15, .82, 0); body.add(leg);
     mesh('capsule', pants, [.21, .34, .22], [0, -.36, 0], leg); mesh('box', shoes, [.22, .13, .35], [0, -.75, .055], leg);
     limbs.push({ arm, leg, side });
@@ -232,10 +232,10 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     bone.quaternion.copy(relative.invert().multiply(rotation));bone.updateMatrixWorld(true);
   };
   const pointInModel=bone=>model.worldToLocal(bone.getWorldPosition(new THREE.Vector3()));
-  const reachHead=(time)=>{
+  const reachHead=(time,offset=new THREE.Vector3(-.085,.055,.025))=>{
     const shoulder=activityBones.RightArm,elbow=activityBones.RightForeArm,hand=activityBones.RightHand,head=activityBones.Head;
     if(!shoulder||!elbow||!hand||!head)return;
-    const start=pointInModel(shoulder),target=pointInModel(head).add(new THREE.Vector3(-.085,.055,.025));
+    const start=pointInModel(shoulder),target=pointInModel(head).add(offset);
     // A small temple tap, with the elbow below and outside the hand. Solve the
     // two links rather than aiming a straight forearm through the face.
     target.x-=Math.max(0,Math.sin(time*7))*.018;
@@ -249,7 +249,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
   return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt) {
     const next = locomotionForSpeed(speed,current);
     if (next !== current && actions[next]) { actions[current]?.fadeOut(.18); actions[next].reset().fadeIn(.18).play(); current = next; }
-    if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.65, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
+    if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.24, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
     const action=actions[next],footfalls=speed>.15&&action?animationFootfalls(action.time,dt,action.timeScale,action.getClip().duration):0;
     mixer.update(dt);
     if (aim) for (const item of arms) item.arm.quaternion.copy(item.q);
@@ -294,6 +294,19 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       orient('RightArm','RightForeArm',[.08,-.45,.1]);orient('RightForeArm','RightHand',[-.02,.02,.2]);
       if(b.Head){b.Head.rotation.x+=.07;b.Head.rotation.y+=Math.sin(time*.8)*.13;}
       mouth=.05+Math.max(0,mutter)*.17;brow=.4;
+    } else if(activity==='sneeze') {
+      if(b.Head)b.Head.rotation.x+=.10;
+      b.Head?.updateMatrixWorld(true);reachHead(time,new THREE.Vector3(-.018,.10,.145));
+      orient('LeftArm','LeftForeArm',[-.12,-.6,.02]);brow=.3;mouth=.12;
+    } else if(activity==='mobility') {
+      // White-cane travel: measured pace, shortened stride and a stable forward grip.
+      for(const name of ['LeftUpLeg','RightUpLeg','LeftLeg','RightLeg']){const bone=b[name];if(bone){bone.rotation.x*=.58;bone.rotation.z*=.45;}}
+      orient('RightArm','RightForeArm',[.14,-.6,.18]);orient('RightForeArm','RightHand',[-.01,-.45,.28]);
+      orient('LeftArm','LeftForeArm',[-.12,-.75,.03]);
+      if(b.Spine2)b.Spine2.rotation.x+=.045;
+    } else if(activity==='drink') {
+      orient('RightArm','RightForeArm',[.12,-.33,.23]);orient('RightForeArm','RightHand',[-.04,.38,.18]);
+      if(b.Head)b.Head.rotation.x-=.05;
     } else if(activity==='eat') {
       const bite=(Math.sin(time*1.25)+1)/2;
       orient('RightArm','RightForeArm',[.06,-.28,.4]); orient('RightForeArm','RightHand',[-.06,.1+bite*.45,.3-bite*.23]);
@@ -334,7 +347,9 @@ export function renderPortrait(renderer,assets,person,role='doctor',options={}) 
     const fill=new THREE.DirectionalLight('#b8dcfa',1.5);fill.position.set(-3,2,2);scene.add(fill);
     const camera=new THREE.PerspectiveCamera(30,1,.01,10);if(options.fullBody){camera.position.set(options.view==='side'?3.9:0,1.05,options.view==='back'?-3.9:options.view==='side'?.12:3.9);camera.lookAt(0,.96,0);}else{camera.position.set(options.view==='side'?1.02:0,1.56,options.view==='back'?-1.02:options.view==='side'?.03:1.02);camera.lookAt(0,1.56,0);}
     const buffer=portraitBuffer(renderer);if(renderer.xr)renderer.xr.enabled=false;
-    renderer.setRenderTarget(buffer.target);renderer.setViewport(0,0,256,256);renderer.setScissorTest(false);renderer.clear();renderer.render(scene,camera);
+    // Render-target viewport is in physical pixels. setViewport() multiplies by
+    // device pixel ratio and used to crop portraits on Retina laptops.
+    renderer.setRenderTarget(buffer.target);renderer.setScissorTest(false);renderer.clear();renderer.render(scene,camera);
     renderer.readRenderTargetPixels(buffer.target,0,0,256,256,buffer.pixels);
     const ctx=buffer.canvas.getContext('2d'),image=ctx.createImageData(256,256);
     for(let y=0;y<256;y++)image.data.set(buffer.pixels.subarray((255-y)*1024,(256-y)*1024),y*1024);

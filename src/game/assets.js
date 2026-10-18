@@ -336,6 +336,23 @@ function portraitBuffer(renderer){
   const canvas=document.createElement('canvas');canvas.width=canvas.height=256;
   buffer={target,canvas,pixels:new Uint8Array(256*256*4)};portraitBuffers.set(renderer,buffer);return buffer;
 }
+// Fit the actual posed geometry, including caps and tall hairstyles. Face
+// framing ignores the lower length of ponytails; Outfit keeps the whole body.
+export function portraitCamera(subject,options={}){
+  subject.root.updateWorldMatrix(true,true);
+  const bounds=new THREE.Box3();
+  subject.root.traverse(object=>{
+    if(!object.isMesh)return;let parent=object;while(parent){if(!parent.visible)return;parent=parent.parent;}
+    const headPart=/Skin|Hair|Eye|Glasses/.test(object.material?.name||'')||/hair|ponytail|cap|optical|sunglasses/i.test(object.name);
+    if(options.fullBody||headPart)bounds.union(new THREE.Box3().setFromObject(object,true));
+  });
+  if(bounds.isEmpty())bounds.set(new THREE.Vector3(-.2,options.fullBody?0:1.48,-.18),new THREE.Vector3(.2,1.88,.18));
+  if(!options.fullBody&&subject.head){const joint=subject.head.getWorldPosition(new THREE.Vector3());bounds.min.y=Math.max(bounds.min.y,joint.y-.09);}
+  const center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3()),side=options.view==='side',half=Math.max(size.y,side?size.z:size.x)/2;
+  const camera=new THREE.PerspectiveCamera(30,1,.01,12),depth=side?size.x:size.z;
+  const distance=half*(options.fullBody?1.14:1.28)/Math.tan(Math.PI/12)+depth/2;
+  camera.position.copy(center);if(side)camera.position.x+=distance;else camera.position.z+=(options.view==='back'?-1:1)*distance;camera.lookAt(center);camera.updateMatrixWorld(true);return camera;
+}
 export function renderPortrait(renderer,assets,person,role='doctor',options={}) {
   const subject=makePlayer(assets,person.gender||'male',person,role);
   const previous={target:renderer.getRenderTarget(),viewport:renderer.getViewport(new THREE.Vector4()),scissor:renderer.getScissor(new THREE.Vector4()),scissorTest:renderer.getScissorTest(),xr:renderer.xr?.enabled};
@@ -345,7 +362,7 @@ export function renderPortrait(renderer,assets,person,role='doctor',options={}) 
     scene.add(new THREE.HemisphereLight('#e5f3ff','#6b7a89',2.5));
     const key=new THREE.DirectionalLight('#fff4e7',3);key.position.set(2,3,4);scene.add(key);
     const fill=new THREE.DirectionalLight('#b8dcfa',1.5);fill.position.set(-3,2,2);scene.add(fill);
-    const camera=new THREE.PerspectiveCamera(30,1,.01,10);if(options.fullBody){camera.position.set(options.view==='side'?3.9:0,1.05,options.view==='back'?-3.9:options.view==='side'?.12:3.9);camera.lookAt(0,.96,0);}else{camera.position.set(options.view==='side'?1.02:0,1.56,options.view==='back'?-1.02:options.view==='side'?.03:1.02);camera.lookAt(0,1.56,0);}
+    const camera=portraitCamera(subject,options);
     const buffer=portraitBuffer(renderer);if(renderer.xr)renderer.xr.enabled=false;
     // Render-target viewport is in physical pixels. setViewport() multiplies by
     // device pixel ratio and used to crop portraits on Retina laptops.

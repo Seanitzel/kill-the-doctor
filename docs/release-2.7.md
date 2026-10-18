@@ -16,10 +16,12 @@
 
 ## Verification
 
-- `npm test`: **197 tests passed**, including new campaign, actual doctor departure, successful/witnessed rota theft, cancelled collection, fictional coffee/alarm flow, entrance connectivity, stable passing, prop cleanup, finite menu-score samples, actual GLB uniforms/caps, and portrait viewport checks at pixel ratios 1, 1.25, 1.7 and 2.
+- `npm test`: **198 tests passed**, including new campaign, actual doctor departure, successful/witnessed rota theft, cancelled collection, fictional coffee/alarm flow, entrance connectivity, stable passing, prop cleanup, finite menu-score samples, actual GLB uniforms/caps, and portrait viewport checks at pixel ratios 1, 1.25, 1.7 and 2.
 - Existing whole-hospital evacuation, rescue escort, protected patients, physics, audio lifecycle, appearance disposal, save migration and mobile input tests pass.
 - `npm run build:pages`: passed. `git diff --check`: passed.
 - Actual browser checks through the UI: laptop menu at 1280×720, face/outfit studio controls, normal keyboard walking, doorway traversal, confidential-rota interaction and witnessed failure; phone control layout at 956×440, joystick release, torch brightness drag, pause/abandon dialog; home screen at 956×310 remains scrollable with its main launch button visible. No horizontal overflow was present at the measured laptop/phone sizes.
 - Real rig gallery inspected at renderer pixel ratio 2. Screenshots and detailed logs are under the ignored `artifacts/revision-2.7/` folder.
 
 Browser verification used the local Chromium-based in-app browser with the phone control mode. Physical iPhone Safari and native-device testing remain for the user. The existing Playwright browser suite was updated for the real exit location but was not run in this revision; deterministic engine/physics tests and direct UI interaction supplied the checks above.
+
+Patch 2.7.1 fits portrait cameras to the actual posed head, cap, hair and body geometry, with tested headroom for front/side/back face and outfit views.

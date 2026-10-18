@@ -156,7 +156,7 @@ onBeforeUnmount(() => { appDisposed=true;menuMusic.dispose();window.removeEventL
         </div>
       </section>
       <aside class="scene-label"><span class="eyebrow">NHALEWICK / MAIN BUILDING</span><span class="scene-title">The night shift.</span><p>Three public floors. A locked basement.<br/>More than one kind of assignment.</p><div class="scene-meta"><span>THREE CONNECTED WINGS</span><span>G + 1 + 2 + B</span></div></aside>
-      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ ready ? 'READY TO ENTER' : 'LOADING CHARACTER ASSETS' }} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 02.7 <ArrowUpRight :size="12"/></button></footer>
+      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ ready ? 'READY TO ENTER' : 'LOADING CHARACTER ASSETS' }} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 02.7.1 <ArrowUpRight :size="12"/></button></footer>
     </template>
     <StoryIntro v-if="screen==='story' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" @finish="enterHospital" @back="toMenu" @references="openOverlay('references')"/>
     <StoryIntro v-if="screen==='ending' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" ending @finish="showResults" @back="showResults"/>

@@ -12,4 +12,4 @@ Each strip retains the previous scene sequence and cinematic photographic presen
 
 The planned Layla revision was rejected by image-generation output moderation. That strip was not retried; its existing artwork remains available. Isabella provides the Black protagonist representation in this revision instead.
 
-No application source or game mechanics were changed as part of this asset task. The consuming `STORY_ART` and `STORY_VISUALS` mappings must be updated by the integrating change. These images depict invented characters and fictional events.
+The game’s `STORY_ART` mappings were integrated in version 2.7. Existing catalog IDs remain stable while their file references point to the new WebP assets. These images depict invented characters and fictional events.

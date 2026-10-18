@@ -25,3 +25,5 @@
 Browser verification used the local Chromium-based in-app browser with the phone control mode. Physical iPhone Safari and native-device testing remain for the user. The existing Playwright browser suite was updated for the real exit location but was not run in this revision; deterministic engine/physics tests and direct UI interaction supplied the checks above.
 
 Patch 2.7.1 fits portrait cameras to the actual posed head, cap, hair and body geometry, with tested headroom for front/side/back face and outfit views.
+
+Patch 2.7.2 adds a dark desktop control-panel backing so moving bright hospital walls cannot wash out menu labels. Phone layout is unchanged.

@@ -1,4 +1,4 @@
-import {JAMIE_SELF_TALK_LINES,JAMIE_LAUGH_LINE} from './dialogue-v25.js';
+import {JAMIE_SELF_TALK_LINES} from './dialogue-v25.js';
 import {tileAt,key,rng} from './layout.js';
 import {makePlayer} from './assets.js';
 import {seesDrawnWeapon} from './loadout.js';
@@ -18,7 +18,7 @@ export function contactIdentity(round,seed){
   return {name:NAMES[index],gender:random()<.5?'male':'female',skin:['#efddce','#c79774','#845331','#41281f'][Math.floor(random()*4)],hair:['#211d22','#71513a','#a58354'][Math.floor(random()*3)],accent:['#795b62','#487068','#625676'][Math.floor(random()*3)],hairstyle:['cropped','afro','straight','curls-short'][Math.floor(random()*4)]};
 }
 export class HospitalIncidents{
-  constructor(engine){this.e=engine;this.contact=null;this.scan=0;this.heardSerial=0;this.nextConversation=0;}
+  constructor(engine){this.e=engine;this.contact=null;this.scan=0;this.heardSerial=0;this.nextConversation=0;this.trail=[];this.trailFloor=null;}
   setup(){
     const e=this.e;if(e.mission.type!=='standard'||!contactRound(e.mission.round))return;this.arrivalAt=65+e.mission.random()*45;
   }
@@ -54,7 +54,7 @@ export class HospitalIncidents{
   choose(choice){
     const n=this.contact;if(!n||n.dead)return false;const e=this.e,state=n.recruit.state;
     if(choice==='escort'&&state==='panicked'){
-      n.recruit.state='escort';n.speed=3.1;e.audio.stopDistress?.();n.activity=null;n.path=[];n.reaction=0;n.reporting=null;n.wait=0;n.recruit.nextRoute=0;
+      n.recruit.state='escort';n.recruit.phase='calm';n.speed=3.1;e.audio.stopDistress?.();n.activity=null;n.path=[];n.reaction=0;n.reporting=null;n.wait=0;n.recruit.nextRoute=0;
       e.notify(`Find the empty bathroom off the ground-floor atrium. ${n.name.split(' ')[0]} will follow you.`);return true;
     }
     if(choice==='recruit'&&state==='escort'&&this.privateTogether(n)){
@@ -70,7 +70,38 @@ export class HospitalIncidents{
     const person=speaker==='player'?{gender:e.playerProfile?.gender||e.mission.save.appearance?.gender||e.mission.save.character}:n.person;
     e.audio.cancelVoices?.();e.audio.dialogue(text,person,.85,true,{x:e.playerPos.x,y:1.5,z:e.playerPos.z,floor:e.floor});
   }
-  route(n,goal){const nav=this.e.systems.navigationFor(n.floor);n.path=nav.routeTransient(n.pos,goal);n.cursor=n.path.length>1&&nav.clear(n.pos,{x:(n.path[1].x-11)*3,z:(n.path[1].z-11)*3})?1:0;n.wait=.7;n.recruit.nextRoute=this.e.mission.elapsed+1.4;}
+  trackPlayer(){
+    const e=this.e,p=e.playerPos,last=this.trail.at(-1);
+    if(this.trailFloor!==e.floor||last&&distance(last,p)>5){this.trail=[];this.trailFloor=e.floor;}
+    if(!this.trail.length||distance(this.trail.at(-1),p)>.45){this.trail.push({x:p.x,z:p.z});if(this.trail.length>96)this.trail.shift();}
+  }
+  followGoal(n){
+    const e=this.e,p=e.playerPos;let length=0,last=p;
+    for(let i=this.trail.length-1;i>=0;i--){const point=this.trail[i],segment=distance(last,point);if(length+segment>=1.8){const t=(1.8-length)/Math.max(segment,.001);return {x:last.x+(point.x-last.x)*t,z:last.z+(point.z-last.z)*t};}length+=segment;last=point;}
+    return this.trail[0]||p;
+  }
+  route(n,goal){
+    const nav=this.e.systems.navigationFor(n.floor);n.path=nav.smoothRoute?nav.smoothRoute(n.pos,goal):nav.routeTransient(n.pos,goal);n.cursor=0;n.wait=.7;
+    n.recruit.routeGoal={x:goal.x,z:goal.z};n.recruit.routeAt=this.e.mission.elapsed;n.recruit.nextRoute=this.e.mission.elapsed+.65;
+  }
+  follow(n){
+    const e=this.e,r=n.recruit,now=e.mission.elapsed;this.trackPlayer();
+    if(n.floor!==e.floor){const lift=e.levels[n.floor].elevator;
+      if(distance(n.pos,lift)<2){const arrival=e.systems.arrivalSpot(e.floor,n);if(arrival){n.floor=e.floor;n.pos.set(arrival.x,0,arrival.z);n.path=[];r.nextRoute=0;r.routeGoal=null;}}
+      else if(now>=(r.nextRoute||0)&&(n.cursor>=n.path.length||!r.routeGoal||distance(r.routeGoal,lift)>.9)){n.activity=null;n.speed=4.5;this.route(n,lift);}return;
+    }
+    const gap=distance(n.pos,e.playerPos),sameArea=this.roomAt(n.pos,n.floor)?.id===this.roomAt(e.playerPos,e.floor)?.id,visible=e.lineOfSight(n.pos,e.playerPos,n.floor),moving=(e.playerSpeed||0)>.25;
+    if(sameArea&&visible&&(gap<1.65||!moving&&gap<2.5)){n.path=[];n.cursor=0;n.activity=now<(r.laughUntil||0)?'laugh':'rest';r.routeGoal=null;return;}
+    n.activity=null;const goal=sameArea&&visible?this.followGoal(n):e.playerPos;
+    n.speed=gap>5?Math.min(6,Math.max(4.5,(e.playerSpeed||0)+.8)):Math.max(1.2,Math.min(4,(e.playerSpeed||0)+(gap-2.1)*1.4));
+    if(now>=(r.nextRoute||0)&&(!r.routeGoal||distance(goal,r.routeGoal)>.9||n.cursor>=n.path.length))this.route(n,goal);
+  }
+  playLaugh(n){
+    const e=this.e,r=n.recruit,now=e.mission.elapsed;if(n.floor!==e.floor||distance(n.pos,e.playerPos)>16)return false;
+    n.voiceVersion=(n.voiceVersion||0)+1;if(e.life?.queue)e.life.queue=e.life.queue.filter(line=>line.actor!==n);
+    e.audio.laugh?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},.45,n.id);r.laughUntil=now+1.9;r.nextLaugh=now+25+e.mission.random()*20;
+    e.hooks.soundCaption?.(`${n.name} gives a short nervous laugh.`);return true;
+  }
   prepareNPC(n){
     if(!n.recruit||n.evacuating||n.reporting||n.recruit.state==='dismissed')return false;
     const e=this.e,r=n.recruit,now=e.mission.elapsed;
@@ -91,10 +122,7 @@ export class HospitalIncidents{
     }
     if(['escort','recruited'].includes(r.state)){
       if(r.state==='recruited'&&e.mission.targetDown)return this.prepareAlly(n);
-      const apart=n.floor!==e.floor,goal=apart?e.levels[n.floor].elevator:e.playerPos;
-      if(apart&&distance(n.pos,goal)<2){const arrival=e.systems.arrivalSpot(e.floor,n);if(arrival){n.floor=e.floor;n.pos.set(arrival.x,0,arrival.z);n.path=[];r.nextRoute=0;}}
-      else if(distance(n.pos,goal)>2.2&&now>=(r.nextRoute||0)){n.activity=null;this.route(n,goal);}
-      else if(distance(n.pos,goal)<=2.2){n.path=[];n.activity='panic';}
+      this.follow(n);
       return true;
     }
     return false;
@@ -113,7 +141,7 @@ export class HospitalIncidents{
     return true;
   }
   update(dt){
-    const e=this.e,now=e.mission.elapsed;this.arrive();this.scan-=dt;
+    const e=this.e,now=e.mission.elapsed;this.trackPlayer();this.arrive();this.scan-=dt;
     if(this.scan<=0&&!e.mission.targetDown){
       this.scan=.3;
       for(const n of e.npcs){
@@ -126,8 +154,15 @@ export class HospitalIncidents{
         }
       }
     }
-    const n=this.contact;if(n&&!n.dead&&!n.evacuated&&n.recruit.state==='panicked'&&n.recruit.phase==='calm'&&now>=n.recruit.speakAt&&n.floor===e.floor&&distance(n.pos,e.playerPos)<15){n.recruit.speakAt=now+22;const lines=n.recruit.gesture==='selftalk'?JAMIE_SELF_TALK_LINES:DISTRESS_LINES;e.life?.speak(n,n.recruit.gesture==='laugh'?JAMIE_LAUGH_LINE:lines[Math.floor(e.mission.random()*lines.length)],true);}
+    const n=this.contact;if(!n||n.dead||n.evacuated||e.mission.targetDown||!['panicked','escort','recruited'].includes(n.recruit.state))return;
+    const r=n.recruit;r.nextLaugh??=now+12+e.mission.random()*13;
+    if(now>=r.nextLaugh&&r.phase!=='running')this.playLaugh(n);
+    if(r.state==='panicked'&&r.phase==='calm'&&now>=r.speakAt&&n.floor===e.floor&&distance(n.pos,e.playerPos)<15){
+      r.speakAt=now+22;
+      if(r.gesture==='laugh'){if(now>=(r.laughUntil||0))this.playLaugh(n);}
+      else if(now>=(r.laughUntil||0)){const lines=r.gesture==='selftalk'?JAMIE_SELF_TALK_LINES:DISTRESS_LINES;e.life?.speak(n,lines[Math.floor(e.mission.random()*lines.length)],true);}
+    }
   }
   hud(){const n=this.contact;if(!n||n.dead||n.evacuated||n.recruit.state==='dismissed'||n.recruit.state==='panicked'&&(n.floor!==this.e.floor||distance(n.pos,this.e.playerPos)>16))return null;return {name:n.name,state:n.recruit.state,label:n.recruit.state==='panicked'?'Distressed visitor nearby':n.recruit.state==='escort'?'Lead your contact to the bathroom':this.e.mission.targetDown?'Covering your escape':'Waiting for your signal'};}
-  dispose(){this.contact=null;this.e=null;}
+  dispose(){this.contact=null;this.trail=[];this.e=null;}
 }

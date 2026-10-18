@@ -66,6 +66,17 @@ export class EgressNavigation{
     }
     if(!found)return [];const path=[];for(let node=end;node;node=previous.get(node))path.push({x:node.point.x/3+11,z:node.point.z/3+11});return path.reverse();
   }
+  smoothRoute(position,goal){
+    const path=this.routeTransient(position,goal);if(!path.length)return [];
+    const points=path.map(p=>({x:(p.x-11)*3,z:(p.z-11)*3})),result=[];let from=position,index=0;
+    while(index<points.length){
+      let next=points.length-1;
+      while(next>index&&!(result.length?this.clear(from,points[next]):this.clear(from,points[next])||this.clearDeparture(from,points[next])))next--;
+      if(!(result.length?this.clear(from,points[next]):this.clear(from,points[next])||this.clearDeparture(from,points[next])))return [];
+      result.push(path[next]);from=points[next];index=next+1;
+    }
+    return result;
+  }
   route(position,goal){
     const field=this.fieldFor(goal);let next=this.nearest(position,field,true);const path=[];
     while(next){path.push({x:next.point.x/3+11,z:next.point.z/3+11});next=field.get(next);}

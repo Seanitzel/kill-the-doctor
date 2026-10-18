@@ -137,3 +137,11 @@ Public announcements have a two-note chime and a 350–3300 Hz telephone band. B
 ## Version 2.5
 
 Three saved custom characters, a brightness drag on LIGHT, mission selection from pause, bathroom conversations, varied anxious visitor behavior, room privacy enforcement, less frequent power faults and announcements, named patient pages, flush elevator geometry, matching case artwork, and a police handover ending for evidence assignments. See `docs/release-2.5.md` for behavior and validation limits.
+
+## Version 2.6
+
+Upper floors 1 and 2 have wall-mounted contamination antidotes marked with a green cross on the map. Each cabinet supplies one free cure per assignment, with eight seconds of protection against lingering gas. Clean players do not waste a dose.
+
+The contact follows a short, bounded movement trail with a stable stopping distance, follows through doorways and the lift, and uses recorded occasional nervous laughter. Ordinary staff use furniture-aware smoothed routes and wait clear of door swings.
+
+A primary target assigned to a clinical examination now checks a real patient. Finding their room starts a 3–5 minute consultation, shown in the target HUD and journal. The first request to wait outside allows 30 seconds before the leave/security warning; remaining another 10 seconds starts a report. Leaving cancels the active timer, while repeated intrusion during the appointment retains the existing security response. Once the appointment ends, the patient leaves and that room’s privacy restriction clears. The primary target remains vulnerable during the grace period. See `docs/release-2.6.md`.

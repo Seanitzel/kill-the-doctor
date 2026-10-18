@@ -60,3 +60,25 @@ License: CC0 1.0 Universal, https://creativecommons.org/publicdomain/zero/1.0/
 Output: 1.486 s, mono 24 kHz 80 kbit MP3, 15,644 bytes.
 
 Both are finite, nonlooping actor-described human vocal reactions, not a recording of an actual medical emergency. Processing: 90 Hz high-pass / 8.5 kHz low-pass, 8 ms entry and 25 ms exit fades, -20 LUFS / -5 dBTP normalization targets. No voice clone, words, pitch shifting or repeated loops added. Source pages and original public HQ previews retained in ignored artifacts/audio-v4/. Runtime distress() respects spoken-audio settings/floors and existing sample ownership limits; stopDistress() can cut the reaction when the visitor abruptly becomes calm.
+
+Short human laughter cues — retrieved 2026-10-18.
+
+laugh-male.mp3
+Original: Voices - male laughter - mild chuckles.wav, by jodybruchon.
+Primary creator page: https://freesound.org/people/jodybruchon/sounds/459455/
+Downloaded public HQ MP3: https://cdn.freesound.org/previews/459/459455_7872308-hq.mp3
+License: CC0 1.0 Universal, https://creativecommons.org/publicdomain/zero/1.0/
+The creator describes a male quietly chuckling without a forced performance.
+Excerpt: source 0.000–1.420 seconds; output 1.420 seconds, 15,248 bytes.
+SHA-256: d930b9312b132f8945e44bce41213d4998e7ee64588a5745114694c745965e3b
+
+laugh-female.mp3
+Original: Woman laugh, by Kalibrk.
+Primary creator page: https://freesound.org/people/Kalibrk/sounds/433921/
+Downloaded public HQ MP3: https://cdn.freesound.org/previews/433/433921_3618969-hq.mp3
+License: CC0 1.0 Universal, https://creativecommons.org/publicdomain/zero/1.0/
+Creator labels the source a female/woman laugh; this is one voice rather than a crowd.
+Excerpt: source 0.270–2.090 seconds; output 1.820 seconds, 19,088 bytes.
+SHA-256: deee4af39bca1bea15cf648110f4248ab461e56e1a303984cdd2f5d6cf23c726
+
+Both are creator-described human vocal recordings, separate from the synthetic dialogue voices. Attribution is optional under CC0 and included here for provenance. The clips are mono 24 kHz / 80 kbit MP3 with 90 Hz high-pass / 8.5 kHz low-pass, 8 ms entry / 25 ms exit fades and restrained -24 LUFS / -7 dBTP normalization targets. No added words, crowd layer, repetition, voice cloning or pitch shifting. Decoded sample peaks are -7.51 dBFS; output samples are finite and unclipped. These technical/source checks are not a human listening review. Exact source/output hashes, processing and durations are in laugh-sources.json; original HQ previews and creator-page HTML snapshots are retained in ignored artifacts/audio-v7/. No account, paid service or API key was needed.

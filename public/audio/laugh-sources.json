@@ -1,0 +1,52 @@
+[
+  {
+    "file": "laugh-male.mp3",
+    "gender": "male",
+    "humanRecording": true,
+    "title": "Voices - male laughter - mild chuckles.wav",
+    "creator": "jodybruchon",
+    "source": "https://freesound.org/people/jodybruchon/sounds/459455/",
+    "download": "https://cdn.freesound.org/previews/459/459455_7872308-hq.mp3",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "originalSha256": "0098d0af5367129438b8b06bbac90858f8a0b12ae4a0ffc206d4564646b93cb1",
+    "sourceExcerptSeconds": [
+      0,
+      1.42
+    ],
+    "duration": 1.42,
+    "sampleRate": 24000,
+    "channels": 1,
+    "bitRate": 80000,
+    "bytes": 15248,
+    "sha256": "d930b9312b132f8945e44bce41213d4998e7ee64588a5745114694c745965e3b",
+    "peakDbFS": -7.51,
+    "rmsDbFS": -28.07,
+    "processing": "90 Hz high-pass / 8.5 kHz low-pass; 8 ms entry and 25 ms exit fades; -24 LUFS / -7 dBTP normalization targets; no pitch shift or looping."
+  },
+  {
+    "file": "laugh-female.mp3",
+    "gender": "female",
+    "humanRecording": true,
+    "title": "Woman laugh",
+    "creator": "Kalibrk",
+    "source": "https://freesound.org/people/Kalibrk/sounds/433921/",
+    "download": "https://cdn.freesound.org/previews/433/433921_3618969-hq.mp3",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "originalSha256": "0fdf2b68ec29ce019009cd478bba27fa6a78adfdc79a4d0e7c484429576913e0",
+    "sourceExcerptSeconds": [
+      0.27,
+      2.09
+    ],
+    "duration": 1.82,
+    "sampleRate": 24000,
+    "channels": 1,
+    "bitRate": 80000,
+    "bytes": 19088,
+    "sha256": "deee4af39bca1bea15cf648110f4248ab461e56e1a303984cdd2f5d6cf23c726",
+    "peakDbFS": -7.51,
+    "rmsDbFS": -26.76,
+    "processing": "90 Hz high-pass / 8.5 kHz low-pass; 8 ms entry and 25 ms exit fades; -24 LUFS / -7 dBTP normalization targets; no pitch shift or looping."
+  }
+]

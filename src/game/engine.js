@@ -1,3 +1,4 @@
+import {AntidoteStations} from './antidotes.js';
 import {PATIENT_PAGE_LINES} from './dialogue-v25.js';
 import {makeNavigation,segmentBox} from './navigation.js';
 import {obstacleBounds,circleOverlaps,cameraFraction,segmentHit3D,blocksBody,interactionScore,STRUCTURE_CLEARANCE} from './collision.js';
@@ -132,11 +133,11 @@ export class GameEngine {
     this.player.root.add(this.weapon); this.weapon.position.set(.33, 1.23, .15);
     this.mission = mission;this.cameraZoom=1; this.playerPos.set(0, 0, 30); this.yaw = Math.PI; this.pitch = -.06;this.player.root.position.copy(this.playerPos);
     this.setFloor(0); this.paused = true; this.aiming = false;this.weaponDrawn=false;this.weaponSlots={};this.setWeapon(mission.save.loadout?.weapon||'pistol',true); this.keys.clear(); this.crouched = false;
-    const info=weaponInfo(mission.save);this.ammo=info.capacity;this.reserve=info.reserve;this.reloading=0;this.shotCooldown=0;this.maxStamina=100+(mission.save.upgrades.vitals||0)*25;this.stamina=this.maxStamina;this.sprintExhausted=false;this.sprintReleased=true;this.impairment=0;this.blackout=0;this.flashlight=false;
+    const info=weaponInfo(mission.save);this.ammo=info.capacity;this.reserve=info.reserve;this.reloading=0;this.shotCooldown=0;this.maxStamina=100+(mission.save.upgrades.vitals||0)*25;this.stamina=this.maxStamina;this.sprintExhausted=false;this.sprintReleased=true;this.playerSpeed=0;this.impairment=0;this.antidoteProtectionUntil=0;this.blackout=0;this.flashlight=false;
     this.nextBlackout = 150 + mission.random() * 90; this.nextPA = 85 + mission.random()*35;this.paPageIndex=0; this.coughCooldown = 3; this.impairmentTotal=0; this.exposureSource=null; this.policeSpawned = false; this.captureTime = 0;
     this.visited = new Set(); this.npcClock = 0;
     for(const layout of this.levels)for(const d of layout.doors){d.open=d.id.endsWith('-back');d.angle=d.open?d.openAngle:0;d.pivot.rotation.y=d.angle;}
-    this.spawnNPCs();this.life=new HospitalLife(this);this.visitors=new HospitalVisitors(this);this.systems=new MissionSystems(this);this.incidents=new HospitalIncidents(this);this.incidents.setup();this.objectives=new AssignmentObjectives(this);this.systems.prepare();this.playerGear.update(mission.save); this.player.root.visible = true;
+    this.spawnNPCs();this.life=new HospitalLife(this);this.visitors=new HospitalVisitors(this);this.systems=new MissionSystems(this);this.incidents=new HospitalIncidents(this);this.incidents.setup();this.objectives=new AssignmentObjectives(this);this.antidotes=new AntidoteStations(this);this.systems.prepare();this.playerGear.update(mission.save); this.player.root.visible = true;
     this.camera.position.set(.6, 2.4, 33.5); this.updateCamera(.1, true);
     await this.renderer.compileAsync(this.scene, this.camera);
     if(this.disposed||generation!==this.startGeneration)return false;
@@ -149,13 +150,13 @@ export class GameEngine {
     this.emitHUD();return true;
   }
   setFloor(floor) {
-    this.floor = floor; this.hospitals.forEach((h, i) => h.group.visible = i === floor);
+    this.floor = floor; this.antidotes?.update(); this.hospitals.forEach((h, i) => h.group.visible = i === floor);
     this.npcs.forEach(n => n.visual.root.visible = n.floor === floor && !n.dead && !n.evacuated);
     this.flash.shadow.needsUpdate = true;
   }
   pause(value) { if(this.disposed)return;this.pauseRevision++;this.paused = value;this.lastFrameAt=-Infinity;this.clock.getDelta(); this.keys.clear(); this.resetTouch(); this.aiming = false; this.audio.pause(value); if (value) document.exitPointerLock?.(); }
   stop() { this.startGeneration++;this.pause(true);this.clearEffects(); this.mission = null;this.systems=null;this.weaponDrawn=false; this.player.root.visible = false; this.clearNPCs(); this.flashlight = false; this.blackout = 0; this.setFloor(0); }
-  clearNPCs() { this.cameraObstacleCache=null;this.objectives?.dispose();this.objectives=null;this.visitors?.dispose();this.visitors=null;this.incidents?.dispose();this.incidents=null;this.life?.dispose(); this.life=null; for (const n of this.npcs) {n.visual.root.removeFromParent();if(n.visual.dispose)n.visual.dispose();else disposeObjectResources(n.visual.root);} this.npcs = []; }
+  clearNPCs() { this.cameraObstacleCache=null;this.antidotes?.dispose();this.antidotes=null;this.objectives?.dispose();this.objectives=null;this.visitors?.dispose();this.visitors=null;this.incidents?.dispose();this.incidents=null;this.life?.dispose(); this.life=null; for (const n of this.npcs) {n.visual.root.removeFromParent();if(n.visual.dispose)n.visual.dispose();else disposeObjectResources(n.visual.root);} this.npcs = []; }
   clearEffects(){for(const effect of this.effects){effect.mesh.removeFromParent();disposeObjectResources(effect.mesh);}this.effects.length=0;}
   handleVisibility(){
     if(this.disposed)return;
@@ -200,6 +201,7 @@ export class GameEngine {
     this.say('A power fault has been reported. Emergency lighting is active. Please remain calm.', 'POWER INTERRUPTION'); this.notify(this.mobile ? 'Power interrupted · Tap LIGHT to use your flashlight' : 'Power interrupted · F to use your flashlight', 'warning');
   }
   triggerCough(patient = {name:'Sick patient',contamination:30}) {
+    if(this.mission?.elapsed<(this.antidoteProtectionUntil||0))return false;
     if(maskProtects(this.mission.save)){this.notify('Mask protected you from the gas','info');this.coughCooldown=5;return false;}
     const duration=exposureDuration(patient,this.mission.save.upgrades.filter);if(!duration)return false;
     this.impairment=Math.max(this.impairment,duration);this.impairmentTotal=Math.max(this.impairmentTotal||0,duration);this.exposureSource=patient.name;
@@ -207,13 +209,13 @@ export class GameEngine {
   }
   nearestInteractable() {
     let best = null, score = Infinity;
-    for (const i of [...this.hospitals[this.floor].interactables,...(this.objectives?.interactions()||[])]) {
+    for (const i of [...this.hospitals[this.floor].interactables,...(this.objectives?.interactions()||[]),...(this.antidotes?.interactions()||[])]) {
       const candidate=interactionScore(this.playerPos,this.yaw,i);
       if(candidate<score&&this.interactionVisible(i)){best=i;score=candidate;}
     }
     for (const n of this.npcs) {
       if (n.floor !== this.floor || n.dead || n.evacuated) continue;
-      if (best && ['directory','schedule','log','elevator'].includes(best.type)) continue;
+      if (best && ['directory','schedule','log','elevator','antidote'].includes(best.type)) continue;
       const candidate=interactionScore(this.playerPos,this.yaw,n.pos,2.3);
       if(candidate<score&&this.lineOfSight(this.playerPos,n.pos)){best={type:'npc',npc:n,x:n.pos.x,z:n.pos.z,label:'Inspect staff badge'};score=candidate;}
     }
@@ -228,6 +230,7 @@ export class GameEngine {
   }
   interact() {
     const i = this.nearestInteractable(); if (!i || this.paused) return;
+    if(i.type==='antidote'){this.antidotes?.use(i);return;}
     if (i.type === 'door') {
       if(i.door.locked){if(this.mission.keys.includes(i.door.keyId)){i.door.locked=false;this.notify('Theatre door unlocked','clue');}else{this.notify('Locked · find the theatre key in Maintenance or on the charge nurse');return;}}
       if(i.door.open&&!this.doorCanSwingTo(i.door,0))this.notify('Step clear of the doorway before closing it.');
@@ -376,7 +379,7 @@ export class GameEngine {
     const amount = Math.max(1,Math.hypot(f, strafe));
     const old = this.playerPos.clone();
     this.move((Math.sin(this.yaw) * f - Math.cos(this.yaw) * strafe) * speed * dt / amount, (Math.cos(this.yaw) * f + Math.sin(this.yaw) * strafe) * speed * dt / amount);
-    const actual = this.playerPos.distanceTo(old) / dt;
+    const actual = this.playerPos.distanceTo(old) / dt;this.playerSpeed=actual;
     this.player.root.position.copy(this.playerPos); this.player.root.position.y = this.crouched ? -.24 : 0;
     const desiredYaw = this.aiming || !moving ? this.yaw : Math.atan2(Math.sin(this.yaw) * f - Math.cos(this.yaw) * strafe, Math.cos(this.yaw) * f + Math.sin(this.yaw) * strafe);
     this.player.root.rotation.y += Math.atan2(Math.sin(desiredYaw - this.player.root.rotation.y), Math.cos(desiredYaw - this.player.root.rotation.y)) * Math.min(1, dt * 12);
@@ -437,6 +440,31 @@ export class GameEngine {
     if(this.aiming){const ray=this.aimRay();this.flash.target.position.copy(ray.origin).addScaledVector(ray.direction,15);}
     else{forward.y=THREE.MathUtils.clamp(this.pitch,-.47,.5);forward.normalize();this.flash.target.position.copy(this.flash.position).addScaledVector(forward,15);}
   }
+  routeNPC(n,goal){
+    const nav=this.systems?.navigationFor?.(n.floor);
+    if(nav){n.path=nav.smoothRoute(n.pos,goal);n.cursor=0;}
+    else{n.path=findPath(this.navLayouts[n.floor],tileAt(n.pos.x,n.pos.z),tileAt(goal.x,goal.z));n.cursor=1;}
+    n.routeGoal={x:goal.x,z:goal.z};n.routeAt=this.mission.elapsed;n.blocked=0;return n.path.length>0;
+  }
+  doorOnRoute(n){
+    const from={x:n.pos.x,y:1,z:n.pos.z},points=[];let length=0,last=from;
+    for(let index=n.cursor;index<n.path.length&&length<5;index++){const point={...world(n.path[index].x,n.path[index].z),y:1};length+=distance(last,point);points.push([last,point]);last=point;}
+    return this.levels[n.floor].doors.filter(d=>d.pivot&&distance(n.pos,d)<3.3).sort((a,b)=>distance(n.pos,a)-distance(n.pos,b)).find(d=>{
+      const portal=obstacleBounds({object:{...d,angle:0}});return points.some(([a,b])=>segmentHit3D(a,b,portal,STRUCTURE_CLEARANCE)!==null);
+    });
+  }
+  waitForDoor(n,dt){
+    const door=this.doorOnRoute(n);if(!door)return false;
+    if(door.locked){n.path=[];n.wait=1.5;return true;}
+    door.open=true;if(Math.abs(door.angle-door.openAngle)<=.025)return false;
+    // Wait beyond the swing rather than repeatedly walking into a closed leaf.
+    const pivot=door.pivot.position,dx=n.pos.x-pivot.x,dz=n.pos.z-pivot.z,length=Math.hypot(dx,dz);
+    if(length<2.3){const amount=Math.min(2*dt,2.32-length),axis=door.axis==='z'?'x':'z',side=Math.sign(n.pos[axis]-door[axis])||1;
+      const directions=axis==='z'?[[0,side],[dx/Math.max(length,.01),dz/Math.max(length,.01)]]:[[side,0],[dx/Math.max(length,.01),dz/Math.max(length,.01)]];
+      for(const [x,z] of directions){const nx=n.pos.x+x*amount,nz=n.pos.z+z*amount;if(this.npcCanMoveTo(n,nx,nz)){n.pos.x=nx;n.pos.z=nz;break;}}
+    }
+    return true;
+  }
   updateNPCs(dt) {
     const mission = this.mission;
     if(this.camera){this.viewFrustum ||= new THREE.Frustum();this.viewMatrix ||= new THREE.Matrix4();this.npcSphere ||= new THREE.Sphere(new THREE.Vector3(),1.8);this.camera.updateMatrixWorld();this.viewMatrix.multiplyMatrices(this.camera.projectionMatrix,this.camera.matrixWorldInverse);this.viewFrustum.setFromProjectionMatrix(this.viewMatrix);}
@@ -450,7 +478,7 @@ export class GameEngine {
       n.wait -= dt;n.reaction=Math.max(0,(n.reaction||0)-dt);
       const directed=this.systems?.prepareNPC(n);if(mission.result)return;
       if(!directed&&hostile && local && n.wait < 0) {
-        n.path = findPath(layout, tileAt(n.pos.x, n.pos.z), tileAt(this.playerPos.x, this.playerPos.z)); n.cursor = 1; n.wait = .85;
+        this.routeNPC(n,this.playerPos);n.wait=.85;
       } else if (!directed && !hostile && !n.activity && !n.reaction && n.cursor >= n.path.length && n.wait < 0) {
         const start = tileAt(n.pos.x, n.pos.z); let end;
         if (n.room && (n.id === 'target' || n.routine % 3 !== 2)) {
@@ -459,23 +487,15 @@ export class GameEngine {
         } else {
           const spots = [[10, 6], [11, 14], [3, 10], [18, 11], [10, 19], [3, 5], [18, 17]]; const p = spots[Math.floor(mission.random() * spots.length)]; end = { x: p[0], z: p[1] };
         }
-        n.path = findPath(layout, start, end); n.cursor = 1; n.wait = mission.random() * 5 + 2; n.routine++;
+        this.routeNPC(n,world(end.x,end.z));n.wait=mission.random()*5+2;n.routine++;
       }
       const previousX=n.pos.x,previousZ=n.pos.z;
       let destination = n.activity || n.reaction ? null : n.path[n.cursor];
-      if(directed&&destination){
-        const opening=this.levels[n.floor].doors.find(leaf=>!leaf.locked&&Math.hypot(n.pos.x-leaf.x,n.pos.z-leaf.z)<2.6&&Math.abs(leaf.angle-leaf.openAngle)>.02);
-        if(opening){
-          opening.open=true;destination=null;
-          const dx=n.pos.x-opening.x,dz=n.pos.z-opening.z,d=Math.hypot(dx,dz);
-          if(d<2.2){const retreat=Math.min(.12,2*dt),nx=n.pos.x+dx/Math.max(d,.01)*retreat,nz=n.pos.z+dz/Math.max(d,.01)*retreat;if(this.npcCanMoveTo(n,nx,nz)){n.pos.x=nx;n.pos.z=nz;}}
-        }
-      }
+      if(destination&&this.waitForDoor(n,dt))destination=null;
       if (destination) {
         const p = world(destination.x, destination.z), dist = distance(n.pos, p);
         const current = n.path[Math.max(0, n.cursor - 1)], door = layout.doorEdges.get(edgeKey(key(current.x, current.z), key(destination.x, destination.z)));
         if (door && !door.locked && dist < 4) door.open = true;
-        if(directed)for(const leaf of this.levels[n.floor].doors)if(!leaf.locked&&Math.hypot(n.pos.x-leaf.x,n.pos.z-leaf.z)<2.4)leaf.open=true;
         speed=n.evacuating?4+(n.id.length%5)*.12:n.reporting?4.1:hostile?mission.difficulty==='hard'?3.6:2.65:n.speed;
         if(speed>3.7&&this.nearStructure(n.pos,n.floor))speed=3.2;
         const dx=p.x-n.pos.x,dz=p.z-n.pos.z,step=Math.min(dist,speed*dt),nx=n.pos.x+dx/Math.max(dist,.001)*step,nz=n.pos.z+dz/Math.max(dist,.001)*step;
@@ -485,11 +505,11 @@ export class GameEngine {
           if(n.blocked>.45){
             let sidestepped=false;
             for(const side of [1,-1]){const sx=n.pos.x-dz/Math.max(dist,.001)*step*side,sz=n.pos.z+dx/Math.max(dist,.001)*step*side;if(this.npcCanMoveTo(n,sx,sz)){n.pos.x=sx;n.pos.z=sz;sidestepped=true;break;}}
-            if(!sidestepped&&!door){n.path=[];n.wait=.3;}
+            if(!sidestepped||n.blocked>1.4){n.path=[];n.wait=.7;n.blocked=0;if(n.recruit)n.recruit.nextRoute=mission.elapsed+.7;}
           }
         }
-        n.visual.root.rotation.y=Math.atan2(dx,dz);
       }
+      if(Math.hypot(n.pos.x-previousX,n.pos.z-previousZ)>.001){const heading=Math.atan2(n.pos.x-previousX,n.pos.z-previousZ);n.visual.root.rotation.y+=Math.atan2(Math.sin(heading-n.visual.root.rotation.y),Math.cos(heading-n.visual.root.rotation.y))*Math.min(1,dt*10);}
       speed=Math.hypot(n.pos.x-previousX,n.pos.z-previousZ)/Math.max(dt,.001);n.movementSpeed=speed;
       if(this.npcSphere){this.npcSphere.center.copy(n.pos);this.npcSphere.center.y+=.9;}
       n.animationVisible=local&&d<30&&(d<6||!this.viewFrustum||this.viewFrustum.intersectsSphere(this.npcSphere));
@@ -560,7 +580,7 @@ export class GameEngine {
     const room = this.levels[this.floor].rooms.find(r => r.id === cell?.room);
     const objective = this.objectives?.hud().label || (this.mission.state === 'escape' ? 'Return to the main entrance' : this.mission.identified ? 'Eliminate the confirmed target' : this.mission.clues.length ? `Investigate ${this.mission.target.room.name}` : 'Find the staff directory');
     const prompt = !i ? null : { type: i.type, text:['mission-key','release-patient','photo-subject'].includes(i.type)?i.label:i.type==='npc'&&i.npc.keyCarrier&&!this.mission.keys.includes('theatre')?'Lift theatre key · crouch behind nurse': i.type === 'door' ? `${i.door.locked?'Unlock':i.door.open ? 'Close' : 'Open'} · ${i.label}` : i.type === 'npc' ? i.npc.recruit ? this.incidents?.prompt(i.npc) || 'Talk' : i.npc.role === 'patient' ? 'Patient · protected' : 'Inspect badge' : i.label };
-    this.hooks.hud?.({ state: this.mission.state, objective, location: room?.name || (this.playerPos.z > 26 ? 'Main atrium' : this.playerPos.x < -6 ? 'West passage' : this.playerPos.x > 9 ? 'East passage' : 'Central concourse'), floor: this.floor, x: this.playerPos.x, z: this.playerPos.z, yaw: this.yaw, timer: this.mission.timer, elapsed: this.mission.elapsed, stamina:this.stamina/(this.maxStamina||100)*100,sprintEnabled:this.touchInput.sprint,sprintExhausted:this.sprintExhausted,weaponName:this.mission.type==='evidence'?'EVIDENCE CAMERA':weaponInfo(this.mission.save,this.weaponKind).name,weaponKind:this.weaponKind,weaponDrawn:this.weaponDrawn,scoped:this.aiming&&this.weaponKind==='sniper',masked:maskProtects(this.mission.save),hasMask:!!this.mission.save.upgrades.mask,reports:this.systems?.reports()||[],bonus:this.mission.type==='standard'?Math.max(0,this.mission.staffKills-1)*STAFF_BONUS:0,evacuated:this.npcs.filter(n=>n.evacuated).length,magnet:!!this.systems?.magnet,suspicion: this.mission.suspicion, flashlight: this.flashlight,flashlightBrightness:this.settings.flashlightBrightness||1, blackout: this.blackout, impairment: this.impairment, impairmentStrength: recoveryStrength(this.impairment,this.impairmentTotal), exposureSource:this.exposureSource, dialogues:this.life?.dialogueHUD()||[],assignment:this.objectives?.hud(),contact:this.incidents?.hud()||null,cameraZoom:this.cameraZoom, aiming: this.aiming, ammo: this.ammo, reserve: this.reserve, reloading: this.reloading > 0, prompt, proximity: this.proximity(), crouched: this.crouched, targetConfirmed: this.mission.identified, clues: this.mission.clues.length });
+    this.hooks.hud?.({ state: this.mission.state, objective, location: room?.name || (this.playerPos.z > 26 ? 'Main atrium' : this.playerPos.x < -6 ? 'West passage' : this.playerPos.x > 9 ? 'East passage' : 'Central concourse'), floor: this.floor, x: this.playerPos.x, z: this.playerPos.z, yaw: this.yaw, timer: this.mission.timer, elapsed: this.mission.elapsed, stamina:this.stamina/(this.maxStamina||100)*100,sprintEnabled:this.touchInput.sprint,sprintExhausted:this.sprintExhausted,weaponName:this.mission.type==='evidence'?'EVIDENCE CAMERA':weaponInfo(this.mission.save,this.weaponKind).name,weaponKind:this.weaponKind,weaponDrawn:this.weaponDrawn,scoped:this.aiming&&this.weaponKind==='sniper',masked:maskProtects(this.mission.save),hasMask:!!this.mission.save.upgrades.mask,reports:this.systems?.reports()||[],bonus:this.mission.type==='standard'?Math.max(0,this.mission.staffKills-1)*STAFF_BONUS:0,evacuated:this.npcs.filter(n=>n.evacuated).length,magnet:!!this.systems?.magnet,suspicion: this.mission.suspicion, flashlight: this.flashlight,flashlightBrightness:this.settings.flashlightBrightness||1, blackout: this.blackout, impairment: this.impairment, impairmentStrength: recoveryStrength(this.impairment,this.impairmentTotal), exposureSource:this.exposureSource, dialogues:this.life?.dialogueHUD()||[],assignment:this.objectives?.hud(),antidotes:this.antidotes?.hud()||[],appointment:this.life?.appointmentHUD()||null,contact:this.incidents?.hud()||null,cameraZoom:this.cameraZoom, aiming: this.aiming, ammo: this.ammo, reserve: this.reserve, reloading: this.reloading > 0, prompt, proximity: this.proximity(), crouched: this.crouched, targetConfirmed: this.mission.identified, clues: this.mission.clues.length });
   }
   frame() {
     if(this.disposed||document.hidden)return;
@@ -571,7 +591,7 @@ export class GameEngine {
     const dt = Math.min(this.clock.getDelta(), .05); this.time += dt;this.performance.frames++;const now=performance.now();if(now-this.performance.last>1000){this.performance.fps=this.performance.frames*1000/(now-this.performance.last);this.performance.frames=0;this.performance.last=now;}
     if (this.mission && !this.paused && !this.mission.result) {
       this.mission.tick(dt); if (this.mission.result) this.finish();
-      else { this.updatePlayer(dt);this.incidents?.update(dt);this.objectives?.update(dt);this.systems?.update(dt); if (!this.mission.result) { this.updateNPCs(dt); this.life?.update(dt); this.updateEnvironment(dt); this.updateCamera(dt);if(this.touchInput.shot){const aimRay=this.queuedTouchRay;this.touchInput.shot=false;this.queuedTouchRay=null;this.shoot({touch:true,aimRay});} } }
+      else { this.updatePlayer(dt);this.incidents?.update(dt);this.objectives?.update(dt);this.systems?.update(dt); if (!this.mission.result) { this.updateNPCs(dt); this.life?.update(dt);this.antidotes?.update(); this.updateEnvironment(dt); this.updateCamera(dt);if(this.touchInput.shot){const aimRay=this.queuedTouchRay;this.touchInput.shot=false;this.queuedTouchRay=null;this.shoot({touch:true,aimRay});} } }
       this.hudClock += dt; if (this.hudClock > .07) { this.emitHUD(); this.hudClock = 0; }
     } else if (!this.mission) {
       this.menuTime += dt;if(this.storyMusic)this.audio.update(dt,0,false,false,false,false); this.camera.position.set(.3 + Math.sin(this.menuTime * .06) * .3, 1.72, 22); this.camera.lookAt(.2, 1.6, -10);

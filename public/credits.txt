@@ -103,3 +103,11 @@ Additional short human pain reactions (CC0): MrFossy / Freesound 547209 and Guin
 KTD 2.3 voice update: NPC dialogue and fixed PA generated with Kyutai Pocket TTS (runtime MIT, model weights CC BY 4.0). Supplied Alba preset performance by Alba MacKenna, CC BY 4.0; supplied Marius preset is based on the CC0 Unmute Selfie.wav voice donation. Generated recordings are synthetic. Full attribution, source links and license text: audio/dialogue/SOURCES.txt and audio/dialogue/NOTICE-Pocket-Voices-CC-BY-4.0.txt.
 
 KTD 2.4 voice update: NPC dialogue and hospital announcements use four original synthetic voice identities designed with Qwen3-TTS (Apache 2.0), rendered with MLX Audio (MIT). Standard American and Southern/Texas-inspired descriptions guide delivery; accent labels describe the intended performance and may vary. No real-person recording was used to create or condition these identities. Source descriptions, licenses and all 300 clip records: audio/dialogue/SOURCES.txt and audio/dialogue/manifest.json. Earlier model/preset attributions above document superseded recordings. No generation model or reference-voice files are shipped in the game.
+
+RECORDED LAUGHTER (2.6)
+Mild male chuckles — jodybruchon / Freesound, CC0:
+https://freesound.org/people/jodybruchon/sounds/459455/
+Woman laugh — Kalibrk / Freesound, CC0:
+https://freesound.org/people/Kalibrk/sounds/433921/
+Trimmed, normalized mono excerpts. Exact provenance and processing:
+audio/laugh-sources.json.

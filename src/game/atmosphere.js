@@ -1,3 +1,4 @@
+import {TargetAppointment,TARGET_PRIVACY_GRACE} from './appointments.js';
 import {RoomPrivacy} from './room-privacy.js';
 import {ROOM_WARNING_LINES} from './dialogue-v25.js';
 import {addInfusion} from './care-props.js';
@@ -44,7 +45,7 @@ export class HospitalLife {
         const clinic=room.kind==='clinic',rotation=clinic?0:Math.PI/2;
         const bedX=clinic?maxX-1.9:minX+1.55,bedZ=clinic?room.center.z:minZ+3;
         const patient=this.actor(`${room.name} patient`,'patient',room.index%2?'male':'female',floor,room,bedX+Math.sin(rotation)*.85,bedZ+Math.cos(rotation)*.85,room.kind==='maternity'?'labor':'rest',{lying:true,y:1,bedRotation:rotation,contamination:room.kind==='emergency'?30:room.kind==='clinic'&&floor===1?60:0});
-        let doctor=e.npcs.find(n=>n.room?.id===room.id&&n.id!=='target'&&n.role==='doctor'&&!n.activity);
+        let doctor=e.npcs.find(n=>n.room?.id===room.id&&n.id==='target')||e.npcs.find(n=>n.room?.id===room.id&&n.role==='doctor'&&!n.activity);
         const doctorX=clinic?bedX-1.1:bedX,doctorZ=clinic?bedZ:bedZ+1.1;
         if(!doctor) doctor=this.actor(`Dr. ${['Rowan','Avery','Morgan','Taylor'][room.index%4]} Mercer`,'doctor',room.index%2?'female':'male',floor,room,doctorX,doctorZ,'examine');
         doctor.activity='examine';doctor.pos.set(doctorX,0,doctorZ);doctor.visual.root.rotation.y=clinic?Math.PI/2:Math.PI;doctor.clinicalPatient=patient;doctor.reaction=0;
@@ -55,7 +56,7 @@ export class HospitalLife {
         const endpoint={x:patient.pos.x-standX,y:1.08,z:patient.pos.z-standZ};
         const infusion=addInfusion(this.props,{x:standX,z:standZ,endpoint},e.materials||{});infusion.root.userData.floor=floor;
         e.hospitals[floor].colliders.push(infusion.collider);this.addedColliders.push({floor,obstacle:infusion.collider});this.infusions.push(infusion);
-        this.cases.push({room,patient,doctor,cable,disc,infusion,nextCable:0,nextMachine:4+room.index*1.8,nextCare:10+room.index*3});
+        const exam={room,patient,doctor,cable,disc,infusion,nextCable:0,nextMachine:4+room.index*1.8,nextCare:10+room.index*3};this.cases.push(exam);if(doctor.id==='target'){exam.appointment=new TargetAppointment(()=>e.mission.random());this.targetCase=exam;}
         if(room.kind==='maternity') this.maternity(room,patient,floor,minZ);
       }
     }
@@ -120,8 +121,8 @@ export class HospitalLife {
   }
   privacyWitness(room){
     if(!room||(!CLINICAL_KINDS.includes(room.kind)&&room.kind!=='office'))return null;
-    const e=this.engine;
-    return e.npcs.filter(n=>n.room?.id===room.id&&n.floor===e.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===room.id&&!n.dead&&!n.evacuated&&!n.reporting&&['doctor','nurse'].includes(n.role)).sort((a,b)=>(a.role==='nurse'?0:1)-(b.role==='nurse'?0:1)||dist(e.playerPos,a.pos)-dist(e.playerPos,b.pos))[0]||null;
+    const e=this.engine;if(this.targetCase?.room.id===room.id&&this.targetCase.appointment.completed)return null;
+    return e.npcs.filter(n=>n.room?.id===room.id&&n.floor===e.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===room.id&&!n.dead&&!n.evacuated&&!n.reporting&&['doctor','nurse'].includes(n.role)).sort((a,b)=>(a.id==='target'?0:a.role==='nurse'?1:2)-(b.id==='target'?0:b.role==='nurse'?1:2)||dist(e.playerPos,a.pos)-dist(e.playerPos,b.pos))[0]||null;
   }
   privacyResponse(actor,action){
     if(!actor||!action)return;const e=this.engine;
@@ -134,7 +135,33 @@ export class HospitalLife {
   }
   reactToEntry(room){
     const actor=this.privacyWitness(room);if(!actor){this.privacy.leave();return;}
-    this.privacyResponse(actor,this.privacy.enter(`${this.engine.floor}:${room.id}`,this.engine.mission.elapsed));
+    this.privacyResponse(actor,this.privacy.enter(`${this.engine.floor}:${room.id}`,this.engine.mission.elapsed,room.id===this.engine.mission.target?.room.id?{warningDelay:TARGET_PRIVACY_GRACE,reportDelay:TARGET_PRIVACY_GRACE+10}:{}));
+  }
+  updateAppointment(room){
+    const e=this.engine,item=this.targetCase;if(!item||e.mission.targetDown||item.doctor.dead||e.mission.state==='escape')return;
+    const appointment=item.appointment,now=e.mission.elapsed;
+    if(room?.id===item.room.id&&e.floor===item.room.floor)appointment.start(now);
+    if(!appointment.update(now))return;
+    item.completed=true;item.doctor.activity='rest';item.doctor.clinicalPatient=null;item.doctor.reaction=0;item.doctor.path=[];item.cable.visible=item.disc.visible=false;
+    this.privacy.release(`${item.room.floor}:${item.room.id}`);
+    this.queue=this.queue.filter(line=>line.actor!==item.patient&&line.actor!==item.doctor);
+    const goal={x:0,z:18};e.systems.stand(item.patient,goal);item.patient.appointmentDeparture={goal};item.patient.speed=1.6;item.patient.contamination=0;e.systems.route(item.patient,goal);
+    e.notify('Appointment complete · the patient is leaving. The doctor is available.','clue');
+  }
+  prepareNPC(n){
+    if(n.reporting||n.evacuating)return false;
+    const item=this.targetCase;
+    if(item&&n===item.doctor&&!item.completed&&!n.dead){n.activity='examine';n.path=[];return true;}
+    if(!n.appointmentDeparture)return false;
+    const e=this.engine,goal=n.appointmentDeparture.goal;
+    if(dist(n.pos,goal)<1.5){n.path=[];n.activity='rest';n.appointmentDeparture=null;}
+    else if(n.cursor>=n.path.length&&n.wait<0)e.systems.route(n,goal);
+    return true;
+  }
+  appointmentHUD(){
+    const e=this.engine,item=this.targetCase;if(!item||item.appointment.startedAt===null||e.mission.targetDown)return null;
+    const a=item.appointment,id=`${item.room.floor}:${item.room.id}`,privacy=this.privacy.rooms.get(id),warning=this.privacy.active===id&&privacy?.stage==='requested'?Math.max(0,Math.ceil(privacy.warningDelay-(e.mission.elapsed-privacy.enteredAt))):null;
+    return {room:item.room.name,floor:item.room.floor,complete:a.completed,seconds:a.remaining(e.mission.elapsed),warningSeconds:warning};
   }
   triggerFlicker(duration=1.65) {
     const e=this.engine,fixtures=e.hospitals[e.floor].fixtures;
@@ -191,6 +218,7 @@ export class HospitalLife {
     const e=this.engine,now=e.mission.elapsed,emergency=e.mission.state==='escape';
     const cell=e.levels[e.floor].cells.get(`${Math.round(e.playerPos.x/3+11)},${Math.round(e.playerPos.z/3+11)}`),room=e.levels[e.floor].rooms.find(r=>r.id===cell?.room);
     const roomKey=room?.id||`hall-${e.floor}`;
+    if(!emergency)this.updateAppointment(room);
     if(roomKey!==this.lastRoom){this.lastRoom=roomKey;if(!emergency)this.reactToEntry(room);else this.privacy.leave();}
     if(!emergency&&room)this.privacyResponse(this.privacyWitness(room),this.privacy.update(`${e.floor}:${room.id}`,now));
     for(const n of e.npcs) {
@@ -203,6 +231,7 @@ export class HospitalLife {
       if(n.contamination&&n.nextCough<=now&&e.coughCooldown<=0&&dist(e.playerPos,n.pos)<3.1&&e.lineOfSight(e.playerPos,n.pos))this.beginCough(n);
     }
     for(const item of this.cases) {
+      if(item.completed){item.cable.visible=item.disc.visible=false;continue;}
       const local=item.room.floor===e.floor,alive=!item.doctor.dead&&!item.doctor.evacuating;item.cable.visible=item.disc.visible=local&&alive&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;
       const d=dist(e.playerPos,item.patient.pos),source={x:item.patient.pos.x,y:1.15,z:item.patient.pos.z,floor:item.room.floor};
       if(local&&d<20&&now>=item.nextMachine&&now>=this.nextMachine){
@@ -251,6 +280,6 @@ export class HospitalLife {
     for(const {floor,obstacle} of this.addedColliders){const list=this.engine.hospitals[floor].colliders,index=list.indexOf(obstacle);if(index>=0)list.splice(index,1);}
     this.engine.audio.stopAmbient();for(const infusion of this.infusions)infusion.dispose();this.infusions.length=0;this.engine.scene.remove(this.props);
     this.props.traverse(o=>{if(o.userData.lifeOwned||o===this.flickerCover||o.isPoints){o.geometry?.dispose();o.material?.dispose();}});
-    this.clouds.forEach(c=>c.texture.dispose());this.props.clear();for(const list of [this.clouds,this.groups,this.cases,this.queue,this.dialogues,this.history,this.pendingCoughs,this.addedColliders])list.length=0;this.roomReactions.clear();this.privacy.dispose();
+    this.clouds.forEach(c=>c.texture.dispose());this.props.clear();for(const list of [this.clouds,this.groups,this.cases,this.queue,this.dialogues,this.history,this.pendingCoughs,this.addedColliders])list.length=0;this.roomReactions.clear();this.privacy.dispose();this.targetCase=null;
   }
 }

@@ -39,7 +39,7 @@ export class MissionSystems{
   }
   prepareNPC(n){
     const e=this.e,now=e.mission.elapsed;
-    if(e.objectives?.prepareNPC(n)||e.visitors?.prepareNPC(n))return true;
+    if(e.objectives?.prepareNPC(n)||e.visitors?.prepareNPC(n)||e.life?.prepareNPC?.(n))return true;
     if(e.incidents?.prepareNPC(n))return true;
     if(n.reporting&&(e.mission.type==='rescue'?e.mission.state!=='escape':!e.mission.targetDown)){
       const r=n.reporting;

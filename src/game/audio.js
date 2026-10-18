@@ -2,9 +2,9 @@ import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
 import { native,stopNativeSpeech } from '../mobile/platform.js';
 import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
-const AUDIO_REVISION='2.5.0';
+const AUDIO_REVISION='2.6.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
-export const HOSPITAL_SAMPLE_FILES=Object.freeze({newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
+export const HOSPITAL_SAMPLE_FILES=Object.freeze({'laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
 const disconnect=node=>{try{node?.disconnect();}catch{}};
 
@@ -162,6 +162,11 @@ export class HospitalAudio {
   distress(person={},position=this.listenerPosition,gain=.8){
     if(!this.settings.speech||position.floor!==undefined&&position.floor!==this.listenerFloor)return null;
     return this.playSample(person.gender==='female'?'distress-female':'distress-male',position,Math.min(1,gain));
+  }
+  laugh(person={},position=this.listenerPosition,gain=.45,speakerId){
+    if(!this.settings.speech||position.floor!==undefined&&position.floor!==this.listenerFloor)return null;
+    if(speakerId)for(const record of [...this.activeSamples])if(record.speakerId===speakerId)this.releaseSample(record,true);
+    return this.sampleNodes(person.gender==='female'?'laugh-female':'laugh-male',position,Math.min(1,gain),false,null,{speakerId});
   }
   stopDistress(){for(const record of [...this.activeSamples])if(record.name.startsWith('distress-'))this.releaseSample(record,true);}
   gasp(position){if(this.samples.gasp)this.playSample('gasp',position,.85);else this.sound('gasp');}

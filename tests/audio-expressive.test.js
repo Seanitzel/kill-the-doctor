@@ -123,3 +123,10 @@ test('A speaker replaces their own interrupted line and stale decodes cannot tal
   const report=audio.dialogue('Security',{gender:'female'},.8,true,null,{speakerId:'nurse',isCurrent:()=>version===3});assert.equal(warned.source.stopped,true);assert.equal(nearby.source.stopped,undefined);resolvers[2]({duration:4});await report;
   assert.equal([...audio.activeSamples].filter(r=>r.speakerId==='nurse').length,1);await audio.dispose();assert.equal(audio.activeSamples.size,0);
 });
+
+test('Recorded laughter respects speech and floor settings and owns only one finite source per actor',()=>{
+ const audio=owner(),pos={x:2,y:1.5,z:4,floor:0};audio.samples['laugh-male']={duration:1.42};audio.samples['laugh-female']={duration:1.82};
+ const first=audio.laugh({gender:'male'},pos,.45,'visitor');assert.equal(first.name,'laugh-male');assert.equal(first.source.loop,false);assert.equal(first.panner.positionX.value,2);assert.equal(first.speakerId,'visitor');
+ const second=audio.laugh({gender:'female'},pos,.45,'visitor');assert.ok(first.source.stopped);assert.equal(first.source.buffer,null);assert.equal(second.name,'laugh-female');assert.equal(audio.activeSamples.size,1);
+ const nodes=audio.ctx.nodes.length;audio.settings.speech=false;assert.equal(audio.laugh({},pos),null);audio.settings.speech=true;assert.equal(audio.laugh({},{...pos,floor:2}),null);assert.equal(audio.ctx.nodes.length,nodes);second.source.finish();assert.equal(audio.activeSamples.size,0);assert.equal(audio.timers.size,0);
+});

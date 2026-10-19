@@ -27,8 +27,8 @@ function actor(e,pos,id='nurse'){const root=new THREE.Group();root.position.set(
 
 test('Upper-floor antidotes cure once per cabinet, preserve clean doses, protect briefly and fully detach on reset',()=>{
  const e=simulation();try{
- const counts=e.hospitals.map(h=>h.colliders.length);e.antidotes=withCanvas(()=>new AntidoteStations(e));assert.deepEqual(e.antidotes.hud().map(i=>i.floor),[1,2]);
- for(const floor of [1,2]){e.floor=floor;e.antidotes.update();const item=e.antidotes.interactions()[0];e.playerPos.set(item.x,0,item.z);assert.equal(e.antidotes.use(item),false);assert.equal(item.station.available,true);
+ const counts=e.hospitals.map(h=>h.colliders.length);e.antidotes=withCanvas(()=>new AntidoteStations(e));assert.deepEqual(e.antidotes.hud(),[]);assert.equal(e.antidotes.stations.length,1);
+ for(const floor of e.antidotes.stations.map(s=>s.interaction.floor)){e.floor=floor;e.antidotes.update();const item=e.antidotes.interactions()[0];e.playerPos.set(item.x,0,item.z);assert.equal(e.antidotes.use(item),false);assert.equal(item.station.available,true);
  e.impairment=60;e.impairmentTotal=60;e.exposureSource='patient';assert.equal(e.antidotes.use(item),true);assert.equal(e.impairment,0);assert.equal(e.impairmentTotal,0);assert.equal(e.exposureSource,null);assert.equal(item.station.available,false);assert.equal(e.antidotes.use(item),false);
  e.triggerCough({contamination:30,name:'sick'});assert.equal(e.impairment,0);e.mission.elapsed+=8.01;e.triggerCough({contamination:30,name:'sick'});assert.equal(e.impairment,30);e.impairment=0;}
  const roots=e.antidotes.stations.map(s=>s.root);e.antidotes.dispose();assert.deepEqual(e.hospitals.map(h=>h.colliders.length),counts);assert.ok(roots.every(r=>r.parent===null&&r.children.length===0));

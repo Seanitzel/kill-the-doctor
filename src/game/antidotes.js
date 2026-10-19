@@ -3,7 +3,7 @@ import {disposeObjectResources} from './resources.js';
 export class AntidoteStations {
   constructor(engine){
     this.e=engine;this.stations=[];
-    for(const layout of engine.levels){const station=buildAntidoteCabinet(layout);if(!station)continue;this.stations.push(station);engine.scene.add(station.root);engine.hospitals[layout.floor].colliders.push(station.collider);}this.update();
+    const selected=Math.floor(engine.mission.random()*3);for(const layout of engine.levels.filter(l=>l.floor===selected)){const station=buildAntidoteCabinet(layout);if(!station)continue;this.stations.push(station);engine.scene.add(station.root);engine.hospitals[layout.floor].colliders.push(station.collider);}this.update();
   }
   interactions(){return this.stations.filter(s=>s.interaction.floor===this.e.floor).map(s=>({...s.interaction,station:s,label:s.available?'Use contamination antidote':'Antidote cabinet · empty'}));}
   use(item){
@@ -15,6 +15,6 @@ export class AntidoteStations {
     e.audio.sound('clue');e.notify('Antidote used · vision restored','clue');e.hooks.soundCaption?.('The contamination clears. Your vision is steady again.');e.emitHUD();return true;
   }
   update(){for(const s of this.stations)s.root.visible=s.interaction.floor===this.e.floor;}
-  hud(){return this.stations.map(s=>({...s.interaction,available:s.available}));}
+  hud(){return []; /* Deliberately absent from maps. */}
   dispose(){if(!this.e)return;for(const s of this.stations){const colliders=this.e.hospitals[s.interaction.floor].colliders,index=colliders.indexOf(s.collider);if(index>=0)colliders.splice(index,1);s.root.removeFromParent();disposeObjectResources(s.root,{textures:true});s.root.clear();}this.stations=[];this.e=null;}
 }

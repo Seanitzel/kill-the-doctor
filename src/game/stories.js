@@ -1,5 +1,5 @@
 import {REVISED_CASEFILES} from './casefiles.js';
-export const STORY_NOTICE='Fictional revenge stories. Nhalewick, its patients and its doctors are invented. Background references do not document the events shown.';
+export const STORY_NOTICE='Fictional revenge stories. The hospitals, patients and doctors are invented. Background references do not document the events shown.';
 export const STORY_SOURCES=[
   {id:'babies',title:'Accidental baby switch: Grasse court award, 2015',url:'https://www.investing.com/news/world-news/french-women-switched-at-birth-to-receive-400%2C000-euros%3A-court-327414',publisher:'Reuters',note:'Reporting on two girls accidentally switched at a French clinic in 1994. Layla, the altered records, the cover-up and her revenge are fictional additions.'},
   {id:'detention',title:'M A O & another v Attorney General, 2015',url:'https://new.kenyalaw.org/akn/ke/judgment/kehc/2015/8096/eng%402015-09-17/source.pdf',publisher:'Kenya High Court',note:'The court found detention of maternity patients for unpaid bills unlawful and unconstitutional.'},

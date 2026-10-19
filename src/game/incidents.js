@@ -1,3 +1,4 @@
+import {lateContactRound} from './international.js';
 import {JAMIE_SELF_TALK_LINES} from './dialogue-v25.js';
 import {tileAt,key,rng} from './layout.js';
 import {makePlayer} from './assets.js';
@@ -13,18 +14,18 @@ function contactSlots(block){
   return (block===0?[0,3,7]:slots.slice(0,3)).sort((a,b)=>a-b);
 }
 export function contactRound(round){const block=Math.floor((Math.max(1,round)-1)/10);return contactSlots(block).includes((round-1)%10);}
-export function contactIdentity(round,seed){
-  const random=rng((seed^Math.imul(round,2654435761))>>>0),block=Math.floor((round-1)/10),rank=Math.max(0,contactSlots(block).indexOf((round-1)%10)),index=(block*3+rank)%NAMES.length;
+export function contactIdentity(round,seed,attempt=0){
+  const random=rng((seed^Math.imul(round,2654435761)^Math.imul(attempt,7919))>>>0),block=Math.floor((round-1)/10),rank=Math.max(0,contactSlots(block).indexOf((round-1)%10)),index=(block*3+rank+attempt)%NAMES.length;
   return {name:NAMES[index],gender:random()<.5?'male':'female',skin:['#efddce','#c79774','#845331','#41281f'][Math.floor(random()*4)],hair:['#211d22','#71513a','#a58354'][Math.floor(random()*3)],accent:['#795b62','#487068','#625676'][Math.floor(random()*3)],hairstyle:['cropped','afro','straight','curls-short'][Math.floor(random()*4)]};
 }
 export class HospitalIncidents{
   constructor(engine){this.e=engine;this.contact=null;this.scan=0;this.heardSerial=0;this.nextConversation=0;this.trail=[];this.trailFloor=null;}
   setup(){
-    const e=this.e;if(e.mission.type!=='standard'||!contactRound(e.mission.round))return;this.arrivalAt=65+e.mission.random()*45;
+    const e=this.e;if(e.mission.type!=='standard'||!(lateContactRound(e.mission.round,e.mission.countryAttempt)??contactRound(e.mission.round)))return;this.arrivalAt=65+e.mission.random()*45;
   }
   arrive(){
     const e=this.e;if(this.contact||!this.arrivalAt||e.mission.elapsed<this.arrivalAt||e.mission.state==='escape'||e.mission.result)return false;
-    const person=contactIdentity(e.mission.round,e.mission.seed),visual=makePlayer(e.assets,person.gender,{...person,outfit:'jacket'},'civilian'),n=e.spawnNPC(person,'patient',0,{x:3,z:30},null,'unexpected-contact',{visual});
+    const person=contactIdentity(e.mission.round,e.mission.seed,e.mission.countryAttempt||0),visual=makePlayer(e.assets,person.gender,{...person,outfit:'jacket'},'civilian'),n=e.spawnNPC(person,'patient',0,{x:3,z:30},null,'unexpected-contact',{visual});
     n.recruit={state:'panicked',nextBurst:e.mission.elapsed,speakAt:e.mission.elapsed+4,shotAt:0,phase:'calm'};n.activity='panic';n.speed=4.3;n.contamination=0;n.name=person.name;n.person=person;this.contact=n;
     this.privateRoom=e.levels[0].rooms.find(r=>r.kind==='bathroom');return true;
   }

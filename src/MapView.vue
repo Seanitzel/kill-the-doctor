@@ -4,7 +4,7 @@ import { makeLayout, TILE, FLOORS } from './game/layout.js';
 const props = defineProps({ floor: { default: 0 }, hud: Object, target: Object, clues: { default: 0 }, assignment:Object, mini: Boolean });
 const roomLines=name=>name.length>12&&name.includes(' ')?name.split(' '):[name];
 const departmentKnown=computed(()=>!!props.clues&&(!props.hud?.covert?.documentRequired||props.hud.covert.documentTaken));
-const layout = computed(() => makeLayout(props.floor));
+const layout = computed(() => makeLayout(props.floor,props.hud?.country?.index||0));
 const px = computed(() => ((props.hud?.x || 0) / TILE + 11) * 30 + 15);
 const pz = computed(() => ((props.hud?.z || 0) / TILE + 11) * 30 + 15);
 </script>
@@ -24,7 +24,7 @@ const pz = computed(() => ((props.hud?.z || 0) / TILE + 11) * 30 + 15);
     <circle :cx="(layout.directory.x/TILE+11)*30+15" :cy="(layout.directory.z/TILE+11)*30+15" r="7" fill="#dfc78c"/><text v-if="!mini && floor<3" x="237" y="638" fill="#bda97b" font-size="10">DIRECTORY</text>
     <circle v-if="floor<3" cx="525" cy="345" r="7" fill="#dfc78c"/>
     <g v-if="assignment?.type!=='standard'" fill="#e6c788" font-family="monospace" font-size="18" text-anchor="middle"><g v-if="floor===0 && !assignment?.keys.includes('basement')" transform="translate(255,465)"><circle r="13" fill="#785f35"/><text y="6">K</text></g><g v-if="floor===0 && !assignment?.keys.includes('theatre')" transform="translate(525,465)"><circle r="13" fill="#785f35"/><text y="6">K</text></g><g v-for="s in assignment?.sites.filter(s=>s.floor===floor && !assignment.photos.includes(s.id))||[]" :key="s.id" :transform="`translate(${(s.x/TILE+11)*30+15},${(s.z/TILE+11)*30+15})`"><circle r="13" fill="#285c6b"/><text y="6">C</text></g></g>
-    <g v-for="station in hud?.antidotes?.filter(s=>s.floor===floor)||[]" :key="`antidote-${station.floor}`" :transform="`translate(${(station.x/TILE+11)*30+15},${(station.z/TILE+11)*30+15})`" :opacity="station.available?1:.4"><title>{{station.available?'Contamination antidote':'Antidote cabinet · empty'}}</title><rect x="-10" y="-10" width="20" height="20" rx="3" fill="#1c6754" stroke="#92dac2"/><path d="M-6 0H6M0-6V6" stroke="#d4ffed" stroke-width="3"/></g>
+
     <g v-if="hud?.floor === floor" :transform="`translate(${px},${pz})`">
       <circle r="21" fill="#8ccaf0" fill-opacity=".12"/><circle r="8" fill="#b7e6ff" stroke="#122534" stroke-width="2"/>
       <path d="M0 13L-5 6H5z" :transform="`rotate(${-hud.yaw*180/Math.PI})`" fill="#b7e6ff"/>

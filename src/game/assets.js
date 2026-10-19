@@ -191,9 +191,9 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
   const clothLeases=new Set();
   model.traverse(o => {
     if (o.isMesh) {
-      o.castShadow = true; o.receiveShadow = true;
+      o.castShadow = true; o.receiveShadow = true;o.frustumCulled=false;
       if (o.material) {
-        o.material = o.material.clone(); o.material.roughness = .88; o.material.metalness = 0;
+        o.material = o.material.clone();if(/Body|Skin|Outfit/.test(o.material.name))o.material.side=THREE.DoubleSide; o.material.roughness = .88; o.material.metalness = 0;
         const name = o.material.name;
         if (person) {
           if (name.includes('Outfit_Top')) { const color = role === 'nurse' ? NURSE_UNIFORM : role === 'doctor' ? '#d9e4ea' : ['security','police'].includes(role) ? '#344b62' : person.accent || '#718e9c'; o.material.map = recolorCloth(o.material.map,color,assets,clothLeases); o.material.color.set('#ffffff'); }
@@ -206,7 +206,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       }
     }
   });
-  applyAppearance(model,person,role,assets.appearanceCache);
+  applyAppearance(model,person,role,assets.appearanceCache);model.traverse(o=>{if(o.isMesh)o.frustumCulled=false;});
   const mixer = new THREE.AnimationMixer(model); const actions = {};
   for (const name of ['Idle', 'Walk', 'Run']) {
     const clip = assets.animations[name];
@@ -311,6 +311,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       const bite=(Math.sin(time*1.25)+1)/2;
       orient('RightArm','RightForeArm',[.06,-.28,.4]); orient('RightForeArm','RightHand',[-.06,.1+bite*.45,.3-bite*.23]);
       orient('LeftArm','LeftForeArm',[-.13,-.25,.35]); orient('LeftForeArm','LeftHand',[.02,-.15,.45]);
+    } else if(activity==='cpr') {
+      orient('RightArm','RightForeArm',[.09,-.6,.35]);orient('RightForeArm','RightHand',[-.06,-.45,.28]);orient('LeftArm','LeftForeArm',[-.10,-.6,.35]);orient('LeftForeArm','LeftHand',[.05,-.45,.28]);if(b.Spine2)b.Spine2.rotation.x+=.5+Math.sin(time*6)*.06;if(b.Head)b.Head.rotation.x+=.2;
     } else if(activity==='examine') {
       orient('RightArm','RightForeArm',[.08,-.19,.65]); orient('RightForeArm','RightHand',[0,-.16,.75]);
       orient('LeftArm','LeftForeArm',[-.1,-.2,.4]); orient('LeftForeArm','LeftHand',[0,.05,.5]);

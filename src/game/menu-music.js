@@ -2,13 +2,14 @@
 // sputters. The in-mission HospitalAudio score is deliberately untouched.
 export const MENU_SCORE_SECONDS=40;
 export function menuScoreBuffer(ctx){
-  const rate=24000,buffer=ctx.createBuffer(1,rate*MENU_SCORE_SECONDS,rate),out=buffer.getChannelData(0),notes=[146.83,174.61,220,164.81,130.81,174.61,196,164.81];
+  const rate=24000,buffer=ctx.createBuffer(1,rate*MENU_SCORE_SECONDS,rate),out=buffer.getChannelData(0),notes=[146.83,155.56,220,146.83,146.83,207.65,155.56,220];
   let seed=271019;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296*2-1;};let air=0;
   for(let i=0;i<out.length;i++){
-    const t=i/rate,bar=Math.floor(t/10),phase=t%10,root=[73.416,65.406,58.27,65.406][bar];
+    const t=i/rate,bar=Math.floor(t/10),phase=t%10,root=[73.416,73.416,77.782,73.416][bar];
     const pad=Math.sin(Math.PI*phase/10)**2;
     let v=pad*(Math.sin(t*2*Math.PI*root)*.12+Math.sin(t*2*Math.PI*root*1.5+.4)*.045+Math.sin(t*2*Math.PI*root*2.002)*.03);
     const beat=Math.floor(t/2.5),s=t%2.5,note=notes[beat%notes.length]*(beat%4===3?.5:1),envelope=(1-Math.exp(-s*24))*Math.exp(-s*1.8);
+    v+=Math.sin(t*2*Math.PI*36.708)*(.018+.012*Math.sin(t*2*Math.PI*.8)) + Math.sin(t*2*Math.PI*110.2)*.014*pad;
     v+=envelope*(Math.sin(t*2*Math.PI*note)*.065+Math.sin(t*2*Math.PI*note*2)*.014);
     const echo=s-.38;if(echo>0)v+=Math.exp(-echo*2.4)*Math.sin((t-.38)*2*Math.PI*note)*.014;
     air+=.025*(random()-air);v+=air*.035;

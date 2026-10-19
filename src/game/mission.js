@@ -1,6 +1,7 @@
+import {countryFor,campaignLevel,migrateInternational,recordInternationalResult} from './international.js';
 import {campaignChallenge} from './campaign.js';
 import { rng, makeLayout, FLOORS } from './layout.js';
-import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,migrateCharacterSave} from './loadout.js';
+import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,migrateCharacterSave,normalizeWardrobe} from './loadout.js';
 import {assignmentType,ASSIGNMENT_TYPES} from './assignment-types.js';
 export const SAVE_KEY = 'ktd-northline-v1';
 export const UPGRADE_INFO = [
@@ -21,14 +22,14 @@ export const STAFF = [
   { name: 'Dr. Sofia Vale', role: 'Attending', gender: 'female', hair: '#573a2d', skin: '#c58d6c', accent: '#426e79', glasses: true },
   { name: 'Nurse Jonas Beck', role: 'Senior nurse', gender: 'male', hair: '#8b7761', skin: '#dfbba0', accent: '#4a8193', glasses: false },
 ];
-export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],loadout:{weapon:'pistol',mask:false},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
+export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],playMode:'story',campaignCompleted:null,countryId:'nigeria',countryAttempts:Array(20).fill(0),loadout:{weapon:'pistol',mask:false},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
 export function readSave(storage) {
   const blank = defaultSave();
   try {
     const data = JSON.parse(storage.getItem(SAVE_KEY));
     if (!data || typeof data !== 'object') return blank;
     for (const k of ['coins', 'completed', 'attempts']) blank[k] = Math.max(0, Math.floor(Number(data[k]) || 0));
-    Object.assign(blank,migrateCharacterSave(data));
+    Object.assign(blank,migrateCharacterSave(data),migrateInternational(data));blank.ownedOutfits=normalizeWardrobe(data.ownedOutfits);
     for (const u of UPGRADE_INFO) blank.upgrades[u.id] = Math.min(u.max, Math.max(0, Math.floor(Number(data.upgrades?.[u.id]) || 0)));
     blank.loadout={weapon:data.loadout?.weapon==='sniper'&&blank.upgrades.sniper?'sniper':'pistol',mask:!!data.loadout?.mask&&!!blank.upgrades.mask};
     blank.storySeen=Array.isArray(data.storySeen)?data.storySeen.filter(id=>typeof id==='string').slice(-128):[];blank.lastStory=typeof data.lastStory==='string'?data.lastStory:'';
@@ -59,13 +60,13 @@ export function purchase(save, id) {
 export class Mission {
   constructor(save, seed = Date.now(), attempt = save.attempts) {
     this.save = save; this.random = rng(seed); this.seed = seed;
-    this.round = save.completed + 1;this.type=assignmentType(save);this.keys=[];this.photos=[];this.photoImages={};this.operationDoctors=[];this.patientReleased=false;
+    this.round = campaignLevel(save);this.country=countryFor(save);this.playMode=save.playMode||'story';this.countryAttempt=save.countryAttempts?.[this.country.index]||0;this.type=assignmentType(save);this.keys=[];this.photos=[];this.photoImages={};this.operationDoctors=[];this.patientReleased=false;
     this.difficulty = save.settings.difficulty;this.challenge=campaignChallenge(this.round,this.difficulty);
     const doctors=STAFF.filter(s=>s.name.startsWith('Dr.'));const targetIndex=(attempt+Math.floor(this.random()*3))%doctors.length;
     const floor = attempt === 0 ? 0 : Math.floor(this.random() * 3);
-    const availableRooms = makeLayout(floor).rooms.filter(r => !['cafe', 'office', 'utility', 'morgue', 'bathroom'].includes(r.kind));
-    this.target = { ...doctors[targetIndex], id: 'target', floor, room: availableRooms[Math.floor(this.random() * availableRooms.length)] };
-    if(this.type!=='standard')this.target={...doctors[0],id:'operation-doctor-0',floor:3,room:makeLayout(3).rooms[0]};
+    const availableRooms = makeLayout(floor,this.country.index).rooms.filter(r => !['cafe', 'office', 'utility', 'morgue', 'bathroom'].includes(r.kind));
+    this.target = { ...doctors[targetIndex],name:this.country.doctor,gender:this.country.gender, id: 'target', floor, room: availableRooms[Math.floor(this.random() * availableRooms.length)] };
+    if(this.type!=='standard')this.target={...doctors[0],name:this.country.doctor,gender:this.country.gender,id:'operation-doctor-0',floor:3,room:makeLayout(3).rooms[0]};
     this.state = 'investigate'; this.clues = []; this.elapsed = 0; this.timer = 0;
     this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
     this.suspicion = 0; this.blackoutCount = 0;
@@ -101,7 +102,7 @@ export class Mission {
     return true;
   }
   beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]*this.challenge.escapeScale+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0);}this.suspicion=Math.max(this.suspicion,suspicion);}
-  collectKey(id){if(this.result||!['basement','theatre'].includes(id)||this.keys.includes(id))return false;this.keys.push(id);return true;}
+  collectKey(id){if(this.result||!['basement','theatre','laboratory'].includes(id)||this.keys.includes(id))return false;this.keys.push(id);return true;}
   photograph(id){if(this.type!=='evidence'||this.result||!['ledger','consent','theatre'].includes(id)||this.photos.includes(id))return false;this.photos.push(id);if(this.photos.length===3)this.beginEscape(0);return true;}
   releasePatient(){if(this.type!=='rescue'||!this.targetDown||this.patientReleased||this.result)return false;this.patientReleased=true;return true;}
   tick(dt) {
@@ -121,8 +122,8 @@ export class Mission {
       { label: 'Efficient escape', coins: Math.min(60, Math.floor(this.timer / 3)) },
     ] : [];
     const coins = breakdown.reduce((sum, row) => sum + row.coins, 0);
-    this.save.coins += coins; this.save.attempts++; if (success) this.save.completed++;
-    this.result = { type:this.type,photos:this.photos.length,rescued:this.type==='rescue'&&success,success, reason, coins, breakdown, duration: this.elapsed, targetDown: this.targetDown, escaped: success, staffKills: this.staffKills, clues: this.clues.length };
+    recordInternationalResult(this.save,this,success);this.save.coins += coins; this.save.attempts++; if (success) this.save.completed++;
+    this.result = { countryId:this.country.id,playMode:this.playMode,campaignComplete:this.save.campaignCompleted===20,type:this.type,photos:this.photos.length,rescued:this.type==='rescue'&&success,success, reason, coins, breakdown, duration: this.elapsed, targetDown: this.targetDown, escaped: success, staffKills: this.staffKills, clues: this.clues.length };
     return this.result;
   }
 }

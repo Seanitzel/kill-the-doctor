@@ -25,7 +25,7 @@ export const key = (x, z) => `${x},${z}`;
 export const edgeKey = (a, b) => [a, b].sort().join('|');
 export const world = (x, z) => ({ x: (x - 11) * TILE, z: (z - 11) * TILE });
 export const tileAt = (x, z) => ({ x: Math.round(x / TILE + 11), z: Math.round(z / TILE + 11) });
-export function makeLayout(floor = 0) {
+export function makeLayout(floor = 0, siteIndex = 0) {
   const cells = new Map();
   const fill = (x, z, w, h, room = 'hall') => {
     for (let i = x; i < x + w; i++) for (let j = z; j < z + h; j++) cells.set(key(i, j), { x: i, z: j, room });
@@ -40,7 +40,7 @@ export function makeLayout(floor = 0) {
   }
   const specs=floor===3?[[7,7,7,6]]:floor===0?[...roomSpecs,[4,20,3,3]]:roomSpecs;
   const rooms = specs.map(([x, z, w, h], i) => {
-    const [name, subtitle, kind] = floor===3?['Restricted theatre','Authorized personnel only','rescue-theater']:i===8?['Bathroom','Toilets & washbasins','bathroom']:departments[floor * 8 + i];
+    const [name, subtitle, kind] = floor===3?['Restricted theatre','Authorized personnel only','rescue-theater']:i===8?['Bathroom','Toilets & washbasins','bathroom']:departments[floor * 8 + ((i + Math.max(0,Math.floor(siteIndex))*(floor+1)) % 8)];
     const room = { id: `f${floor}-r${i}`, index: i, x, z, w, h, name, subtitle, kind, floor, number: floor===3?'B01':`${floor + 1}${String(i + 1).padStart(2, '0')}`, wing: i < 2 || (i >= 4 && i < 6) ? 'West' : 'East' };
     room.center = world(x + (w - 1) / 2, z + (h - 1) / 2);
     fill(x, z, w, h, room.id);
@@ -55,7 +55,7 @@ export function makeLayout(floor = 0) {
     if(floor===3||room.kind==='bathroom')continue;
     const backZ = room.z < 10 ? room.z : room.z + room.h - 1;
     const outZ = backZ + (room.z < 10 ? -1 : 1);
-    doors.push({ id: `${room.id}-back`, a: key(x, backZ), b: key(x, outZ), room: room.id, floor, x: world(x, backZ).x, z: (world(x, backZ).z + world(x, outZ).z) / 2, axis: 'x', open: true, locked: false });
+    doors.push({ id: `${room.id}-back`, a: key(x, backZ), b: key(x, outZ), room: room.id, floor, x: world(x, backZ).x, z: (world(x, backZ).z + world(x, outZ).z) / 2, axis: 'x', open: room.kind!=='lab', locked: false });
   }
   const doorEdges = new Map(doors.map(d => [edgeKey(d.a, d.b), d]));
   const walls = [];

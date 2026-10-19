@@ -1,0 +1,19 @@
+Natural human sneeze sound
+
+Asset: sneeze-natural.mp3
+Original: Sneeze.ogg
+Creator: Neo139
+Original creation date: 2012-07-27
+Primary source and license statement: https://commons.wikimedia.org/wiki/File:Sneeze.ogg
+Original file: https://upload.wikimedia.org/wikipedia/commons/4/48/Sneeze.ogg
+License: Creative Commons CC0 1.0 Universal Public Domain Dedication
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+Verified: 2026-10-19
+
+The creator identifies the recording as their own work and dedicates it under CC0.
+CC0 permits copying, modification, redistribution, and commercial use.
+Attribution is not required; this record is retained for provenance.
+
+Processing: original recorded audio converted to 96 kb/s stereo MP3 at 44.1 kHz;
+gain increased 4 dB; 3 ms opening fade and 25 ms ending fade; 80 ms silent tail.
+No voice synthesis or artificial sneeze generation was used.

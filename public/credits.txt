@@ -111,3 +111,7 @@ Woman laugh — Kalibrk / Freesound, CC0:
 https://freesound.org/people/Kalibrk/sounds/433921/
 Trimmed, normalized mono excerpts. Exact provenance and processing:
 audio/laugh-sources.json.
+
+KTD 2.8 additions
+Natural sneeze: Neo139, Sneeze.ogg, CC0 1.0. https://commons.wikimedia.org/wiki/File:Sneeze.ogg
+Travel globe coastline: Natural Earth 1:110m land, public domain. https://www.naturalearthdata.com/about/terms-of-use/

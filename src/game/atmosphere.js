@@ -120,7 +120,7 @@ export class HospitalLife {
     actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07);
   }
   privacyWitness(room){
-    if(!room||(!CLINICAL_KINDS.includes(room.kind)&&room.kind!=='office'))return null;
+    if(!room||room.kind==='emergency'||(!CLINICAL_KINDS.includes(room.kind)&&room.kind!=='office'))return null;
     const e=this.engine;if(this.targetCase?.room.id===room.id&&this.targetCase.appointment.completed)return null;
     return e.npcs.filter(n=>n.room?.id===room.id&&n.floor===e.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===room.id&&!n.dead&&!n.evacuated&&!n.reporting&&['doctor','nurse'].includes(n.role)).sort((a,b)=>(a.id==='target'?0:a.role==='nurse'?1:2)-(b.id==='target'?0:b.role==='nurse'?1:2)||dist(e.playerPos,a.pos)-dist(e.playerPos,b.pos))[0]||null;
   }
@@ -247,7 +247,8 @@ export class HospitalLife {
     if(!emergency&&now>=this.nextSneeze){const candidates=e.npcs.filter(n=>n.floor===e.floor&&n.role==='patient'&&!n.lying&&!n.baby&&!n.dead&&!n.evacuated&&!n.blind&&!n.recruit&&dist(n.pos,e.playerPos)<9&&dist(n.pos,e.playerPos)>1.5);if(candidates.length)this.sneeze(candidates[Math.floor(e.mission.random()*candidates.length)]);this.nextSneeze=now+35+e.mission.random()*35;}
     for(const item of this.cases) {
       if(item.completed){item.cable.visible=item.disc.visible=false;continue;}
-      const local=item.room.floor===e.floor,alive=!item.doctor.dead&&!item.doctor.evacuating;item.cable.visible=item.disc.visible=local&&alive&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;
+      const diversion=e.extras?.lure,helping=diversion&&!diversion.recovered&&(item.doctor===diversion.responder||item.doctor===diversion.target&&diversion.phase!=='collapsed');
+      const local=item.room.floor===e.floor,alive=!item.doctor.dead&&!item.doctor.evacuating&&!helping;item.cable.visible=item.disc.visible=local&&alive&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;
       const d=dist(e.playerPos,item.patient.pos),source={x:item.patient.pos.x,y:1.15,z:item.patient.pos.z,floor:item.room.floor};
       if(local&&d<20&&now>=item.nextMachine&&now>=this.nextMachine){
         const gain=activityVolume(d,true,e.lineOfSight(e.playerPos,item.patient.pos))*.30;

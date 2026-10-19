@@ -1,3 +1,4 @@
+import {bathroomMirror} from './mirrors.js';
 import * as THREE from 'three';
 import {Batcher,mesh,material,sign,bed,monitor} from './assets.js';
 import {footprint} from './collision.js';
@@ -39,7 +40,7 @@ export function addBathroom(parent,{x=0,z=0,width=9,depth=9,rotation=0}={},mater
   const kit=propKit(parent,{x,z,rotation},materials),{root,batch:b,obstacle,use,point}=kit;root.name='bathroom-props';
   const white=use('white','#e8eff0'),blue=use('blue','#416e80'),dark=use('dark','#253a42');
   const steel=use('steel','#9faeb5',{metalness:.75,roughness:.25});
-  const mirror=use('mirror','#b4cfda',{metalness:.9,roughness:.08});
+  const mirrors=[];
   const left=-width/2+.9,right=width/2-.75,divider=-width/2+2.95;
   const centers=[-1.45,1.45],anchors={toilets:[],sinks:[],entry:point(0,-depth/2+1.2),center:point(0,0)};
   // Two private cubicles open onto the central circulation aisle.
@@ -78,7 +79,7 @@ export function addBathroom(parent,{x=0,z=0,width=9,depth=9,rotation=0}={},mater
     b.cylinder(steel,right+.20,1.04,pz,.023,.27,.023);
     b.box(steel,right+.08,1.17,pz,.24,.035,.035);
     b.box(white,width/2-.17,1.2,pz+.8,.13,.24,.18);b.box(blue,width/2-.245,1.21,pz+.8,.018,.08,.10);
-    b.box(steel,width/2-.12,1.68,pz,.055,1.12,1.24);b.box(mirror,width/2-.157,1.68,pz,.018,1.04,1.16);
+    b.box(steel,width/2-.12,1.68,pz,.055,1.12,1.24);const mirror=bathroomMirror();mirror.position.set(width/2-.17,1.68,pz);mirror.rotation.y=-Math.PI/2;root.add(mirror);mirrors.push(mirror);
     b.box(white,width/2-.19,2.3,pz,.09,.07,1.22);
     obstacle(right-.03,pz,.9,1.35,1.1,0,'washbasin');
     anchors.sinks.push(point(right-1.1,pz,Math.PI/2));
@@ -86,7 +87,7 @@ export function addBathroom(parent,{x=0,z=0,width=9,depth=9,rotation=0}={},mater
   b.box(dark,width/2-.65,.31,depth/2-.8,.42,.62,.42);b.box(steel,width/2-.65,.64,depth/2-.8,.44,.05,.44);
   obstacle(width/2-.65,depth/2-.8,.46,.46,.67,0,'bathroom-bin');
   kit.label('RESTROOMS','ACCESSIBLE / WASH HANDS',width/2-1.7,2.65,-depth/2+.13,0,2.5,.5);
-  const statics=kit.finish();return {root,colliders:kit.colliders,anchors,statics,dispose:kit.dispose};
+  const statics=kit.finish();return {root,colliders:kit.colliders,anchors,statics,mirrors,dispose(){for(const mirror of mirrors)mirror.dispose();kit.dispose();}};
 }
 
 export function attachMobilityCane(visual,{hand=null,side=1,length=1.2}={},materials={}) {

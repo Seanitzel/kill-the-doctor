@@ -2,9 +2,9 @@ import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
 import { native,stopNativeSpeech } from '../mobile/platform.js';
 import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
-const AUDIO_REVISION='2.7.0';
+const AUDIO_REVISION='2.8.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
-export const HOSPITAL_SAMPLE_FILES=Object.freeze({'laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
+export const HOSPITAL_SAMPLE_FILES=Object.freeze({'laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-natural.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
 const disconnect=node=>{try{node?.disconnect();}catch{}};
 
@@ -146,8 +146,13 @@ export class HospitalAudio {
     if (name === 'reload') { this.noise(.08, .12, 2300); this.delay(() => this.noise(.12, .13, 1300), 480); }
     if (name === 'alarm') { this.tone(660, .3, .2); this.delay(() => this.tone(440, .3, .2), 320); }
   }
+  flight(){
+    if(!this.ctx||!this.enabled)return null;const ctx=this.ctx,rate=ctx.sampleRate,buffer=ctx.createBuffer(1,Math.ceil(rate*8.2),rate),data=buffer.getChannelData(0);let smooth=0,seed=98;
+    for(let i=0;i<data.length;i++){const t=i/rate;seed=(Math.imul(seed,1664525)+1013904223)>>>0;smooth+=.055*(seed/4294967296*2-1-smooth);const envelope=Math.sin(Math.PI*t/8.2)**2;data[i]=(smooth*.75+Math.sin(t*2*Math.PI*(58+t*3))*.026)*envelope;}
+    const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;gain.gain.value=.65;source.connect(gain);gain.connect(this.lowpass);const record=this.trackSynth(source,[source,gain]);source.start();return record;
+  }
   patientWarning(name,position){
-    if(name==='cough'&&this.samples.cough){this.playSample('cough',position,.65);}else this.sound(name);
+    if(['cough','sneeze'].includes(name)&&this.samples[name])this.playSample(name,position,.65);else if(name!=='sneeze')this.sound(name);
   }
   hospitalMachine(kind,position=this.listenerPosition,gain=.3){
     if(!this.ownsContext(this.ctx)||!this.enabled||gain<=0||!Object.hasOwn(MACHINE_DURATIONS,kind))return null;

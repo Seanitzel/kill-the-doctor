@@ -21,7 +21,7 @@ export class AssignmentObjectives{
     }
     const operating=e.hospitals[3].operatingSets?.[0],room=e.levels[3].rooms[0],anchors=operating?.anchors||{patient:{x:-3,y:1,z:-3.65,bedRotation:0},doctor:{x:-4.4,z:-4.5,yaw:Math.PI/2},assistant:{x:-1.6,z:-4.5,yaw:-Math.PI/2},rescue:{x:-3,z:-1}};
     for(const [i,p] of [anchors.doctor,anchors.assistant].entries()){
-      const doctor={...m.target,name:i===0?'Dr. Adrian Vale':'Dr. Clara Venn',gender:i===0?'male':'female',accent:'#729a9f'};
+      const doctor={...m.target,name:i===0?m.country?.doctor||'Dr. Adrian Vale':'Dr. Amira Solano',gender:i===0?m.country?.gender||'male':'female',accent:'#729a9f'};
       const n=e.spawnNPC(doctor,'doctor',3,p,room,`operation-doctor-${i}`,{fixed:true});n.activity='examine';n.visual.root.rotation.y=p.yaw||0;n.operationDoctor=true;
     }
     const person={name:'Casey Morris',gender:'female',skin:'#b98664',hair:'#332621',accent:'#a7bbc1'},p=anchors.patient;

@@ -9,8 +9,8 @@ test('upper-floor antidote cabinets mount on a solid hall wall clear of glass, d
   const previous=globalThis.document;globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>({fillRect(){},fillText(){}})})};
   const materials=Object.fromEntries(['white','steel','glass'].map(key=>[key,new THREE.MeshStandardMaterial()]));
   try{
-    assert.equal(buildAntidoteCabinet(makeLayout(0),materials),null);assert.equal(buildAntidoteCabinet(makeLayout(3),materials),null);
-    for(const floor of [1,2]){
+    assert.equal(buildAntidoteCabinet(makeLayout(3),materials),null);
+    for(const floor of [0,1,2]){
       const layout=makeLayout(floor),snapshot=JSON.stringify(layout.walls),cabinet=buildAntidoteCabinet(layout,materials),{root,interaction,collider}=cabinet;root.updateMatrixWorld(true);
       assert.equal(JSON.stringify(layout.walls),snapshot);assert.deepEqual(root.userData.wallAnchor,{x:1.5,z:-15});assert.equal(root.position.z,-15.92);assert.equal(root.position.x,1.41);
       const wall=layout.walls.find(w=>w.x===1.5&&w.z===-15&&w.axis==='z');assert.ok(!wall.door&&Math.round(wall.x+wall.z)%4!==0);

@@ -6,7 +6,7 @@ import {footprint} from './collision.js';
 // One shallow cabinet on each upper floor. Local +Z faces out of the cabinet;
 // rotating west mounts its back against the central hall's east wall.
 export function buildAntidoteCabinet(layout,materials={}){
-  if(![1,2].includes(layout?.floor))return null;
+  if(![0,1,2].includes(layout?.floor))return null;
   const targetZ=layout.elevator.z+8;
   const wall=layout.walls.filter(w=>w.axis==='z'&&!w.door&&w.x>layout.elevator.x&&w.x<=layout.elevator.x+TILE&&w.z>=layout.elevator.z+3&&w.z<=layout.elevator.z+12)
     .filter(w=>w.exterior||Math.round(w.x+w.z)%4!==0)

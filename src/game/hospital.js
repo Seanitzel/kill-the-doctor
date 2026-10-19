@@ -31,12 +31,12 @@ export function buildLift(layout,m){
   const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);
   return group;
 }
-export function buildHospital(layout, m) {
+export function buildHospital(layout, m, site=null) {
   const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [], bathrooms = [], operatingSets = [];
   const cube = (...args) => batch.box(...args);
   const collider = (x, z, w, d, object = null) => { const c = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, object }; colliders.push(c); return c; };
   batch.collider=(x,z,w,d,h,rot,type)=>{const c=footprint(x,z,w,d,h,rot,type);colliders.push(c);return c;};
-  const placeSign = (text, sub, x, y, z, rot = 0, w = 2.6, h = .65, opts = {}) => { const s = sign(text, sub, w, h, opts); s.position.set(x, y, z); s.rotation.y = rot; group.add(s); return s; };
+  const placeSign = (text, sub, x, y, z, rot = 0, w = 2.6, h = .65, opts = {}) => { const s = sign(String(text).replaceAll('NHALEWICK',site?.hospital?.toUpperCase()||'NHALEWICK'),String(sub).replaceAll('NHALEWICK',site?.hospital?.toUpperCase()||'NHALEWICK'),w,h,opts); s.position.set(x, y, z); s.rotation.y = rot; group.add(s); return s; };
   for (const cell of layout.cells.values()) {
     const { x, z } = world(cell.x, cell.z);
     if(layout.floor===0&&cell.z>=23){cube(m.dark,x,-.075,z,TILE,.15,TILE);continue;}

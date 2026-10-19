@@ -10,7 +10,7 @@ test('Every department, entrance, clue, and elevator is connected on all three f
       const path = findPath(layout, {x:11,z:21}, {x:room.x+1,z:room.z+2});
       assert.ok(path.length > 0, `${room.name} is reachable`);
       const blocked = findPath(layout, {x:11,z:21}, {x:room.x+1,z:room.z+2}, false);
-      if(room.kind!=='bathroom')assert.ok(blocked.length > 0, `${room.name} has an open secondary route`);else assert.equal(layout.doors.filter(d=>d.room===room.id).length,1);
+      if(room.kind==='lab')assert.ok(layout.doors.filter(d=>d.room===room.id).every(d=>!d.open));else if(room.kind!=='bathroom')assert.ok(blocked.length > 0, `${room.name} has an open secondary route`);else assert.equal(layout.doors.filter(d=>d.room===room.id).length,1);
     }
     assert.ok(findPath(layout,{x:11,z:21},{x:11,z:3}).length);
   }

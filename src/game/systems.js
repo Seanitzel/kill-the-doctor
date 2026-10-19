@@ -1,3 +1,4 @@
+import {updateEntrance} from './entrance.js';
 import {EgressNavigation} from './egress.js';
 import * as THREE from 'three';
 import {tileAt,key} from './layout.js';
@@ -8,7 +9,8 @@ export class MissionSystems{
   constructor(engine){this.e=engine;this.scan=0;this.magnet=null;this.evacuating=false;this.navigation=[];}
   navigationFor(floor){return this.navigation[floor]||(this.navigation[floor]=new EgressNavigation(this.e.levels[floor],this.e.hospitals[floor].colliders));}
   prepare(){for(let floor=0;floor<this.e.levels.length;floor++){const nav=this.navigationFor(floor);nav.fieldFor(floor?{x:0,z:-24}:{x:0,z:39});}}
-  route(n,goal){const nav=this.navigationFor(n.floor);n.path=nav.route(n.pos,goal);n.cursor=n.path.length>1&&nav.clear(n.pos,{x:(n.path[1].x-11)*3,z:(n.path[1].z-11)*3})?1:0;n.wait=.7;}
+  route(n,goal){const nav=this.navigationFor(n.floor),raw=nav.route(n.pos,goal);n.path=nav.smoothPath(n.pos,raw);n.cursor=0;n.wait=.7;}
+
   stand(n,goal){
     const e=this.e,nav=this.navigationFor(n.floor);
     if(n.lying||n.seated||!e.canStand(n.pos.x,n.pos.z,.24,n.floor)||!nav.route(n.pos,goal).length){
@@ -17,10 +19,11 @@ export class MissionSystems{
     n.visual.root.rotation.set(0,0,0);n.activity=null;n.seated=n.lying=false;n.baselineY=0;n.pos.y=0;n.hitOffset=null;n.reaction=0;n.path=[];n.cursor=0;
   }
   startEvacuation(){
-    if(this.evacuating)return;this.evacuating=true;this.e.audio.sound('alarm');for(const entrance of this.e.hospitals?.[0]?.entrances||[])entrance.open=true;this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
+    if(this.evacuating)return;this.evacuating=true;this.e.audio.sound('alarm');for(const entrance of this.e.hospitals?.[0]?.entrances||[]){entrance.open=true;updateEntrance(entrance,true,2);}this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
     for(const level of this.e.levels)for(const door of level.doors){door.locked=false;door.open=true;}
     for(const n of this.e.npcs){if(n.dead||n.baby||n.rescuePatient||n.role==='police'||n===this.e.extras?.lure?.contact&&n.lying||n.emergencyResponder)continue;if(n.operationDoctor&&this.e.mission.type==='rescue'){n.reporting=null;n.path=[];n.activity='worried';continue;}if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.evacGoal=n.floor?{x:0,z:-24}:{x:0,z:39};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.8;this.route(n,n.evacGoal);}
-    this.e.hooks.soundCaption?.('The alarm sounds. Staff and ambulatory patients rush toward the exits. Newborns remain protected.');
+    const nearby=this.e.npcs.filter(n=>n.floor===this.e.floor&&!n.dead&&!n.baby).slice(0,3);for(const [i,n]of nearby.entries())this.e.audio.evacuationScream?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},i*.7);
+    this.e.hooks.soundCaption?.('People scream. The alarm sounds. Staff and ambulatory patients rush toward the exits. Newborns remain protected.');
   }
   witness(n,reason='weapon'){
     const e=this.e;if(n.operationDoctor&&e.mission.type==='rescue'){e.mission.beginEscape(65);this.startEvacuation();e.notify('Operating team alerted · stop the procedure and bring the patient out','danger');return;}
@@ -56,7 +59,7 @@ export class MissionSystems{
     return false;
   }
   update(dt){
-    const e=this.e;if((e.mission.targetDown||e.mission.type==='rescue'&&e.mission.state==='escape')&&!this.evacuating)this.startEvacuation();
+    const e=this.e;if((e.mission.targetDown&&(!e.mission.covertDeath||e.mission.bodyDiscovered)||e.mission.type==='rescue'&&e.mission.state==='escape')&&!this.evacuating)this.startEvacuation();
     this.scan-=dt;
     if(e.mission.state!=='escape'&&!e.mission.targetDown&&e.weaponDrawn&&this.scan<=0){
       this.scan=.18;let reporting=e.npcs.filter(n=>n.reporting&&!n.dead).length;

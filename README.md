@@ -140,7 +140,7 @@ Three saved custom characters, a brightness drag on LIGHT, mission selection fro
 
 ## Version 2.6
 
-Exactly one wall-mounted contamination antidote is placed on a seeded random public floor per assignment. It is not shown on the map. The cabinet supplies one free cure, with eight seconds of protection against lingering gas. Clean players do not waste a dose.
+Exactly one wall-mounted contamination antidote is placed on the ground floor per assignment. Its green + marker is shown on the map and turns grey when used. The cabinet supplies one free cure, with eight seconds of protection against lingering gas. Clean players do not waste a dose.
 
 The contact follows a short, bounded movement trail with a stable stopping distance, follows through doorways and the lift, and uses recorded occasional nervous laughter. Ordinary staff use furniture-aware smoothed routes and wait clear of door swings.
 
@@ -164,3 +164,16 @@ Mystery Soda costs 5 coins at atrium vending machines on the three public floors
 Emergency entry does not trigger privacy warnings. Laboratory and Research start closed and can be locked. Twenty distinct assigned doctor names, patient wristbands, taped IV ports, restrained minor-injury details and small fading drops have been added. Patient behavior is varied across destinations without nationality-specific hostility. A CC0 recorded sneeze replaces the generated noise effect. The menu score attempts autoplay and starts on the first gesture when a browser blocks autoplay; its new suspended tension preserves the in-game soundtrack.
 
 See [release-2.8.md](docs/release-2.8.md) for validation and mobile limits.
+
+
+## Version 2.9 — Arrivals and escape
+
+Fresh campaigns begin in France, then Nigeria. Cleared destinations now persist by country identity so older Nigeria-first saves retain their progress. A saved pending flight ensures Next Mission (or resuming from the menu) shows the globe departure and arrival before the next country’s story. All 20 chapters retain increasing surveillance.
+
+Ground-floor automatic glass doors open onto a night street with pavement, road markings and yellow streetlights. The single antidote is marked on the ground-floor map. Successful debriefs bank coins with a visible balance count and stacking sound.
+
+All country casts use varied, gender-consistent names and appearances; site architecture includes distinct trims, ceilings and arrival details. France and Congo have new locally cast story scenes. Clinical desks leave doorway clearance. Pregnancies deform the clothed torso instead of attaching a separate sphere. Closed hand surfaces follow the real rigs, and evacuation uses smoothed routes and consistent running gait.
+
+Office coffee exists on levels 2, 4, 7, 11, 14 and 19 only. The doctor physically visits a bathroom and returns to the personal desk. The fictional compound leaves a covert escape window, interrupted by body discovery or gunfire. Recorded human sneeze and evacuation scream assets include CC0 attribution. The in-game soundtrack is unchanged.
+
+See [release-2.9.md](docs/release-2.9.md) for validation and limits.

@@ -246,8 +246,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     orient('RightArm','RightForeArm',elbowTarget.sub(start).toArray());
     orient('RightForeArm','RightHand',target.sub(pointInModel(elbow)).toArray());
   };
-  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt) {
-    const next = locomotionForSpeed(speed,current);
+  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt, {running=false}={}) {
+    const next = running&&speed>1.5?'Run':locomotionForSpeed(speed,current);
     if (next !== current && actions[next]) { actions[current]?.fadeOut(.18); actions[next].reset().fadeIn(.18).play(); current = next; }
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.24, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
     const action=actions[next],footfalls=speed>.15&&action?animationFootfalls(action.time,dt,action.timeScale,action.getClip().duration):0;

@@ -3,7 +3,8 @@ import {Batcher,mesh,material,sign} from './assets.js';
 import {TILE} from './layout.js';
 import {footprint} from './collision.js';
 
-// One shallow cabinet on each upper floor. Local +Z faces out of the cabinet;
+// A shallow wall cabinet; the assignment places its only dose on ground floor.
+// Local +Z faces out of the cabinet;
 // rotating west mounts its back against the central hall's east wall.
 export function buildAntidoteCabinet(layout,materials={}){
   if(![0,1,2].includes(layout?.floor))return null;

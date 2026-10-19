@@ -115,3 +115,7 @@ audio/laugh-sources.json.
 KTD 2.8 additions
 Natural sneeze: Neo139, Sneeze.ogg, CC0 1.0. https://commons.wikimedia.org/wiki/File:Sneeze.ogg
 Travel globe coastline: Natural Earth 1:110m land, public domain. https://www.naturalearthdata.com/about/terms-of-use/
+
+KTD 2.9 recorded human sneeze: markbryant, Real Sneeze, Atchoo - 3 Sneezes, recorded in voiceover booth.wav, Freesound 611187, CC0 1.0. https://freesound.org/people/markbryant/sounds/611187/
+Evacuation scream: Archeos, WomanScream.wav, Freesound 261419, CC0 1.0. https://freesound.org/people/Archeos/sounds/261419/
+France Jack and Congo Michael story artwork: OpenAI ImageGen, original generated fictional scenes.

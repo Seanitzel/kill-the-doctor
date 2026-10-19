@@ -1,0 +1,27 @@
+KTD 2.9 recorded evacuation scream
+
+Asset: public/audio/evacuation-scream-v29.mp3
+Creator: Archeos
+Source title: WomanScream.wav
+Primary source and license declaration:
+https://freesound.org/people/Archeos/sounds/261419/
+Creator profile: https://freesound.org/people/Archeos/
+License: Creative Commons Zero 1.0 Universal (CC0 1.0)
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+Verified: 2026-10-19
+
+The creator identifies this as a short adult female recording of fear in their Voice Recordings collection. No graphic context is described. Freesound's primary page explicitly declares Creative Commons 0 and permits modification, distribution and commercial use.
+
+Downloaded from the primary source's high-quality preview:
+https://cdn.freesound.org/previews/261/261419_2826150-hq.mp3
+Source preview SHA256: 7f980d2ce5da63bf56835709a168e2e47ffd33d5fa7ac104f1adb68696898a04
+
+Modifications: preserved the complete 1.835 second event; reduced gain by 3 dB, 5 millisecond start fade and 40 millisecond end fade to prevent boundary clicks, converted to mono 44100 Hz and 128 kbps MP3. No pitch alteration, time stretching, synthesized voice, compression or added reverb.
+
+Output duration: 1.835147 seconds
+Output size: 30,554 bytes
+Output measured peak: -4.5 dBFS
+Output SHA256: 433c90943a0ce66608f493698a7504b546771703edd527ad62707b485cf6792d
+
+Optional concise credit:
+Recorded evacuation scream: Archeos, Freesound 261419, CC0 1.0 (level-adjusted).

@@ -52,7 +52,7 @@ test('Both special briefs and both protagonist variants have accurate dedicated 
 });
 
 test('Generated image dimensions match their crop metadata and the complete new catalog stays below15MiB',()=>{
-  let total=0;assert.equal(Object.keys(STORY_ART).length,38);
+  let total=0;assert.equal(Object.keys(STORY_ART).length,40);
   for(const art of Object.values(STORY_ART)){
     const bytes=readFileSync(new URL(`../public/stories/${art.file}`,import.meta.url));total+=bytes.length;
     assert.deepEqual(webpSize(bytes),{width:art.width,height:art.height});

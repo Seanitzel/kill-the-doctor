@@ -1,3 +1,4 @@
+import {fitPregnancy} from './appearance.js';
 import {TargetAppointment,TARGET_PRIVACY_GRACE} from './appointments.js';
 import {RoomPrivacy} from './room-privacy.js';
 import {ROOM_WARNING_LINES} from './dialogue-v25.js';
@@ -44,7 +45,7 @@ export class HospitalLife {
         const minX=(room.x-11)*3-1.5,maxX=(room.x+room.w-1-11)*3+1.5,minZ=(room.z-11)*3-1.5;
         const clinic=room.kind==='clinic',rotation=clinic?0:Math.PI/2;
         const bedX=clinic?maxX-1.9:minX+1.55,bedZ=clinic?room.center.z:minZ+3;
-        const patient=this.actor(`${room.name} patient`,'patient',room.index%2?'male':'female',floor,room,bedX+Math.sin(rotation)*.85,bedZ+Math.cos(rotation)*.85,room.kind==='maternity'?'labor':'rest',{lying:true,y:1,bedRotation:rotation,contamination:room.kind==='emergency'?30:room.kind==='clinic'&&floor===1?60:0});
+        const patient=this.actor(`${room.name} patient`,'patient',room.kind==='maternity'?'female':room.index%2?'male':'female',floor,room,bedX+Math.sin(rotation)*.85,bedZ+Math.cos(rotation)*.85,room.kind==='maternity'?'labor':'rest',{lying:true,y:1,bedRotation:rotation,contamination:room.kind==='emergency'?30:room.kind==='clinic'&&floor===1?60:0});
         let doctor=e.npcs.find(n=>n.room?.id===room.id&&n.id==='target')||e.npcs.find(n=>n.room?.id===room.id&&n.role==='doctor'&&!n.activity);
         const doctorX=clinic?bedX-1.1:bedX,doctorZ=clinic?bedZ:bedZ+1.1;
         if(!doctor) doctor=this.actor(`Dr. ${['Rowan','Avery','Morgan','Taylor'][room.index%4]} Mercer`,'doctor',room.index%2?'female':'male',floor,room,doctorX,doctorZ,'examine');
@@ -87,11 +88,11 @@ export class HospitalLife {
   }
   maternity(room,mother,floor,minZ) {
     const e=this.engine;
-    const belly=mesh('sphere',material('#93afbd'),[.27,.3,.3],[0,1.08,.17],mother.visual.root);belly.name='clothed-pregnancy-belly';mother.pregnant=true;
+    fitPregnancy(mother.visual);mother.pregnant=true;
     // A second clothed mother occupies the next maternity bed.
     const x=(room.x-11)*3-1.5+1.55,z=minZ+6.7;
     const other=this.actor('Maternity patient B','patient','female',floor,room,x+.85,z,'labor',{lying:true,y:1,bedRotation:Math.PI/2,skin:'#ba8c72'});
-    mesh('sphere',material('#91adbd'),[.27,.31,.3],[0,1.08,.17],other.visual.root).name='clothed-pregnancy-belly';other.pregnant=true;
+    fitPregnancy(other.visual);other.pregnant=true;
     const nursery=new THREE.Group();nursery.name='newborn-bassinets';nursery.userData.floor=floor;this.props.add(nursery);
     for(let i=0;i<2;i++) {
       const bx=room.center.x+1.65,bz=minZ+5+i*3.8;
@@ -180,7 +181,7 @@ export class HospitalLife {
     if(sound==='sneeze'&&!patient.lying)this.sneeze(patient);
     else e.audio.patientWarning?.(sound,{x:patient.pos.x,y:1.5,z:patient.pos.z,floor:patient.floor});
     e.hooks.soundCaption?.(`A nearby patient ${sound==='sneeze'?'sneezes':'coughs'}. Keep your distance or put on a mask.`);
-    this.pendingCoughs.push({patient,ready:e.mission.elapsed+.85});return true;
+    this.pendingCoughs.push({patient,ready:e.mission.elapsed+(sound==='sneeze'?1.3:.85)});return true;
   }
   sneeze(patient){
     const e=this.engine,now=e.mission.elapsed;if(patient.dead||patient.lying||patient.baby)return false;

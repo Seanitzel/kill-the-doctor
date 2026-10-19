@@ -38,7 +38,7 @@ export function makeLayout(floor = 0, siteIndex = 0) {
   fill(8, 20, 7, 3); // entrance atrium
   if(floor===0)fill(11,23,2,2); // exterior forecourt beyond the real exit doors
   }
-  const specs=floor===3?[[7,7,7,6]]:floor===0?[...roomSpecs,[4,20,3,3]]:roomSpecs;
+  const specs=floor===3?[[7,7,7,6]]:[...roomSpecs,[4,20,3,3]];
   const rooms = specs.map(([x, z, w, h], i) => {
     const [name, subtitle, kind] = floor===3?['Restricted theatre','Authorized personnel only','rescue-theater']:i===8?['Bathroom','Toilets & washbasins','bathroom']:departments[floor * 8 + ((i + Math.max(0,Math.floor(siteIndex))*(floor+1)) % 8)];
     const room = { id: `f${floor}-r${i}`, index: i, x, z, w, h, name, subtitle, kind, floor, number: floor===3?'B01':`${floor + 1}${String(i + 1).padStart(2, '0')}`, wing: i < 2 || (i >= 4 && i < 6) ? 'West' : 'East' };

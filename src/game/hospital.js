@@ -1,3 +1,4 @@
+import {addSiteDetails,addNightStreet} from './site-details.js';
 import {footprint} from './collision.js';
 import * as THREE from 'three';
 import { world, TILE, FLOORS, FLOOR_CODES } from './layout.js';
@@ -32,10 +33,11 @@ export function buildLift(layout,m){
   return group;
 }
 export function buildHospital(layout, m, site=null) {
-  const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [], bathrooms = [], operatingSets = [];
+  const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [], bathrooms = [], operatingSets = [], workstations = [];
   const cube = (...args) => batch.box(...args);
   const collider = (x, z, w, d, object = null) => { const c = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, object }; colliders.push(c); return c; };
   batch.collider=(x,z,w,d,h,rot,type)=>{const c=footprint(x,z,w,d,h,rot,type);colliders.push(c);return c;};
+  const deskAt=(room,x,z,rotation=0)=>{desk(batch,m,x,z,rotation);workstations.push({room:room.id,x,z,rotation,cup:{x:x+Math.cos(rotation)*.82,z:z-Math.sin(rotation)*.82},stand:{x:x-Math.sin(rotation)*.9,z:z-Math.cos(rotation)*.9}});};
   const placeSign = (text, sub, x, y, z, rot = 0, w = 2.6, h = .65, opts = {}) => { const s = sign(String(text).replaceAll('NHALEWICK',site?.hospital?.toUpperCase()||'NHALEWICK'),String(sub).replaceAll('NHALEWICK',site?.hospital?.toUpperCase()||'NHALEWICK'),w,h,opts); s.position.set(x, y, z); s.rotation.y = rot; group.add(s); return s; };
   for (const cell of layout.cells.values()) {
     const { x, z } = world(cell.x, cell.z);
@@ -68,6 +70,7 @@ export function buildHospital(layout, m, site=null) {
     const wall = new THREE.Mesh(new THREE.BoxGeometry(sx, 3.6, sz), new THREE.MeshBasicMaterial({ visible: false })); wall.position.set(x, 1.8, z); wall.updateMatrixWorld(); wallMeshes.push(wall);
   }
   for (const w of layout.walls) {
+    if(layout.floor===0&&w.exterior&&w.z>34.5)continue; // Open view from the forecourt to the night street.
     if (!w.door) { wallSection(w.x, w.z, w.axis, TILE, !w.exterior && (Math.round(w.x + w.z) % 4 === 0)); continue; }
     const door = w.door;
     const width = 1.8, remainder = (TILE - width) / 2;
@@ -108,19 +111,19 @@ export function buildHospital(layout, m, site=null) {
         cube(m.white, maxX - 1.1, 1.02, z, .85, 2.02, .7); furnitureCollider(maxX - 1.1, z, .9, .8);
         cube(m.blue, maxX - 1.1, 1.28, z + .36, .77, .06, .03);
       }
-      desk(batch,m,cx,maxZ-1.6);
+      deskAt(room,maxX-2.1,cz+1.8,Math.PI/2);
     } else if (room.kind === 'surgery') {
       bed(batch,m,cx,cz+1.5);
       monitor(batch, m, cx - 1.1, cz + .6);
       cube(m.steel, cx, 3.2, cz + 1.5, .06, .6, .06); batch.cylinder(m.light, cx, 2.84, cz + 1.5, .68, .11, .68);
       cube(m.white, maxX - 1, 1.3, minZ + 2, 1.2, 2.6, 1); furnitureCollider(maxX - 1, minZ + 2, 1.3, 1.1,2.6);
-      desk(batch, m, minX + 1.6, maxZ - 1.5);
+      deskAt(room,minX+1.6,cz+2,Math.PI/2);
     } else if (room.kind === 'imaging') {
       const machine = material('#bdccd4');
       const ring = new THREE.Mesh(new THREE.TorusGeometry(1.5, .55, 12, 32), machine); ring.position.set(cx, 1.95, cz - 1); group.add(ring); ring.castShadow = true;
       cube(m.white, cx, .35, cz - 1, 3.7, .65, 1.5); cube(m.blue, cx, .9, cz + .8, .8, .18, 3.5); cube(m.steel, cx, .4, cz + 1.5, .35, .65, 2.6);
       furnitureCollider(cx, cz - 1, 3.7, 1.4,3.5); furnitureCollider(cx, cz + .8, 1, 3.5,1.05);
-      desk(batch, m, minX + 1.7, maxZ - 1.5);
+      deskAt(room,minX+1.7,cz+2,Math.PI/2);
     } else if (room.kind === 'pharmacy') {
       // A dispensary with a real customer side, a staffed service side and two
       // clear side aisles. Both existing doors remain available for evacuation.
@@ -202,7 +205,7 @@ export function buildHospital(layout, m, site=null) {
         chair(batch, m, x, z - 1.45); chair(batch, m, x, z + 1.45, Math.PI);
       }
     } else {
-      for (const z of [minZ + 3, maxZ - 3]) { desk(batch,m,minX+2,z,Math.PI/2); chair(batch, m, minX + 2, z + 1); }
+      for (const z of [minZ + 3, maxZ - 3]) { deskAt(room,minX+2,z,Math.PI/2); chair(batch, m, minX + 2, z + 1); }
       if (room.kind === 'clinic') { bed(batch,m,maxX-1.9,cz); }
       else { cube(m.white, maxX - .7, 1.05, cz, .8, 2.1, 3); furnitureCollider(maxX - .7, cz, .85, 3); for (let i = 0; i < 4; i++) cube(m.blue, maxX - .25, .5 + i * .45, cz, .03, .025, 2.8); }
     }
@@ -238,11 +241,12 @@ export function buildHospital(layout, m, site=null) {
     const entry=new THREE.Group();entry.name='Main entrance sliding glass doors';group.add(entry);
     for(const x of [-1.5,4.5])mesh('box',m.steel,[.10,2.85,.19],[x,1.425,34.5],entry);
     mesh('box',m.steel,[6.1,.13,.25],[1.5,2.85,34.5],entry);
-    const leaves=[];for(const side of [-1,1]){const leaf=new THREE.Group();leaf.position.set(1.5+side*1.5,0,34.5);entry.add(leaf);mesh('box',m.glass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of [-1.5,1.5])mesh('box',m.steel,[.045,2.7,.075],[x,1.4,0],leaf);for(const y of [.07,1.1,2.73])mesh('box',m.steel,[3,.045,.075],[0,y,0],leaf);leaf.userData.side=side;leaves.push(leaf);}
+    const doorGlass=material('#91bbc9',{transparent:true,opacity:.36,roughness:.17,metalness:.15,depthWrite:false,side:THREE.DoubleSide});
+    const leaves=[];for(const side of [-1,1]){const leaf=new THREE.Group();leaf.position.set(1.5+side*1.5,0,34.5);entry.add(leaf);mesh('box',doorGlass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of [-1.5,1.5])mesh('box',m.steel,[.045,2.7,.075],[x,1.4,0],leaf);for(const y of [.07,1.1,2.73])mesh('box',m.steel,[3,.045,.075],[0,y,0],leaf);for(const face of [-1,1]){const decal=sign('←  AUTOMATIC  →','EXIT',1.85,.32,{background:'#456275',color:'#ecf6f7'});decal.position.set(0,1.55,face*.045);decal.rotation.y=face<0?Math.PI:0;leaf.add(decal);}leaf.userData.side=side;leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,34.5,3,.06),{minY:0,maxY:2.78,type:'entrance-glass'});leaves.push(leaf);}
     group.userData.entrance={leaves,open:false,amount:0};
     placeSign('EXIT  ↓','TO THE FORECOURT',1.5,3.05,34.4,Math.PI,3.8,.46,{background:'#315a68'});
     cube(m.dark,1.5,.01,37,5.7,.015,4.8);
-    placeSign('NHALEWICK','EXTERIOR FORECOURT',1.5,2.8,40.35,Math.PI,4,.55);
+    addNightStreet(group,batch,m);
     interactables.push({ type: 'exit', label: 'Leave the hospital', x: layout.exit.x, z: layout.exit.z });
   } else if(layout.floor!==3)placeSign('PATIENT SERVICES', `${FLOORS[layout.floor].toUpperCase()} / NHALEWICK`, 3, 2.9, 33.25, Math.PI, 3.8, .68);
   for (const p of (layout.floor===3?[]:[[-1.5,0],[-1.5,18],[-21,0],[21,0],[-1.5,-18]])) {
@@ -255,7 +259,8 @@ export function buildHospital(layout, m, site=null) {
     for (let i = 0; i < 3; i++) chair(batch, m, 5.25, z + i * .74, -Math.PI / 2);
     cube(m.steel, -1.1, .5, z, .7, .85, .8); cube(m.white, -1.1, .98, z, .74, .08, .85); Object.assign(collider(-1.1,z,.75,.9),{maxY:1.04,type:'cart'});
   }
+  addSiteDetails(group,batch,m,layout,site);
   const statics = batch.finish();
-  return { entrances:group.userData.entrance?[group.userData.entrance]:[], group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
+  return { workstations,entrances:group.userData.entrance?[group.userData.entrance]:[], group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
     disposeProps(){for(const props of [...bathrooms,...operatingSets])props.dispose();} };
 }

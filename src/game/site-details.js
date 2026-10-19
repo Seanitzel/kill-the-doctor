@@ -1,0 +1,28 @@
+import * as T from 'three';
+import {material,mesh,sign} from './assets.js';
+// Modular country identities alter the built environment without duplicating assets.
+export function addSiteDetails(group,batch,m,layout,site){
+ if(!site||layout.floor===3)return;
+ const variant=site.index%5,ribs=3+Math.floor(site.index/5),accent=material(site.accent),warm=material(['#c4b8a3','#c6c7c0','#b6c6cb','#c8b8b0','#b5c6bc'][variant]);
+ group.userData.architecture={country:site.id,variant,ribs,accent:site.accent};
+ // Ceiling ribs and inset panels give every arrival hall a distinct silhouette.
+ for(let i=0;i<ribs;i++){const z=27+i*1.45;batch.box(variant%2?warm:accent,1.5,3.35,z,variant===2?13:9,.11,.16);if(variant===3)for(const x of [-3.2,6.2])batch.box(warm,x,2.95,z,.12,.85,.16);}
+ for(const side of [-1,1])for(let i=0;i<2+variant;i++){
+ const x=side<0?-7.2:10.2,z=27+i*.94;batch.box(accent,x,2.03,z,.06,1.35,.38);batch.box(warm,x+side*.015,1.30,z,.07,.08,.38);
+ }
+ // Low relief department portal trim; it never narrows the walkable opening.
+ for(const d of layout.doors.filter(d=>!d.id.endsWith('back'))){batch.box(accent,d.x,2.77,d.z,2.05,.10,.29);if(variant===1||variant===4)for(const side of [-1,1])batch.box(warm,d.x+side*1.04,1.34,d.z,.055,2.6,.23);}
+}
+export function addNightStreet(group,batch,m){
+ const asphalt=material('#111820',{roughness:.95}),pavement=material('#657077',{roughness:.9}),yellow=material('#ffce68',{emissive:'#ffc44e',emissiveIntensity:2.8}),poles=material('#333e48',{metalness:.65}),line=material('#b7b4a4');
+ batch.box(pavement,1.5,-.09,42.3,48,.14,8);batch.box(asphalt,1.5,-.13,53,65,.13,14);batch.box(m.steel,1.5,-.005,46.2,48,.14,.20);
+ for(let x=-28;x<=30;x+=7)batch.box(line,x,-.055,53,3,.012,.14);
+ for(let x=-21;x<=24;x+=3)batch.box(m.steel,x,-.012,42,.025,.01,7.9);
+ for(const x of [-1.7,4.7]){
+ batch.cylinder(poles,x,2.4,43,.075,4.8,.075);batch.box(poles,x,4.78,43.55,.15,.10,1.2);batch.box(poles,x,4.73,44.1,.58,.14,.82);batch.box(yellow,x,4.65,44.1,.48,.035,.70);
+ const light=new T.PointLight('#ffd06c',22,17,2);light.position.set(x,4.4,44.1);light.name='Warm yellow streetlamp';group.add(light);
+ }
+ // Distant unlit facades remain cheap instanced silhouettes.
+ for(let i=0;i<8;i++){const x=-25+i*8,height=5+(i%3)*2;batch.box(asphalt,x,height/2,64,6,height,3);for(let j=0;j<3;j++)batch.box(yellow,x-1.5+j*1.3,2.8,62.45,.30,.50,.035);}
+ const label=sign('AUTOMATIC DOORS','MAIN ENTRANCE / EXIT',2.9,.35,{background:'#203b46'});label.position.set(1.5,3.05,34.38);label.rotation.y=Math.PI;group.add(label);
+}

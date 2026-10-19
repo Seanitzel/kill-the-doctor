@@ -1,0 +1,30 @@
+KTD 2.9 natural recorded sneeze
+
+Asset: public/audio/sneeze-human-v29.mp3
+Source creator: markbryant
+Source title: Real Sneeze, Atchoo - 3 Sneezes, recorded in voiceover booth.wav
+Primary source and license declaration:
+https://freesound.org/people/markbryant/sounds/611187/
+Creator profile: https://freesound.org/people/markbryant/
+License: Creative Commons Zero 1.0 Universal (CC0 1.0)
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+Verified: 2026-10-19
+
+The creator describes spontaneous sneezes captured during a voiceover session on a Neumann TLM 103 microphone. This is an existing human recording, not synthesized audio. Freesound's primary sound page explicitly declares Creative Commons 0 and allows copying, modification, distribution and commercial performance.
+
+Downloaded from the primary source's high-quality MP3 preview:
+https://cdn.freesound.org/previews/611/611187_1817023-hq.mp3
+Preview SHA256: 9236ad903b6720b52ab7fa5817a866a6d6aae9685bca33b0b708344087e41cbd
+Original complete preview duration: 8.653813 seconds, mono, 48000 Hz.
+
+Modifications: first complete sneeze excerpt from 0.60 to 2.40 seconds; preserve the lead-in and natural release. A 10 millisecond fade at the beginning and 40 millisecond fade at the end prevent edit clicks. Converted to mono 44100 Hz, 128 kbps MP3. No pitch change, time stretch, denoising, dynamic compression, added reverb or synthetic sneeze components.
+
+Output decoded duration: 1.800 seconds
+Output file size: 29,718 bytes
+Output peak after encoding: -1.7 dBFS; no clipping detected.
+Output SHA256: e0a5c797249cd199d1caf1680224f25baa19b0ec87d2ebd6a7ebd1a48caf6a42
+
+Optional concise credit:
+Recorded sneeze: markbryant, Freesound 611187, CC0 1.0 (excerpt).
+
+QA limitation: this agent's audio input channel was unavailable. Provenance, waveform, complete event boundaries, duration and peak level were checked; subjective listening should be confirmed by a human in the game mix. No claim of a human listening test is made.

@@ -11,8 +11,8 @@ export class HospitalExtras{
   prop(name,floor,x,y,z){const g=new THREE.Group();g.name=name;g.position.set(x,y,z);g.userData.floor=floor;this.root.add(g);return g;}
   setup(){
     const e=this.e,m=e.mission,c=m.country;if(c){
-      const plaque=this.prop('Country hospital identity',0,4.4,2.1,31.5);const label=sign(c.hospital.toUpperCase(),`${c.city.toUpperCase()} / ${c.name.toUpperCase()} · FICTIONAL HOSPITAL`,3.9,.7,{background:c.accent,color:'#f3f7f7'});plaque.add(label);plaque.rotation.y=Math.PI;
-      const countrySign=this.prop('Arrival country signage',0,-6.4,1.8,27);countrySign.add(sign(c.name.toUpperCase(),`NIGHT SHIFT / ${c.hospital.toUpperCase()}`,2.4,.6,{background:'#19303d',color:'#cfe7ec'}));countrySign.rotation.y=Math.PI/2;
+      const plaque=this.prop('Country hospital identity',0,10.39,2.4,31.5);const label=sign(c.hospital.toUpperCase(),`${c.city.toUpperCase()} / ${c.name.toUpperCase()} · FICTIONAL HOSPITAL`,3.9,.7,{background:c.accent,color:'#f3f7f7'});plaque.add(label);plaque.rotation.y=-Math.PI/2;
+      const countrySign=this.prop('Arrival country signage',0,-10.39,2.50,29.5);countrySign.add(sign(c.name.toUpperCase(),`NIGHT SHIFT / ${c.hospital.toUpperCase()}`,2.2,.44,{background:'#19303d',color:'#cfe7ec'}));countrySign.rotation.y=Math.PI/2;
     }
     for(const level of e.levels.filter(l=>l.floor<3)){
       const g=this.prop('Mystery Soda vending machine',level.floor,8.7,0,29.5);g.rotation.y=-Math.PI/2;

@@ -7,7 +7,7 @@ const distance2=(a,b)=>(a.x-b.x)**2+(a.z-b.z)**2;
 export class EgressNavigation{
   constructor(layout,colliders){
     this.nodes=new Map();this.fields=new Map();
-    this.bodyObstacles=colliders.filter(c=>blocksBody(c)).map(c=>{
+    this.bodyObstacles=colliders.filter(c=>blocksBody(c)&&c.type!=='entrance-glass').map(c=>{
       if(!c.object?.pivot)return obstacleBounds(c);
       const d=c.object,p=d.pivot.position,a=d.openAngle;
       return footprint(p.x+Math.cos(a)*.86,p.z-Math.sin(a)*.86,1.72,.1,2.6,a,'door');
@@ -68,6 +68,9 @@ export class EgressNavigation{
   }
   smoothRoute(position,goal){
     const path=this.routeTransient(position,goal);if(!path.length)return [];
+    return this.smoothPath(position,path);
+  }
+  smoothPath(position,path){
     const points=path.map(p=>({x:(p.x-11)*3,z:(p.z-11)*3})),result=[];let from=position,index=0;
     while(index<points.length){
       let next=points.length-1;

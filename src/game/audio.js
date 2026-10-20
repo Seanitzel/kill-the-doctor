@@ -2,7 +2,7 @@ import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
 import { native,stopNativeSpeech } from '../mobile/platform.js';
 import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
-const AUDIO_REVISION='2.9.0';
+const AUDIO_REVISION='3.0.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
 export const HOSPITAL_SAMPLE_FILES=Object.freeze({'laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
@@ -130,6 +130,9 @@ export class HospitalAudio {
   }
   sound(name,options={}) {
     if(this.disposed||!this.enabled||!this.ctx)return;
+    if(name==='vending'){this.tone(820,.09,.07,'sine');this.delay(()=>this.noise(.4,.10,210),100);this.delay(()=>this.tone(110,.16,.10,'triangle'),260);return;}
+    if(name==='bottle-drop'){this.noise(.065,.13,650);this.tone(180,.1,.10,'triangle');this.delay(()=>this.noise(.04,.06,1000),100);return;}
+    if(name==='bottle-pickup'){this.noise(.045,.045,1700);return;}
     if(['step','shot','rifle'].includes(name)&&this.enabled&&this.foley?.play(name,{...options,suppressed:!!this.settings.suppressor}))return;
     if (name === 'flicker') this.hospitalMachine('zap',options.position||this.listenerPosition,.55);
     if(name==='rifle'){this.noise(.32,.68,2200);this.tone(48,.32,.4,'triangle');}
@@ -149,8 +152,8 @@ export class HospitalAudio {
   coinStack(){if(!this.enabled||!this.ctx)return;this.tone(2100,.055,.065,'triangle');this.delay(()=>this.tone(3250,.035,.035,'sine'),18);this.noise(.025,.025,4200);}
   evacuationScream(person,position,offset=0){const cue=()=>{if(person?.gender==='female')this.playSample('evacuation-scream',position,.65);else this.playSample('distress-male',position,.48);};if(offset)this.delay(cue,offset*1000);else cue();}
   flight(){
-    if(!this.ctx||!this.enabled)return null;const ctx=this.ctx,rate=ctx.sampleRate,buffer=ctx.createBuffer(1,Math.ceil(rate*8.2),rate),data=buffer.getChannelData(0);let smooth=0,seed=98;
-    for(let i=0;i<data.length;i++){const t=i/rate;seed=(Math.imul(seed,1664525)+1013904223)>>>0;smooth+=.055*(seed/4294967296*2-1-smooth);const envelope=Math.sin(Math.PI*t/8.2)**2;data[i]=(smooth*.75+Math.sin(t*2*Math.PI*(58+t*3))*.026)*envelope;}
+    if(!this.ctx||!this.enabled)return null;const ctx=this.ctx,rate=ctx.sampleRate,buffer=ctx.createBuffer(1,Math.ceil(rate*10),rate),data=buffer.getChannelData(0);let smooth=0,seed=98;
+    for(let i=0;i<data.length;i++){const t=i/rate;seed=(Math.imul(seed,1664525)+1013904223)>>>0;smooth+=.055*(seed/4294967296*2-1-smooth);const departure=Math.exp(-(((t-1.2)/.9)**2)),arrival=Math.exp(-(((t-8.8)/.8)**2)),envelope=.12+departure*.85+arrival*.8;data[i]=(smooth*.75+Math.sin(t*2*Math.PI*(58+t*3))*.026)*envelope*Math.max(0,Math.min(1,t/.06,(10-t)/.15));}
     const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;gain.gain.value=.65;source.connect(gain);gain.connect(this.lowpass);const record=this.trackSynth(source,[source,gain]);source.start();return record;
   }
   patientWarning(name,position){

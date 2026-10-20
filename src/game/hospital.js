@@ -6,22 +6,21 @@ import { Batcher, mesh, sign, bed, chair, desk, monitor, material } from './asse
 import {addBathroom,addOperatingSet} from './accessibility-props.js';
 export function liftWallPlacement(layout){
   const e=layout.elevator;
-  const wall=layout.walls.filter(w=>w.axis==='x'&&!w.door&&w.z<e.z&&Math.abs(w.x-e.x)<TILE/2).sort((a,b)=>b.z-a.z)[0];
-  return {x:e.x,wallZ:wall?.z??e.z-TILE/2,faceZ:(wall?.z??e.z-TILE/2)+.13};
+  return {x:e.x,wallZ:e.z-TILE/2,faceZ:e.z-TILE/2+.13};
 }
 export function buildLift(layout,m){
   const placement=liftWallPlacement(layout),{x,faceZ}=placement,group=new THREE.Group();
   group.name='Nhalewick wall-mounted lift';group.userData.liftPlacement=placement;
   const box=(name,mat,size,pos)=>{const object=mesh('box',mat,size,pos,group);object.name=name;return object;};
-  // Mount against the actual north wall, beyond its shallow handrail. The old
-  // cell-relative offset left an 85cm gap behind a freestanding metal slab.
-  box('Lift recessed door surround',m.dark,[2.52,2.75,.05],[x,1.395,faceZ+.025]);
+  // Recess the cabin behind the corridor portal, with physical sliding leaves.
+  box('Lift cabin floor',m.dark,[2.5,.05,2.85],[x,.015,faceZ-1.4]);box('Lift cabin back wall',m.steel,[2.5,2.75,.10],[x,1.375,faceZ-2.78]);for(const side of [-1,1])box('Lift cabin side wall',m.steel,[.08,2.75,2.8],[x+side*1.28,1.375,faceZ-1.4]);box('Lift cabin light',m.light,[1.4,.035,1.6],[x,2.73,faceZ-1.35]);
+  const leaves=[];
   for(const side of [-1,1]){
     box('Lift brushed-steel jamb',m.steel,[.10,2.80,.13],[x+side*1.31,1.40,faceZ+.065]);
-    box(side<0?'Lift left sliding door':'Lift right sliding door',m.steel,[1.235,2.63,.045],[x+side*.6225,1.345,faceZ+.060]);
+    const leaf=box(side<0?'Lift left sliding door':'Lift right sliding door',m.steel,[1.235,2.63,.045],[x+side*.6225,1.345,faceZ+.060]);leaf.userData.side=side;leaf.userData.bodyBounds=footprint(x+side*.6225,faceZ+.06,1.235,.07,2.7,0,'lift-door');leaves.push(leaf);
   }
   box('Lift door header',m.steel,[2.72,.115,.13],[x,2.745,faceZ+.065]);
-  box('Lift center seam',m.dark,[.015,2.63,.006],[x,1.345,faceZ+.085]);
+  group.userData.lift={x,faceZ,leaves,open:false,amount:0,selectionUsed:false,choosing:false};
   box('Lift threshold',m.steel,[2.72,.035,.19],[x,.025,faceZ+.085]);
   box('Lift overhead sign backing',m.dark,[3.30,.50,.025],[x,3.08,faceZ-.015]);
   const header=sign('↑  LIFT / STAIRS  ↓',layout.floor===3?'B  RESTRICTED     G  MAIN HOSPITAL':'G  CLINICAL     1  SPECIALISTS     2  ADVANCED',3.3,.5);
@@ -29,7 +28,7 @@ export function buildLift(layout,m){
   box('Lift call panel',m.dark,[.24,.42,.035],[x+1.55,1.28,faceZ+.018]);
   box('Lift call button',m.steel,[.075,.075,.018],[x+1.55,1.24,faceZ+.043]);
   box('Lift call indicator',m.light,[.035,.018,.009],[x+1.55,1.39,faceZ+.042]);
-  const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);
+  const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);const wallNumber=sign(layout.floor===3?'B':String(layout.floor),'FLOOR',.65,.92,{background:'#203b4a',color:'#e1edf0'});wallNumber.name='Large floor number left of elevator';wallNumber.position.set(x-1.92,1.72,faceZ+.03);group.add(wallNumber);
   return group;
 }
 export function buildHospital(layout, m, site=null) {
@@ -232,8 +231,8 @@ export function buildHospital(layout, m, site=null) {
   const e = layout.elevator;
   const lift=buildLift(layout,m);group.add(lift);
   const liftFace=lift.userData.liftPlacement.faceZ;
-  interactables.push({ type: 'elevator', label:'Lift · choose floor', x: e.x, z: e.z + .9 });
-  Object.assign(collider(e.x,liftFace+.06,2.72,.14),{minY:0,maxY:2.81,type:'lift'});
+  interactables.push({ type: 'elevator', label:'Call lift · enter to choose floor', x: e.x, z: e.z + .9 });
+  for(const leaf of lift.userData.lift.leaves)colliders.push(leaf.userData.bodyBounds);for(const side of [-1,1])Object.assign(collider(e.x+side*1.28,liftFace-1.4,.08,2.8),{minY:0,maxY:2.8,type:'lift-wall'});Object.assign(collider(e.x,liftFace-2.78,2.65,.1),{minY:0,maxY:2.8,type:'lift-wall'});
   if (layout.floor === 0) {
     placeSign('EXIT  ↓','MAIN ENTRANCE',3,2.9,33.25,Math.PI,2.7,.68,{background:'#315a68'});
     // A real 6m portal joins the atrium to an exterior forecourt. The old
@@ -261,6 +260,6 @@ export function buildHospital(layout, m, site=null) {
   }
   addSiteDetails(group,batch,m,layout,site);
   const statics = batch.finish();
-  return { workstations,entrances:group.userData.entrance?[group.userData.entrance]:[], group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
+  return { lift:lift.userData.lift,workstations,entrances:group.userData.entrance?[group.userData.entrance]:[], group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
     disposeProps(){for(const props of [...bathrooms,...operatingSets])props.dispose();} };
 }

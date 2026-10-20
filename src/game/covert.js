@@ -14,7 +14,7 @@ export class CovertAssignments{
     const e=this.e,m=e.mission,room=e.levels[0].rooms.find(r=>r.kind==='office');this.office=room;
     if(m.challenge?.scheduleRequired){
       const nav=e.systems.navigationFor(0);this.desk={x:room.center.x+.8,z:room.center.z+1};
-      this.obstacle(0,this.desk.x,this.desk.z,.75,.58,1.03);this.document=this.prop(0,this.desk.x,1.02,this.desk.z);mesh('box',material('#dce6e8'),[.75,.08,.58],[0,-.055,0],this.document);mesh('box',material('#f6efd9'),[.34,.012,.43],[0,0,0],this.document);for(let i=0;i<5;i++)mesh('box',material('#536776'),[.25,.003,.013],[0,.01,-.13+i*.055],this.document);mesh('box',material('#405b6a'),[.045,1,.045],[0,-.55,0],this.document);
+      this.obstacle(0,this.desk.x,this.desk.z,.75,.58,1.03);this.documentStand=this.prop(0,this.desk.x,1.02,this.desk.z);mesh('box',material('#dce6e8'),[.75,.08,.58],[0,-.055,0],this.documentStand);mesh('box',material('#405b6a'),[.045,1,.045],[0,-.55,0],this.documentStand);this.document=this.prop(0,this.desk.x,1.02,this.desk.z);mesh('box',material('#f6efd9'),[.34,.012,.43],[0,0,0],this.document);for(let i=0;i<5;i++)mesh('box',material('#536776'),[.25,.003,.013],[0,.01,-.13+i*.055],this.document);
       const spot=nav.nearest({x:this.desk.x,z:this.desk.z-1});
       this.custodian=e.npcs.find(n=>n.floor===0&&n.room?.id===room.id&&!n.recruit&&n.role==='doctor'&&n.id!=='target');
       if(!this.custodian)this.custodian=e.spawnNPC({name:'Dr. Morgan Fell',gender:'male',skin:'#91654e',hair:'#2d211c'},'doctor',0,spot.point,room,'rota-custodian',{fixed:true});

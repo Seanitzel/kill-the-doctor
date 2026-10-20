@@ -48,15 +48,15 @@ test('distress activities use distinct animated poses on real rigs, temple taps 
     }}finally{avatar.dispose();disposeCharacterAssets(assets);}
   }
 });
-test('all four lift portals sit against their actual north wall with two doors, a low call button and no freestanding panel',()=>{
+test('all four lift portals align with their corridor wall and open into recessed cabins with two doors and a low call button',()=>{
   const previous=globalThis.document;globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>({fillRect(){},fillText(){}})})};
   const mats=Object.fromEntries(['dark','steel','light'].map(key=>[key,new THREE.MeshStandardMaterial()]));
   try{for(let floor=0;floor<4;floor++){
     const layout=makeLayout(floor),placement=liftWallPlacement(layout),lift=buildLift(layout,mats),bounds=new THREE.Box3().setFromObject(lift);
-    assert.ok(layout.walls.some(w=>w.axis==='x'&&w.z===placement.wallZ&&w.x===layout.elevator.x));assert.equal(placement.wallZ,layout.elevator.z-1.5);
-    assert.ok(bounds.min.z>=placement.wallZ+.09-.000001);assert.ok(bounds.max.z<placement.wallZ+.32);assert.ok(bounds.max.y<3.4);
+    assert.ok(layout.cells.has('11,2'));assert.ok(layout.walls.some(w=>w.axis==='x'&&w.z===placement.wallZ-3&&w.x===layout.elevator.x));assert.equal(placement.wallZ,layout.elevator.z-1.5);
+    assert.ok(bounds.min.z>=placement.wallZ-2.8);assert.ok(bounds.max.z<placement.wallZ+.32);assert.ok(bounds.max.y<3.4);
     for(const name of ['Lift left sliding door','Lift right sliding door']){const door=lift.getObjectByName(name),box=new THREE.Box3().setFromObject(door);assert.ok(box.min.y<.04&&box.max.y<2.7);assert.ok(box.min.z-placement.wallZ<.18);assert.equal(door.geometry.userData.sharedPrimitive,true);}
-    assert.equal(lift.getObjectByName('Lift call button').position.y,1.24);
+    assert.equal(lift.getObjectByName('Lift call button').position.y,1.24);assert.ok(lift.getObjectByName('Large floor number left of elevator').position.x<layout.elevator.x);
     lift.traverse(object=>{if(object.isMesh&&!object.geometry.userData.sharedPrimitive){object.geometry.dispose();object.material.map?.dispose();object.material.dispose();}});
   }}finally{for(const mat of Object.values(mats))mat.dispose();if(previous===undefined)delete globalThis.document;else globalThis.document=previous;}
 });

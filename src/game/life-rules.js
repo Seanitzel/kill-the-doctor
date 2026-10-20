@@ -1,7 +1,7 @@
 import {ADDITIONAL_DIALOGUE_LINES,PATIENT_PAGE_LINES} from './dialogue-v25.js';
 export function exposureDuration(patient, filterLevel = 0) {
   const duration = Number(patient?.contamination) || 0;
-  if (![30,60].includes(duration)) return 0;
+  if (![30,60,180].includes(duration)) return 0;
   return duration * Math.pow(.75, Math.max(0,Math.min(3,filterLevel)));
 }
 export function activityVolume(distance, sameFloor = true, visible = true) {
@@ -98,7 +98,8 @@ export const ANNOUNCEMENT_LINES = [
   'Attention medical staff. Please return to your assigned departments. Your next consultation is waiting.',
 ];
 export const WITNESS_LINES = {
-  weapon:'A weapon! I am calling security!',
+  security:'A weapon! I am calling security!',
+  weapon:'A weapon! I am calling the police!',
   camera:'That camera is not allowed here. I am calling security.',
 };
 export const ALL_DIALOGUE_LINES = [...new Set([

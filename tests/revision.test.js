@@ -12,7 +12,7 @@ test('Exhaustion holds a steady walk while sprint stays held, then permits a rec
   Object.assign(e,{keys:new Set(['KeyW','ShiftLeft']),touchInput:{forward:0,strafe:0,sprint:false,crouch:false},yaw:0,time:0,stamina:1,maxStamina:100,impairment:0,aiming:false,playerPos:new THREE.Vector3(),player:{root:new THREE.Group(),animate:(time,speed)=>speeds.push(speed)},weapon:new THREE.Group(),mission:{save:defaultSave(),targetDown:false,state:'investigate'},visited:new Set(),floor:0,audio:{update(){}},proximity:()=>0});
   e.move=(dx,dz)=>{e.playerPos.x+=dx;e.playerPos.z+=dz;};
   for(let i=0;i<600;i++){e.time+=1/60;e.updatePlayer(1/60);}
-  assert.ok(speeds.slice(8).every(speed=>Math.abs(speed-2.8)<1e-6),'No alternating walk/run frames after depletion');
+  assert.ok(speeds.slice(8).every(speed=>Math.abs(speed-3.35)<1e-6),'No alternating walk/run frames after depletion');
   assert.equal(e.stamina,100);assert.equal(e.sprintExhausted,true);
   e.keys.delete('ShiftLeft');e.updatePlayer(1/60);e.keys.add('ShiftLeft');e.updatePlayer(1/60);
   assert.ok(speeds.at(-1)>5);assert.equal(e.sprintExhausted,false);

@@ -38,6 +38,7 @@ export function makeLayout(floor = 0, siteIndex = 0) {
   fill(8, 20, 7, 3); // entrance atrium
   if(floor===0)fill(11,23,2,2); // exterior forecourt beyond the real exit doors
   }
+  fill(11,2,1,1); // Recessed walk-in lift cabin behind the north corridor.
   const specs=floor===3?[[7,7,7,6]]:[...roomSpecs,[4,20,3,3]];
   const rooms = specs.map(([x, z, w, h], i) => {
     const [name, subtitle, kind] = floor===3?['Restricted theatre','Authorized personnel only','rescue-theater']:i===8?['Bathroom','Toilets & washbasins','bathroom']:departments[floor * 8 + ((i + Math.max(0,Math.floor(siteIndex))*(floor+1)) % 8)];

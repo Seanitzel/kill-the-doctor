@@ -70,7 +70,7 @@ test('Clinical, pain, suspicion, recruitment and pharmacy dialogue are included 
 });
 
 test('Witness wording distinguishes a visible weapon from forbidden camera evidence',()=>{
-  assert.equal(WITNESS_LINES.weapon,'A weapon! I am calling security!');
+  assert.equal(WITNESS_LINES.weapon,'A weapon! I am calling the police!');
   assert.equal(WITNESS_LINES.camera,'That camera is not allowed here. I am calling security.');
   assert.ok(!WITNESS_LINES.camera.toLowerCase().includes('weapon'));
 });

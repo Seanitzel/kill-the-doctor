@@ -8350,5 +8350,101 @@
         "sha256": "83ffeaf98fb5b150b2d120cc5e6293199c6e0582f070e83a4d47fde30c58e0f0"
       }
     ]
+  },
+  {
+    "text": "A weapon! I am calling the police!",
+    "gender": "female",
+    "key": "f-c9746050",
+    "category": "witness",
+    "spokenText": "A weapon! I'm calling the police!",
+    "synthetic": true,
+    "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+    "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+    "variants": [
+      {
+        "file": "f-c9746050.mp3",
+        "voice": "northline-female-standard",
+        "voiceId": "northline-female-standard",
+        "voiceRegion": "standard",
+        "accent": "General American (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "A warm adult American woman with a clear midrange feminine voice and a neutral General American accent. Conversational, grounded and confident, with natural connected speech and expressive but restrained intonation. Studio recording, no background sound.",
+        "referenceSha256": "771ddf909ce1e5d60b25f86cd892879f7d94e43d17c4536e6c9dd6535857c90f",
+        "delivery": "witness",
+        "spokenText": "A weapon! I'm calling the police!",
+        "seed": 258214,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 2.942,
+        "bytes": 30369,
+        "sha256": "0e4e2895c4d5ec3d7443aac2281418beff97d6723d26dccb54cc3aece6b0a3f6"
+      },
+      {
+        "file": "f-c9746050-alt.mp3",
+        "voice": "northline-female-southern",
+        "voiceId": "northline-female-southern",
+        "voiceRegion": "southern",
+        "accent": "Southern American / Texas-inspired (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "An adult American woman from Texas, with a warm lower feminine voice and a mild authentic Southern American accent. A relaxed Texas drawl, friendly and conversational, clear intelligible words with natural connected speech. Not exaggerated. Studio recording, no background sound.",
+        "referenceSha256": "5d63c250593d128f7083b5fe8c4471bbe7a41fedc6932080ee26ca1d5a7bd66b",
+        "delivery": "witness",
+        "spokenText": "A weapon! I'm calling the police!",
+        "seed": 251764,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 2.782,
+        "bytes": 28689,
+        "sha256": "a50df604cec8559c42a71f218a3592f36b54e4492dabd6f98527468bc79c23ca"
+      }
+    ]
+  },
+  {
+    "text": "A weapon! I am calling the police!",
+    "gender": "male",
+    "key": "m-c9746050",
+    "category": "witness",
+    "spokenText": "A weapon! I'm calling the police!",
+    "synthetic": true,
+    "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+    "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+    "variants": [
+      {
+        "file": "m-c9746050.mp3",
+        "voice": "northline-male-standard",
+        "voiceId": "northline-male-standard",
+        "voiceRegion": "standard",
+        "accent": "General American (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "An adult American man with a distinct low baritone masculine voice and a neutral General American accent. Relaxed, warm and clear, with conversational pacing and natural connected speech. Studio recording, no background sound.",
+        "referenceSha256": "dd10a5dab402d507231176253491b806343c5a5c82af1c9a74ebf130da7c6913",
+        "delivery": "witness",
+        "spokenText": "A weapon! I'm calling the police!",
+        "seed": 254365,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 2.782,
+        "bytes": 28689,
+        "sha256": "21e3a93e45296d53bc935f4d5d05feff7ad1099862aa64b1b85c7711101332d6"
+      },
+      {
+        "file": "m-c9746050-alt.mp3",
+        "voice": "northline-male-southern",
+        "voiceId": "northline-male-southern",
+        "voiceRegion": "southern",
+        "accent": "Southern American / Texas-inspired (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "An adult American man from Texas, with a warm deep masculine baritone voice and a mild authentic Southern American accent. A relaxed Texas drawl, friendly and grounded, clear intelligible words with natural connected speech. Not exaggerated. Studio recording, no background sound.",
+        "referenceSha256": "2e87b5968884e6d713ec7f634f2addf432d6bf4d7579f0f13e5c2b32ab9c0f89",
+        "delivery": "witness",
+        "spokenText": "A weapon! I'm calling the police!",
+        "seed": 259027,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 2.142,
+        "bytes": 22449,
+        "sha256": "125438791512357ce73d142b06ed3acb45f1256c09f8d8b6ed9604ad6f2c28e4"
+      }
+    ]
   }
 ]

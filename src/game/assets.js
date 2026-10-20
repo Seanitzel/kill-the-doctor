@@ -223,6 +223,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     mesh('box', material(person.accent || '#5288a2'), [.07,.03,.016], [.14,1.31,.22], root);
   }
   const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
+  const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.16:joint===2?.33:.22))});}
   const orient = (name, child, direction) => {
     const bone=activityBones[name], tip=activityBones[child]; if(!bone || !tip) return;
     const parent=bone.parent.getWorldQuaternion(new THREE.Quaternion());
@@ -252,6 +253,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.24, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
     const action=actions[next],footfalls=speed>.15&&action?animationFootfalls(action.time,dt,action.timeScale,action.getClip().duration):0;
     mixer.update(dt);
+    for(const finger of restingFingers)finger.bone.quaternion.copy(finger.bind).multiply(finger.curl);
     if (aim) for (const item of arms) item.arm.quaternion.copy(item.q);
     return {footfalls,animation:current};
   }, poseActivity(activity, time, { seated=false, reaction=0, look=0,restricted=false } = {}) {
@@ -353,7 +355,7 @@ export function portraitCamera(subject,options={}){
   const center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3()),side=options.view==='side',half=Math.max(size.y,side?size.z:size.x)/2;
   const camera=new THREE.PerspectiveCamera(30,1,.01,12),depth=side?size.x:size.z;
   const distance=half*(options.fullBody?1.14:1.28)/Math.tan(Math.PI/12)+depth/2;
-  camera.position.copy(center);if(side)camera.position.x+=distance;else camera.position.z+=(options.view==='back'?-1:1)*distance;camera.lookAt(center);camera.updateMatrixWorld(true);return camera;
+  camera.position.copy(center);if(side)camera.position.x+=distance;else camera.position.z+=(options.view==='back'?-1:1)*distance;camera.userData.portraitTarget=center.toArray();camera.lookAt(center);camera.updateMatrixWorld(true);return camera;
 }
 export function renderPortrait(renderer,assets,person,role='doctor',options={}) {
   const subject=makePlayer(assets,person.gender||'male',person,role);
@@ -386,7 +388,7 @@ function retargetBaked(sourceModel, sourceClip, targetModel, name) {
   source.updateMatrixWorld(true); target.updateMatrixWorld(true);
   const sourceBones = new Map(), targetBones = [];
   source.traverse(b => { if (b.isBone) sourceBones.set(b.name.replace(/mixamorig:?/g, ''), b); });
-  target.traverse(b => { if (b.isBone && sourceBones.has(b.name)) targetBones.push(b); });
+  target.traverse(b => { if (b.isBone && sourceBones.has(b.name)&&!/Hand(Thumb|Index|Middle|Ring|Pinky)/.test(b.name)) targetBones.push(b); });
   const bindSource = new Map(), bindTarget = new Map();
   for (const b of targetBones) { bindSource.set(b.name, sourceBones.get(b.name).getWorldQuaternion(new THREE.Quaternion()).invert()); bindTarget.set(b.name, b.getWorldQuaternion(new THREE.Quaternion())); }
   const times = [], values = new Map(targetBones.map(b => [b.name, []]));

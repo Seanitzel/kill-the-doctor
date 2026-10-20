@@ -1,0 +1,3 @@
+.auto-flight-note{color:#bfe0ed;font-size:12px;letter-spacing:.02em}.locked-preview-note{color:#c8dce6!important;font-size:10px!important;line-height:1.6}.locked-preview-note button{display:block;margin:6px auto;color:#b8dce9;min-height:28px;font-size:10px}
+@media(orientation:landscape) and (max-height:550px){.mobile-mode .studio-v3.character-studio{grid-template-columns:165px minmax(0,1fr)}.mobile-mode .studio-v3 .studio-preview{max-width:165px}.mobile-mode .studio-preview>strong{margin-top:5px}.mobile-mode .studio-preview>span,.mobile-mode .studio-preview>small{display:none}}
+@media(orientation:landscape) and (max-width:740px){.mobile-mode .studio-v3.character-studio{grid-template-columns:115px minmax(0,1fr)}}

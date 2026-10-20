@@ -16,7 +16,8 @@ export function skinGroup(country,index){const id=country?.id;if(['nigeria','con
 export function countryPerson(person,role,country,seed,id,ordinal=0){
  const h=identityHash(`${seed}:${id}`),gender=person.gender==='female'?'female':'male',group=skinGroup(country,ordinal),pool=SKIN[group],staff=['doctor','nurse'].includes(role),names=NAMES[country?.id]||FALLBACK;
  const first=names[gender==='female'?0:1],last=names[2],name=staff?(id==='target'||id==='operation-doctor-0'?country.doctor:`${role==='nurse'?'Nurse':'Dr.'} ${first[ordinal%first.length]} ${last[Math.floor(ordinal/first.length)%last.length]}`):person.name;
- const hairstyles=gender==='female'?['ponytail','cropped','straight','curls-short','braids','ponytail-side']:['cropped','slick','original','curls-short','afro'];
+ const localStyles=country?.id==='nigeria'||['congo','kenya','south-africa','sudan'].includes(country?.id);
+ const hairstyles=localStyles?(gender==='female'?['braids','afro','braids','curls-short','ponytail-side','cropped']:['afro','cropped','braids','curls-short','afro','slick']):gender==='female'?['ponytail','cropped','straight','curls-short','braids','ponytail-side']:['cropped','slick','original','curls-short','afro'];
  return {...person,name,gender,skin:pool[(h+ordinal)%pool.length],hair:['#181718','#34251f','#564033','#77614a','#967b56','#aaa09a'][(h>>>3)%6],eyes:['#4b3528','#775c3e','#3c574c','#5b7182','#85846b'][(h>>>7)%5],hairstyle:hairstyles[(h>>>11)%hairstyles.length],glasses:staff&&h%5===0,eyeShape:['natural','almond','round','lifted'][h%4],noseShape:['natural','slender','broad','defined'][(h>>>4)%4],mouthShape:['natural','full','soft','wide'][(h>>>6)%4],castCountry:country?.id};
 }
 export function coffeeLevel(level){return [2,4,7,11,14,19].includes(level);}

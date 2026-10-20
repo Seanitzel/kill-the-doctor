@@ -19,10 +19,11 @@ export class HospitalExtras{
       const b=new Batcher(g),shell=material('#213e50'),glass=material('#88b6c6',{metalness:.35,roughness:.25}),trim=material(c?.accent||'#729bac'),cans=['#88ada9','#a39abc','#d8b784','#638eaa'].map(color=>material(color));
       b.box(shell,0,1.02,0,1.1,2,.7);b.box(glass,-.12,1.22,.365,.69,1.25,.025);
       for(let row=0;row<4;row++){b.box(trim,-.12,.72+row*.29,.25,.70,.025,.30);for(let col=0;col<4;col++)b.cylinder(cans[col],-.38+col*.17,.82+row*.29,.39,.052,.18,.052);}
-      b.box(material('#101d27'),-.1,.38,.37,.63,.20,.04);b.box(trim,.42,1.15,.38,.15,.31,.04);b.finish();
+      b.box(material('#101d27'),-.1,.34,.37,.70,.40,.04);b.box(trim,.42,1.15,.38,.15,.31,.04);b.finish();
       const label=sign('MYSTERY SODA','5 COINS · 60% SLOW / 40% FAST',.98,.25,{background:'#19303c',color:'#e2e9dd'});label.position.set(0,1.87,.37);g.add(label);
       const collider=footprint(8.7,29.5,.74,1.14,2.05,0,'vending-machine');e.hospitals[level.floor].colliders.push(collider);this.colliders.push({floor:level.floor,collider});
-      this.items.push({type:'extra-vending',floor:level.floor,x:7.65,z:29.5,label:'Mystery Soda · buy for 5 coins'});
+      const bottle=new THREE.Group();bottle.name='Dispensed Mystery Soda bottle';bottle.visible=false;bottle.position.set(-.1,1.45,.43);g.add(bottle);const bottleGeometry=new THREE.LatheGeometry([[0,-.12],[.05,-.12],[.055,-.10],[.055,.10],[.027,.14],[.027,.20],[0,.20]].map(([x,y])=>new THREE.Vector2(x,y)),12);const colors=[];for(let v=0;v<bottleGeometry.attributes.position.count;v++){const y=bottleGeometry.attributes.position.getY(v),color=new THREE.Color(y>.17?'#353a56':Math.abs(y)<.07?'#d8e4d9':'#89b7b1');colors.push(color.r,color.g,color.b);}bottleGeometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));bottle.add(new THREE.Mesh(bottleGeometry,material('#ffffff',{vertexColors:true,roughness:.28})));
+      this.items.push({type:'extra-vending',floor:level.floor,x:7.65,z:29.5,label:'Mystery Soda · buy for 5 coins',bottle});
     }
     // One service key opens both entrances to each locked laboratory.
     const lockedFloors=[];for(const level of e.levels)for(const room of level.rooms.filter(r=>r.kind==='lab')){
@@ -38,13 +39,15 @@ export class HospitalExtras{
       const label=sign('KTD / DREAM VIAL','FICTIONAL DIVERSION ITEM',.9,.24);label.position.set(0,.4,0);g.add(label);this.potionProp=g;this.items.push({type:'extra-potion',floor:0,x:g.position.x,z:g.position.z,label:'Take fictional Dream Vial'});
     }
   }
-  interactions(){const e=this.e,m=e.mission;if(m.result||m.state==='escape')return [];const out=this.items.filter(i=>i.floor===e.floor&&(i.type!=='extra-key'||!m.keys.includes('laboratory'))&&(i.type!=='extra-potion'||!this.potion&&!this.lure));
+  interactions(){const e=this.e,m=e.mission;if(m.result||m.state==='escape')return [];const out=this.items.filter(i=>i.floor===e.floor&&!(i.type==='extra-vending'&&this.dispense?.item===i)&&(i.type!=='extra-key'||!m.keys.includes('laboratory'))&&(i.type!=='extra-potion'||!this.potion&&!this.lure));
+    if(this.dispense?.ready&&this.dispense.item.floor===e.floor)out.unshift({type:'extra-soda',floor:e.floor,x:7.9,z:29.5,label:'Pick up Mystery Soda from collection slot'});
     const n=e.incidents?.contact;if(this.potion&&n&&!n.dead&&['escort','recruited'].includes(n.recruit.state)&&n.floor===e.floor)out.push({type:'extra-diversion',floor:e.floor,x:n.pos.x,z:n.pos.z,label:'Offer Dream Vial · only outside target office'});
     if(this.lure?.phase==='collapsed'&&e.floor===m.target.floor)out.push({type:'extra-help',floor:e.floor,door:this.lure.door,...this.lure.callPoint,label:'Call the target doctor for help'});
     return out;
   }
   interact(item){const e=this.e,m=e.mission;if(e.paused||m.result)return false;const valid=this.interactions().find(i=>i.type===item.type&&i.floor===e.floor&&distance(e.playerPos,i)<2.5);if(!valid)return false;
-    if(item.type==='extra-vending'){if(!buySoda(m.save,this)){e.notify('Mystery Soda costs 5 coins. Earn coins by finishing assignments.');return false;}e.hooks.persist?.();e.audio.sound('clue');e.notify(`Mystery Soda bought · ${this.sodas} in bag. Drink during an appointment wait. 60% doubles the wait; 40% halves it.`,'clue');e.emitHUD();return true;}
+    if(item.type==='extra-vending'){if(this.dispense){e.notify('Collect the dispensed bottle before buying another.');return false;}if(!buySoda(m.save,this)){e.notify('Mystery Soda costs 5 coins. Earn coins by finishing assignments.');return false;}this.sodas--;this.dispense={item:valid,at:m.elapsed,ready:false};valid.bottle.visible=true;valid.bottle.position.y=1.45;e.hooks.persist?.();e.audio.sound('vending');e.notify('Mystery Soda purchased · wait for the bottle to drop into the collection slot.','clue');e.emitHUD();return true;}
+    if(item.type==='extra-soda'){if(!this.dispense?.ready)return false;this.sodas++;this.dispense.item.bottle.visible=false;this.dispense=null;e.audio.sound('bottle-pickup');e.notify(`Mystery Soda collected · ${this.sodas} in bag. Drink during an appointment wait.`,'clue');e.emitHUD();return true;}
     if(item.type==='extra-key'){m.collectKey('laboratory');this.keyProp.visible=false;e.notify('Laboratory service key collected · unlock Laboratory or Research','clue');return true;}
     if(item.type==='extra-potion'){this.potion=true;this.potionProp.visible=false;e.notify('Dream Vial collected · invite your contact, then lead them outside the target’s room','clue');return true;}
     if(item.type==='extra-diversion')return this.offerPotion();
@@ -74,7 +77,7 @@ export class HospitalExtras{
     else if(l.phase==='cpr'){n.path=[];n.activity='cpr';n.visual.root.rotation.y=Math.atan2(l.contact.pos.x-n.pos.x,l.contact.pos.z-n.pos.z);}
     return true;
   }
-  update(){const e=this.e;for(const g of this.root.children)g.visible=g.userData.floor===e.floor&&g!==this.keyProp&&g!==this.potionProp;if(this.keyProp)this.keyProp.visible=e.floor===0&&!e.mission.keys.includes('laboratory');if(this.potionProp)this.potionProp.visible=e.floor===0&&!this.potion&&!this.lure;
+  update(){const e=this.e;if(this.dispense){const d=this.dispense,age=e.mission.elapsed-d.at,t=Math.min(1,age/.85);d.item.bottle.position.y=1.45-1.11*t*t;if(age>=.85&&!d.ready){d.ready=true;e.audio.sound('bottle-drop');e.notify('Bottle ready · use the collection slot to pick it up.','clue');e.emitHUD();}}for(const g of this.root.children)g.visible=g.userData.floor===e.floor&&g!==this.keyProp&&g!==this.potionProp;if(this.keyProp)this.keyProp.visible=e.floor===0&&!e.mission.keys.includes('laboratory');if(this.potionProp)this.potionProp.visible=e.floor===0&&!this.potion&&!this.lure;
     if(this.can){this.can.visible=e.mission.elapsed<(this.drinkUntil||0);if(this.can.visible&&e.playerSpeed<.2)e.player.poseActivity?.('drink',e.time);}
     const l=this.lure;if(l&&l.calledAt!==undefined&&!l.recovered){
       if(e.mission.elapsed-l.calledAt>12&&!l.responder){const candidate=e.npcs.filter(n=>n!==l.target&&n.floor===l.floor&&!n.dead&&!n.evacuated&&['doctor','nurse'].includes(n.role)).sort((a,b)=>distance(a.pos,l.contact.pos)-distance(b.pos,l.contact.pos))[0];if(candidate){l.responder=candidate;candidate.emergencyResponder=true;candidate.reporting=null;candidate.evacuating=false;candidate.reaction=0;candidate.activity=null;candidate.path=[];candidate.speed=2.6;const nav=e.systems.navigationFor(l.floor);l.responderGoal={...nav.nearest({x:l.contact.pos.x-.8,z:l.contact.pos.z-.3},nav.fieldFor(l.contact.pos)).point};e.routeNPC(candidate,l.responderGoal);}}

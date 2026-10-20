@@ -83,7 +83,7 @@ function simulation(){
 test('Drawing in view causes one audible gasp and a report; walls and holstering prevent detection',()=>{
   const e=simulation(),n=actor('witness',0,0,24);e.npcs=[n];e.playerPos.set(0,0,27);let gasps=0;e.audio.gasp=()=>gasps++;
   e.systems.update(.2);assert.equal(gasps,0);e.weaponDrawn=true;e.systems.update(.2);assert.equal(gasps,1);assert.ok(n.reporting);e.systems.update(.2);assert.equal(gasps,1);
-  e.mission.elapsed=n.reporting.deadline+.01;e.systems.prepareNPC(n);assert.equal(e.mission.result.success,false);assert.equal(e.finished,true);
+  e.mission.elapsed=n.reporting.deadline+.01;e.systems.prepareNPC(n);assert.equal(e.mission.result,null);assert.equal(e.mission.policeAlert,true);assert.equal(e.mission.state,'escape');assert.ok(e.mission.timer>0);assert.equal(e.finished,undefined);
   const blocked=simulation();blocked.npcs=[actor('other',0,0,24)];blocked.playerPos.set(0,0,27);blocked.weaponDrawn=true;blocked.lineOfSight=()=>false;blocked.systems.update(.2);assert.equal(blocked.npcs[0].reporting,undefined);
 });
 test('Primary target interrupts pending reports and starts one immediate alarm across all floors',()=>{

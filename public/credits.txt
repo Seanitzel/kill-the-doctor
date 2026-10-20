@@ -119,3 +119,5 @@ Travel globe coastline: Natural Earth 1:110m land, public domain. https://www.na
 KTD 2.9 recorded human sneeze: markbryant, Real Sneeze, Atchoo - 3 Sneezes, recorded in voiceover booth.wav, Freesound 611187, CC0 1.0. https://freesound.org/people/markbryant/sounds/611187/
 Evacuation scream: Archeos, WomanScream.wav, Freesound 261419, CC0 1.0. https://freesound.org/people/Archeos/sounds/261419/
 France Jack and Congo Michael story artwork: OpenAI ImageGen, original generated fictional scenes.
+
+KTD 3.0: Additional male and female police-report dialogue uses the same four fictional Qwen3-TTS designed voices, with General American and Southern/Texas-inspired variants. Clip provenance and checksums are in audio/dialogue/manifest.json. Departure and arrival turbine effects are original procedural Web Audio.

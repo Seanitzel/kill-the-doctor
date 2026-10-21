@@ -59,7 +59,7 @@ export class HospitalIncidents{
       e.notify(`Find the empty bathroom off the ground-floor atrium. ${n.name.split(' ')[0]} will follow you.`);return true;
     }
     if(choice==='recruit'&&state==='escort'&&this.privateTogether(n)){
-      if(e.mission.random()<.25){
+      if(e.mission.random()<.05){
         n.recruit.state='refused';n.recruit.walkedAway=false;n.path=[];n.cursor=0;n.activity=null;n.reaction=0;n.reporting=null;n.wait=0;n.speed=2.5;
         e.notify(`${n.name.split(' ')[0]} refused and is leaving. You will have to continue alone.`);return true;
       }

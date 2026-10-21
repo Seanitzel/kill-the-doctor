@@ -2,6 +2,7 @@ import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
 import { native,stopNativeSpeech } from '../mobile/platform.js';
 import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
+import {waitFor} from './startup.js';
 const AUDIO_REVISION='3.0.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
 export const HOSPITAL_SAMPLE_FILES=Object.freeze({'laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
@@ -60,18 +61,18 @@ export class HospitalAudio {
     this.settings=settings;this.ctx=null;this.nextNote=0;this.nextBeep=0;this.stepClock=0;this.enabled=true;this.noteIndex=0;this.samples={};
     this.ambientChannels=new Map();this.activeSamples=new Set();this.speechPriority=0;this.speechSerial=0;this.dialogueBuffers=new Map();this.dialogueTakes=new Map();
     this.dialogueSizes=new Map();this.dialogueBytes=0;this.dialogueRequests=new Map();this.voiceEpoch=0;this.listenerFloor=0;this.listenerPosition={x:0,y:1.7,z:0,floor:0};this.clinicalBuffers=new Map();
-    this.disposed=false;this.controlEpoch=0;this.effectEpoch=0;this.timers=new Set();this.ownedNodes=new Set();this.backgroundSources=new Set();this.activeSynth=new Set();
+    this.disposed=false;this.controlEpoch=0;this.effectEpoch=0;this.timers=new Set();this.ownedNodes=new Set();this.backgroundSources=new Set();this.activeSynth=new Set();this.loadLifetime=new AbortController();
   }
   ownsContext(ctx){return !this.disposed&&!!ctx&&this.ctx===ctx&&ctx.state!=='closed';}
   own(node){this.ownedNodes.add(node);return node;}
   async start() {
     if(this.disposed)return;
-    if(this.startPromise&&this.enabled)return this.startPromise;
-    this.enabled=true;const intent=++this.controlEpoch;
-    const pending=this.startAudio(intent);this.startPromise=pending;
+    if(this.startPromise){this.pause(false);return this.startPromise;}
+    this.enabled=true;this.controlEpoch++;
+    const pending=this.startAudio();this.startPromise=pending;
     try{await pending;}finally{if(this.startPromise===pending)this.startPromise=null;}
   }
-  async startAudio(intent){
+  async startAudio(){
     try {
       if (!this.ctx) {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -86,8 +87,10 @@ export class HospitalAudio {
         const filter = this.own(this.ctx.createBiquadFilter()); filter.type = 'lowpass'; filter.frequency.value = 240;
         const g = this.own(this.ctx.createGain()); g.gain.value = 0.025; noise.connect(filter); filter.connect(g); g.connect(this.master); noise.start();this.backgroundSources.add(noise);
       }
-      const ctx=this.ctx;await ctx.resume();
-      if(!this.ownsContext(ctx)||intent!==this.controlEpoch||!this.enabled){if(this.ownsContext(ctx)&&!this.enabled)await ctx.suspend();return;}
+      const ctx=this.ctx,resuming=ctx.resume();
+      Promise.resolve(resuming).then(()=>{if(this.ownsContext(ctx)&&!this.enabled)ctx.suspend().catch(()=>{});}).catch(()=>{});
+      await waitFor(resuming,{signal:this.loadLifetime.signal,timeout:2000});
+      if(!this.ownsContext(ctx)||!this.enabled){if(this.ownsContext(ctx)&&!this.enabled)await ctx.suspend();return;}
       this.setSettings(this.settings);await this.loadSamples();
     } catch { /* Captions and gameplay remain available without an audio device. */ }
   }
@@ -183,12 +186,12 @@ export class HospitalAudio {
   async loadSamples() {
     if(!this.ownsContext(this.ctx))return;
     if(this.samplePromise) return this.samplePromise;
-    const ctx=this.ctx,controller=new AbortController();this.sampleController=controller;
+    const ctx=this.ctx,controller=new AbortController();this.sampleController=controller;const deadline=setTimeout(()=>controller.abort(),15000);
     const pending=Promise.allSettled(Object.entries(HOSPITAL_SAMPLE_FILES).filter(([name])=>!this.samples[name]).map(async([name,url])=>{
-      const buffer=await this.fetchBuffer(assetUrl(url)+`?v=${AUDIO_REVISION}`,ctx,controller);
+      const buffer=await waitFor(this.fetchBuffer(assetUrl(url)+`?v=${AUDIO_REVISION}`,ctx,controller),{signal:controller.signal,timeout:0});
       if(this.ownsContext(ctx)&&!controller.signal.aborted)this.samples[name]=buffer;
     }));this.samplePromise=pending;
-    try{return await pending;}finally{if(this.samplePromise===pending)this.samplePromise=null;if(this.sampleController===controller)this.sampleController=null;}
+    try{return await pending;}finally{clearTimeout(deadline);if(this.samplePromise===pending)this.samplePromise=null;if(this.sampleController===controller)this.sampleController=null;}
   }
   async fetchBuffer(url,ctx,controller){
     const valid=()=>this.ownsContext(ctx)&&!controller.signal.aborted;
@@ -317,7 +320,7 @@ export class HospitalAudio {
   }
   dispose() {
     if(this.disposed)return this.disposePromise;this.disposed=true;this.enabled=false;this.controlEpoch++;
-    this.sampleController?.abort();this.sampleController=null;this.samplePromise=null;this.startPromise=null;this.stopAmbient();
+    this.loadLifetime.abort();this.sampleController?.abort();this.sampleController=null;this.samplePromise=null;this.startPromise=null;this.stopAmbient();
     this.foley?.dispose();this.foley=null;for(const record of [...this.activeSynth])this.releaseSynth(record,true);
     for(const source of this.backgroundSources){source.onended=null;try{source.stop();}catch{}if('buffer'in source)try{source.buffer=null;}catch{}}this.backgroundSources.clear();
     for(const node of this.ownedNodes)disconnect(node);this.ownedNodes.clear();

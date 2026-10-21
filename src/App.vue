@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, shallowRef } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, shallowRef, nextTick } from 'vue';
 import { ArrowRight, ArrowUpRight, Plus, Flashlight, Map, BookOpen, Crosshair, Volume2, VolumeX, Settings2, X, Check, ChevronRight, Shield, Footprints, Wind, CircleHelp, Pause, RotateCcw, Radio, AlertTriangle, Coins, Power, Maximize, UserRound, DoorOpen, Clock, Eye, Target, HeartPulse, Headphones, Smartphone } from 'lucide-vue-next';
 import {TimerScope} from './game/lifetime.js';
 import { GameEngine } from './game/engine.js';
@@ -13,6 +13,8 @@ import { App as NativeApp } from '@capacitor/app';
 import './mobile/mobile.css';
 import MapView from './MapView.vue';
 import StoryIntro from './StoryIntro.vue';
+import MissionLoading from './MissionLoading.vue';
+import {yieldToBrowser} from './game/startup.js';
 import CharacterStudio from './CharacterStudio.vue';
 import {FLOORS,FLOOR_CODES,FLOOR_THEMES} from './game/layout.js';
 import {CHARACTERS,defaultAppearance,profileFor,selectCharacter,weaponInfo} from './game/loadout.js';
@@ -37,6 +39,7 @@ import './revision-2.9.css';
 import './revision-3.0.css';
 import {MenuMusic} from './game/menu-music.js';
 const viewport = ref(null), screen = ref('menu'), overlay = ref(null), ready = ref(false), loading = ref(false), error = ref(null), locked = ref(false);
+const preparation=reactive({label:'Preparing your assignment',progress:0,detail:''}),assetStatus=ref('Downloading character files'),assetError=ref(null);let launchSerial=0,portraitSerial=0;
 const isTouch=ref(touchDevice());let nativeCleanup=()=>{};
 let removeGestureGuard=()=>{};
 let stopCameraDiagnostics=()=>{};
@@ -44,9 +47,9 @@ let engine,appDisposed=false,debugBridge,diagnosticGetter;const feedbackTimers=n
 const save = reactive(readSave(localStorage));if(isTouch.value&&!localStorage.getItem('ktd-northline-v1'))save.settings.quality='balanced';
 const menuMusic=new MenuMusic(save.settings);const menuSound=ref(false);
 function enableMenuSound(){menuMusic.unlock();if(menuMusic.ctx){menuMusic.ctx.onstatechange=()=>{if(!appDisposed)menuSound.value=menuMusic.ctx?.state==='running';};menuSound.value=menuMusic.ctx.state==='running';}}
-function menuGesture(){if(screen.value==='menu')enableMenuSound();}
+function menuGesture(){if(screen.value==='menu')enableMenuSound();else if(screen.value==='game'&&!overlay.value&&!loading.value&&engine?.audio.ctx?.state==='suspended')engine.audio.pause(false);}
 function menuVisibility(){menuMusic.sync();}
-watch(screen,value=>{menuMusic.setActive(value==='menu');if(engine)engine.presentationOnly=['travel','story','ending'].includes(value);});
+watch(screen,value=>{menuMusic.setActive(value==='menu');if(engine)engine.presentationOnly=['travel','story','ending','loading','startup-error'].includes(value);});
 const hud = reactive({ state: 'investigate', location: 'Main atrium', floor: 0, x: 3, z: 30, yaw: Math.PI, timer: 0, stamina: 100, suspicion: 0, flashlight: false, blackout: 0, impairment: 0, aiming: false, ammo: 6, reserve: 30, prompt: null, clues: 0 });
 const mission = shallowRef(null), result = ref(null), toast = ref(null), announcement = ref(null), clue = ref(null), badge = ref(null), mapFloor = ref(0), shotFlash = ref(false), transition = ref(false), hit = ref(false), soundCaption = ref(null);
 const assignmentPortrait = ref(null);
@@ -57,7 +60,14 @@ function playContactLine(){const line=contactLines.value[contactDialog.value?.in
 function openContact(data){contactDialog.value={...data,index:0};openOverlay('contact');engine.audio.pause(false);playContactLine();}
 function nextContactLine(){contactDialog.value.index++;playContactLine();}
 function contactChoice(choice){if(!engine.incidents.choose(choice)){notification({text:'Find an empty room and stay close to your contact.',kind:'info'});return;}if(choice==='recruit'){contactDialog.value.stage='accepted';contactDialog.value.index=0;playContactLine();}else{engine.incidents.speakRecruit(choice==='escort'?RECRUIT_DIALOGUE.escort:RECRUIT_DIALOGUE.dismiss,'player');closeOverlay();}}
-function syncCharacterPortraits(){if(!engine?.ready)return;for(const c of CHARACTERS){const appearance=c.id==='custom'?save.character==='custom'?save.appearance:save.customAppearance:defaultAppearance(c);characterPortraits[c.id]=engine.portrait(profileFor({character:c.id,appearance}),'civilian');}}
+function syncCharacterPortraits(){
+  if(!engine?.ready)return;const serial=++portraitSerial;
+  CHARACTERS.forEach((c,i)=>feedbackTimers.after('portrait-'+c.id,100+i*150,()=>{
+    if(appDisposed||serial!==portraitSerial||loading.value)return;
+    const appearance=c.id==='custom'?save.character==='custom'?save.appearance:save.customAppearance:defaultAppearance(c);
+    try{characterPortraits[c.id]=engine.portrait(profileFor({character:c.id,appearance}),'civilian');}catch{characterPortraits[c.id]=portrait(c);}
+  }));
+}
 const character=computed(()=>profileFor(save).name);const activeStory=ref(null);
 const currentCountry=computed(()=>countryFor(save)),campaignDone=computed(()=>campaignProgress(save)>=20),availableCountries=computed(()=>unlockedCountries(save));
 const flight=ref(null),automaticFlight=ref(false);let flightSound=null;
@@ -65,7 +75,7 @@ function queueAutomaticFlight(){feedbackTimers.cancel('auto-flight');if(automati
 function rewardComplete(){automaticFlight.value=!!nextFlight(result.value,save);queueAutomaticFlight();}
 watch(overlay,queueAutomaticFlight);
 function chooseMode(mode,id){if(setPlayMode(save,mode,id)){persist();overlay.value=null;}}
-function beginFlight(route){if(screen.value==='travel'||!engine)return;automaticFlight.value=false;feedbackTimers.cancel('auto-flight');engine.stop();engine.storyMusic=true;overlay.value=null;flight.value=route;screen.value='travel';engine.audio.start().then(()=>{if(screen.value==='travel')flightSound=engine.audio.flight?.();});}
+function beginFlight(route){if(screen.value==='travel'||!engine)return;automaticFlight.value=false;feedbackTimers.cancel('auto-flight');engine.stop();engine.storyMusic=true;overlay.value=null;flight.value=route;screen.value='travel';engine.audio.start().catch(()=>{});flightSound=engine.audio.flight?.();}
 function nextMission(){if(loading.value||['travel','story','ending'].includes(screen.value))return;automaticFlight.value=false;feedbackTimers.cancel('auto-flight');const route=nextFlight(result.value,save);if(route&&!save.pendingTravel)save.pendingTravel={from:route.from.id,to:route.to.id};if(result.value?.success&&result.value.playMode==='story'&&campaignDone.value){openOverlay('campaign');return;}startMission();}
 function finishFlight(){if(screen.value!=='travel')return;if(flightSound)engine.audio.releaseSynth(flightSound,true);flightSound=null;flight.value=null;save.pendingTravel=null;persist();screen.value='results';startMission();}
 const nextAssignment=computed(()=>assignmentType(save));
@@ -84,33 +94,50 @@ function openOverlay(name) { overlay.value = name; engine?.pause(true); if (name
 function closeOverlay() { if(overlay.value==='characters')syncCharacterPortraits();overlay.value = null; clue.value = null; badge.value = null; if (screen.value === 'game') engine?.pause(false); else if(['story','ending'].includes(screen.value)) engine?.audio.pause(false); }
 function pause() { if (screen.value !== 'game' || loading.value) return; if (overlay.value) closeOverlay(); else openOverlay('pause'); }
 function startMission(){
-  if(loading.value||screen.value==='story')return;if(save.playMode==='story'&&campaignDone.value){openOverlay('campaign');return;}
+  if(loading.value||screen.value==='story')return;if(!engine){startupFailure(new Error('Graphics could not initialize. Reload the game to try again.'));return;}if(save.playMode==='story'&&campaignDone.value){openOverlay('campaign');return;}
   const pending=save.pendingTravel;if(save.playMode==='story'&&pending){const from=COUNTRIES.find(c=>c.id===pending.from),to=COUNTRIES.find(c=>c.id===pending.to);if(from&&to){beginFlight({from,to});return;}}
   const assignment=prepareAssignment(save);activeStory.value=assignment.story;persist();
   if(assignment.introSeen){enterHospital();return;}
   engine?.stop();engine.storyMusic=true;engine?.audio.start();overlay.value=null;screen.value='story';
 }
 function restartMission(){if(loading.value)return;mission.value?.finish(false,'Assignment restarted.');persist();enterHospital();}
-async function enterHospital() {
-  if (loading.value||!engine||appDisposed) return;
-  feedbackTimers.clear();shotFlash.value=false;hit.value=false;transition.value=false;soundCaption.value=null;
-  engine.storyMusic=false;engine?.audio.start();loading.value = true; error.value = null;
-  try {
-    const assignment=prepareAssignment(save);markIntroSeen(save);persist();mission.value = new Mission(save,assignment.seed,assignment.attempt); result.value = null; overlay.value = null; toast.value = null; announcement.value = null; screen.value = 'game';
-    const currentEngine=engine;const started=await currentEngine.start(mission.value, save.character);if(appDisposed||currentEngine!==engine||!started)return;assignmentPortrait.value = currentEngine.portrait(mission.value.target, mission.value.target.name.startsWith('Nurse') ? 'nurse' : 'doctor'); ready.value = true;
+function startupFailure(value){
+  if(appDisposed)return;launchSerial++;loading.value=false;engine?.stop();mission.value=null;overlay.value=null;error.value=value?.message||'The hospital could not start. Please try again.';screen.value='startup-error';
+}
+async function retryPreparation(lighter=false){if(loading.value)return;if(lighter){save.settings.quality='low';settingsChanged();}return enterHospital();}
+async function enterHospital(){
+  if(loading.value||appDisposed)return;if(!engine){startupFailure(new Error('Graphics could not initialize. Please reload the game.'));return;}
+  const serial=++launchSerial,currentEngine=engine;
+  loading.value=true;screen.value='loading';overlay.value=null;error.value=null;Object.assign(preparation,{label:'Preparing your assignment',progress:0,detail:'Your assignment will open automatically.'});
+  feedbackTimers.clear();portraitSerial++;shotFlash.value=false;hit.value=false;transition.value=false;soundCaption.value=null;
+  currentEngine.storyMusic=false;currentEngine.audio.start().catch(()=>{});
+  try{
+    // Paint the busy state before constructing anything expensive.
+    await nextTick();await yieldToBrowser();
+    if(currentEngine.startTask?.signal.aborted)await currentEngine.startPromise?.catch(()=>{});
+    if(appDisposed||serial!==launchSerial)return;
+    const assignment=prepareAssignment(save);persist();const next=new Mission(save,assignment.seed,assignment.attempt);
+    mission.value=next;result.value=null;toast.value=null;announcement.value=null;assignmentPortrait.value=portrait(next.target);
+    const started=await currentEngine.start(next,save.character);
+    if(appDisposed||serial!==launchSerial||currentEngine!==engine)return;
+    if(!started)throw new Error('Preparation was interrupted. Please try again.');
+    markIntroSeen(save);persist();ready.value=true;screen.value='game';loading.value=false;
     if(currentEngine.paused&&!overlay.value)openOverlay('pause');
-    notification({ text: mission.value.type==='evidence'?'Evidence only · find the keys, photograph three subjects, and leave without killing anyone':mission.value.type==='rescue'?'Rescue operation · find both keys and reach the basement theatre':isTouch.value?'Move with the stick, drag to look, and tap USE at the staff directory.':'Start at the staff directory. Press E to inspect it.', kind: 'info' });
-  } catch (e) { if(!appDisposed){error.value = `The game could not start: ${e.message}`; screen.value = 'menu';} }
-  finally{if(!appDisposed)loading.value=false;}
+    feedbackTimers.after('target-portrait',500,()=>{if(screen.value==='game'&&engine.mission===next){try{assignmentPortrait.value=engine.portrait(next.target,next.target.name.startsWith('Nurse')?'nurse':'doctor');}catch{}}});
+    notification({text:next.type==='evidence'?'Evidence only · find the keys, photograph three subjects, and leave without killing anyone':next.type==='rescue'?'Rescue operation · find both keys and reach the basement theatre':isTouch.value?'Move with the stick, drag to look, and tap USE at the staff directory.':'Start at the staff directory. Press E to inspect it.',kind:'info'});
+  }catch(value){if(!appDisposed&&serial===launchSerial)startupFailure(value);}
+  finally{if(!appDisposed&&serial===launchSerial)loading.value=false;}
 }
 function showResults(){engine.storyMusic=false;screen.value='results';if(result.value?.coins)engine.audio.start();else engine.audio.pause(true);}
 function missionResult(value){automaticFlight.value=false;nativeFeedback(value.success?'success':'warning');result.value=value;overlay.value=null;persist();if(value.success&&value.type==='evidence'){const profile=engine.playerProfile||profileFor(save);engine.stop();activeStory.value=evidenceEnding(profile,value.coins);screen.value='ending';engine.storyMusic=true;engine.audio.start();}else{screen.value='results';if(value.coins)engine.audio.start();}}
-function toMenu() { automaticFlight.value=false;feedbackTimers.clear();shotFlash.value=false;hit.value=false;transition.value=false;soundCaption.value=null;if(engine)engine.storyMusic=false;engine?.stop(); screen.value = 'menu'; overlay.value = null; announcement.value = null; toast.value = null; persist(); }
+function toMenu() { launchSerial++;portraitSerial++;loading.value=false;error.value=null;mission.value=null;result.value=null;assignmentPortrait.value=null;automaticFlight.value=false;feedbackTimers.clear();shotFlash.value=false;hit.value=false;transition.value=false;soundCaption.value=null;if(engine)engine.storyMusic=false;engine?.stop(); screen.value = 'menu'; overlay.value = null; announcement.value = null; toast.value = null;persist();syncCharacterPortraits(); }
 function buy(id) { if (purchase(save, id)) { persist();engine?.refreshLoadout(); engine?.audio.sound('clue'); } }
 function settingsChanged() { menuMusic.sync();persist(); engine?.applySettings(save.settings); }
 function toggleSound() { save.settings.volume = save.settings.volume ? 0 : .5; settingsChanged(); }
+function reloadGame(){persist();window.location.reload();}
 function fullscreen() { if(native)return; if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(()=>{}); else document.exitFullscreen?.(); }
 function globalKey(e) {
+  if(loading.value&&e.code==='Escape'){e.preventDefault();toMenu();return;}
   if(screen.value==='travel'&&e.code==='Escape'){finishFlight();return;}
   if (overlay.value === 'map' && (e.code === 'KeyM' || e.code === 'Tab')) { e.preventDefault(); closeOverlay(); }
   else if (overlay.value === 'journal' && e.code === 'KeyJ') closeOverlay();
@@ -120,8 +147,11 @@ onMounted(() => {
   enableMenuSound();
   try {
     engine = new GameEngine(viewport.value, save.settings, {
-      error:value=>{error.value=`Character assets could not load: ${value.message}`;},
-      ready:()=>{ready.value=true;syncCharacterPortraits();},
+      error:value=>{assetError.value=value.message;assetStatus.value='Character download interrupted · retry when entering';},
+      assets:value=>{assetStatus.value=value.label;},
+      loading:value=>{if(loading.value)Object.assign(preparation,{...value,progress:Math.max(preparation.progress,value.progress)});},
+      fatal:startupFailure,
+      ready:()=>{ready.value=true;assetError.value=null;syncCharacterPortraits();},
       contact:openContact,
       hud: state => Object.assign(hud, state),
       pause,persist, lift:()=>openOverlay('lift'), map: () => openOverlay('map'), journal: () => openOverlay('journal'), lock: value => locked.value = value,
@@ -138,14 +168,14 @@ onMounted(() => {
     // Dev-only inspection enables browser acceptance tests without changing the shipped UI.
     if (import.meta.env.DEV || import.meta.env.MODE==='native-test') window.__ktd = debugBridge = { get engine() { return engine; }, get mission() { return mission.value; }, get save() { return save; }, get hud() { return hud; } };
   } catch (e) { error.value = `WebGL could not initialize. Try a browser with hardware acceleration enabled. ${e.message}`; }
-  initializeNative({background:()=>{persist();engine?.resetTouch();if(screen.value==='game'&&!overlay.value)openOverlay('pause');else engine?.pause(true);},back:()=>{if(overlay.value)closeOverlay();else if(screen.value==='game')pause();else if(screen.value==='travel')finishFlight();else if(screen.value==='results'||screen.value==='story'||screen.value==='ending')toMenu();else NativeApp.exitApp();}}).then(cleanup=>{if(appDisposed)cleanup();else nativeCleanup=cleanup;}).catch(()=>{});
-  diagnosticGetter=()=>({platform,native,touch:isTouch.value,screen:screen.value,overlay:overlay.value,ready:ready.value,loading:loading.value,error:error.value,position:engine?.playerPos?.toArray(),yaw:engine?.yaw,paused:engine?.paused,frame:engine?.renderer.info.render.frame,fps:engine?.performance.fps,state:engine?.mission?.state,ammo:engine?.ammo,flashlight:engine?.flashlight,clues:engine?.mission?.clues.length,controls:{...engine?.touchInput},inputEvents:{...engine?.inputEvents},coins:save.coins,upgrades:{...save.upgrades},settings:{...save.settings},audio:{state:engine?.audio.ctx?.state,samples:Object.keys(engine?.audio.samples||{}),voices:engine?.audio.dialogueBuffers.size},url:location.href});
+  initializeNative({background:()=>{persist();engine?.resetTouch();if(screen.value==='game'&&!overlay.value)openOverlay('pause');else engine?.pause(true);},back:()=>{if(loading.value)toMenu();else if(overlay.value)closeOverlay();else if(screen.value==='game')pause();else if(screen.value==='travel')finishFlight();else if(screen.value==='results'||screen.value==='story'||screen.value==='ending')toMenu();else NativeApp.exitApp();}}).then(cleanup=>{if(appDisposed)cleanup();else nativeCleanup=cleanup;}).catch(()=>{});
+  diagnosticGetter=()=>({platform,native,touch:isTouch.value,screen:screen.value,overlay:overlay.value,ready:ready.value,loading:loading.value,preparation:{...preparation},lastStart:engine?.lastStart,resources:engine?{...engine.renderer.info.memory}:null,error:error.value,position:engine?.playerPos?.toArray(),yaw:engine?.yaw,paused:engine?.paused,frame:engine?.renderer.info.render.frame,fps:engine?.performance.fps,state:engine?.mission?.state,ammo:engine?.ammo,flashlight:engine?.flashlight,clues:engine?.mission?.clues.length,controls:{...engine?.touchInput},inputEvents:{...engine?.inputEvents},coins:save.coins,upgrades:{...save.upgrades},settings:{...save.settings},audio:{state:engine?.audio.ctx?.state,samples:Object.keys(engine?.audio.samples||{}),voices:engine?.audio.dialogueBuffers.size},url:location.href});
   Object.defineProperty(window,'__northline',{configurable:true,get:diagnosticGetter});
   if(import.meta.env.DEV)stopCameraDiagnostics=startCameraDiagnostics(()=>engine);
   window.addEventListener('keydown',globalKey);window.addEventListener('pointerdown',menuGesture,{passive:true});window.addEventListener('touchend',menuGesture,{passive:true});window.addEventListener('click',menuGesture,{passive:true});window.addEventListener('keydown',menuGesture);document.addEventListener('visibilitychange',menuVisibility);
   removeGestureGuard=installGameGestureGuard(document,()=>screen.value==='game'&&!overlay.value);
 });
-onBeforeUnmount(() => { appDisposed=true;menuMusic.dispose();window.removeEventListener('pointerdown',menuGesture);window.removeEventListener('touchend',menuGesture);window.removeEventListener('click',menuGesture);window.removeEventListener('keydown',menuGesture);document.removeEventListener('visibilitychange',menuVisibility);removeGestureGuard();stopCameraDiagnostics();nativeCleanup();feedbackTimers.dispose();engine?.dispose();engine=null;if(window.__ktd===debugBridge)delete window.__ktd;if(Object.getOwnPropertyDescriptor(window,'__northline')?.get===diagnosticGetter)delete window.__northline;window.removeEventListener('keydown',globalKey); });
+onBeforeUnmount(() => { appDisposed=true;launchSerial++;portraitSerial++;menuMusic.dispose();window.removeEventListener('pointerdown',menuGesture);window.removeEventListener('touchend',menuGesture);window.removeEventListener('click',menuGesture);window.removeEventListener('keydown',menuGesture);document.removeEventListener('visibilitychange',menuVisibility);removeGestureGuard();stopCameraDiagnostics();nativeCleanup();feedbackTimers.dispose();engine?.dispose();engine=null;if(window.__ktd===debugBridge)delete window.__ktd;if(Object.getOwnPropertyDescriptor(window,'__northline')?.get===diagnosticGetter)delete window.__northline;window.removeEventListener('keydown',globalKey); });
 </script>
 <template>
   <main class="game-shell" :style="{ '--impairment-blur': `${(hud.impairmentStrength || 0)*3}px` }" :class="[{ 'mobile-mode':isTouch,'native-mode':native,'has-overlay':!!overlay, 'in-game': screen === 'game', 'impaired': hud.impairment > 0 && screen === 'game', 'blackout': hud.blackout > 0 && screen === 'game', 'emergency': hud.state === 'escape' && screen === 'game' }, screen]">
@@ -168,13 +198,13 @@ onBeforeUnmount(() => { appDisposed=true;menuMusic.dispose();window.removeEventL
         </div>
         <button class="studio-launch" @click="openOverlay('characters')"><UserRound :size="14"/> Character studio <span>ADRIAN / ALEX / CUSTOM</span></button>
         <button class="campaign-selector" @click="openOverlay('campaign')"><span>{{save.playMode==='freestyle'?'FREESTYLE':'INTERNATIONAL STORY'}} · {{campaignProgress(save)}}/20</span><strong>{{currentCountry.name}} <small>{{currentCountry.hospital}}</small></strong><ChevronRight :size="16"/></button><button class="assignment-selector" @click="openOverlay('assignment')"><span>ASSIGNMENT TYPE</span><strong>{{TYPE_LABELS[nextAssignment]}}</strong><ChevronRight :size="16"/></button>
-        <p class="mission-escalation">LEVEL {{campaignLevel(save)}} / 20 · {{save.completed?'INCREASING SURVEILLANCE':'FIRST ASSIGNMENT'}}</p><button class="primary start-button" @click="startMission" :disabled="loading || !!error"><span>{{ loading ? 'PREPARING ASSIGNMENT' : 'ENTER THE HOSPITAL' }}<small>MISSION {{ String(campaignLevel(save)).padStart(2, '0') }} / {{ save.settings.difficulty.toUpperCase() }}</small></span><ArrowRight :size="24"/></button>
+        <p class="mission-escalation">LEVEL {{campaignLevel(save)}} / 20 · {{save.completed?'INCREASING SURVEILLANCE':'FIRST ASSIGNMENT'}}</p><button class="primary start-button" @click="startMission" :disabled="loading"><span>{{ loading ? 'PREPARING ASSIGNMENT' : 'ENTER THE HOSPITAL' }}<small>MISSION {{ String(campaignLevel(save)).padStart(2, '0') }} / {{ save.settings.difficulty.toUpperCase() }}</small></span><ArrowRight :size="24"/></button>
         <div class="menu-links"><button @click="openOverlay('equipment')"><Crosshair :size="15"/> Equipment <span v-if="save.coins">{{ save.coins }}</span></button><button @click="openOverlay('controls')"><CircleHelp :size="15"/> How to play</button><button @click="openOverlay('settings')"><Settings2 :size="15"/> Settings</button></div>
-        <p v-if="error" class="error-message">{{ error }}</p>
+        <p v-if="error||assetError" class="error-message">{{error||'Character download paused. Enter the hospital to retry; your progress is safe.'}}</p>
         </div>
       </section>
       <aside class="scene-label"><span class="eyebrow">{{currentCountry.hospital.toUpperCase()}} / MAIN BUILDING</span><span class="scene-title">The night shift.</span><p>Three public floors. A locked basement.<br/>More than one kind of assignment.</p><div class="scene-meta"><span>THREE CONNECTED WINGS</span><span>G + 1 + 2 + B</span></div></aside>
-      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ ready ? 'READY TO ENTER' : 'LOADING CHARACTER ASSETS' }} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.0.0 <ArrowUpRight :size="12"/></button></footer>
+      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.1.0 <ArrowUpRight :size="12"/></button></footer>
     </template>
     <TravelSequence v-if="screen==='travel' && flight" :from="flight.from" :to="flight.to" @finish="finishFlight"/>
     <StoryIntro v-if="screen==='story' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" @finish="enterHospital" @back="toMenu" @references="openOverlay('references')"/>
@@ -208,7 +238,7 @@ onBeforeUnmount(() => { appDisposed=true;menuMusic.dispose();window.removeEventL
       <TouchControls v-if="isTouch && !overlay && !loading" :engine="engine" :hud="hud" @map="openOverlay('map')" @journal="openOverlay('journal')" @pause="pause"/>
     </template>
     <section v-if="screen==='results' && result" class="results-screen"><div class="results-panel"><div class="eyebrow"><span class="line"></span> ASSIGNMENT {{ String(mission?.round).padStart(2,'0') }} / DEBRIEF</div><h2>{{ result.success ? 'OUT OF' : 'END OF' }}<br/><span>{{ result.success ? 'THE BUILDING.' : 'THE LINE.' }}</span></h2><p class="result-reason">{{ result.reason }}</p><div class="result-checks"><span :class="{yes: result.type==='standard'?result.targetDown:result.success}"><Check v-if="result.type==='standard'?result.targetDown:result.success" :size="15"/><X v-else :size="15"/> {{result.type==='evidence'?`${result.photos}/3 PHOTOS`:result.type==='rescue'?(result.rescued?'PATIENT RESCUED':'RESCUE INCOMPLETE'):result.targetDown?'TARGET ELIMINATED':'TARGET ACTIVE'}}</span><span :class="{yes: result.escaped}"><DoorOpen :size="15"/> {{ result.escaped ? 'ESCAPED' : 'INTERCEPTED' }}</span><span><Clock :size="15"/> {{ duration(result.duration) }}</span></div><RewardCoins :key="`${result.countryId}-${save.attempts}`" :result="result" :balance="save.coins" @tick="engine?.audio.coinStack?.()" @complete="rewardComplete"/><p v-if="automaticFlight" class="auto-flight-note">Flight to {{currentCountry.name}} departing automatically…</p><div v-if="result.breakdown.length" class="reward-breakdown"><div v-for="row in result.breakdown" :key="row.label"><span>{{ row.label }}</span><b>+{{ row.coins }}</b></div></div><p v-else class="failure-reward">Rewards are earned only after a successful escape.</p><button class="primary" @click="nextMission"><span>{{ result.success ? campaignDone && save.playMode==='story'?'CAMPAIGN COMPLETE · PASSPORT':result.playMode==='freestyle'?'REPLAY FREESTYLE':'NEXT MISSION' : 'RETRY ASSIGNMENT' }}</span><ArrowRight :size="22"/></button><div class="result-actions"><button @click="openOverlay('equipment')"><Crosshair :size="16"/> Upgrade equipment</button><button @click="toMenu">Return to menu</button></div></div></section>
-    <div v-if="loading" class="loading-screen"><div class="loader-mark"><Plus :size="42"/></div><span class="eyebrow">{{currentCountry.hospital.toUpperCase()}} MEDICAL CENTER</span><h3>Preparing your assignment.</h3><p>Loading the hospital and character assets…</p></div>
+    <MissionLoading v-if="loading||screen==='startup-error'" :key="launchSerial" :stage="preparation" :error="screen==='startup-error'?error:null" :country="currentCountry.name" @cancel="toMenu" @retry="retryPreparation()" @lighter="retryPreparation(true)" @reload="reloadGame"/>
     <div v-if="overlay" class="modal-backdrop" @click.self="closeOverlay">
       <section class="modal" :class="{wide: ['map','equipment','controls','characters','references'].includes(overlay),'map-modal':overlay==='map'}" role="dialog" aria-modal="true" :aria-label="overlay">
         <header class="modal-header"><span class="eyebrow">KTD / {{ overlay === 'clue' ? 'EVIDENCE' : overlay.toUpperCase() }}</span><button class="icon-button" @click="closeOverlay" aria-label="Close dialog"><X :size="20"/></button></header>

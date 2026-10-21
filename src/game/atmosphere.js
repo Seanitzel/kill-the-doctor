@@ -11,13 +11,13 @@ import { CLINICAL_KINDS, CONVERSATIONS, ENTRY_REACTIONS, CLINICAL_CONVERSATIONS,
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const Y=new THREE.Vector3(0,1,0);
 export class HospitalLife {
-  constructor(engine) {
+  constructor(engine,{deferSetup=false}={}) {
     this.infusions=[];this.nextSneeze=12;this.nextClinical=9;this.nextMachine=2;this.nextPain=18;this.listenerDirection=new THREE.Vector3();this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
     this.props=new THREE.Group();this.props.name='hospital-life-props';engine.scene.add(this.props);
     this.lastRoom=null;this.roomReactions=new Map();this.privacy=new RoomPrivacy();this.nextAmbient=0;this.nextMaternity=0;
     this.nextFlicker=45+engine.mission.random()*35;this.flicker=null;
     this.flickerCover=new THREE.Mesh(new THREE.BoxGeometry(1.235,.015,.565),new THREE.MeshBasicMaterial({color:'#172733'}));this.flickerCover.visible=false;this.props.add(this.flickerCover);
-    this.setup();
+    if(!deferSetup)this.setup();
   }
   propBox(parent,color,size,pos) {const o=new THREE.Mesh(new THREE.BoxGeometry(...size),material(color));o.position.set(...pos);o.castShadow=true;o.userData.lifeOwned=true;parent.add(o);return o;}
   propSphere(parent,color,size,pos) {const o=new THREE.Mesh(new THREE.SphereGeometry(1,14,10),material(color));o.scale.set(...size);o.position.set(...pos);o.userData.lifeOwned=true;parent.add(o);return o;}
@@ -32,15 +32,18 @@ export class HospitalLife {
     }
     return n;
   }
-  setup() {
+  setup(){for(const _ of this.setupBatches()){} }
+  *setupBatches() {
     const e=this.engine;
     for(const floor of e.levels.map((_,i)=>i).filter(f=>f<3)) {
       const nurseA=this.actor(floor?'Nurse Nora Ellis':'Nurse Iris Lowe','nurse','female',floor,null,-2.8,11.2,'chat',{yaw:0});
       const nurseB=this.actor(floor?'Nurse Samir Rao':'Nurse Felix Shaw','nurse','male',floor,null,-2.8,12.9,'chat',{yaw:Math.PI});
       this.groups.push({kind:'nurses',floor,actors:[nurseA,nurseB],next:4,conversation:floor});
+      yield floor;
       const patientA=this.actor('Waiting patient A','patient','female',floor,null,-6,29,'chat',{seated:true,yaw:Math.PI/2});
       const patientB=this.actor('Waiting patient B','patient','male',floor,null,-6,31.3,'chat',{seated:true,yaw:Math.PI/2,skin:'#996d51'});
       this.groups.push({kind:'patients',floor,actors:[patientA,patientB],next:6,conversation:floor});
+      yield floor;
       for(const room of e.levels[floor].rooms.filter(r=>CLINICAL_KINDS.includes(r.kind))) {
         const minX=(room.x-11)*3-1.5,maxX=(room.x+room.w-1-11)*3+1.5,minZ=(room.z-11)*3-1.5;
         const clinic=room.kind==='clinic',rotation=clinic?0:Math.PI/2;
@@ -59,6 +62,7 @@ export class HospitalLife {
         e.hospitals[floor].colliders.push(infusion.collider);this.addedColliders.push({floor,obstacle:infusion.collider});this.infusions.push(infusion);
         const exam={room,patient,doctor,cable,disc,infusion,nextCable:0,nextMachine:4+room.index*1.8,nextCare:10+room.index*3};this.cases.push(exam);if(doctor.id==='target'){exam.appointment=new TargetAppointment(()=>e.mission.random());this.targetCase=exam;}
         if(room.kind==='maternity') this.maternity(room,patient,floor,minZ);
+        yield room.id;
       }
     }
     for(const hospital of e.hospitals){
@@ -69,6 +73,7 @@ export class HospitalLife {
       this.groups.push({kind:'pharmacy',floor:shop.floor,actors:[customers[1],customers[2]],next:18,conversation:1});
       for(const customer of customers){const paper=mesh('box',material('#d5e2de'),[.12,.16,.008],[.04,-.08,.03],customer.visual.hand||customer.visual.root);if(!customer.visual.hand)paper.position.set(.2,1.02,.3);}
       this.pharmacy={clerk,customers,shop};
+      yield shop.floor;
     }
     const cafe=e.levels[0].rooms.find(r=>r.kind==='cafe');
     const minX=(cafe.x-11)*3-1.5,minZ=(cafe.z-11)*3-1.5,maxX=(cafe.x+cafe.w-1-11)*3+1.5;

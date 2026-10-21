@@ -1,5 +1,6 @@
 import { assetUrl } from './asset-url.js';
 import {applyAppearance,disposeAppearance,disposeAppearanceCache,NURSE_UNIFORM,staffBadgeTexture} from './appearance.js';
+import {waitFor,yieldToBrowser,canceledStart} from './startup.js';
 import {animationFootfalls} from './movement.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -162,19 +163,39 @@ export function makeHuman(person, role = 'doctor') {
     body.position.y = speed > .1 ? Math.abs(Math.sin(time * 6)) * .025 : Math.sin(time * 1.8) * .005;
   } };
 }
-export async function loadCharacters({textureLimit=1024,clothTextureLimit=512}={}) {
+export async function loadCharacters({textureLimit=1024,clothTextureLimit=512,signal,onProgress=()=>{}}={}) {
   const gltfLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  let loaded=0;
+  const part=async(file,parse)=>{
+    const controller=new AbortController(),abort=()=>controller.abort(signal?.reason||canceledStart());
+    if(signal?.aborted)abort();else signal?.addEventListener('abort',abort,{once:true});
+    const work=(async()=>{
+      const response=await fetch(assetUrl('models/'+file),{signal:controller.signal});if(!response.ok&&response.status!==0)throw new Error('Character download failed. Check your connection and retry.');
+      const bytes=await response.arrayBuffer();if(controller.signal.aborted)throw controller.signal.reason;
+      const value=await parse(bytes);if(controller.signal.aborted){disposeCharacterAssets({male:value.scene||value,sources:{}});throw controller.signal.reason;}return value;
+    })();
+    try{return await waitFor(work,{signal:controller.signal,timeout:30000,message:'Character download timed out. Check your connection and retry.'});}
+    finally{controller.abort();signal?.removeEventListener('abort',abort);onProgress({label:'Downloading characters',progress:++loaded/12,detail:`${loaded} of 5 files checked`});}
+  };
   const results = await Promise.allSettled([
-    gltfLoader.loadAsync(assetUrl('models/adrian.glb')), gltfLoader.loadAsync(assetUrl('models/alex.glb')),
-    new FBXLoader().loadAsync(assetUrl('models/idle.fbx')), new FBXLoader().loadAsync(assetUrl('models/walk.fbx')), new FBXLoader().loadAsync(assetUrl('models/run.fbx')),
+    part('adrian.glb',bytes=>gltfLoader.parseAsync(bytes,assetUrl('models/'))),part('alex.glb',bytes=>gltfLoader.parseAsync(bytes,assetUrl('models/'))),
+    ...['idle','walk','run'].map(name=>part(name+'.fbx',bytes=>new FBXLoader().parse(bytes,assetUrl('models/')))),
   ]);
   const male = results[0].status === 'fulfilled' ? results[0].value.scene : null;
   const female = results[1].status === 'fulfilled' ? results[1].value.scene : null;
   const animations = {}, sources = {};
   ['Idle', 'Walk', 'Run'].forEach((name, i) => { if (results[i + 2].status === 'fulfilled') { animations[name] = results[i + 2].value.animations[0]; sources[name] = results[i + 2].value; } });
   const assets={male,female,animations,sources,clipCache:{},clothCache:new Map(),appearanceCache:new Map(),clothTextureLimit:Math.min(512,Math.max(64,clothTextureLimit))};
-  downsizeCharacterTextures(assets,textureLimit);
-  return assets;
+  try{
+    const failed=results.find(result=>result.status==='rejected');if(failed)throw failed.reason;
+    if(signal?.aborted)throw signal.reason||canceledStart();
+    onProgress({label:'Preparing character textures',progress:5/12,detail:'Optimizing images for this device'});await yieldToBrowser(signal);downsizeCharacterTextures(assets,textureLimit);
+    let prepared=6;for(const gender of ['male','female'])for(const name of ['Idle','Walk','Run']){
+      onProgress({label:'Preparing movement',progress:prepared++/12,detail:`${gender==='male'?'Adrian':'Alex'} · ${name.toLowerCase()}`});await yieldToBrowser(signal);
+      assets.clipCache[`${gender}-${name}`]=retargetBaked(sources[name],animations[name],assets[gender],name);
+    }
+    onProgress({label:'Characters ready',progress:1,detail:'Downloads and movement are ready'});return assets;
+  }catch(error){disposeCharacterAssets(assets);throw error;}
 }
 // Separate enter/leave speeds prevent a noisy collision-limited speed from
 // resetting Walk/Run on alternate frames. A stop still selects Idle immediately.

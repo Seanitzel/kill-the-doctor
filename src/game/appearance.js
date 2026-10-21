@@ -451,14 +451,21 @@ function premiumDetails(model,top,item){
 
 // Preserve the real finger skinning while replacing the source outfit’s glove
 // atlas. Separating faces avoids z-fighting or a rigid mitten over the hand.
+const handFaceCache=new WeakMap();
 export function completeHands(model,person,role){
  model.updateMatrixWorld(true);const sources=[];model.traverse(o=>{if(o.isSkinnedMesh&&/Wolf3D_Body|Wolf3D_Outfit_Top/.test(o.material?.name||''))sources.push(o);});
  const chunks={Left:[],Right:[]};
  for(const sourceMesh of sources){
  const source=sourceMesh.geometry,skin=source.attributes.skinIndex,weight=source.attributes.skinWeight;if(!skin||!weight)continue;
- const sideAt=index=>{let left=0,right=0;for(let j=0;j<4;j++){const name=sourceMesh.skeleton.bones[skin.getComponent(index,j)]?.name||'',w=weight.getComponent(index,j);if(name.startsWith('LeftHand'))left+=w;if(name.startsWith('RightHand'))right+=w;}return {left,right};};
- const indices=source.index?Array.from(source.index.array):Array.from({length:source.attributes.position.count},(_,i)=>i),keep=[],selected={Left:[],Right:[]};
- for(let i=0;i<indices.length;i+=3){const triangle=indices.slice(i,i+3),total={left:0,right:0};for(const index of triangle){const v=sideAt(index);total.left+=v.left;total.right+=v.right;}const side=total.left>.15?'Left':total.right>.15?'Right':null;(side?selected[side]:keep).push(...triangle);}
+ let faces=handFaceCache.get(source);
+ if(!faces){
+   const left=new Float32Array(skin.count),right=new Float32Array(skin.count);
+   for(let index=0;index<skin.count;index++)for(let j=0;j<4;j++){const name=sourceMesh.skeleton.bones[skin.getComponent(index,j)]?.name||'',w=weight.getComponent(index,j);if(name.startsWith('LeftHand'))left[index]+=w;if(name.startsWith('RightHand'))right[index]+=w;}
+   const indices=source.index?source.index.array:Array.from({length:source.attributes.position.count},(_,i)=>i),keep=[],selected={Left:[],Right:[]};
+   for(let i=0;i<indices.length;i+=3){const a=indices[i],b=indices[i+1],c=indices[i+2],side=left[a]+left[b]+left[c]>.15?'Left':right[a]+right[b]+right[c]>.15?'Right':null;(side?selected[side]:keep).push(a,b,c);}
+   faces={keep,selected};handFaceCache.set(source,faces);
+ }
+ const {keep,selected}=faces;
  if(!selected.Left.length&&!selected.Right.length)continue;
  if(!(role==='nurse'&&sourceMesh.material.name.includes('Outfit_Top'))){const remaining=source.clone();remaining.setIndex(keep);remaining.clearGroups();sourceMesh.geometry=remaining;sourceMesh.userData.appearanceGeometryOwned=true;}
  for(const side of ['Left','Right'])if(selected[side].length)chunks[side].push({source,indices:selected[side],mesh:sourceMesh});

@@ -150,3 +150,15 @@ test('Repeated disposal synchronously disconnects foley, samples, effects and ba
   assert.equal(foley.nodes.length,0);assert.equal(foley.active.size,0);assert.equal(foley.ctx,null);assert.deepEqual(foley.buffers,{});assert.equal(foley.play('step'),false);
   const count=ctx.nodes.length;audio.sound('alarm');audio.speak('Late speech');audio.announce('Late announcement');await audio.start();h.runTimers();assert.equal(ctx.nodes.length,count);assert.equal(h.spoken.length,0);assert.equal(h.contexts.length,1);
 });
+
+test('resuming during pending sample downloads restores audio without creating a second graph',async t=>{
+  const h=harness(t),gates=[];h.fetchImpl=()=>{const gate=deferred();gates.push(gate);return gate.promise;};
+  const audio=h.audio(),starting=audio.start();await flush();const ctx=audio.ctx,nodeCount=ctx.nodes.length;
+  audio.pause(true);const resumed=audio.start();await flush();assert.equal(audio.enabled,true);assert.equal(ctx.state,'running');assert.equal(ctx.nodes.length,nodeCount);assert.equal(audio.master.gain.value,.5*.45);assert.equal(h.contexts.length,1);
+  for(const gate of gates)gate.resolve({ok:true,arrayBuffer:async()=>new ArrayBuffer(1)});await Promise.all([starting,resumed]);assert.equal(h.requests.length,SAMPLE_COUNT);
+});
+
+test('a sound-download deadline aborts stalled requests and releases the pending start',async t=>{
+  const h=harness(t);h.fetchImpl=()=>new Promise(()=>{});const audio=h.audio(),starting=audio.start();await flush();assert.equal(h.requests.length,SAMPLE_COUNT);
+  h.runTimers();await starting;assert.ok(h.requests.every(request=>request.options.signal.aborted));assert.equal(audio.samplePromise,null);assert.equal(audio.startPromise,null);assert.equal(audio.samples.cough,undefined);
+});

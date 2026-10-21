@@ -5,7 +5,7 @@ import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
 import {waitFor} from './startup.js';
 const AUDIO_REVISION='3.0.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
-export const HOSPITAL_SAMPLE_FILES=Object.freeze({'laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
+export const HOSPITAL_SAMPLE_FILES=Object.freeze({'flight-airplane':'/audio/flight-airplane.mp3','laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
 const disconnect=node=>{try{node?.disconnect();}catch{}};
 
@@ -154,10 +154,16 @@ export class HospitalAudio {
   }
   coinStack(){if(!this.enabled||!this.ctx)return;this.tone(2100,.055,.065,'triangle');this.delay(()=>this.tone(3250,.035,.035,'sine'),18);this.noise(.025,.025,4200);}
   evacuationScream(person,position,offset=0){const cue=()=>{if(person?.gender==='female')this.playSample('evacuation-scream',position,.65);else this.playSample('distress-male',position,.48);};if(offset)this.delay(cue,offset*1000);else cue();}
-  flight(){
-    if(!this.ctx||!this.enabled)return null;const ctx=this.ctx,rate=ctx.sampleRate,buffer=ctx.createBuffer(1,Math.ceil(rate*10),rate),data=buffer.getChannelData(0);let smooth=0,seed=98;
-    for(let i=0;i<data.length;i++){const t=i/rate;seed=(Math.imul(seed,1664525)+1013904223)>>>0;smooth+=.055*(seed/4294967296*2-1-smooth);const departure=Math.exp(-(((t-1.2)/.9)**2)),arrival=Math.exp(-(((t-8.8)/.8)**2)),envelope=.12+departure*.85+arrival*.8;data[i]=(smooth*.75+Math.sin(t*2*Math.PI*(58+t*3))*.026)*envelope*Math.max(0,Math.min(1,t/.06,(10-t)/.15));}
-    const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;gain.gain.value=.65;source.connect(gain);gain.connect(this.lowpass);const record=this.trackSynth(source,[source,gain]);source.start();return record;
+  flight({elapsed=0}={}){
+    if(!this.ownsContext(this.ctx)||!this.enabled||!this.samples['flight-airplane'])return null;
+    const ctx=this.ctx,source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=this.samples['flight-airplane'];source.loop=true;
+    gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(.7,ctx.currentTime+.18);source.connect(gain);gain.connect(this.lowpass);
+    const record=this.trackSynth(source,[source,gain]);try{source.start(ctx.currentTime,Math.max(0,elapsed)%source.buffer.duration);}catch{this.releaseSynth(record,true);return null;}return record;
+  }
+  flightArrival(){
+    // A brief cabin-style arrival cue, separate from the engine recording.
+    if(!this.ownsContext(this.ctx)||!this.enabled)return;
+    this.tone(659.25,.42,.14,'sine');this.tone(523.25,.48,.08,'sine');
   }
   patientWarning(name,position){
     if(['cough','sneeze'].includes(name)&&this.samples[name])this.playSample(name,position,.65);else if(name!=='sneeze')this.sound(name);

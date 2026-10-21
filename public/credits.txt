@@ -121,3 +121,6 @@ Evacuation scream: Archeos, WomanScream.wav, Freesound 261419, CC0 1.0. https://
 France Jack and Congo Michael story artwork: OpenAI ImageGen, original generated fictional scenes.
 
 KTD 3.0: Additional male and female police-report dialogue uses the same four fictional Qwen3-TTS designed voices, with General American and Southern/Texas-inspired variants. Clip provenance and checksums are in audio/dialogue/manifest.json. Departure and arrival turbine effects are original procedural Web Audio.
+
+KTD 3.2: Globe texture — NASA/Goddard Blue Marble (2002), image by Reto Stöckli, enhancements by Robert Simmon. https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/
+Airplane Flyby by oscaraudiogeek (Freesound 431206), CC0 1.0; excerpt, filtering and fades. https://freesound.org/people/oscaraudiogeek/sounds/431206/ Arrival cabin cue is original procedural Web Audio. New fictional recruitment dialogue uses the existing four Qwen-designed voices; full records in audio/dialogue/manifest.json.

@@ -53,3 +53,9 @@ export function nextFlight(result,save){
  const from=COUNTRIES.find(c=>c.id===result.countryId),to=countryFor({...save,playMode:'story'});
  return from&&to&&from.id!==to.id&&completedCountries(save).includes(from.id)&&campaignProgress(save)<20?{from,to}:null;
 }
+
+export function pendingFlight(save){
+ if(save.playMode!=='story'||!save.pendingTravel||campaignProgress(save)>=20)return null;
+ const from=COUNTRIES.find(c=>c.id===save.pendingTravel.from),to=countryFor(save);
+ return from&&completedCountries(save).includes(from.id)&&from.id!==to.id?{from,to}:null;
+}

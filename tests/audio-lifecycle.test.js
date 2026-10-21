@@ -162,3 +162,11 @@ test('a sound-download deadline aborts stalled requests and releases the pending
   const h=harness(t);h.fetchImpl=()=>new Promise(()=>{});const audio=h.audio(),starting=audio.start();await flush();assert.equal(h.requests.length,SAMPLE_COUNT);
   h.runTimers();await starting;assert.ok(h.requests.every(request=>request.options.signal.aborted));assert.equal(audio.samplePromise,null);assert.equal(audio.startPromise,null);assert.equal(audio.samples.cough,undefined);
 });
+
+
+test('flight recording sources are released on interruption and arrival cues do not create permanent nodes',async t=>{
+ const h=harness(t),audio=h.audio();await audio.start();
+ for(let i=0;i<20;i++){const record=audio.flight({elapsed:i*.1});assert.ok(record);assert.equal(record.source.loop,true);assert.equal(record.source.buffer,audio.samples['flight-airplane']);audio.releaseSynth(record,true);assert.equal(record.source.buffer,null);assert.equal(record.nodes.length,0);assert.equal(audio.activeSynth.size,0);}
+ audio.flightArrival();assert.equal(audio.activeSynth.size,2);for(const record of [...audio.activeSynth])record.source.finish();assert.equal(audio.activeSynth.size,0);
+ audio.pause(true);assert.equal(audio.flight(),null);
+});

@@ -84,17 +84,16 @@ export class GameEngine {
   bindEvents() {
     this.handlers = {
       keydown: e => {
-        if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+        if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)||e.target.isContentEditable) return;
         const k = e.code;
-        if(this.starting||this.presentationOnly||!this.mission||this.mission.result||this.paused&&k!=='Escape')return;
+        if(this.starting||this.presentationOnly||!this.mission||this.mission.result||this.paused&&k!=='Escape'&&k!=='Space')return;
         if(['Space','Enter'].includes(k)&&e.target.closest?.('button,a,[role="button"]'))return;
         if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(k)) e.preventDefault();
+        if (k === 'Escape' || k === 'Space') { this.keys.delete(k); if(!e.repeat)this.hooks.pause?.(); return; }
         if (!e.repeat) {
-          if (k === 'Escape') { if (this.mission && !this.mission.result) this.hooks.pause?.(); }
           if (!this.paused && this.mission) {
             if (k === 'KeyE') this.interact(); if (k === 'KeyF') this.toggleFlash(); if (k === 'KeyM' || k === 'Tab') { e.stopImmediatePropagation(); this.hooks.map?.(); }
             if (k === 'KeyJ') { e.stopImmediatePropagation(); this.hooks.journal?.(); } if (k === 'KeyR') this.reload(); if (k === 'KeyV') this.toggleAim(); if(k==='KeyG')this.toggleWeapon(); if(k==='KeyQ')this.switchWeapon(); if(k==='KeyB')this.toggleMask();
-            if (k === 'Space') this.shoot();
           }
         }
         this.keys.add(k);

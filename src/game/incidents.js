@@ -59,6 +59,10 @@ export class HospitalIncidents{
       e.notify(`Find the empty bathroom off the ground-floor atrium. ${n.name.split(' ')[0]} will follow you.`);return true;
     }
     if(choice==='recruit'&&state==='escort'&&this.privateTogether(n)){
+      if(e.mission.random()<.25){
+        n.recruit.state='refused';n.recruit.walkedAway=false;n.path=[];n.cursor=0;n.activity=null;n.reaction=0;n.reporting=null;n.wait=0;n.speed=2.5;
+        e.notify(`${n.name.split(' ')[0]} refused and is leaving. You will have to continue alone.`);return true;
+      }
       n.recruit.state='recruited';n.activity=null;n.reaction=0;n.reporting=null;n.path=[];n.wait=0;n.recruit.nextRoute=0;
       n.recruit.weapon=weaponModel('pistol');n.recruit.weapon.position.set(.33,1.23,.15);n.recruit.weapon.visible=false;n.visual.root.add(n.recruit.weapon);
       e.notify(`${n.name.split(' ')[0]} will act after your primary target is down.`,'clue');return true;
@@ -106,6 +110,12 @@ export class HospitalIncidents{
   prepareNPC(n){
     if(!n.recruit||n.evacuating||n.reporting||n.recruit.state==='dismissed')return false;
     const e=this.e,r=n.recruit,now=e.mission.elapsed;
+    if(r.state==='refused'){
+      // A refusal is final for this attempt. Walk back into the public atrium,
+      // using the same obstacle-aware route as followers; never create a weapon.
+      if(!r.walkedAway){this.route(n,{x:3,z:29});r.walkedAway=true;}
+      n.activity=n.cursor>=n.path.length?'rest':null;n.speed=2.5;return true;
+    }
     if(r.state==='panicked'){
       if(now>=r.nextBurst){
         const points=[{x:-3,z:27},{x:0,z:18},{x:3,z:31}].sort((a,b)=>distance(n.pos,b)-distance(n.pos,a));
@@ -164,6 +174,6 @@ export class HospitalIncidents{
       else if(now>=(r.laughUntil||0)){const lines=r.gesture==='selftalk'?JAMIE_SELF_TALK_LINES:DISTRESS_LINES;e.life?.speak(n,lines[Math.floor(e.mission.random()*lines.length)],true);}
     }
   }
-  hud(){const n=this.contact;if(!n||n.dead||n.evacuated||n.recruit.state==='dismissed'||n.recruit.state==='panicked'&&(n.floor!==this.e.floor||distance(n.pos,this.e.playerPos)>16))return null;return {name:n.name,state:n.recruit.state,label:n.recruit.state==='panicked'?'Distressed visitor nearby':n.recruit.state==='escort'?'Lead your contact to the bathroom':this.e.mission.targetDown?'Covering your escape':'Waiting for your signal'};}
+  hud(){const n=this.contact;if(!n||n.dead||n.evacuated||['dismissed','refused'].includes(n.recruit.state)||n.recruit.state==='panicked'&&(n.floor!==this.e.floor||distance(n.pos,this.e.playerPos)>16))return null;return {name:n.name,state:n.recruit.state,label:n.recruit.state==='panicked'?'Distressed visitor nearby':n.recruit.state==='escort'?'Lead your contact to the bathroom':this.e.mission.targetDown?'Covering your escape':'Waiting for your signal'};}
   dispose(){this.contact=null;this.trail=[];this.e=null;}
 }

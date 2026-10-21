@@ -74,8 +74,9 @@ export const RECRUIT_DIALOGUE = {
   invite: 'My heart is racing. Something is wrong. I need somewhere quiet.',
   escort: 'Come with me. We can talk away from the corridor.',
   question: 'Why are they watching me? Tell me what is going on.',
-  offer: 'The doctor I am after hurt people. The staff are covering for him. Wait for my signal, then help me stop them.',
-  accept: 'They are all in on it? Okay. I will wait until you make your move.',
+  offer: "This hospital is evil. They're plotting against you and me. We have to kill them.",
+  accept: "I knew it wasn't just in my head. Let's do it!",
+  reject: "You're lying to me. You want to set me up. I'm leaving.",
   dismiss: 'Stay here. Breathe slowly. I am going alone.',
 };
 export const RECRUIT_LINES = Object.values(RECRUIT_DIALOGUE);

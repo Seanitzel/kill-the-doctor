@@ -1,0 +1,20 @@
+Earth texture: NASA / Goddard Space Flight Center, Blue Marble (2002).
+Image by Reto Stöckli; enhancements by Robert Simmon. Freely available NASA imagery.
+Source: https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/
+Downloaded: https://assets.science.nasa.gov/content/dam/science/esd/eo/content-feature/bluemarble/images/land_ocean_ice_cloud_2048.jpg
+Bundled unchanged as public/images/earth-blue-marble.jpg (2048 x 1024).
+Geographic fallback: existing public-domain Natural Earth land polygons; see earth-map-attribution.txt.
+
+Flight recording: Airplane Flyby by oscaraudiogeek, Freesound 431206.
+Source: https://freesound.org/people/oscaraudiogeek/sounds/431206/
+License: CC0 1.0, https://creativecommons.org/publicdomain/zero/1.0/
+Downloaded HQ preview: https://cdn.freesound.org/previews/431/431206_5117035-hq.mp3
+Game edit: excerpt 3-11 seconds, mono 24 kHz MP3 80 kbps, highpass 45 Hz,
+lowpass 6500 Hz, 350 ms fade in, 500 ms fade out, loudness -20 LUFS / -3 dBTP.
+Bundled as public/audio/flight-airplane.mp3. Used as sound design, never as an AI training input.
+Distinct arrival cue: original two-tone Web Audio cabin-style chime.
+
+Revised recruitment dialogue: same four original fictional Qwen3-TTS voices.
+New offer, acceptance and refusal: 12 MP3 clips (three lines, two genders, two regions).
+Generated with scripts/generate-dialogue-audio-v32.py; exact text, hashes and durations in
+public/audio/dialogue/manifest.json. Retired offer/acceptance clips removed.

@@ -86,7 +86,7 @@ export function addBathroom(parent,{x=0,z=0,width=9,depth=9,rotation=0}={},mater
   }
   b.box(dark,width/2-.65,.31,depth/2-.8,.42,.62,.42);b.box(steel,width/2-.65,.64,depth/2-.8,.44,.05,.44);
   obstacle(width/2-.65,depth/2-.8,.46,.46,.67,0,'bathroom-bin');
-  kit.label('RESTROOMS','ACCESSIBLE / WASH HANDS',width/2-1.7,2.65,-depth/2+.13,0,2.5,.5);
+  const hygiene=kit.label('WASH YOUR HANDS','SOAP / RINSE / DRY',width/2-.14,2.65,0,-Math.PI/2,2,.36);hygiene.name='Bathroom hygiene sign';
   const statics=kit.finish();return {root,colliders:kit.colliders,anchors,statics,mirrors,dispose(){for(const mirror of mirrors)mirror.dispose();kit.dispose();}};
 }
 

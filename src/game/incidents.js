@@ -43,12 +43,15 @@ export class HospitalIncidents{
     const room=this.roomAt(e.playerPos,e.floor);if(!room||room.kind!=='bathroom'||this.roomAt(n.pos,n.floor)?.id!==room.id)return false;
     return !e.npcs.some(other=>other!==n&&!other.dead&&!other.evacuated&&other.floor===e.floor&&this.roomAt(other.pos,other.floor)?.id===room.id);
   }
-  prompt(n){const state=n.recruit.state;return state==='panicked'?`Talk to ${n.name.split(' ')[0]}`:state==='escort'?'Talk in private':state==='recruited'?'Talk to your contact':'Visitor · protected';}
+  prompt(n){const state=n.recruit.state;return state==='panicked'?`Talk to ${n.name.split(' ')[0]}`:state==='escort'?'Talk in private':state==='accepted'?'Hand over spare pistol':state==='recruited'?'Talk to your contact':'Visitor · protected';}
   interact(n){
     if(n.recruit.state==='panicked')this.e.hooks.contact?.({id:n.id,name:n.name,stage:'invite'});
     else if(n.recruit.state==='escort'){
       if(this.privateTogether(n))this.e.hooks.contact?.({id:n.id,name:n.name,stage:'offer'});
       else this.e.notify(`Lead ${n.name.split(' ')[0]} into the empty ground-floor bathroom, then use TALK.`);
+    }else if(n.recruit.state==='accepted'){
+      if(this.privateTogether(n))this.e.hooks.contact?.({id:n.id,name:n.name,stage:'accepted'});
+      else this.e.notify('Stay close in the empty bathroom to hand over your spare pistol.');
     }else if(n.recruit.state==='recruited')this.e.notify(this.e.mission.targetDown?`${n.name.split(' ')[0]} is covering your escape.`:`${n.name.split(' ')[0]} is waiting for you to eliminate the primary target.`);
     else this.e.notify('The visitor wants to be left alone.');
   }
@@ -63,9 +66,14 @@ export class HospitalIncidents{
         n.recruit.state='refused';n.recruit.walkedAway=false;n.path=[];n.cursor=0;n.activity=null;n.reaction=0;n.reporting=null;n.wait=0;n.speed=2.5;
         e.notify(`${n.name.split(' ')[0]} refused and is leaving. You will have to continue alone.`);return true;
       }
-      n.recruit.state='recruited';n.activity=null;n.reaction=0;n.reporting=null;n.path=[];n.wait=0;n.recruit.nextRoute=0;
-      n.recruit.weapon=weaponModel('pistol');n.recruit.weapon.position.set(.33,1.23,.15);n.recruit.weapon.visible=false;n.visual.root.add(n.recruit.weapon);
-      e.notify(`${n.name.split(' ')[0]} will act after your primary target is down.`,'clue');return true;
+      n.recruit.state='accepted';n.activity=null;n.reaction=0;n.reporting=null;n.path=[];n.wait=0;n.recruit.nextRoute=0;
+      e.notify(`${n.name.split(' ')[0]} agreed. Hand over your spare pistol before returning to the assignment.`,'clue');return true;
+    }
+    if(choice==='handover'&&state==='accepted'&&this.privateTogether(n)){
+      const weapon=weaponModel('pistol');weapon.position.set(.33,1.23,.15);weapon.visible=false;n.visual.root.add(weapon);
+      n.recruit.weapon=weapon;n.recruit.state='recruited';n.recruit.nextRoute=0;
+      e.audio?.sound?.('reload');e.hooks?.soundCaption?.('Spare pistol handed over.');
+      e.notify(`Spare pistol handed to ${n.name.split(' ')[0]}. Your own weapon and ammunition are ready.`,'clue');return true;
     }
     if(choice==='dismiss'&&['panicked','escort'].includes(state)){n.recruit.state='dismissed';n.activity='rest';n.path=[];n.reaction=0;return true;}
     return false;
@@ -131,7 +139,7 @@ export class HospitalIncidents{
       else{const age=now-(r.calmStarted??now);n.activity=age<1.2?'rest':age<5?r.gesture:'panic';}
       return true;
     }
-    if(['escort','recruited'].includes(r.state)){
+    if(['escort','accepted','recruited'].includes(r.state)){
       if(r.state==='recruited'&&e.mission.targetDown)return this.prepareAlly(n);
       this.follow(n);
       return true;
@@ -165,7 +173,7 @@ export class HospitalIncidents{
         }
       }
     }
-    const n=this.contact;if(!n||n.dead||n.evacuated||e.mission.targetDown||!['panicked','escort','recruited'].includes(n.recruit.state))return;
+    const n=this.contact;if(!n||n.dead||n.evacuated||e.mission.targetDown||!['panicked','escort','accepted','recruited'].includes(n.recruit.state))return;
     const r=n.recruit;r.nextLaugh??=now+12+e.mission.random()*13;
     if(now>=r.nextLaugh&&r.phase!=='running')this.playLaugh(n);
     if(r.state==='panicked'&&r.phase==='calm'&&now>=r.speakAt&&n.floor===e.floor&&distance(n.pos,e.playerPos)<15){
@@ -174,6 +182,6 @@ export class HospitalIncidents{
       else if(now>=(r.laughUntil||0)){const lines=r.gesture==='selftalk'?JAMIE_SELF_TALK_LINES:DISTRESS_LINES;e.life?.speak(n,lines[Math.floor(e.mission.random()*lines.length)],true);}
     }
   }
-  hud(){const n=this.contact;if(!n||n.dead||n.evacuated||['dismissed','refused'].includes(n.recruit.state)||n.recruit.state==='panicked'&&(n.floor!==this.e.floor||distance(n.pos,this.e.playerPos)>16))return null;return {name:n.name,state:n.recruit.state,label:n.recruit.state==='panicked'?'Distressed visitor nearby':n.recruit.state==='escort'?'Lead your contact to the bathroom':this.e.mission.targetDown?'Covering your escape':'Waiting for your signal'};}
+  hud(){const n=this.contact;if(!n||n.dead||n.evacuated||['dismissed','refused'].includes(n.recruit.state)||n.recruit.state==='panicked'&&(n.floor!==this.e.floor||distance(n.pos,this.e.playerPos)>16))return null;return {name:n.name,state:n.recruit.state,label:n.recruit.state==='panicked'?'Distressed visitor nearby':n.recruit.state==='escort'?'Lead your contact to the bathroom':n.recruit.state==='accepted'?'Hand over your spare pistol':this.e.mission.targetDown?'Covering your escape':'Waiting for your signal'};}
   dispose(){this.contact=null;this.trail=[];this.e=null;}
 }

@@ -3,15 +3,14 @@ import {material,mesh,sign} from './assets.js';
 // Modular country identities alter the built environment without duplicating assets.
 export function addSiteDetails(group,batch,m,layout,site){
  if(!site||layout.floor===3)return;
- const variant=site.index%5,ribs=3+Math.floor(site.index/5),accent=material(site.accent),warm=material(['#c4b8a3','#c6c7c0','#b6c6cb','#c8b8b0','#b5c6bc'][variant]);
+ const variant=site.index%5,ribs=0,accent=material(site.accent),warm=material(['#c4b8a3','#c6c7c0','#b6c6cb','#c8b8b0','#b5c6bc'][variant]);
  group.userData.architecture={country:site.id,variant,ribs,accent:site.accent};
- // Ceiling ribs and inset panels give every arrival hall a distinct silhouette.
- for(let i=0;i<ribs;i++){const z=27+i*1.45;batch.box(variant%2?warm:accent,1.5,3.35,z,variant===2?13:9,.11,.16);if(variant===3)for(const x of [-3.2,6.2])batch.box(warm,x,2.95,z,.12,.85,.16);}
+ // Country accents stay on the walls; leave the ceiling clear of decorative bars.
  for(const side of [-1,1])for(let i=0;i<2+variant;i++){
  const x=side<0?-10.39:10.39,z=27+i*.94;batch.box(accent,x,2.03,z,.06,1.35,.38);batch.box(warm,x+side*.015,1.30,z,.07,.08,.38);
  }
  // Low relief department portal trim; it never narrows the walkable opening.
- for(const d of layout.doors.filter(d=>!d.id.endsWith('back'))){batch.box(accent,d.x,2.77,d.z,2.05,.10,.29);if(variant===1||variant===4)for(const side of [-1,1])batch.box(warm,d.x+side*1.04,1.34,d.z,.055,2.6,.23);}
+ for(const d of layout.doors.filter(d=>!d.id.endsWith('back'))){batch.box(accent,d.x,2.64,d.z,2.05,.06,.29);if(variant===1||variant===4)for(const side of [-1,1])batch.box(warm,d.x+side*1.04,1.34,d.z,.055,2.6,.23);}
 }
 export function addNightStreet(group,batch,m){
  group.userData.exteriorFloors=3;const facade=material('#617887'),window=material('#243d4e',{roughness:.25,metalness:.35}),lit=material('#c7c2a2',{emissive:'#c9b277',emissiveIntensity:.38});batch.box(material('#111e27'),0,-.25,40,220,.15,200);

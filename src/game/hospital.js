@@ -1,3 +1,4 @@
+import {addHangingToiletSign} from './restroom-signage.js';
 import {JoinedWalls} from './joined-walls.js';
 import {chairFits} from './furniture-placement.js';
 import {addSiteDetails,addNightStreet} from './site-details.js';
@@ -92,13 +93,15 @@ export function buildHospital(layout, m, site=null) {
     collider(w.x, w.z, 1.8, .18, door);
     interactables.push({ type: 'door', label: layout.rooms.find(r => r.id === door.room).name, x: w.x, z: w.z, door });
     const room = layout.rooms.find(r => r.id === door.room);
-    placeSign(`${room.number}  ${room.name}`, room.subtitle, w.x, 2.94, w.z + (room.center.z < door.z ? .13 : -.13), room.center.z < door.z ? 0 : Math.PI, 2.5, .5);
+    const label=placeSign(room.kind==='bathroom'?'BATHROOM':`${room.number}  ${room.name}`, room.subtitle, w.x, 2.94, w.z + (room.center.z < door.z ? .13 : -.13), room.center.z < door.z ? 0 : Math.PI, 2.5, .5);
+    label.name='Department door label';label.userData.room=room.id;label.userData.title=room.kind==='bathroom'?'BATHROOM':`${room.number}  ${room.name}`;
+    if(room.kind==='bathroom')addHangingToiletSign(group,batch,m,door);
   }
   for (const room of layout.rooms) {
     const min = world(room.x, room.z), max = world(room.x + room.w - 1, room.z + room.h - 1), cx = room.center.x, cz = room.center.z;
     const minX = min.x - 1.5, maxX = max.x + 1.5, minZ = min.z - 1.5, maxZ = max.z + 1.5;
     if(room.kind==='imaging')for(const d of layout.doors.filter(d=>d.room===room.id)){const side=room.center.z<d.z?1:-1;placeSign('MRI','NO METAL',d.x+1.17,1.75,d.z+side*.15,side===1?0:Math.PI,.48,.65,{background:'#763b36'});}
-    placeSign(`${room.name.toUpperCase()}`, `NHALEWICK / ${room.wing.toUpperCase()} ${room.floor + 1}`, cx, 2.65, minZ + .15, 0, 4, .65);
+    if(room.kind!=='bathroom')placeSign(`${room.name.toUpperCase()}`, `NHALEWICK / ${room.wing.toUpperCase()} ${room.floor + 1}`, cx, 2.65, minZ + .15, 0, 4, .65);
     const furnitureCollider=(x,z,w,d,h=2.1)=>Object.assign(collider(x,z,w,d),{minY:0,maxY:h,type:'furniture'});
     if(room.kind==='bathroom'){
       const props=addBathroom(group,{x:cx,z:cz,width:maxX-minX,depth:maxZ-minZ},m);

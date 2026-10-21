@@ -1,0 +1,9 @@
+# KTD 3.4.0
+
+Jamie now accepts the offer without automatically receiving a weapon. In the private bathroom, choose **Hand over spare pistol** to equip him. Closing the conversation leaves a clear handover prompt; talking again resumes that step. The transfer is idempotent, leaves the player's gun/ammunition intact, and the contact keeps the spare hidden until the primary target is down. Refusal stays at 5%.
+
+Fixed malformed staff/patient hands: the source body and outfit meshes have different quantized vertex domains encoded in their inverse bind matrices. Hand assembly now converts every source into the destination skeleton's bind space, remaps bone indices, and transforms normals before merging. The source outfit’s bulky glove cuffs and cutouts are replaced with bare hand surfaces fitted to each avatar’s wrist and finger skeleton. Finger resting curl is reduced. Indexed geometry keeps each hand under 650 vertices; hand materials and buffers retain explicit, idempotent disposal.
+
+Removed decorative atrium ceiling bars. Lowered doorway accent trim below the full department label. Bathrooms have no displayed room number, one suspended two-sided male/female toilet pictogram sign, and a separate hygiene sign above the washbasins, eliminating the overlapping bathroom labels.
+
+Validation: 257 automated tests pass; GitHub Pages production build passes. New coverage checks the explicit/private/once-only handover, compares the quantized fallback hand vertices to their original source surfaces through walking, running and gestures (under 0.01mm error), checks compact bare hands against both real animated skeletons and verifies appearance disposal, and checks signage on all 20 country layouts and all four floors. Chrome rendered checks cover the signs, hand geometry and in-game handover. Physical iPhone Safari was not available for this revision.

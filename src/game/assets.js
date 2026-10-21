@@ -227,7 +227,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       }
     }
   });
-  applyAppearance(model,person,role,assets.appearanceCache);model.traverse(o=>{if(o.isMesh)o.frustumCulled=false;});
+  applyAppearance(model,person,role,assets.appearanceCache,assets.male);model.traverse(o=>{if(o.isMesh)o.frustumCulled=false;});
   const mixer = new THREE.AnimationMixer(model); const actions = {};
   for (const name of ['Idle', 'Walk', 'Run']) {
     const clip = assets.animations[name];
@@ -244,7 +244,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     mesh('box', material(person.accent || '#5288a2'), [.07,.03,.016], [.14,1.31,.22], root);
   }
   const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
-  const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.16:joint===2?.33:.22))});}
+  const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.03:joint===2?.08:.05))});}
   const orient = (name, child, direction) => {
     const bone=activityBones[name], tip=activityBones[child]; if(!bone || !tip) return;
     const parent=bone.parent.getWorldQuaternion(new THREE.Quaternion());

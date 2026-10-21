@@ -43,7 +43,7 @@ test('Jamie can accept or refuse only once in private; refusing walks out withou
  const incidents=new HospitalIncidents(e);incidents.contact=n;let routes=0;incidents.route=(actor,goal)=>{routes++;actor.path=[goal];actor.cursor=0;};
  assert.equal(incidents.choose('recruit'),true);assert.equal(incidents.choose('recruit'),false);assert.equal(incidents.choose('escort'),false);
  if(roll<.05){assert.equal(n.recruit.state,'refused');assert.equal(n.recruit.weapon,undefined);assert.equal(incidents.hud(),null);assert.equal(incidents.prepareNPC(n),true);assert.equal(routes,1);assert.equal(n.activity,null);incidents.prepareNPC(n);assert.equal(routes,1);n.cursor=1;incidents.prepareNPC(n);assert.equal(n.activity,'rest');}
- else{assert.equal(n.recruit.state,'recruited');assert.equal(n.recruit.weapon.visible,false);n.recruit.weapon.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});}
+ else{assert.equal(n.recruit.state,'accepted');assert.equal(n.recruit.weapon,undefined);assert.equal(incidents.choose('handover'),true);assert.equal(n.recruit.state,'recruited');assert.equal(n.recruit.weapon.visible,false);n.recruit.weapon.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});}
  }
 });
 

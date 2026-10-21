@@ -1,6 +1,6 @@
+import {VENDING_LOCATION,vendingBounds} from './furniture-placement.js';
 import * as THREE from 'three';
 import {Batcher,mesh,material,sign} from './assets.js';
-import {footprint} from './collision.js';
 import {disposeObjectResources} from './resources.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export const SODA_COST=5;
@@ -15,13 +15,13 @@ export class HospitalExtras{
       const countrySign=this.prop('Arrival country signage',0,-10.39,2.50,29.5);countrySign.add(sign(c.name.toUpperCase(),`NIGHT SHIFT / ${c.hospital.toUpperCase()}`,2.2,.44,{background:'#19303d',color:'#cfe7ec'}));countrySign.rotation.y=Math.PI/2;
     }
     for(const level of e.levels.filter(l=>l.floor<3)){
-      const g=this.prop('Mystery Soda vending machine',level.floor,8.7,0,29.5);g.rotation.y=-Math.PI/2;
+      const g=this.prop('Mystery Soda vending machine',level.floor,VENDING_LOCATION.x,0,VENDING_LOCATION.z);g.rotation.y=-Math.PI/2;
       const b=new Batcher(g),shell=material('#213e50'),glass=material('#88b6c6',{metalness:.35,roughness:.25}),trim=material(c?.accent||'#729bac'),cans=['#88ada9','#a39abc','#d8b784','#638eaa'].map(color=>material(color));
       b.box(shell,0,1.02,0,1.1,2,.7);b.box(glass,-.12,1.22,.365,.69,1.25,.025);
       for(let row=0;row<4;row++){b.box(trim,-.12,.72+row*.29,.25,.70,.025,.30);for(let col=0;col<4;col++)b.cylinder(cans[col],-.38+col*.17,.82+row*.29,.39,.052,.18,.052);}
       b.box(material('#101d27'),-.1,.34,.37,.70,.40,.04);b.box(trim,.42,1.15,.38,.15,.31,.04);b.finish();
       const label=sign('MYSTERY SODA','5 COINS · 60% SLOW / 40% FAST',.98,.25,{background:'#19303c',color:'#e2e9dd'});label.position.set(0,1.87,.37);g.add(label);
-      const collider=footprint(8.7,29.5,.74,1.14,2.05,0,'vending-machine');e.hospitals[level.floor].colliders.push(collider);this.colliders.push({floor:level.floor,collider});
+      const collider=vendingBounds();e.hospitals[level.floor].colliders.push(collider);this.colliders.push({floor:level.floor,collider});
       const bottle=new THREE.Group();bottle.name='Dispensed Mystery Soda bottle';bottle.visible=false;bottle.position.set(-.1,1.45,.43);g.add(bottle);const bottleGeometry=new THREE.LatheGeometry([[0,-.12],[.05,-.12],[.055,-.10],[.055,.10],[.027,.14],[.027,.20],[0,.20]].map(([x,y])=>new THREE.Vector2(x,y)),12);const colors=[];for(let v=0;v<bottleGeometry.attributes.position.count;v++){const y=bottleGeometry.attributes.position.getY(v),color=new THREE.Color(y>.17?'#353a56':Math.abs(y)<.07?'#d8e4d9':'#89b7b1');colors.push(color.r,color.g,color.b);}bottleGeometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));bottle.add(new THREE.Mesh(bottleGeometry,material('#ffffff',{vertexColors:true,roughness:.28})));
       this.items.push({type:'extra-vending',floor:level.floor,x:7.65,z:29.5,label:'Mystery Soda · buy for 5 coins',bottle});
     }

@@ -1,3 +1,5 @@
+import {JoinedWalls} from './joined-walls.js';
+import {chairFits} from './furniture-placement.js';
 import {addSiteDetails,addNightStreet} from './site-details.js';
 import {footprint} from './collision.js';
 import * as THREE from 'three';
@@ -34,6 +36,8 @@ export function buildLift(layout,m){
 export function buildHospital(layout, m, site=null) {
   const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [], bathrooms = [], operatingSets = [], workstations = [];
   const cube = (...args) => batch.box(...args);
+  const joinedWalls=new JoinedWalls(),seatRequests=[],seats=[];
+  const chairAt=(x,z,rotation=0,room=null)=>seatRequests.push({x,z,rotation,room});
   const collider = (x, z, w, d, object = null) => { const c = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, object }; colliders.push(c); return c; };
   batch.collider=(x,z,w,d,h,rot,type)=>{const c=footprint(x,z,w,d,h,rot,type);colliders.push(c);return c;};
   const deskAt=(room,x,z,rotation=0)=>{desk(batch,m,x,z,rotation);workstations.push({room:room.id,x,z,rotation,cup:{x:x+Math.cos(rotation)*.82,z:z-Math.sin(rotation)*.82},stand:{x:x-Math.sin(rotation)*.9,z:z-Math.cos(rotation)*.9}});};
@@ -54,14 +58,14 @@ export function buildHospital(layout, m, site=null) {
   }
   function wallSection(x, z, axis, length, window = false) {
     const horizontal = axis === 'x', sx = horizontal ? length : .18, sz = horizontal ? .18 : length;
-    const wallCube = cube;
+    const wallCube = (...args)=>joinedWalls.box(...args);
     if (window) {
       wallCube(m.wall, x, .56, z, sx, 1.12, sz); wallCube(m.wall, x, 3.13, z, sx, 1.04, sz);
       wallCube(m.glass, x, 1.87, z, sx, 1.46, sz);
       wallCube(m.steel, x, 1.14, z, horizontal ? length : .21, .035, horizontal ? .21 : length);
       wallCube(m.steel, x, 2.62, z, horizontal ? length : .21, .035, horizontal ? .21 : length);
       wallCube(m.steel, x, 1.87, z, horizontal ? .04 : .2, 1.5, horizontal ? .2 : .04);
-    } else wallCube(m.wall, x, 1.8, z, sx, 3.6, sz);
+    } else wallCube(m.wall, x, 1.82, z, sx, 3.64, sz);
     wallCube(m.trim, x, .08, z, horizontal ? length : .22, .16, horizontal ? .22 : length);
     wallCube(m.stripe, x, 1.03, z, horizontal ? length : .22, .13, horizontal ? .22 : length);
     wallCube(m.steel, x, .94, z, horizontal ? length : .26, .045, horizontal ? .26 : length);
@@ -75,9 +79,9 @@ export function buildHospital(layout, m, site=null) {
     const width = 1.8, remainder = (TILE - width) / 2;
     wallSection(w.x - (width + remainder) / 2, w.z, 'x', remainder);
     wallSection(w.x + (width + remainder) / 2, w.z, 'x', remainder);
-    cube(m.wall, w.x, 3.12, w.z, width, .96, .18);
+    joinedWalls.box(m.wall, w.x, 3.13, w.z, width, 1, .18);
     Object.assign(collider(w.x,w.z,1.93,.25),{minY:2.59,maxY:3.6,type:'header'});
-    cube(m.steel, w.x - .93, 1.3, w.z, .08, 2.6, .25); cube(m.steel, w.x + .93, 1.3, w.z, .08, 2.6, .25); cube(m.steel, w.x, 2.63, w.z, 1.93, .08, .25);
+    joinedWalls.box(m.steel, w.x - .93, 1.3, w.z, .08, 2.6, .25); joinedWalls.box(m.steel, w.x + .93, 1.3, w.z, .08, 2.6, .25); joinedWalls.box(m.steel, w.x, 2.63, w.z, 1.93, .08, .25);
     const pivot = new THREE.Group(); pivot.position.set(w.x - .86, 0, w.z); group.add(pivot);
     mesh('box', m.blue, [1.72, 2.58, .08], [.86, 1.29, 0], pivot);
     mesh('box', m.glass, [.6, .55, .095], [.86, 1.84, 0], pivot);
@@ -199,12 +203,12 @@ export function buildHospital(layout, m, site=null) {
         }
       }
     } else if (room.kind === 'cafe') {
-      for (const z of [minZ + 3, cz + 2, maxZ - 3]) for (const x of [minX + 2, maxX - 2]) {
+      for (const z of [minZ + 3, cz, maxZ - 3]) for (const x of [minX + 2, maxX - 2]) {
         batch.cylinder(m.white, x, .82, z, 1, .065, 1); batch.cylinder(m.steel, x, .42, z, .09, .78, .09); Object.assign(furnitureCollider(x,z,2,2),{maxY:.86,type:'table'});
-        chair(batch, m, x, z - 1.45); chair(batch, m, x, z + 1.45, Math.PI);
+        chairAt(x,z-1.45,0,room.id);chairAt(x,z+1.45,Math.PI,room.id);
       }
     } else {
-      for (const z of [minZ + 3, maxZ - 3]) { deskAt(room,minX+2,z,Math.PI/2); chair(batch, m, minX + 2, z + 1); }
+      for (const z of [minZ + 3, maxZ - 3]) { deskAt(room,minX+2,z,Math.PI/2); chairAt(minX+2,z+1.7,0,room.id); }
       if (room.kind === 'clinic') { bed(batch,m,maxX-1.9,cz); }
       else { cube(m.white, maxX - .7, 1.05, cz, .8, 2.1, 3); furnitureCollider(maxX - .7, cz, .85, 3); for (let i = 0; i < 4; i++) cube(m.blue, maxX - .25, .5 + i * .45, cz, .03, .025, 2.8); }
     }
@@ -219,7 +223,8 @@ export function buildHospital(layout, m, site=null) {
   }
   // The arrival atrium is a recognizable landmark with a reception desk and waiting seats.
   if(layout.floor!==3){
-  for (const z of [29, 31.3]) { chair(batch, m, -6, z, Math.PI / 2); chair(batch, m, 9, z, -Math.PI / 2); }
+  for(const z of [29,31.3])chairAt(-6,z,Math.PI/2);
+  for(const z of [31.3,33])chairAt(9,z,-Math.PI/2);
   cube(m.white, -3.8, .61, 27.8, 2.9, 1.22, .9); cube(m.blue, -3.8, .76, 28.27, 2.8, .43, .035); Object.assign(collider(-3.8,27.8,3,1),{maxY:1.23,type:'desk'});
   placeSign('+  NHALEWICK', 'MEDICAL CENTER', -3.8, 1.05, 28.29, 0, 2.1, .6);
   }
@@ -255,11 +260,12 @@ export function buildHospital(layout, m, site=null) {
   }
   // Corridors include benches, service carts, hand sanitizers, notices and equipment.
   for (const z of (layout.floor===3?[]:[-15, 9, 18])) {
-    for (let i = 0; i < 3; i++) chair(batch, m, 5.25, z + i * .74, -Math.PI / 2);
+    for(let i=0;i<3;i++)chairAt(5.25,z+i*.9,-Math.PI/2);
     cube(m.steel, -1.1, .5, z, .7, .85, .8); cube(m.white, -1.1, .98, z, .74, .08, .85); Object.assign(collider(-1.1,z,.75,.9),{maxY:1.04,type:'cart'});
   }
   addSiteDetails(group,batch,m,layout,site);
-  const statics = batch.finish();
-  return { lift:lift.userData.lift,workstations,entrances:group.userData.entrance?[group.userData.entrance]:[], group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
+  for(const seat of seatRequests)if(chairFits(seat.x,seat.z,seat.rotation,layout,colliders)){chair(batch,m,seat.x,seat.z,seat.rotation);seats.push(seat);}
+  const statics = [...batch.finish(),...joinedWalls.finish(group)];
+  return { seats,lift:lift.userData.lift,workstations,entrances:group.userData.entrance?[group.userData.entrance]:[], group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
     disposeProps(){for(const props of [...bathrooms,...operatingSets])props.dispose();} };
 }

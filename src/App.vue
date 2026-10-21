@@ -204,7 +204,7 @@ onBeforeUnmount(() => { appDisposed=true;launchSerial++;portraitSerial++;menuMus
         </div>
       </section>
       <aside class="scene-label"><span class="eyebrow">{{currentCountry.hospital.toUpperCase()}} / MAIN BUILDING</span><span class="scene-title">The night shift.</span><p>Three public floors. A locked basement.<br/>More than one kind of assignment.</p><div class="scene-meta"><span>THREE CONNECTED WINGS</span><span>G + 1 + 2 + B</span></div></aside>
-      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.2.1 <ArrowUpRight :size="12"/></button></footer>
+      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.3.0 <ArrowUpRight :size="12"/></button></footer>
     </template>
     <TravelSequence v-if="screen==='travel' && flight" :from="flight.from" :to="flight.to" :audio="engine.audio" @finish="finishFlight"/>
     <StoryIntro v-if="screen==='story' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" @finish="enterHospital" @back="toMenu" @references="openOverlay('references')"/>

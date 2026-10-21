@@ -1,3 +1,4 @@
+import {setLiftOpening} from './lift-doors.js';
 import {updateEntrance} from './entrance.js';
 import {countryPerson} from './population.js';
 import {disposeHospital} from './hospital-disposal.js';
@@ -325,7 +326,7 @@ export class GameEngine {
   travelToFloor(dest){
     if(!Number.isInteger(dest)||dest<0||dest>=this.levels.length||dest===this.floor)return false;
     if(dest===3&&(this.mission?.type==='standard'||!this.mission?.keys.includes('basement'))){this.notify('Basement lift locked · collect the access pass in Records');return false;}
-    this.setFloor(dest);const lift=this.hospitals[dest].lift;if(lift){lift.open=true;lift.amount=1;lift.choosing=false;lift.selectionUsed=true;for(const leaf of lift.leaves){const x=lift.x+leaf.userData.side*1.86;leaf.position.x=x;leaf.userData.bodyBounds.minX=x-.6175;leaf.userData.bodyBounds.maxX=x+.6175;}}this.playerPos.set(this.levels[dest].elevator.x,0,lift?lift.faceZ-1.1:this.levels[dest].elevator.z+3);this.player.root.position.copy(this.playerPos);this.yaw=0;this.audio.sound('door');this.hooks.transition?.();this.updateCamera(.2,true);this.notify(`${FLOORS[dest]} · ${FLOOR_THEMES[dest]}`);this.emitHUD();return true;
+    this.setFloor(dest);const lift=this.hospitals[dest].lift;if(lift){lift.open=true;setLiftOpening(lift,1);lift.choosing=false;lift.selectionUsed=true;}this.playerPos.set(this.levels[dest].elevator.x,0,lift?lift.faceZ-1.1:this.levels[dest].elevator.z+3);this.player.root.position.copy(this.playerPos);this.yaw=0;this.audio.sound('door');this.hooks.transition?.();this.updateCamera(.2,true);this.notify(`${FLOORS[dest]} · ${FLOOR_THEMES[dest]}`);this.emitHUD();return true;
   }
   setAiming(value){this.aiming=!!value;if(value&&this.mission?.type!=='evidence')this.weaponDrawn=true;}
   toggleAim(){this.setAiming(!this.aiming);this.emitHUD();}
@@ -610,7 +611,7 @@ export class GameEngine {
     return true;
   }
   updateEnvironment(dt) {
-    const lift=this.hospitals?.[this.floor]?.lift;if(lift){const inside=Math.abs(this.playerPos.x-lift.x)<1.05&&this.playerPos.z<lift.faceZ-.3&&this.playerPos.z>lift.faceZ-2.5;if(!inside&&this.playerPos.z>lift.faceZ+.5){lift.choosing=false;lift.selectionUsed=false;if(Math.hypot(this.playerPos.x-lift.x,this.playerPos.z-lift.faceZ)>4.5)lift.open=false;}lift.amount=THREE.MathUtils.damp(lift.amount,lift.open?1:0,5,dt);for(const leaf of lift.leaves){const x=lift.x+leaf.userData.side*(.6225+lift.amount*1.25);leaf.position.x=x;leaf.userData.bodyBounds.minX=x-.6175;leaf.userData.bodyBounds.maxX=x+.6175;}if(inside&&lift.amount>.85&&!lift.choosing&&!lift.selectionUsed){lift.choosing=true;this.hooks.lift?.(this.floor);}}
+    const lift=this.hospitals?.[this.floor]?.lift;if(lift){const inside=Math.abs(this.playerPos.x-lift.x)<1.05&&this.playerPos.z<lift.faceZ-.3&&this.playerPos.z>lift.faceZ-2.5;if(!inside&&this.playerPos.z>lift.faceZ+.5){lift.choosing=false;lift.selectionUsed=false;if(Math.hypot(this.playerPos.x-lift.x,this.playerPos.z-lift.faceZ)>4.5)lift.open=false;}setLiftOpening(lift,THREE.MathUtils.damp(lift.amount,lift.open?1:0,5,dt));if(inside&&lift.amount>.85&&!lift.choosing&&!lift.selectionUsed){lift.choosing=true;this.hooks.lift?.(this.floor);}}
     for(const entrance of this.hospitals?.[0]?.entrances||[]){
       const near=p=>Math.abs(p.x-1.5)<4&&Math.abs(p.z-34.5)<3.7;
       const opened=entrance.open||this.floor===0&&near(this.playerPos)||this.npcs.some(n=>n.floor===0&&!n.dead&&!n.evacuated&&!n.seated&&near(n.pos));

@@ -8,7 +8,7 @@ export function addSiteDetails(group,batch,m,layout,site){
  // Ceiling ribs and inset panels give every arrival hall a distinct silhouette.
  for(let i=0;i<ribs;i++){const z=27+i*1.45;batch.box(variant%2?warm:accent,1.5,3.35,z,variant===2?13:9,.11,.16);if(variant===3)for(const x of [-3.2,6.2])batch.box(warm,x,2.95,z,.12,.85,.16);}
  for(const side of [-1,1])for(let i=0;i<2+variant;i++){
- const x=side<0?-7.2:10.2,z=27+i*.94;batch.box(accent,x,2.03,z,.06,1.35,.38);batch.box(warm,x+side*.015,1.30,z,.07,.08,.38);
+ const x=side<0?-10.39:10.39,z=27+i*.94;batch.box(accent,x,2.03,z,.06,1.35,.38);batch.box(warm,x+side*.015,1.30,z,.07,.08,.38);
  }
  // Low relief department portal trim; it never narrows the walkable opening.
  for(const d of layout.doors.filter(d=>!d.id.endsWith('back'))){batch.box(accent,d.x,2.77,d.z,2.05,.10,.29);if(variant===1||variant===4)for(const side of [-1,1])batch.box(warm,d.x+side*1.04,1.34,d.z,.055,2.6,.23);}

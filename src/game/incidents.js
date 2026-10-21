@@ -105,7 +105,7 @@ export class HospitalIncidents{
     const e=this.e,r=n.recruit,now=e.mission.elapsed;if(n.floor!==e.floor||distance(n.pos,e.playerPos)>16)return false;
     n.voiceVersion=(n.voiceVersion||0)+1;if(e.life?.queue)e.life.queue=e.life.queue.filter(line=>line.actor!==n);
     e.audio.laugh?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},.45,n.id);r.laughUntil=now+1.9;r.nextLaugh=now+25+e.mission.random()*20;
-    e.hooks.soundCaption?.(`${n.name} gives a short nervous laugh.`);return true;
+    e.hooks.soundCaption?.(`${n.name} lets out an unsettling laugh.`);return true;
   }
   prepareNPC(n){
     if(!n.recruit||n.evacuating||n.reporting||n.recruit.state==='dismissed')return false;

@@ -242,16 +242,19 @@ export function buildHospital(layout, m, site=null) {
   interactables.push({ type: 'elevator', label:'Call lift · enter to choose floor', x: e.x, z: e.z + .9 });
   for(const leaf of lift.userData.lift.leaves)colliders.push(leaf.userData.bodyBounds);for(const side of [-1,1])Object.assign(collider(e.x+side*1.28,liftFace-1.4,.08,2.8),{minY:0,maxY:2.8,type:'lift-wall'});Object.assign(collider(e.x,liftFace-2.78,2.65,.1),{minY:0,maxY:2.8,type:'lift-wall'});
   if (layout.floor === 0) {
-    placeSign('EXIT  ↓','MAIN ENTRANCE',3,2.9,33.25,Math.PI,2.7,.68,{background:'#315a68'});
+    for(const side of [-1,1]){
+      const guide=placeSign(side<0?'←  EXIT':'EXIT  →','MAIN ENTRANCE',side*24,3.08,23.1,Math.PI,1.9,.5,{background:'#234553'});
+      guide.name='Corridor exit direction';guide.userData.direction=side<0?'left':'right';guide.userData.toward={x:0,z:24};
+      for(const dx of [-.65,.65])cube(m.steel,side*24+dx,3.48,23.1,.018,.28,.018);
+    }
     // A real 6m portal joins the atrium to an exterior forecourt. The old
     // glass facade was drawn over a solid exterior wall and had no doors.
     const entry=new THREE.Group();entry.name='Main entrance sliding glass doors';group.add(entry);
     for(const x of [-1.5,4.5])mesh('box',m.steel,[.10,2.85,.19],[x,1.425,34.5],entry);
     mesh('box',m.steel,[6.1,.13,.25],[1.5,2.85,34.5],entry);
     const doorGlass=material('#91bbc9',{transparent:true,opacity:.36,roughness:.17,metalness:.15,depthWrite:false,side:THREE.DoubleSide});
-    const leaves=[];for(const side of [-1,1]){const leaf=new THREE.Group();leaf.position.set(1.5+side*1.5,0,34.5);entry.add(leaf);mesh('box',doorGlass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of [-1.5,1.5])mesh('box',m.steel,[.045,2.7,.075],[x,1.4,0],leaf);for(const y of [.07,1.1,2.73])mesh('box',m.steel,[3,.045,.075],[0,y,0],leaf);for(const face of [-1,1]){const decal=sign('←  AUTOMATIC  →','EXIT',1.85,.32,{background:'#456275',color:'#ecf6f7'});decal.position.set(0,1.55,face*.045);decal.rotation.y=face<0?Math.PI:0;leaf.add(decal);}leaf.userData.side=side;leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,34.5,3,.06),{minY:0,maxY:2.78,type:'entrance-glass'});leaves.push(leaf);}
+    const leaves=[];for(const side of [-1,1]){const leaf=new THREE.Group();leaf.position.set(1.5+side*1.5,0,34.5);entry.add(leaf);mesh('box',doorGlass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of [-1.5,1.5])mesh('box',m.steel,[.045,2.7,.075],[x,1.4,0],leaf);for(const y of [.07,1.1,2.73])mesh('box',m.steel,[3,.045,.075],[0,y,0],leaf);for(const face of [-1,1]){const decal=sign('←  AUTOMATIC  →','',1.85,.32,{background:'#456275',color:'#ecf6f7'});decal.position.set(0,1.55,face*.045);decal.rotation.y=face<0?Math.PI:0;leaf.add(decal);}leaf.userData.side=side;leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,34.5,3,.06),{minY:0,maxY:2.78,type:'entrance-glass'});leaves.push(leaf);}
     group.userData.entrance={leaves,open:false,amount:0};
-    placeSign('EXIT  ↓','TO THE FORECOURT',1.5,3.05,34.4,Math.PI,3.8,.46,{background:'#315a68'});
     cube(m.dark,1.5,.01,37,5.7,.015,4.8);
     addNightStreet(group,batch,m);
     interactables.push({ type: 'exit', label: 'Leave the hospital', x: layout.exit.x, z: layout.exit.z });

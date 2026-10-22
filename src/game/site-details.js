@@ -28,5 +28,5 @@ export function addNightStreet(group,batch,m){
  }
  // Distant unlit facades remain cheap instanced silhouettes.
  for(let i=0;i<8;i++){const x=-25+i*8,height=5+(i%3)*2;batch.box(asphalt,x,height/2,64,6,height,3);for(let j=0;j<3;j++)batch.box(yellow,x-1.5+j*1.3,2.8,62.45,.30,.50,.035);}
- const label=sign('AUTOMATIC DOORS','MAIN ENTRANCE / EXIT',2.9,.35,{background:'#203b46'});label.position.set(1.5,3.05,34.38);label.rotation.y=Math.PI;group.add(label);
+ const label=sign('MAIN ENTRANCE / EXIT','AUTOMATIC DOORS',4.2,.58,{background:'#203b46'});label.name='Automatic entrance and exit header';label.position.set(1.5,3.28,34.35);label.rotation.y=Math.PI;group.add(label);
 }

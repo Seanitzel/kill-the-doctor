@@ -72,5 +72,5 @@ test('Accessibility prop disposal preserves borrowed materials and shared primit
   for(const m of Object.values(materials))m.addEventListener('dispose',()=>borrowed++);
   const geometries=new Set();handle.root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);});
   for(const g of geometries)g.addEventListener('dispose',()=>{if(g.userData.sharedPrimitive)shared++;else owned++;});
-  handle.dispose();handle.dispose();assert.equal(borrowed,0);assert.equal(shared,0);assert.equal(owned,4);
+  handle.dispose();handle.dispose();assert.equal(borrowed,0);assert.equal(shared,0);assert.equal(owned,[...geometries].filter(g=>!g.userData.sharedPrimitive).length);
 });

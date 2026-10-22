@@ -86,7 +86,12 @@ export function addBathroom(parent,{x=0,z=0,width=9,depth=9,rotation=0}={},mater
   }
   b.box(dark,width/2-.65,.31,depth/2-.8,.42,.62,.42);b.box(steel,width/2-.65,.64,depth/2-.8,.44,.05,.44);
   obstacle(width/2-.65,depth/2-.8,.46,.46,.67,0,'bathroom-bin');
-  const hygiene=kit.label('WASH YOUR HANDS','SOAP / RINSE / DRY',width/2-.14,2.65,0,-Math.PI/2,2,.36);hygiene.name='Bathroom hygiene sign';
+  const dryer=new THREE.Group();dryer.name='Automatic hand dryer';dryer.position.set(width/2-.28,1.24,0);root.add(dryer);
+  mesh('box',steel,[.10,.46,.55],[.16,0,0],dryer);mesh('box',steel,[.30,.46,.55],[0,0,0],dryer);mesh('box',white,[.32,.40,.51],[-.025,.025,0],dryer);
+  mesh('sphere',white,[.17,.13,.255],[-.025,.20,0],dryer);
+  mesh('box',dark,[.15,.055,.32],[-.09,-.22,0],dryer);mesh('box',steel,[.16,.018,.33],[-.09,-.25,0],dryer);
+  mesh('sphere',blue,[.009,.012,.025],[-.19,-.08,0],dryer);
+  obstacle(width/2-.30,0,.43,.60,1.60,0,'hand-dryer',.96);
   const statics=kit.finish();return {root,colliders:kit.colliders,anchors,statics,mirrors,dispose(){for(const mirror of mirrors)mirror.dispose();kit.dispose();}};
 }
 

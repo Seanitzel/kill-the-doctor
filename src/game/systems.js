@@ -5,6 +5,7 @@ import {tileAt,key} from './layout.js';
 import {WITNESS_LINES} from './life-rules.js';
 import {seesDrawnWeapon} from './loadout.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
+export function securityAlert(m){return m.suspicion>80||m.state==='escape'&&(!m.china||!!m.policeAlert);}
 export class MissionSystems{
   constructor(engine){this.e=engine;this.scan=0;this.magnet=null;this.evacuating=false;this.navigation=[];}
   navigationFor(floor){return this.navigation[floor]||(this.navigation[floor]=new EgressNavigation(this.e.levels[floor],this.e.hospitals[floor].colliders));}
@@ -44,9 +45,9 @@ export class MissionSystems{
     const e=this.e,now=e.mission.elapsed;
     if(e.extras?.prepareNPC(n)||e.covert?.prepareNPC(n)||e.objectives?.prepareNPC(n)||e.visitors?.prepareNPC(n)||e.life?.prepareNPC?.(n))return true;
     if(e.incidents?.prepareNPC(n))return true;
-    if(n.reporting&&(e.mission.type==='rescue'?e.mission.state!=='escape':!e.mission.targetDown)){
+    if(n.reporting&&(e.mission.china||(e.mission.type==='rescue'?e.mission.state!=='escape':!e.mission.targetDown))){
       const r=n.reporting;
-      if(now>=r.deadline||now-r.started>1.5&&distance(n.pos,r.goal)<1.3){if(r.reason==='weapon'&&e.mission.type==='standard'){n.reporting=null;n.activity='worried';n.path=[];e.mission.policeAlert=true;e.mission.beginEscape(70);e.notify('Police called · finish the primary objective and escape before they arrive','danger');e.emitHUD();return true;}e.audio.sound('alarm');e.mission.finish(false,r.reason==='privacy'?'Staff reported the repeated intrusion. Security escorted you out of the hospital.':r.reason==='camera'?'Security reported your unauthorized photography before you escaped.':e.mission.type==='rescue'?'Your weapon was reported on a public floor before you reached the operating suite.':'Your weapon was reported before the primary target was eliminated. Police intercepted you.');e.finish();return true;}
+      if(now>=r.deadline||now-r.started>1.5&&distance(n.pos,r.goal)<1.3){if(r.reason==='weapon'&&(e.mission.type==='standard'||e.mission.china)){n.reporting=null;n.activity='worried';n.path=[];e.mission.policeAlert=true;e.mission.beginEscape(70);if(e.mission.china)this.startEvacuation();e.notify(e.mission.china?'Police called · your cover is blown. Escape before they arrive.':'Police called · finish the primary objective and escape before they arrive','danger');e.emitHUD();return true;}e.audio.sound('alarm');e.mission.finish(false,r.reason==='privacy'?'Staff reported the repeated intrusion. Security escorted you out of the hospital.':r.reason==='camera'?'Security reported your unauthorized photography before you escaped.':e.mission.type==='rescue'?'Your weapon was reported on a public floor before you reached the operating suite.':'Your weapon was reported before the primary target was eliminated. Police intercepted you.');e.finish();return true;}
       if(n.cursor>=n.path.length&&n.wait<0)this.route(n,r.goal);return true;
     }
     if(n.evacuating){
@@ -61,10 +62,10 @@ export class MissionSystems{
   update(dt){
     const e=this.e;if((e.mission.targetDown&&!e.mission.china&&(!e.mission.covertDeath||e.mission.bodyDiscovered)||e.mission.type==='rescue'&&e.mission.state==='escape')&&!this.evacuating)this.startEvacuation();
     this.scan-=dt;
-    if(e.mission.state!=='escape'&&!e.mission.targetDown&&e.weaponDrawn&&this.scan<=0){
+    if((e.mission.state!=='escape'&&!e.mission.targetDown||e.mission.china&&!e.mission.policeAlert)&&e.weaponDrawn&&this.scan<=0){
       this.scan=.18;let reporting=e.npcs.filter(n=>n.reporting&&!n.dead).length;
       for(const n of e.npcs){
-        if(reporting>=3||e.mission.state==='escape')break;if(n.dead||n.evacuated||n.baby||n.blind||n.rescuePatient||n.lying||n.reporting||n.recruit?.state==='recruited'||n.floor!==e.floor)continue;
+        if(reporting>=3||e.mission.state==='escape'&&(!e.mission.china||e.mission.policeAlert))break;if(n.dead||n.evacuated||n.baby||n.blind||n.rescuePatient||n.lying||n.reporting||n.recruit?.state==='recruited'||n.floor!==e.floor)continue;
         const visible=distance(n.pos,e.playerPos)<(e.mission.challenge?.witnessRange||11)&&e.lineOfSight(n.pos,e.playerPos);
         if(seesDrawnWeapon(n.pos,e.playerPos,n.visual.root.rotation.y,visible,e.mission.challenge?.witnessRange||11)){this.witness(n);reporting++;}
       }

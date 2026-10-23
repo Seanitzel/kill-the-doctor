@@ -18,7 +18,7 @@ import {obstacleBounds,circleOverlaps,cameraFraction,segmentHit3D,blocksBody,int
 import * as THREE from 'three';
 import { makeLayout, TILE, world, tileAt, key, findPath, edgeKey, FLOORS, FLOOR_THEMES } from './layout.js';
 import {profileFor,weaponInfo,maskProtects,STAFF_BONUS} from './loadout.js';
-import {MissionSystems} from './systems.js';
+import {MissionSystems,securityAlert} from './systems.js';
 import {weaponModel,playerAccessories} from './gear.js';
 import { STAFF } from './mission.js';
 import { hospitalMaterials, makeHuman, makePlayer, loadCharacters, disposeCharacterAssets, releasePrimitiveBuffers, mesh, material, renderPortrait } from './assets.js';
@@ -564,7 +564,7 @@ export class GameEngine {
       const layout = this.navLayouts[n.floor]; const local = n.floor === this.floor; const d = local ? distance(this.playerPos, n.pos) : 100;
       n.visual.root.visible = local && d < 34;
       let speed = 0;
-      const hostile=n.role==='police'||n.role==='security'&&!n.evacuating&&(mission.state==='escape'||mission.suspicion>80);
+      const hostile=n.role==='police'||n.role==='security'&&!n.evacuating&&securityAlert(mission);
       n.wait -= dt;n.reaction=Math.max(0,(n.reaction||0)-dt);
       const directed=this.systems?.prepareNPC(n);if(mission.result)return;
       if(!directed&&hostile && local && n.wait < 0) {

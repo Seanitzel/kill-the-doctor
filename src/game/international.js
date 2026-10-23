@@ -2,7 +2,7 @@
 export const COUNTRIES=[
  ['france','France','Paris',48.9,2.3,'Velmoraine','#728ca7','Dr. Camille Laurent','female'],
  ['nigeria','Nigeria','Lagos',6.5,3.4,'Avelune','#538b82','Dr. Adaeze Okafor','female'],
- ['china','China','Shanghai',31.2,121.5,'Linthaven','#7f9c96','Dr. Wei Shen','male'],
+ ['china','China','Shanghai',31.2,121.5,'Linthaven','#3a6985','Dr. Wei Shen','male'],
  ['japan','Japan','Tokyo',35.7,139.7,'Orivelle','#ac8e9d','Dr. Ren Takahashi','male'],
  ['israel','Israel','Tel Aviv',32.1,34.8,'Nhalewick','#7b9caf','Dr. Noa Ben-Ami','female'],
  ['india','India','Mumbai',19.1,72.9,'Serevane','#b69a6c','Dr. Priya Mehta','female'],

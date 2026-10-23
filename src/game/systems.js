@@ -19,14 +19,14 @@ export class MissionSystems{
     n.visual.root.rotation.set(0,0,0);n.activity=null;n.seated=n.lying=false;n.baselineY=0;n.pos.y=0;n.hitOffset=null;n.reaction=0;n.path=[];n.cursor=0;
   }
   startEvacuation(){
-    if(this.evacuating)return;this.evacuating=true;this.e.audio.sound('alarm');for(const entrance of this.e.hospitals?.[0]?.entrances||[]){entrance.open=true;updateEntrance(entrance,true,2);}this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
+    if(this.evacuating||this.e.mission.china&&!this.e.mission.policeAlert)return;this.evacuating=true;if(this.e.life){if(this.e.life.queue)this.e.life.queue.length=0;if(this.e.life.dialogues)this.e.life.dialogues.length=0;this.e.life.privacy?.leave();}this.e.audio.cancelVoices?.();this.e.audio.sound('alarm');for(const entrance of this.e.hospitals?.[0]?.entrances||[]){entrance.open=true;updateEntrance(entrance,true,2);}this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
     for(const level of this.e.levels)for(const door of level.doors){door.locked=false;door.open=true;}
-    for(const n of this.e.npcs){if(n.dead||n.baby||n.rescuePatient||n.role==='police'||n===this.e.extras?.lure?.contact&&n.lying||n.emergencyResponder)continue;if(n.operationDoctor&&this.e.mission.type==='rescue'){n.reporting=null;n.path=[];n.activity='worried';continue;}if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.evacGoal=n.floor?{x:0,z:-24}:{x:0,z:39};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.8;this.route(n,n.evacGoal);}
+    for(const n of this.e.npcs){if(n.dead||n.baby||n.rescuePatient||n.role==='police'||n===this.e.extras?.lure?.contact&&n.lying||n.emergencyResponder)continue;if(n.operationDoctor&&this.e.mission.type==='rescue'){n.reporting=null;n.path=[];n.activity='worried';continue;}if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.sneezeUntil=0;if(n.tissue)n.tissue.visible=false;n.evacGoal=n.floor?{x:0,z:-24}:{x:0,z:39};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.8;this.route(n,n.evacGoal);}
     const nearby=this.e.npcs.filter(n=>n.floor===this.e.floor&&!n.dead&&!n.baby).slice(0,3);for(const [i,n]of nearby.entries())this.e.audio.evacuationScream?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},i*.7);
     this.e.hooks.soundCaption?.('People scream. The alarm sounds. Staff and ambulatory patients rush toward the exits. Newborns remain protected.');
   }
   witness(n,reason='weapon'){
-    const e=this.e;if(n.operationDoctor&&e.mission.type==='rescue'){e.mission.beginEscape(65);this.startEvacuation();e.notify('Operating team alerted · stop the procedure and bring the patient out','danger');return;}
+    const e=this.e;if(e.mission.china&&n.operationDoctor){if(e.mission.china.recordings.length<3){e.mission.finish(false,'The operating doctors saw your weapon before you secured the recordings.');e.finish();}return;}if(n.operationDoctor&&e.mission.type==='rescue'){e.mission.beginEscape(65);this.startEvacuation();e.notify('Operating team alerted · stop the procedure and bring the patient out','danger');return;}
     const stations=[{x:0,z:-23},{x:18,z:0},{x:-3,z:25.5}].sort((a,b)=>distance(n.pos,a)-distance(n.pos,b));
     const goal=stations[0];this.stand(n,goal);n.reaction=.7;n.reporting={reason,started:e.mission.elapsed,deadline:e.mission.elapsed+(e.mission.challenge?.reportSeconds||8)+Math.min(13,distance(n.pos,goal)/2.5),goal};
     this.route(n,goal);if(reason!=='privacy'){e.audio.gasp({x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});e.audio.dialogue?.(WITNESS_LINES[reason]||WITNESS_LINES.weapon,n.person,.8,true,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});}
@@ -59,7 +59,7 @@ export class MissionSystems{
     return false;
   }
   update(dt){
-    const e=this.e;if((e.mission.targetDown&&(!e.mission.covertDeath||e.mission.bodyDiscovered)||e.mission.type==='rescue'&&e.mission.state==='escape')&&!this.evacuating)this.startEvacuation();
+    const e=this.e;if((e.mission.targetDown&&!e.mission.china&&(!e.mission.covertDeath||e.mission.bodyDiscovered)||e.mission.type==='rescue'&&e.mission.state==='escape')&&!this.evacuating)this.startEvacuation();
     this.scan-=dt;
     if(e.mission.state!=='escape'&&!e.mission.targetDown&&e.weaponDrawn&&this.scan<=0){
       this.scan=.18;let reporting=e.npcs.filter(n=>n.reporting&&!n.dead).length;

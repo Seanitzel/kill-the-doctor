@@ -23,15 +23,15 @@ test('all 20 countries and every floor keep chairs clear of solids, vending mach
 
 test('opening lift leaves remain inside the original portal and collider widths match the visible leaves on every floor',()=>{
  const m=materials();try{for(let floor=0;floor<4;floor++){const h=canvas(()=>buildHospital(makeLayout(floor),m)),lift=h.lift;try{const header=h.group.getObjectByName('Lift door header'),size=header.scale.clone(),position=header.position.clone();
- for(let step=0;step<=100;step++){setLiftOpening(lift,step/100);h.group.updateMatrixWorld(true);for(const leaf of lift.leaves){const b=leaf.userData.bodyBounds,width=1.235*leaf.scale.x;assert.ok(b.minX>=lift.x-1.240001&&b.maxX<=lift.x+1.240001);assert.ok(Math.abs(b.maxX-b.minX-width)<1e-8);assert.equal(leaf.visible,step<100);}}
- assert.deepEqual(header.scale,size);assert.deepEqual(header.position,position);setLiftOpening(lift,0);assert.ok(lift.leaves.every(l=>l.visible&&l.scale.x===1));
+ for(let step=0;step<=100;step++){setLiftOpening(lift,step/100);h.group.updateMatrixWorld(true);for(const leaf of lift.leaves){const b=leaf.userData.bodyBounds,width=leaf.scale.x;assert.ok(b.minX>=lift.x-1.240001&&b.maxX<=lift.x+1.240001);assert.ok(Math.abs(b.maxX-b.minX-width)<1e-8);assert.equal(leaf.visible,step<100);if(leaf.visible){const actual=new T.Box3().setFromObject(leaf);assert.ok(Math.abs(actual.min.x-b.minX)<1e-6);assert.ok(Math.abs(actual.max.x-b.maxX)<1e-6);}}}
+ assert.deepEqual(header.scale,size);assert.deepEqual(header.position,position);setLiftOpening(lift,0);assert.ok(lift.leaves.every(l=>l.visible&&l.scale.x===1.24));
  }finally{disposeHospital(h,m);}}}finally{Object.values(m).forEach(v=>v.dispose());}
 });
 
 test('country relief panels touch the actual atrium walls instead of floating near the directory',()=>{
  const m=materials();try{for(const country of COUNTRIES){const layout=makeLayout(0,country.index),h=canvas(()=>buildHospital(layout,m,country));try{let count=0;const matrix=new T.Matrix4(),position=new T.Vector3(),scale=new T.Vector3(),rotation=new T.Quaternion();
- for(const mesh of h.statics.filter(o=>o.isInstancedMesh))for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);matrix.decompose(position,rotation,scale);if(Math.abs(scale.x-.06)>1e-5||Math.abs(scale.y-1.35)>1e-5||Math.abs(scale.z-.38)>1e-5)continue;count++;const wall=layout.walls.find(w=>w.axis==='z'&&Math.abs(w.x-position.x)<.15&&Math.abs(w.z-position.z)<=1.5);assert.ok(wall);assert.ok(Math.abs(wall.x-position.x)<=.09+.03+.001);}
- assert.equal(count,2*(2+country.index%5));
+ for(const mesh of h.statics.filter(o=>o.isInstancedMesh))for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);matrix.decompose(position,rotation,scale);if(Math.abs(scale.x-.06)>1e-5||Math.abs(scale.y-.75)>1e-5||Math.abs(scale.z-.30)>1e-5)continue;count++;const wall=layout.walls.find(w=>w.axis==='z'&&Math.abs(w.x-position.x)<.15&&Math.abs(w.z-position.z)<=1.5);assert.ok(wall);assert.ok(Math.abs(wall.x-position.x)<=.09+.03+.001);}
+ assert.equal(count,4);
  }finally{disposeHospital(h,m);}}}finally{Object.values(m).forEach(v=>v.dispose());}
 });
 

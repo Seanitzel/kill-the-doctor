@@ -43,6 +43,7 @@ export class HospitalLife {
       const patientA=this.actor('Waiting patient A','patient','female',floor,null,-6,29,'chat',{seated:true,yaw:Math.PI/2});
       const patientB=this.actor('Waiting patient B','patient','male',floor,null,-6,31.3,'chat',{seated:true,yaw:Math.PI/2,skin:'#996d51'});
       this.groups.push({kind:'patients',floor,actors:[patientA,patientB],next:6,conversation:floor});
+      const seat=e.hospitals[floor].seats.find(s=>s.waiting);if(seat)this.actor('Consultation waiting patient','patient',floor%2?'male':'female',floor,null,seat.x,seat.z,'rest',{seated:true,yaw:seat.rotation});
       yield floor;
       for(const room of e.levels[floor].rooms.filter(r=>CLINICAL_KINDS.includes(r.kind))) {
         const minX=(room.x-11)*3-1.5,maxX=(room.x+room.w-1-11)*3+1.5,minZ=(room.z-11)*3-1.5;
@@ -126,12 +127,12 @@ export class HospitalLife {
     actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07);
   }
   privacyWitness(room){
-    if(!room||room.kind==='emergency'||(!CLINICAL_KINDS.includes(room.kind)&&room.kind!=='office'))return null;
-    const e=this.engine;if(this.targetCase?.room.id===room.id&&this.targetCase.appointment.completed)return null;
+    if(this.engine.systems?.evacuating||this.engine.mission.state==='escape'||!room||room.kind==='emergency'||(!CLINICAL_KINDS.includes(room.kind)&&room.kind!=='office'))return null;
+    const e=this.engine;if(e.mission.china&&room.kind==='office')return null;if(this.targetCase?.room.id===room.id&&this.targetCase.appointment.completed)return null;
     return e.npcs.filter(n=>n.room?.id===room.id&&n.floor===e.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===room.id&&!n.dead&&!n.evacuated&&!n.reporting&&['doctor','nurse'].includes(n.role)).sort((a,b)=>(a.id==='target'?0:a.role==='nurse'?1:2)-(b.id==='target'?0:b.role==='nurse'?1:2)||dist(e.playerPos,a.pos)-dist(e.playerPos,b.pos))[0]||null;
   }
   privacyResponse(actor,action){
-    if(!actor||!action)return;const e=this.engine;
+    if(!actor||!action||this.engine.systems?.evacuating||this.engine.mission.state==='escape')return;const e=this.engine;
     actor.reaction=3.8;actor.wait=5;actor.path=[];actor.cursor=0;
     actor.visual.root.rotation.y=Math.atan2(e.playerPos.x-actor.pos.x,e.playerPos.z-actor.pos.z);
     this.speak(actor,ROOM_WARNING_LINES[action],true);this.nextAmbient=e.mission.elapsed+9;
@@ -229,7 +230,8 @@ export class HospitalLife {
     });
   }
   update(dt) {
-    const e=this.engine,now=e.mission.elapsed,emergency=e.mission.state==='escape';
+    const e=this.engine,now=e.mission.elapsed,emergency=e.mission.state==='escape'&&(!e.mission.china||e.mission.policeAlert)||!!e.systems?.evacuating;
+    if(emergency){this.queue.length=0;this.dialogues.length=0;this.privacy.leave();}
     const cell=e.levels[e.floor].cells.get(`${Math.round(e.playerPos.x/3+11)},${Math.round(e.playerPos.z/3+11)}`),room=e.levels[e.floor].rooms.find(r=>r.id===cell?.room);
     const roomKey=room?.id||`hall-${e.floor}`;
     if(!emergency)this.updateAppointment(room);
@@ -238,13 +240,14 @@ export class HospitalLife {
     for(const n of e.npcs) {
       if(n.dead||n.evacuated||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
       if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&(n.activity||n.worriedUntil>now)&&n.activity!=='newborn') {
-        const pose=emergency&&!n.lying?'chat':n.worriedUntil>now&&!n.lying?'worried':n.activity;
+        const pose=emergency&&!n.lying?'scream':n.worriedUntil>now&&!n.lying?'worried':n.activity;
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
         n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
       }else if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
       if(n.activity==='drink'&&!n.heldCoffeeCup&&n.visual.hand){const cup=new THREE.Group();cup.name='Coffee held during break';n.visual.hand.add(cup);cup.position.set(-.025,.02,.07);mesh('cylinder',material('#eeeade'),[.048,.09,.048],[0,0,0],cup);mesh('cylinder',material('#403027'),[.041,.004,.041],[0,.046,0],cup);mesh('box',material('#eeeade'),[.034,.04,.012],[.05,0,0],cup);n.heldCoffeeCup=cup;}
       if(n.heldCoffeeCup)n.heldCoffeeCup.visible=n.activity==='drink';
-      if(n.sneezeUntil){
+      if(emergency){n.sneezeUntil=0;if(n.tissue)n.tissue.visible=false;}
+      if(!emergency&&n.sneezeUntil){
         if(now<n.sneezeUntil){n.visual.poseActivity?.('sneeze',e.time,{restricted:!!e.nearStructure?.(n.pos,n.floor,.65)});if(now>=n.sneezeApology){n.sneezeApology=Infinity;this.speak(n,'Oh, sorry. Excuse me.');}}
         else{n.tissue&&(n.tissue.visible=false);n.sneezeUntil=0;}
       }

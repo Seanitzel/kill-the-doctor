@@ -1,3 +1,4 @@
+import {waitingBench} from './waiting-benches.js';
 import {addHangingToiletSign} from './restroom-signage.js';
 import {JoinedWalls} from './joined-walls.js';
 import {chairFits} from './furniture-placement.js';
@@ -20,7 +21,7 @@ export function buildLift(layout,m){
   const leaves=[];
   for(const side of [-1,1]){
     box('Lift brushed-steel jamb',m.steel,[.10,2.80,.13],[x+side*1.31,1.40,faceZ+.065]);
-    const leaf=box(side<0?'Lift left sliding door':'Lift right sliding door',m.steel,[1.235,2.63,.045],[x+side*.6225,1.345,faceZ+.060]);leaf.userData.side=side;leaf.userData.bodyBounds=footprint(x+side*.6225,faceZ+.06,1.235,.07,2.7,0,'lift-door');leaves.push(leaf);
+    const leaf=box(side<0?'Lift left sliding door':'Lift right sliding door',m.steel,[1.24,2.63,.045],[x+side*.62,1.345,faceZ+.060]);leaf.userData.side=side;leaf.userData.bodyBounds=footprint(x+side*.62,faceZ+.06,1.24,.07,2.7,0,'lift-door');leaves.push(leaf);
   }
   box('Lift door header',m.steel,[2.72,.115,.13],[x,2.745,faceZ+.065]);
   group.userData.lift={x,faceZ,leaves,open:false,amount:0,selectionUsed:false,choosing:false};
@@ -37,7 +38,7 @@ export function buildLift(layout,m){
 export function buildHospital(layout, m, site=null) {
   const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [], bathrooms = [], operatingSets = [], workstations = [];
   const cube = (...args) => batch.box(...args);
-  const joinedWalls=new JoinedWalls(),seatRequests=[],seats=[];
+  const joinedWalls=new JoinedWalls(),seatRequests=[],seats=[];let waitingMaterials;
   const chairAt=(x,z,rotation=0,room=null)=>seatRequests.push({x,z,rotation,room});
   const collider = (x, z, w, d, object = null) => { const c = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, object }; colliders.push(c); return c; };
   batch.collider=(x,z,w,d,h,rot,type)=>{const c=footprint(x,z,w,d,h,rot,type);colliders.push(c);return c;};
@@ -268,6 +269,13 @@ export function buildHospital(layout, m, site=null) {
   for (const z of (layout.floor===3?[]:[-15, 9, 18])) {
     for(let i=0;i<3;i++)chairAt(5.25,z+i*.9,-Math.PI/2);
     cube(m.steel, -1.1, .5, z, .7, .85, .8); cube(m.white, -1.1, .98, z, .74, .08, .85); Object.assign(collider(-1.1,z,.75,.9),{maxY:1.04,type:'cart'});
+  }
+  // A two-seat linked bench beside selected consultation doors, facing the hall.
+  if(layout.floor<3)for(const room of layout.rooms.filter(r=>['clinic','emergency','imaging','cardio','ward','maternity','pediatric','surgery','icu'].includes(r.kind))){
+    const door=layout.doors.find(d=>d.room===room.id&&!d.id.endsWith('-back'));
+    const rot=room.z<10?0:Math.PI,z=door.z+(room.z<10?.70:-.70),x=door.x+2.9;
+    const probes=[x-.42,x+.42];
+    if(probes.every(px=>chairFits(px,z,rot,layout,colliders))){waitingMaterials||={...m,steel:material('#b5c2cb',{metalness:.55,roughness:.35}),chair:material('#3c7494',{roughness:.86})};const row=waitingBench(batch,waitingMaterials,x,z,rot,2);seats.push(...row.map(seat=>({...seat,room:null,department:room.id})));}
   }
   addSiteDetails(group,batch,m,layout,site);
   for(const seat of seatRequests)if(chairFits(seat.x,seat.z,seat.rotation,layout,colliders)){chair(batch,m,seat.x,seat.z,seat.rotation);seats.push(seat);}

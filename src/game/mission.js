@@ -1,3 +1,4 @@
+import {ChinaCase,chinaMission} from './china-rules.js';
 import {countryPerson,coffeeLevel} from './population.js';
 import {countryFor,campaignLevel,migrateInternational,recordInternationalResult} from './international.js';
 import {campaignChallenge} from './campaign.js';
@@ -6,6 +7,7 @@ import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,migrateCharacterSav
 import {assignmentType,ASSIGNMENT_TYPES} from './assignment-types.js';
 export const SAVE_KEY = 'ktd-northline-v1';
 export const UPGRADE_INFO = [
+  {id:'covertCamera',name:'Covert badge camera',description:'Concealed video camera for the China infiltration. Purchased once and reused.',cost:40,max:1},
   { id: 'shoes', name: 'Lightweight footwear', description: 'Move 8% faster per level. Quieter steps reduce suspicion.', cost: 120, max: 3 },
   { id: 'light', name: 'High-output flashlight', description: 'A longer, brighter beam for the emergency corridors.', cost: 90, max: 3 },
   { id: 'filter', name: 'Recovery filter', description: 'Recover 25% faster from fictional patient status effects.', cost: 100, max: 3 },
@@ -61,7 +63,7 @@ export function purchase(save, id) {
 export class Mission {
   constructor(save, seed = Date.now(), attempt = save.attempts) {
     this.save = save; this.random = rng(seed); this.seed = seed;
-    this.round = campaignLevel(save);this.country=countryFor(save);this.playMode=save.playMode||'story';this.countryAttempt=save.countryAttempts?.[this.country.index]||0;this.type=assignmentType(save);this.keys=[];this.photos=[];this.photoImages={};this.operationDoctors=[];this.patientReleased=false;
+    this.round = campaignLevel(save);this.country=countryFor(save);this.playMode=save.playMode||'story';this.countryAttempt=save.countryAttempts?.[this.country.index]||0;this.type=assignmentType(save);this.keys=[];this.photos=[];this.photoImages={};this.videoClips={};this.operationDoctors=[];this.patientReleased=false;
     this.difficulty = save.settings.difficulty;this.challenge=campaignChallenge(this.round,this.difficulty);
     const doctors=STAFF.filter(s=>s.name.startsWith('Dr.'));const targetIndex=(attempt+Math.floor(this.random()*3))%doctors.length;
     const floor = attempt === 0 ? 0 : Math.floor(this.random() * 3);
@@ -71,11 +73,12 @@ export class Mission {
     this.target=countryPerson(this.target,'doctor',this.country,this.seed,'target',0);
     this.state = 'investigate'; this.clues = []; this.elapsed = 0; this.timer = 0;
     this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
-    this.suspicion = 0; this.blackoutCount = 0;
+    this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
   }
+  get photoOnly(){return this.type==='evidence'&&!this.china;}
   clue(type) {
     if (this.clues.some(c => c.type === type) || this.result) return null;
-    const target = this.target;
+    const target = this.china?{...this.target,name:'Dr. Liu Wen',floor:0,room:makeLayout(0,this.country.index).rooms.find(r=>r.kind==='office')}:this.target;
     const clues = {
       directory: { title: this.type==='standard'&&this.challenge.scheduleRequired?'Restricted staff allocation':'Department confirmed', text: this.type==='standard'&&this.challenge.scheduleRequired?`${target.name} works on the ${FLOORS[target.floor].toLowerCase()}, ${target.room.wing} wing. Exact allocations are restricted. Find the paper rota in Records while its custodian is on a coffee break.`:`${target.name} is assigned to ${target.room.name}, ${target.room.wing} wing, ${FLOORS[target.floor].toLowerCase()}.`, source: `${this.country.hospital} staff directory` },
       schedule: { title: 'Rounds schedule', text: `${target.name} is on consultation rounds in room ${target.room.number}. Look for ${target.glasses ? 'dark-rimmed glasses and ' : ''}${target.accent === '#47758a' ? 'slate-blue' : 'blue'} scrubs.`, source: 'Staff allocation terminal' },
@@ -89,6 +92,7 @@ export class Mission {
     if (this.result || npc.dead) return;
     this.shots++;
     if (npc.role === 'patient') { return this.finish(false, 'A patient was harmed. The assignment is void.'); }
+    if(this.china){if(!npc.operationDoctor||this.china.recordings.length<3||this.operationDoctors.includes(npc.id))return false;this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;if(this.targetDown)this.beginEscape(30);return true;}
     if(this.type==='evidence')return this.finish(false,'A person was harmed. This was an evidence-only assignment.');
     if(this.type==='rescue'){
       if(!npc.id?.startsWith('operation-doctor-')||this.operationDoctors.includes(npc.id))return false;
@@ -113,11 +117,11 @@ export class Mission {
     if (this.state === 'escape') { this.timer = Math.max(0, this.timer - dt); if (this.timer <= 0) return this.finish(false, 'Police sealed the exits before you escaped.'); }
     else this.suspicion = Math.max(0, this.suspicion - dt * 1.1);
   }
-  escape(patientPresent=false) { if (this.type==='evidence'&&this.photos.length!==3||this.type==='rescue'&&(!this.patientReleased||!patientPresent)||this.type==='standard'&&!this.targetDown)return; if (!this.result) return this.finish(true,this.type==='rescue'?'Patient rescued. You both left the hospital before lockdown.':this.type==='evidence'?'Evidence secured. You escaped with all three photographs and no casualties.':'Assignment complete. You left the hospital before lockdown.'); }
+  escape(patientPresent=false) { if(this.china){if(!this.targetDown||this.china.recordings.length!==3||!this.china.poisoned||!this.china.badge)return;return this.finish(true,'Covert recordings secured. Both operating doctors stopped. You escaped with the evidence.');} if (this.type==='evidence'&&this.photos.length!==3||this.type==='rescue'&&(!this.patientReleased||!patientPresent)||this.type==='standard'&&!this.targetDown)return; if (!this.result) return this.finish(true,this.type==='rescue'?'Patient rescued. You both left the hospital before lockdown.':this.type==='evidence'?'Evidence secured. You escaped with all three photographs and no casualties.':'Assignment complete. You left the hospital before lockdown.'); }
   finish(success, reason) {
     if (this.result) return this.result;
     this.state = 'results';
-    const breakdown = success ? this.type==='evidence'?[{label:'Verified photographs',coins:this.photos.length*100},{label:'Nonviolent escape',coins:160}]:this.type==='rescue'?[{label:'Patient rescued',coins:300},{label:'Operation stopped',coins:160},{label:'Successful escort',coins:100}]:[
+    const breakdown = success ? this.china?[{label:'Three verified video angles',coins:300},{label:'Stolen identity infiltration',coins:100},{label:'Successful escape',coins:160}]:this.type==='evidence'?[{label:'Verified photographs',coins:this.photos.length*100},{label:'Nonviolent escape',coins:160}]:this.type==='rescue'?[{label:'Patient rescued',coins:300},{label:'Operation stopped',coins:160},{label:'Successful escort',coins:100}]:[
       { label: 'Assigned target', coins: 140 }, { label: 'Successful escape', coins: 100 },
       { label: 'Evidence collected', coins: this.clues.length * 20 },
       { label: 'Additional staff', coins: Math.max(0, this.staffKills - 1) * STAFF_BONUS },
@@ -125,7 +129,7 @@ export class Mission {
     ] : [];
     const coins = breakdown.reduce((sum, row) => sum + row.coins, 0);
     const balanceBefore=this.save.coins;recordInternationalResult(this.save,this,success);this.save.coins += coins; this.save.attempts++; if (success) this.save.completed++;
-    this.result = { balanceBefore,balanceAfter:this.save.coins,countryId:this.country.id,playMode:this.playMode,campaignComplete:this.save.campaignCompleted===20,type:this.type,photos:this.photos.length,rescued:this.type==='rescue'&&success,success, reason, coins, breakdown, duration: this.elapsed, targetDown: this.targetDown, escaped: success, staffKills: this.staffKills, clues: this.clues.length };
+    this.result = { infiltration:!!this.china,recordings:this.china?.recordings.length||0, balanceBefore,balanceAfter:this.save.coins,countryId:this.country.id,playMode:this.playMode,campaignComplete:this.save.campaignCompleted===20,type:this.type,photos:this.photos.length,rescued:this.type==='rescue'&&success,success, reason, coins, breakdown, duration: this.elapsed, targetDown: this.targetDown, escaped: success, staffKills: this.staffKills, clues: this.clues.length };
     return this.result;
   }
 }

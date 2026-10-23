@@ -6,9 +6,11 @@ export function addSiteDetails(group,batch,m,layout,site){
  if(!site||layout.floor===3)return;
  const variant=site.index%5,ribs=0,accent=material(site.accent),warm=material(['#c4b8a3','#c6c7c0','#b6c6cb','#c8b8b0','#b5c6bc'][variant]);
  group.userData.architecture={country:site.id,variant,ribs,accent:site.accent};
- // Country accents stay on the walls; leave the ceiling clear of decorative bars.
- for(const side of [-1,1])for(let i=0;i<2+variant;i++){
- const x=side<0?-10.39:10.39,z=27+i*.94;batch.box(accent,x,2.03,z,.06,1.35,.38);batch.box(warm,x+side*.015,1.30,z,.07,.08,.38);
+ // Keep the atrium's country identification band completely clear. Accent
+ // panels belong on the back faces above the skirting, not over text.
+ for(const side of [-1,1])for(let i=0;i<2;i++){
+  const x=side<0?-10.39:10.39,z=30+i*.85;
+  batch.box(accent,x,.78,z,.06,.75,.30);
  }
  // Low relief department portal trim; it never narrows the walkable opening.
  for(const d of layout.doors.filter(d=>!d.id.endsWith('back'))){batch.box(accent,d.x,2.64,d.z,2.05,.06,.29);if(variant===1||variant===4)for(const side of [-1,1])batch.box(warm,d.x+side*1.04,1.34,d.z,.055,2.6,.23);}

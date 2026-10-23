@@ -1,3 +1,4 @@
+import {ChinaOperation} from './china-operation.js';
 import * as THREE from 'three';
 import {mesh,material} from './assets.js';
 import {disposeObjectResources} from './resources.js';
@@ -10,7 +11,8 @@ export class AssignmentObjectives{
   setup(){
     const e=this.e,m=e.mission;for(const level of e.levels)for(const door of level.doors){door.locked=level.floor===3;door.keyId=level.floor===3?'theatre':null;}
     if(m.type==='standard')return;
-    if(m.type==='evidence'){this.cameraProp=new THREE.Group();this.cameraProp.name='evidence-camera';e.player.root.add(this.cameraProp);const body=material('#202c34'),glass=material('#5f9cbb',{metalness:.5,roughness:.15});mesh('box',body,[.22,.14,.08],[0,0,0],this.cameraProp);const lens=mesh('cylinder',body,[.057,.11,.057],[0,0,.07],this.cameraProp);lens.rotation.x=Math.PI/2;mesh('sphere',glass,[.05,.05,.012],[0,0,.13],this.cameraProp);mesh('box',glass,[.14,.085,.006],[0,0,-.043],this.cameraProp);this.cameraProp.visible=false;this.cameraGrip=new THREE.Vector3();}
+    if(m.photoOnly){this.cameraProp=new THREE.Group();this.cameraProp.name='evidence-camera';e.player.root.add(this.cameraProp);const body=material('#202c34'),glass=material('#5f9cbb',{metalness:.5,roughness:.15});mesh('box',body,[.22,.14,.08],[0,0,0],this.cameraProp);const lens=mesh('cylinder',body,[.057,.11,.057],[0,0,.07],this.cameraProp);lens.rotation.x=Math.PI/2;mesh('sphere',glass,[.05,.05,.012],[0,0,.13],this.cameraProp);mesh('box',glass,[.14,.085,.006],[0,0,-.043],this.cameraProp);this.cameraProp.visible=false;this.cameraGrip=new THREE.Vector3();}
+    if(!m.china){
     const records=e.levels[0].rooms.find(r=>r.kind==='office'),maintenance=e.levels[0].rooms.find(r=>r.kind==='utility');
     this.addKey('basement','Basement access pass',records.center.x,records.center.z+.6,0);
     this.addKey('theatre','Spare theatre key',maintenance.center.x,maintenance.center.z+2,0);
@@ -19,23 +21,27 @@ export class AssignmentObjectives{
       if(spec.id!=='theatre'){const board=new THREE.Group();board.position.set(site.x,1.28,site.z);this.props.add(board);board.userData.floor=spec.floor;mesh('box',material('#334c60'),[.68,.7,.04],[0,0,0],board);mesh('box',material('#ece9da'),[.58,.6,.045],[0,0,.025],board);for(let i=0;i<6;i++)mesh('box',material(i===3?'#9f4d4d':'#4e626a'),[.4,.018,.005],[0,.19-i*.075,.052],board);mesh('box',material('#617986'),[.07,1.3,.07],[0,-.6,0],board);site.z+=.08;}
       this.photoSites.push(site);
     }
+    }
     const operating=e.hospitals[3].operatingSets?.[0],room=e.levels[3].rooms[0],anchors=operating?.anchors||{patient:{x:-3,y:1,z:-3.65,bedRotation:0},doctor:{x:-4.4,z:-4.5,yaw:Math.PI/2},assistant:{x:-1.6,z:-4.5,yaw:-Math.PI/2},rescue:{x:-3,z:-1}};
     for(const [i,p] of [anchors.doctor,anchors.assistant].entries()){
       const doctor={...m.target,name:i===0?m.country?.doctor||'Dr. Adrian Vale':'Dr. Amira Solano',gender:i===0?m.country?.gender||'male':'female',accent:'#729a9f'};
       const n=e.spawnNPC(doctor,'doctor',3,p,room,`operation-doctor-${i}`,{fixed:true});n.activity='examine';n.visual.root.rotation.y=p.yaw||0;n.operationDoctor=true;
     }
     const person={name:'Casey Morris',gender:'female',skin:'#b98664',hair:'#332621',accent:'#a7bbc1'},p=anchors.patient;
-    const patient=e.spawnNPC(person,'patient',3,p,room,'rescue-patient',{fixed:true});patient.activity='rest';patient.lying=true;patient.baselineY=p.y||1;patient.pos.y=patient.baselineY;patient.bedRotation=p.bedRotation||0;patient.visual.root.rotation.x=-Math.PI/2;patient.hitOffset=new THREE.Vector3(0,.13,-.9);patient.hitRadius=.46;patient.contamination=0;patient.rescuePatient=true;this.patient=patient;this.releasePoint=anchors.rescue;this.escort=patient;
+    const patient=e.spawnNPC(person,'patient',3,p,room,'rescue-patient',{fixed:true});patient.activity='rest';patient.lying=true;patient.baselineY=p.y||1;patient.pos.y=patient.baselineY;patient.bedRotation=p.bedRotation||0;patient.visual.root.rotation.x=-Math.PI/2;patient.hitOffset=new THREE.Vector3(0,.13,-.9);patient.hitRadius=.46;patient.contamination=0;patient.rescuePatient=true;this.patient=patient;this.releasePoint=anchors.rescue;this.escort=patient;if(m.china)this.china=new ChinaOperation(e,this.patient);
   }
   addKey(id,label,x,z,floor){
-    const root=new THREE.Group();root.position.set(x,1.2,z);root.userData.floor=floor;this.props.add(root);
-    mesh('box',material('#294c65'),[.34,.02,.26],[0,-.05,0],root);
+    const stand=new THREE.Group();stand.name='Key display table (permanent)';stand.position.set(x,1.2,z);stand.userData.floor=floor;this.props.add(stand);
+    mesh('box',material('#294c65'),[.34,.02,.26],[0,-.05,0],stand);mesh('box',material('#69808a'),[.045,1.16,.045],[0,-.65,0],stand);
+    const root=new THREE.Group();root.name='Collectible key only';root.position.set(x,1.2,z);root.userData.floor=floor;this.props.add(root);
+
     const ring=new THREE.Mesh(new THREE.TorusGeometry(.085,.018,6,16),material('#dfc780',{metalness:.7,roughness:.3}));ring.rotation.x=Math.PI/2;root.add(ring);
     mesh('box',ring.material,[.035,.03,.19],[0,0,.15],root);mesh('box',ring.material,[.09,.03,.03],[.025,0,.23],root);
-    mesh('box',material('#69808a'),[.045,1.16,.045],[0,-.65,0],root);
+
     this.items.push({type:'mission-key',id,label,x,z,floor,root});
   }
   interactions(){
+    if(this.china)return this.china.interactions();
     const m=this.e.mission,items=this.items.filter(i=>i.floor===this.e.floor&&!m.keys.includes(i.id));
     if(this.patient&&this.e.floor===3&&!m.patientReleased)items.push({type:'release-patient',label:m.targetDown?'Release and escort patient':'Stop both doctors before releasing patient',x:this.releasePoint.x,z:this.releasePoint.z});
     if(m.type==='evidence')for(const s of this.photoSites)if(s.floor===this.e.floor&&!m.photos.includes(s.id))items.push({type:'photo-subject',label:`Photograph · ${s.label}`,x:s.x,z:s.z});
@@ -66,6 +72,7 @@ export class AssignmentObjectives{
     e.audio.sound('clue');e.hooks.shot?.();e.notify(`Photograph saved · ${site.label} (${m.photos.length}/3)`,'clue');e.emitHUD();return true;
   }
   prepareNPC(n){
+    if(this.china?.prepareNPC(n))return true;
     const e=this.e;if(n!==this.patient||e.mission.type!=='rescue'&&!n.lying)return false;
     if(!e.mission.patientReleased){n.path=[];return true;}
     const apart=n.floor!==e.floor,goal=apart?e.levels[n.floor].elevator:e.playerPos;
@@ -75,7 +82,7 @@ export class AssignmentObjectives{
     return true;
   }
   patientPresent(){return !!this.patient&&this.patient.floor===0&&!this.patient.dead&&distance(this.patient.pos,this.e.levels[0].exit)<4.8;}
-  update(){const e=this.e;if(this.cameraProp){this.cameraProp.visible=e.aiming;if(e.aiming&&e.player.hand){e.player.root.updateMatrixWorld(true);e.player.hand.getWorldPosition(this.cameraGrip);e.player.root.worldToLocal(this.cameraGrip);this.cameraProp.position.copy(this.cameraGrip);this.cameraProp.position.z+=.06;}}for(const item of this.items)item.root.visible=item.floor===e.floor&&!e.mission.keys.includes(item.id);for(const root of this.props.children)if(root.userData.floor!==undefined&& !this.items.some(i=>i.root===root))root.visible=root.userData.floor===e.floor;}
-  hud(){const m=this.e.mission;return {type:m.type,label:specialObjective(m),keys:m.keys,photos:m.photos,sites:this.photoSites.map(({id,floor,x,z,label})=>({id,floor,x,z,label})),patientReleased:m.patientReleased,patientFloor:this.patient?.floor,patientDistance:this.patient?Math.round(distance(this.patient.pos,this.e.playerPos)):null};}
-  dispose(){if(this.cameraProp){this.cameraProp.removeFromParent();disposeObjectResources(this.cameraProp);this.cameraProp=null;this.cameraGrip=null;}this.props.removeFromParent();disposeObjectResources(this.props);this.props.clear();this.items=[];this.photoSites=[];this.patient=this.escort=null;this.e=null;}
+  update(dt=0){const e=this.e;this.china?.update(dt);if(this.cameraProp){this.cameraProp.visible=e.aiming;if(e.aiming&&e.player.hand){e.player.root.updateMatrixWorld(true);e.player.hand.getWorldPosition(this.cameraGrip);e.player.root.worldToLocal(this.cameraGrip);this.cameraProp.position.copy(this.cameraGrip);this.cameraProp.position.z+=.06;}}for(const item of this.items)item.root.visible=item.floor===e.floor&&!e.mission.keys.includes(item.id);for(const root of this.props.children)if(root.userData.floor!==undefined&& !this.items.some(i=>i.root===root))root.visible=root.userData.floor===e.floor;}
+  hud(){const m=this.e.mission;return {type:m.type,photoOnly:m.photoOnly,infiltration:this.china?.hud()||null,label:this.china?m.china.objective:specialObjective(m),keys:m.keys,photos:m.photos,sites:this.photoSites.map(({id,floor,x,z,label})=>({id,floor,x,z,label})),patientReleased:m.patientReleased,patientFloor:this.patient?.floor,patientDistance:this.patient?Math.round(distance(this.patient.pos,this.e.playerPos)):null};}
+  dispose(){this.china?.dispose();this.china=null;if(this.cameraProp){this.cameraProp.removeFromParent();disposeObjectResources(this.cameraProp);this.cameraProp=null;this.cameraGrip=null;}this.props.removeFromParent();disposeObjectResources(this.props);this.props.clear();this.items=[];this.photoSites=[];this.patient=this.escort=null;this.e=null;}
 }

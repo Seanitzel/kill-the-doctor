@@ -7,6 +7,7 @@ function situatedStory(story,country,type){
  const panels=story.panels.map(panel=>panel.map(text=>typeof text==='string'?text.replaceAll('Nhalewick',country.hospital):text));
  const result={...story,theme:`${country.name} / ${story.theme}`,panels};
  if(country.id==='france'&&story.id==='trial-without-consent'){result.visuals=[0,1,2,3].map(panel=>({artId:'jack-france-v29',panel}));result.panels[0][1]=result.panels[0][1].replace('an undocumented immigrant trying to survive in a foreign country','a Chinese immigrant trying to survive in France');}
+ if(country.id==='nigeria'&&story.id==='stolen-choice')result.visuals=[0,1,2,3].map(panel=>({artId:panel<2?'pamela-nigeria-v36':'case-pamela-v25',panel}));
  if(country.id==='congo'&&story.id==='michael-organ-sold')result.visuals=[0,1,2,2].map(panel=>({artId:'michael-congo-v29',panel}));
  if(type&&type!=='standard'&&saveStoryCase(story)){const brief=SPECIAL_BRIEFS[type];result.panels[result.panels.length-1]=['Your assignment',brief.panels.slice(1).map(p=>p[1]).join(' ').replaceAll('Nhalewick',country.hospital)];}
  return result;

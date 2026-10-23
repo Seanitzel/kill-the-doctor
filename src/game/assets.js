@@ -343,6 +343,10 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       orient('RightArm','RightForeArm',[.23,-.2,.2]); orient('RightForeArm','RightHand',[-.08,.22,.24]);
       orient('LeftArm','LeftForeArm',[-.23,-.2,.2]); orient('LeftForeArm','LeftHand',[.08,.22,.24]);
       if(b.Head) b.Head.rotation.z += Math.sin(time*2.4)*.055;
+    } else if(activity==='phone'||activity==='smoke-break') {
+      const raised=activity==='smoke-break'&&Math.sin(time*.55)>.25;
+      orient('RightArm','RightForeArm',[.15,-.34,.25]);orient('RightForeArm','RightHand',raised?[-.14,.42,.12]:[-.03,.16,.38]);
+      if(b.Head)b.Head.rotation.x+=raised?0:.14;
     } else if(activity==='chat') {
       const gesture=Math.sin(time*1.8)*.12;
       orient('RightArm','RightForeArm',[.15,-.45,.15]); orient('RightForeArm','RightHand',[.04,-.1+gesture,.4]);

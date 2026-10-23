@@ -311,7 +311,7 @@ export class HospitalAudio {
   update(dt, proximity, emergency, impairment, moving, running,footfalls=null) {
     if (!this.ctx || !this.enabled || this.disposed) return;
     const now = this.ctx.currentTime;
-    this.music.gain.setTargetAtTime((.16 + proximity * .55 + (emergency ? .28 : 0))*1.2, now, 1.4);
+    this.music.gain.setTargetAtTime((.16 + proximity * .55 + (emergency ? .28 : 0))*1.2*(this.phoneMusic?.025:1), now, 1.4);
     this.lowpass.frequency.setTargetAtTime(impairment ? 500 : 9500, now, .4);
     if (now > this.nextNote) {
       const notes = [220, 261.63, 329.63, 246.94, 164.81, 293.66, 207.65, 220];

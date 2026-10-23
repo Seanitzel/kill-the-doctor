@@ -1,3 +1,4 @@
+import {addNightSky} from './night-sky.js';
 import * as T from 'three';
 import {material,mesh,sign} from './assets.js';
 // Modular country identities alter the built environment without duplicating assets.
@@ -13,6 +14,7 @@ export function addSiteDetails(group,batch,m,layout,site){
  for(const d of layout.doors.filter(d=>!d.id.endsWith('back'))){batch.box(accent,d.x,2.64,d.z,2.05,.06,.29);if(variant===1||variant===4)for(const side of [-1,1])batch.box(warm,d.x+side*1.04,1.34,d.z,.055,2.6,.23);}
 }
 export function addNightStreet(group,batch,m){
+ addNightSky(group);
  group.userData.exteriorFloors=3;const facade=material('#617887'),window=material('#243d4e',{roughness:.25,metalness:.35}),lit=material('#c7c2a2',{emissive:'#c9b277',emissiveIntensity:.38});batch.box(material('#111e27'),0,-.25,40,220,.15,200);
  for(const [x,width] of [[-15.75,28.5],[17.25,25.5]])batch.box(facade,x,1.8,34.25,width,3.6,.22);
  for(let floor=1;floor<3;floor++){const y=floor*3.6;batch.box(facade,0,y+1.8,34.25,60,3.6,.22);batch.box(m.steel,0,y,34.5,60,.16,.48);for(let x=-27;x<=27;x+=3){batch.box(m.steel,x,y+1.65,34.42,2.1,1.85,.08);batch.box((x+floor*3)%9===0?lit:window,x,y+1.65,34.48,1.95,1.7,.025);batch.box(m.steel,x,y+1.65,34.51,.05,1.75,.03);}}batch.box(m.steel,0,10.95,34.25,61,.3,1.1);

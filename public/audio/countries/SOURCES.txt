@@ -1,0 +1,27 @@
+KTD shared American English dialogue — 2026-10-27
+
+Provider / model: ElevenLabs v3 through Replicate
+https://replicate.com/elevenlabs/v3
+https://replicate.com/elevenlabs/v3/api/schema
+
+Built-in provider voices: Rachel (female) and Drew (male).
+English dialogue supplied by the game creators. No user-uploaded or personal
+voice reference was used. These are provider-generated synthetic performances,
+not voice recordings made by the KTD creators or independently trained voices.
+
+97 original dialogue captions, generated for both voices: 194 MP3 clips.
+Files: english/female/f-*.mp3 and english/male/m-*.mp3.
+American English is shared across all countries; native-language generation
+and country-specific English accents are deferred at the owner's request.
+
+Generation: language_code=en, stability=0.5, similarity_boost=0.75, style=0.25,
+speed=1. American-accent and limited emotion tags are input instructions, not
+part of the captions. Local conversion: mono 24 kHz / 64 kbps MP3, gentle 65 Hz
+high-pass filter, normalized to -20 LUFS with a -3 dB true-peak target.
+
+Per-file source prediction identifiers, exact captions, voice names, durations
+and SHA-256 hashes are stored in src/game/country-voice-manifest.json in the
+repository and bundled into the application. No API token is shipped.
+
+Human cough, sneeze, pain, scream and laughter recordings remain separate
+assets with their existing source and license notices.

@@ -1,5 +1,5 @@
 KTD — KILL THE DOCTOR
-Playable private browser prototype, October 2026.
+Playable browser prototype, October 2026.
 
 Original hospital geometry, floor layouts, medical furniture, signs, textures,
 mission systems, interface, audio synthesis, and character bind-space retargeting
@@ -124,3 +124,14 @@ KTD 3.0: Additional male and female police-report dialogue uses the same four fi
 
 KTD 3.2: Globe texture — NASA/Goddard Blue Marble (2002), image by Reto Stöckli, enhancements by Robert Simmon. https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/
 Airplane Flyby by oscaraudiogeek (Freesound 431206), CC0 1.0; excerpt, filtering and fades. https://freesound.org/people/oscaraudiogeek/sounds/431206/ Arrival cabin cue is original procedural Web Audio. New fictional recruitment dialogue uses the existing four Qwen-designed voices; full records in audio/dialogue/manifest.json.
+
+KTD 3.9 — SHARED AMERICAN ENGLISH VOICES
+Current NPC dialogue and hospital announcements use ElevenLabs v3 through
+Replicate: built-in Rachel (female) and Drew (male). These generated performances
+are not recordings made by the KTD creators. We did not upload a voice-cloning
+reference. Original English captions are unchanged, and the existing spatial
+playback and public-address filtering are applied in the game.
+Model: https://replicate.com/elevenlabs/v3
+Audio source details: audio/countries/SOURCES.txt
+Earlier Qwen3-TTS designed voices remain bundled as legacy fallback assets;
+their provenance and licenses remain in audio/dialogue/.

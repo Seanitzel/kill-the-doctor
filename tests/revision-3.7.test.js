@@ -1,21 +1,21 @@
 import test from 'node:test';import assert from 'node:assert/strict';import*as T from'three';
 import{Mission,defaultSave,SAVE_KEY,readSave}from'../src/game/mission.js';import{prepareAssignment,selectAssignmentType}from'../src/game/assignment.js';import{ChinaCase,INSTRUMENTS,RECORDING_ANGLES,THIRD_DOCTOR_ARRIVAL}from'../src/game/china-rules.js';import{CovertRecorder}from'../src/game/covert-recorder.js';import{GameEngine}from'../src/game/engine.js';import{MissionSystems}from'../src/game/systems.js';import{AssignmentObjectives}from'../src/game/objectives.js';import{makeLayout}from'../src/game/layout.js';import{buildHospital}from'../src/game/hospital.js';import{makeNavigation}from'../src/game/navigation.js';import{disposeHospital}from'../src/game/hospital-disposal.js';import{COUNTRIES}from'../src/game/international.js';import{liftAutoClose,setLiftOpening}from'../src/game/lift-doors.js';import{overlaps,doorClearance,vendingBounds}from'../src/game/furniture-placement.js';
 function china(coins=100){const save=defaultSave();save.completedCountryIds=['france','nigeria'];save.coins=coins;selectAssignmentType(save,'evidence');return new Mission(save,123);}
-function ready(m){const c=m.china;assert.ok(c.poison(false));c.sealed=true;assert.ok(c.takeBadge());assert.ok(c.buyCamera());assert.ok(c.dress());assert.ok(c.enter());return c;}
+function ready(m){const c=m.china;assert.ok(c.poison(false));c.sealed=true;assert.ok(c.takeBadge());assert.ok(c.buyCamera());assert.ok(c.dress());assert.ok(c.takeKeys());assert.ok(c.enter());return c;}
 function equipment(c){c.request();assert.ok(c.choose(c.order.id));}
 function record(c,id){c.recording=true;for(let i=0;i<81;i++)c.record(id,.05,true);assert.ok(c.recordings.includes(id));}
 
-test('China alone replaces photos with a persisted purchased camera and a coherent infiltration briefing',()=>{
+test('China alone replaces photos with a packed camera without a pharmacy purchase and a coherent infiltration briefing',()=>{
  const m=china();assert.equal(m.country.id,'china');assert.ok(m.china);assert.equal(m.photoOnly,false);const a=prepareAssignment(m.save);assert.match(a.story.panels.at(-1)[1],/record|Record/);assert.doesNotMatch(a.story.panels.at(-1)[1],/three photos|Nobody is to be killed/);
- const c=m.china;assert.equal(c.buyCamera(),true);assert.equal(m.save.coins,60);assert.equal(c.buyCamera(),true);assert.equal(m.save.coins,60);const loaded=readSave({getItem:k=>k===SAVE_KEY?JSON.stringify(m.save):null});assert.equal(loaded.upgrades.covertCamera,1);
+ const c=m.china;assert.equal(c.buyCamera(),true);assert.equal(m.save.coins,100);assert.equal(c.buyCamera(),true);assert.equal(m.save.coins,100);const loaded=readSave({getItem:k=>k===SAVE_KEY?JSON.stringify(m.save):null});assert.equal(!!loaded.upgrades.covertCamera,false);
  m.save.playMode='freestyle';m.save.countryId='france';delete m.save.activeAssignment;selectAssignmentType(m.save,'evidence');const other=new Mission(m.save,12);assert.equal(other.china,null);assert.equal(other.photoOnly,true);assert.ok(other.photograph('ledger'));
  const inMenu=china();inMenu.save.upgrades.covertCamera=1;assert.ok(inMenu.china.buyCamera());assert.equal(inMenu.save.coins,100);
- const poor=china(39);assert.equal(poor.china.buyCamera(),false);assert.equal(poor.save.coins,39);
+ const poor=china(39);assert.equal(poor.china.buyCamera(),true);assert.equal(poor.save.coins,39);
 });
 test('the third doctor meeting uses 15 minutes of game time, poisoning witnesses fail immediately, and gates cannot be skipped',()=>{
  let m=china(),c=m.china;assert.equal(THIRD_DOCTOR_ARRIVAL,900);assert.equal(c.takeBadge(),false);assert.equal(c.dress(),false);assert.equal(c.enter(),false);m.elapsed=899.99;c.tick();assert.equal(m.result,null);m.elapsed=900;c.tick();assert.equal(m.result.success,false);
  m=china();c=m.china;c.poison(true);assert.equal(m.result.success,false);assert.match(m.result.reason,/witness/i);assert.equal(c.poisoned,false);
- m=china();c=m.china;c.poison(false);m.elapsed=1200;c.tick();assert.equal(m.result,null);assert.equal(c.takeBadge(),false);c.sealed=true;assert.ok(c.takeBadge());assert.ok(c.dress());assert.equal(c.enter(),false);assert.ok(c.buyCamera());assert.ok(c.enter());assert.equal(c.enter(),true);assert.equal(c.nextOrder,1204);
+ m=china();c=m.china;c.poison(false);m.elapsed=1200;c.tick();assert.equal(m.result,null);assert.equal(c.takeBadge(),false);c.sealed=true;assert.ok(c.takeBadge());assert.ok(c.dress());assert.equal(c.enter(),false);assert.ok(c.buyCamera());assert.ok(c.takeKeys());assert.ok(c.enter());assert.equal(c.enter(),true);assert.equal(c.nextOrder,1204);
 });
 test('recording requires four uninterrupted clear seconds at each distinct angle and a correct equipment handover per angle',()=>{
  const m=china(),c=ready(m);c.recording=true;c.record('consent',5,true);assert.equal(c.recordings.length,0);assert.equal(c.progress,0);equipment(c);c.record('consent',2,true);assert.equal(c.progress,2);c.record('consent',.1,false);assert.equal(c.progress,0);c.record('forged-angle',5,true);assert.equal(c.recordings.length,0);record(c,'consent');c.recording=true;c.record('consent',5,true);assert.equal(c.recordings.length,1);c.record('procedure',5,true);assert.equal(c.recordings.length,1);equipment(c);record(c,'procedure');equipment(c);record(c,'equipment');assert.equal(c.recordings.length,3);assert.equal(c.request(),null);
@@ -33,7 +33,7 @@ function simulation(){const e=Object.create(GameEngine.prototype),m=china(),coun
 function dispose(e){e.objectives?.dispose();for(const h of e.hospitals)disposeHospital(h,e.materials);Object.values(e.materials).forEach(m=>m.dispose());e.scene.clear();}
 
 test('real China hospital objective points are reachable and every recording angle has an unobstructed view of the operation',()=>{
- const e=simulation();try{const op=e.objectives.china;assert.equal(op.doctor.name,'Dr. Liu Wen');assert.equal(op.office.kind,'office');assert.ok(op.doors.length>=1);for(const p of[op.home,op.changePoint,op.shopPoint]){const nav=e.systems.navigationFor(0);assert.ok(nav.route({x:0,z:30},p).length,JSON.stringify(p));}
+ const e=simulation();try{const op=e.objectives.china;assert.equal(op.doctor.name,'Dr. Liu Wen');assert.equal(op.office.kind,'office');assert.ok(op.doors.length>=1);for(const p of[op.home,op.changePoint,op.bathroomGoal]){const nav=e.systems.navigationFor(0);assert.ok(nav.route({x:0,z:30},p).length,JSON.stringify(p));}
  for(const a of op.angles){assert.ok(e.canStand(a.x,a.z,.3,3),JSON.stringify(a));assert.ok(e.lineOfSight(a,e.objectives.patient.pos,3),a.name);assert.ok(e.systems.navigationFor(3).route(e.levels[3].elevator,a).length,a.name);}
  assert.ok(e.systems.navigationFor(3).route(e.levels[3].elevator,op.trayPoint).length);e.floor=3;e.mission.china.entered=true;withCanvas(()=>op.openInstruments());assert.equal(e.instrumentView,true);assert.equal(e.paused,undefined);op.closeInstruments();assert.equal(e.instrumentView,false);
  }finally{dispose(e);}
@@ -71,7 +71,7 @@ test('an unexpected visiting patient physically opens the office, approaches the
  }finally{dispose(e);}
 });
 test('China props detach and remove only their own collision surfaces on disposal; retries do not accumulate equipment',()=>{
- const e=simulation();try{const op=e.objectives.china,owned=op.addedColliders.slice(),root=op.root;assert.equal(owned.length,2);for(const {floor,c}of owned)assert.ok(e.hospitals[floor].colliders.includes(c));op.dispose();op.dispose();assert.equal(root.parent,null);assert.equal(root.children.length,0);for(const {floor,c}of owned)assert.equal(e.hospitals[floor].colliders.includes(c),false);e.objectives.china=null;
+ const e=simulation();try{const op=e.objectives.china,owned=op.addedColliders.slice(),root=op.root;assert.equal(owned.length,3);for(const {floor,c}of owned)assert.ok(e.hospitals[floor].colliders.includes(c));op.dispose();op.dispose();assert.equal(root.parent,null);assert.equal(root.children.length,0);for(const {floor,c}of owned)assert.equal(e.hospitals[floor].colliders.includes(c),false);e.objectives.china=null;
  }finally{dispose(e);}
 });
 

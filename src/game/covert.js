@@ -4,6 +4,7 @@ import {mesh,material,sign} from './assets.js';
 import {footprint} from './collision.js';
 import {tileAt,key} from './layout.js';
 import {disposeObjectResources} from './resources.js';
+const mustSteal=e=>!!e.mission.challenge?.scheduleRequired;
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 // Deliberately fictional game items. No real substance, dose or preparation.
 export class CovertAssignments{
@@ -12,7 +13,7 @@ export class CovertAssignments{
   obstacle(floor,x,z,w,d,h){const c=footprint(x,z,w,d,h,0,'covert-table');this.e.hospitals[floor].colliders.push(c);this.addedColliders.push({floor,c});}
   setup(){
     const e=this.e,m=e.mission,room=e.levels[0].rooms.find(r=>r.kind==='office');this.office=room;
-    if(m.challenge?.scheduleRequired){
+    if(m.type==='standard'){
       const nav=e.systems.navigationFor(0);this.desk={x:room.center.x+.8,z:room.center.z+1};
       this.obstacle(0,this.desk.x,this.desk.z,.75,.58,1.03);this.documentStand=this.prop(0,this.desk.x,1.02,this.desk.z);mesh('box',material('#dce6e8'),[.75,.08,.58],[0,-.055,0],this.documentStand);mesh('box',material('#405b6a'),[.045,1,.045],[0,-.55,0],this.documentStand);this.document=this.prop(0,this.desk.x,1.02,this.desk.z);mesh('box',material('#f6efd9'),[.34,.012,.43],[0,0,0],this.document);for(let i=0;i<5;i++)mesh('box',material('#536776'),[.25,.003,.013],[0,.01,-.13+i*.055],this.document);
       const spot=nav.nearest({x:this.desk.x,z:this.desk.z-1});
@@ -37,17 +38,17 @@ export class CovertAssignments{
   seen(point,floor,owner=null){const e=this.e;return e.npcs.some(n=>{if(n.dead||n.evacuated||n.lying||n.baby||n.blind||n.floor!==floor)return false;const d=distance(n.pos,point);if(d>8)return false;const dx=point.x-n.pos.x,dz=point.z-n.pos.z,yaw=n.visual.root.rotation.y;return (n===owner||d<1.5||(dx*Math.sin(yaw)+dz*Math.cos(yaw))/Math.max(d,.01)>.15)&&e.lineOfSight(n.pos,point,floor);});}
   interactions(){
     const e=this.e;if(e.mission.type!=='standard'||e.mission.targetDown)return [];
-    const items=[];if(!this.documentTaken&&this.document&&e.floor===0)items.push({type:'covert-document',label:this.action?'Collecting rota…':'Take confidential staff rota',x:this.desk.x,z:this.desk.z});
+    const items=[];if(!this.documentTaken&&this.document&&e.floor===0)items.push({type:'covert-document',label:this.action?'Collecting document…':mustSteal(e)?'Take confidential staff rota':'Read staff directory',x:this.desk.x,z:this.desk.z});
     if(!this.capsule&&!this.tampered&&this.supply&&e.floor===0)items.push({type:'covert-capsule',label:'Collect fictional KTD compound',...this.supplyPoint});
     if(this.cup&&e.floor===this.target.floor&&!this.tampered)items.push({type:'covert-cup',label:!e.mission.identified?'Verify target badge before touching coffee':this.capsule?'Tamper with target’s coffee (fictional item)':'Target’s coffee · find the KTD compound in Pharmacy',x:this.cup.position.x,z:this.cup.position.z});
     return items;
   }
-  restrictClue(type){if(this.e.mission.type!=='standard'||!this.document||this.documentTaken)return false;if(['schedule','log'].includes(type)){this.e.notify('Exact allocation is restricted · collect the paper rota in Records during the doctor’s coffee break','clue');return true;}return false;}
+  restrictClue(type){if(this.e.mission.type!=='standard'||!this.document||this.documentTaken)return false;if(['directory','schedule','log'].includes(type)){this.e.notify('The staff directory / rota is inside the Records office. Find the document there; later missions require waiting for the custodian’s coffee break.','clue');return true;}return false;}
   interact(item){const e=this.e;if(e.paused||e.mission.result||e.mission.targetDown)return false;const available=this.interactions().find(i=>i.type===item.type);if(!available||distance(e.playerPos,available)>2.5)return false;
     if(item.type==='covert-capsule'){this.capsule=true;this.supply.visible=false;e.notify('Fictional KTD compound collected · personal coffee is on the desk in the target’s office','clue');return true;}
     if(item.type==='covert-document'){
       if(this.documentTaken||this.action)return false;
-      if(this.insideOffice(this.custodian)||this.seen(e.playerPos,e.floor,this.custodian))return this.caught('You were caught taking confidential staff schedules.');
+      if(mustSteal(e)&&(this.insideOffice(this.custodian)||this.seen(e.playerPos,e.floor,this.custodian)))return this.caught('You were caught taking confidential staff schedules.');
       this.action={until:e.mission.elapsed+2,from:e.playerPos.clone()};e.notify('Collecting the rota · stay still and out of sight');return true;
     }
     if(item.type==='covert-cup'){
@@ -68,7 +69,7 @@ export class CovertAssignments{
     }return false;
   }
   update(){
-    const e=this.e,m=e.mission,now=m.elapsed;this.root.children.forEach(g=>g.visible=g.userData.floor===e.floor&&(g!==this.document||!this.documentTaken));if(this.supply)this.supply.visible=e.floor===0&&!this.capsule&&!this.tampered;
+    const e=this.e,m=e.mission,now=m.elapsed;if(this.office&&e.floor===0&&this.insideOffice({floor:0,pos:e.playerPos}))m.locatedRecords=true;this.root.children.forEach(g=>g.visible=g.userData.floor===e.floor&&(g!==this.document||!this.documentTaken));if(this.supply)this.supply.visible=e.floor===0&&!this.capsule&&!this.tampered;
     if(m.type!=='standard'||m.result)return;
     if(m.targetDown){if(m.covertDeath&&!m.bodyDiscovered){const witness=e.npcs.find(n=>n!==this.target&&!n.dead&&!n.evacuated&&!n.lying&&!n.baby&&n.floor===this.target.floor&&distance(n.pos,this.target.pos)<7&&e.lineOfSight(n.pos,this.target.pos,n.floor));if(witness){m.bodyDiscovered=true;m.beginEscape();e.systems.startEvacuation();e.notify('Body discovered · alarm raised · escape before the police arrive','danger');e.hooks.emergency?.();}}return;}
     if(this.custodian&&!this.custodian.dead){const n=this.custodian;
@@ -76,7 +77,7 @@ export class CovertAssignments{
       if(this.phase==='away'&&distance(n.pos,this.breakGoal)<.35){n.activity='drink';this.backAt??=now+(m.challenge?.searchWindow||30);if(now>=this.backAt){this.phase='returning';n.activity=null;e.routeNPC(n,this.home);}}
       if(this.phase==='returning'&&distance(n.pos,this.home)<.35){this.phase='working';n.activity='rest';n.path=[];this.breakAt=now+45;this.backAt=null;}
     }
-    if(this.action){if(e.floor!==0||distance(e.playerPos,this.action.from)>.5){this.action=null;e.notify('Rota collection cancelled · stay beside the document');}else if(this.insideOffice(this.custodian)||this.seen(e.playerPos,e.floor,this.custodian)){this.action=null;return this.caught('You were caught taking confidential staff schedules.');}else if(now>=this.action.until){this.action=null;this.documentTaken=true;this.document.visible=false;const clue=m.clue('schedule');if(clue)e.hooks.clue?.(clue);e.audio.sound('clue');e.notify('Confidential rota collected · department and room recorded','clue');}}
+    if(this.action){if(e.floor!==0||distance(e.playerPos,this.action.from)>.5){this.action=null;e.notify('Rota collection cancelled · stay beside the document');}else if(mustSteal(e)&&(this.insideOffice(this.custodian)||this.seen(e.playerPos,e.floor,this.custodian))){this.action=null;return this.caught('You were caught taking confidential staff schedules.');}else if(now>=this.action.until){this.action=null;this.documentTaken=true;this.document.visible=false;const clue=m.clue(m.challenge?.scheduleRequired?'schedule':'directory');if(clue)e.hooks.clue?.(clue);e.audio.sound('clue');e.notify('Confidential rota collected · department and room recorded','clue');}}
     const target=this.target;if(!target||target.dead||!this.cup)return;
     const appointment=e.life?.targetCase;
     if(this.targetPhase==='working'&&now>=this.nextTargetBreak&&(!appointment||appointment.completed)){
@@ -89,7 +90,7 @@ export class CovertAssignments{
     if(this.consumedAt!==null&&now>=this.consumedAt+7){if(e.eliminateCoffeeTarget(target)&&target.visual.head){const foam=mesh('sphere',material('#e3eadf'),[.026,.012,.014],[0,.015,.10],target.visual.head);foam.name='Fictional coffee effect foam';}}
   }
 
-  objective(){const m=this.e.mission;if(m.type!=='standard'||m.targetDown)return null;if(this.document&&!this.documentTaken&&m.clues.length)return 'Collect the confidential rota in Records';return null;}
-  hud(){if(this.e.mission.type!=='standard')return null;return {level:this.e.mission.round,label:this.e.mission.challenge?.label,documentRequired:!!this.document,documentTaken:this.documentTaken,breakState:this.phase,window:this.backAt?Math.max(0,Math.ceil(this.backAt-this.e.mission.elapsed)):null,coffee:this.tampered?'prepared':this.capsule?'compound collected':'optional',targetBreak:this.targetPhase};}
+  objective(){const m=this.e.mission;if(m.type!=='standard'||m.targetDown)return null;if(this.document&&!this.documentTaken)return !m.recordsNotice?'Read the hospital information board':!m.locatedRecords?`Locate Records office · room ${this.office.number} · ground floor`:'Find the staff directory / rota inside Records';return null;}
+  hud(){if(this.e.mission.type!=='standard')return null;return {level:this.e.mission.round,label:this.e.mission.challenge?.label,documentRequired:!!this.document,stealthRequired:mustSteal(this.e),documentTaken:this.documentTaken,breakState:this.phase==='working'?'Wait for coffee break':this.phase==='returning'?'Doctor returning':this.custodian&&this.insideOffice(this.custodian)?'Doctor leaving':'Room clear',window:this.backAt?Math.max(0,Math.ceil(this.backAt-this.e.mission.elapsed)):null,coffee:this.tampered?'prepared':this.capsule?'compound collected':'optional',targetBreak:this.targetPhase};}
   dispose(){for(const {floor,c} of this.addedColliders){const colliders=this.e.hospitals[floor].colliders,index=colliders.indexOf(c);if(index>=0)colliders.splice(index,1);}this.addedColliders=[];this.action=null;this.root.removeFromParent();disposeObjectResources(this.root,{textures:true});this.root.clear();this.e=null;}
 }

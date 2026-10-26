@@ -1,3 +1,4 @@
+import {countryVoice} from './country-voices.js';
 import {fitPregnancy} from './appearance.js';
 import {TargetAppointment,TARGET_PRIVACY_GRACE} from './appointments.js';
 import {RoomPrivacy} from './room-privacy.js';
@@ -76,6 +77,7 @@ export class HospitalLife {
       this.pharmacy={clerk,customers,shop};
       yield shop.floor;
     }
+    const triage=e.hospitals[0].group.userData.triage;if(triage){const p=triage.clerk;this.actor('Triage Nurse','nurse','female',0,null,p.x,p.z,'rest',{yaw:p.yaw});}
     const cafe=e.levels[0].rooms.find(r=>r.kind==='cafe');
     const minX=(cafe.x-11)*3-1.5,minZ=(cafe.z-11)*3-1.5,maxX=(cafe.x+cafe.w-1-11)*3+1.5;
     [[minX+2,minZ+3],[maxX-2,cafe.center.z],[minX+2,(cafe.z+cafe.h-1-11)*3+1.5-3]].forEach(([x,z],i)=>{
@@ -118,12 +120,12 @@ export class HospitalLife {
   }
   speak(actor,text,urgent=false) {
     const e=this.engine;if(actor.dead||actor.floor!==e.floor)return;
-    const distance=dist(e.playerPos,actor.pos);if(distance>18)return;
+    const distance=dist(e.playerPos,actor.pos);if(distance>18)return;const countryTake=countryVoice(text,actor.person);text=countryTake?.caption||text;
     this.dialogues=this.dialogues.filter(d=>d.actor!==actor&&d.until>e.mission.elapsed);
     this.dialogues.push({actor,text,until:e.mission.elapsed+Math.max(4.5,text.length*.07)});
     this.history.push({speaker:actor.name,text,time:e.mission.elapsed});if(this.history.length>30)this.history.shift();
     const voiceVersion=actor.voiceVersion=(actor.voiceVersion||0)+1;
-    e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos)),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor},{speakerId:actor.id,isCurrent:()=>!this.disposed&&actor.voiceVersion===voiceVersion});
+    e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos)),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor},{countryTake,speakerId:actor.id,isCurrent:()=>!this.disposed&&actor.voiceVersion===voiceVersion});
     actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07);
   }
   privacyWitness(room){
@@ -138,11 +140,11 @@ export class HospitalLife {
     this.speak(actor,ROOM_WARNING_LINES[action],true);this.nextAmbient=e.mission.elapsed+9;
     this.queue=this.queue.filter(line=>line.actor!==actor);
     if(action==='warning')e.notify('Patient privacy · leave this room before staff call security','warning');
-    if(action==='security')e.systems?.witness(actor,'privacy');
+    if(action==='security'){e.mission.finish(false,'The doctor called security after two warnings. The appointment intrusion exposed you.');e.finish();}
   }
   reactToEntry(room){
     const actor=this.privacyWitness(room);if(!actor){this.privacy.leave();return;}
-    this.privacyResponse(actor,this.privacy.enter(`${this.engine.floor}:${room.id}`,this.engine.mission.elapsed,room.id===this.engine.mission.target?.room.id?{warningDelay:TARGET_PRIVACY_GRACE,reportDelay:TARGET_PRIVACY_GRACE+10}:{}));
+    this.privacyResponse(actor,this.privacy.enter(`${this.engine.floor}:${room.id}`,this.engine.mission.elapsed,room.id===this.engine.mission.target?.room.id?{warningDelay:TARGET_PRIVACY_GRACE,reportDelay:TARGET_PRIVACY_GRACE*2}:{}));
   }
   updateAppointment(room){
     const e=this.engine,item=this.targetCase;if(!item||e.mission.targetDown||item.doctor.dead||e.mission.state==='escape')return;
@@ -168,7 +170,7 @@ export class HospitalLife {
   appointmentHUD(){
     const e=this.engine,item=this.targetCase;if(!item||item.appointment.startedAt===null||e.mission.targetDown)return null;
     const a=item.appointment,id=`${item.room.floor}:${item.room.id}`,privacy=this.privacy.rooms.get(id),warning=this.privacy.active===id&&privacy?.stage==='requested'?Math.max(0,Math.ceil(privacy.warningDelay-(e.mission.elapsed-privacy.enteredAt))):null;
-    return {room:item.room.name,floor:item.room.floor,complete:a.completed,seconds:a.remaining(e.mission.elapsed),warningSeconds:warning};
+    return {room:item.room.name,floor:item.room.floor,complete:a.completed,seconds:a.remaining(e.mission.elapsed),warningSeconds:warning,inside:this.privacy.active===id&&!a.completed,warnings:privacy?.warnings||0};
   }
   triggerFlicker(duration=1.65) {
     const e=this.engine,fixtures=e.hospitals[e.floor].fixtures;

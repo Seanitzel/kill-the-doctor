@@ -1,0 +1,29 @@
+import {COUNTRIES} from '../src/game/international.js';
+import {COUNTRY_DIALOGUE} from '../src/game/country-dialogue.js';
+import {ALL_DIALOGUE_LINES,dialogueKey} from '../src/game/life-rules.js';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {spawnSync} from 'node:child_process';
+const accents={france:'French',nigeria:'Nigerian',china:'Chinese',japan:'Japanese',israel:'Israeli',india:'Indian',italy:'Italian',germany:'German',congo:'Congolese',canada:'Canadian',england:'British',america:'American',spain:'Spanish',brazil:'Brazilian',kenya:'Kenyan',morocco:'Moroccan',pakistan:'Pakistani',ireland:'Irish','south-africa':'South African',sudan:'Sudanese'};
+const out=new URL('../public/audio/countries/',import.meta.url),manifestFile=new URL('manifest.json',out),ledgerFile=new URL('../artifacts/revision-3.8/voice-spend.json',import.meta.url);
+const jobs=[];for(const country of COUNTRIES)for(const gender of ['female','male']){
+ const cast=COUNTRY_DIALOGUE[country.id],voice=gender==='female'?'Rachel':'Drew';
+ for(const text of ALL_DIALOGUE_LINES){const tag=/calling|ignored|police|leave/i.test(text)?'firm':'conversational',prompt=`[${accents[country.id]} accent] [${tag}] ${text}`;jobs.push({key:`${country.id}/${gender}/${dialogueKey(text,gender)}`,country:country.id,gender,voice,prompt,text,language:'en'});}
+ for(const line of cast.patients){const emotion=line.kind==='pain'?'pained':line.kind==='symptom'?'worried':'conversational',prompt=`[${emotion}] ${line.text}`;jobs.push({key:`${country.id}/${gender}/patient-${line.id}`,country:country.id,gender,voice,prompt,text:line.text,caption:line.caption,language:cast.modelLanguage||'en'});}
+}
+const hardLimit=40,estimated=jobs.reduce((sum,j)=>sum+j.prompt.length*.0001,0);
+if(process.argv.includes('--plan')){console.log(JSON.stringify({jobs:jobs.length,estimatedUSD:+estimated.toFixed(2),hardLimitUSD:hardLimit},null,2));process.exit(0);}
+// Require an explicit approved limit, and accept credentials only from stdin.
+if(!process.argv.includes('--approved-40-usd'))throw Error('Paid generation requires the owner’s $40 approval. Use --plan for the free estimate.');
+let token='';for await(const chunk of process.stdin)token+=chunk;token=token.trim();if(!token)throw Error('Provide the existing Replicate token through stdin; it is never written to files or logged.');
+let manifest=JSON.parse(await fs.readFile(manifestFile,'utf8')),ledger;try{ledger=JSON.parse(await fs.readFile(ledgerFile,'utf8'));}catch{ledger={reservedUSD:0,attempts:[]};}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function api(url,body){const res=await fetch(url,{method:body?'POST':'GET',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json',...(body?{Prefer:'wait=60'}:{})},...(body?{body:JSON.stringify(body)}:{})});if(!res.ok)throw Error(`Replicate request failed (${res.status}); credentials and body withheld.`);return res.json();}
+// Synchronous reservations and serialized writes protect the hard budget even on retries.
+let writeQueue=Promise.resolve();const writeJson=(file,data)=>{const json=JSON.stringify(data,null,2);const next=writeQueue.then(()=>fs.writeFile(file,json));writeQueue=next.catch(()=>{});return next;};
+async function generate(job){if(manifest.entries[job.key])return;const cost=job.prompt.length*.0001;if(ledger.reservedUSD+cost>hardLimit)throw Error('Hard $40 limit reached. No further predictions submitted.');ledger.reservedUSD+=cost;const attempt={key:job.key,reservedUSD:cost,status:'reserved'};ledger.attempts.push(attempt);await writeJson(ledgerFile,ledger);
+ try{let prediction=await api('https://api.replicate.com/v1/models/elevenlabs/v3/predictions',{input:{prompt:job.prompt,voice:job.voice,language_code:job.language,stability:.5,similarity_boost:.75,style:.25,speed:1}});while(!['succeeded','failed','canceled'].includes(prediction.status)){await wait(1500);prediction=await api(prediction.urls.get);}if(prediction.status!=='succeeded')throw Error('Voice generation did not succeed.');const uri=Array.isArray(prediction.output)?prediction.output[0]:prediction.output;if(typeof uri!=='string'||!uri.startsWith('https://'))throw Error('Missing audio output.');const res=await fetch(uri);if(!res.ok)throw Error('Voice download failed.');const file=new URL(`${job.key}.mp3`,out),temp=new URL(`${job.key}.source`,out);await fs.mkdir(path.dirname(file.pathname),{recursive:true});await fs.writeFile(temp,new Uint8Array(await res.arrayBuffer()));const ff=spawnSync('ffmpeg',['-v','error','-y','-i',temp.pathname,'-af','highpass=f=65,loudnorm=I=-20:TP=-3:LRA=12','-ar','24000','-ac','1','-c:a','libmp3lame','-b:a','64k',file.pathname],{encoding:'utf8'});if(ff.status!==0)throw Error('Audio normalization failed.');await fs.unlink(temp);const probe=spawnSync('ffprobe',['-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',file.pathname],{encoding:'utf8'}),duration=Number(probe.stdout);if(probe.status!==0||!Number.isFinite(duration)||duration<.25||duration>35)throw Error('Generated clip failed duration validation.');manifest.entries[job.key]={text:job.text,caption:job.caption,language:job.language,country:job.country,gender:job.gender,voice:job.voice,engine:'ElevenLabs v3',duration,bytes:(await fs.stat(file)).size};await writeJson(manifestFile,manifest);attempt.status='complete';console.log(`Prepared ${Object.keys(manifest.entries).length}/${jobs.length} country clips; reserved $${ledger.reservedUSD.toFixed(2)} of $40.`);
+ }catch(err){attempt.status='failed';await writeJson(ledgerFile,ledger);throw err;}
+ await writeJson(ledgerFile,ledger);
+}
+const pending=jobs.filter(job=>!manifest.entries[job.key]);let cursor=0,failed;await Promise.all(Array.from({length:4},async()=>{while(!failed&&cursor<pending.length){const job=pending[cursor++];try{await generate(job);}catch(error){failed=error;}}}));await writeQueue;token='';if(failed)throw failed;

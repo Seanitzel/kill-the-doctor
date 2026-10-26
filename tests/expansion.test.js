@@ -116,7 +116,7 @@ test('The full hospital crowd can evacuate while protected newborns remain in th
   assert.ok(adults.every(n=>n.evacuated),JSON.stringify(remaining));assert.ok(e.npcs.filter(n=>n.baby).every(n=>!n.dead&&!n.evacuated));
 });
 function shootingEngine(){
-  const e=simulation();Object.assign(e,{scene:new THREE.Scene(),effects:[],paused:false,aiming:true,ammo:6,reserve:30,shotCooldown:0,reloading:0,weaponKind:'pistol',muzzle:{intensity:0,position:new THREE.Vector3()},say(){},emitHUD(){}});return e;
+  const e=simulation();Object.assign(e,{scene:new THREE.Scene(),effects:[],paused:false,aiming:true,weaponDrawn:true,ammo:6,reserve:30,shotCooldown:0,reloading:0,weaponKind:'pistol',muzzle:{intensity:0,position:new THREE.Vector3()},say(){},emitHUD(){}});return e;
 }
 test('Actual shooting keeps early staff alive, sounds the alarm for the primary and awards later staff',()=>{
   const e=shootingEngine(),staff=actor('staff',0,0,18),target=actor('target',0,0,12);target.role='doctor';

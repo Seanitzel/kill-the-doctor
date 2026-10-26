@@ -7,7 +7,7 @@ test('phone opening holsters weapons and clears stale controls without pausing a
  const doc=globalThis.document;globalThis.document={exitPointerLock(){}};
  try{const e=Object.create(GameEngine.prototype);Object.assign(e,{mission:{state:'investigate'},audio:{},keys:new Set(['KeyW']),weapon:{visible:true},weaponDrawn:true,aiming:true,paused:false,floor:0,playerPos:new T.Vector3(0,0,30),resetTouch(){this.touchInput={forward:0,strafe:0};}});
  const appointment=new TargetAppointment(()=>0);appointment.start(0);assert.equal(e.setPhoneOpen(true),true);assert.equal(e.paused,false);assert.equal(e.keys.size,0);assert.equal(e.weapon.visible,false);assert.equal(e.weaponDrawn,false);assert.equal(e.aiming,false);assert.equal(e.toggleSmokeBreak(),false);
- appointment.update(60);assert.equal(appointment.remaining(60),120);e.playerPos.z=39;assert.equal(e.toggleSmokeBreak(),true);assert.equal(e.smoking,true);e.audio.phoneMusic=true;e.setPhoneOpen(false);assert.equal(e.smoking,false);assert.equal(e.audio.phoneMusic,false);
+ appointment.update(60);assert.equal(appointment.remaining(60),60);e.playerPos.z=39;assert.equal(e.toggleSmokeBreak(),true);assert.equal(e.smoking,true);e.audio.phoneMusic=true;e.setPhoneOpen(false);assert.equal(e.smoking,false);assert.equal(e.audio.phoneMusic,false);
  for(const changes of[{paused:true},{mission:{result:{}}},{mission:{targetDown:true}},{mission:{policeAlert:true}},{mission:{state:'escape'}}])assert.equal(canTakeBreak({...e,...changes}),false);
  assert.equal(isOutsideHospital(1,{z:39}),false);assert.equal(isOutsideHospital(0,{z:35}),false);assert.equal(isOutsideHospital(0,{z:39}),true);
  }finally{globalThis.document=doc;}

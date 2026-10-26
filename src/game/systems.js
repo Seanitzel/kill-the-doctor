@@ -14,15 +14,15 @@ export class MissionSystems{
 
   stand(n,goal){
     const e=this.e,nav=this.navigationFor(n.floor);
-    if(n.lying||n.seated||!e.canStand(n.pos.x,n.pos.z,.24,n.floor)||!nav.route(n.pos,goal).length){
-      const node=nav.nearest(n.pos,nav.fieldFor(goal));if(node)n.pos.set(node.point.x,0,node.point.z);
+    if(n.lying||n.seated||e.npcs.some(o=>o!==n&&o.floor===n.floor&&!o.dead&&!o.evacuated&&!o.lying&&!o.baby&&distance(o.pos,n.pos)<.49)||!e.canStand(n.pos.x,n.pos.z,.24,n.floor)||!nav.route(n.pos,goal).length){
+      const field=nav.fieldFor(goal),node=[...nav.nodes.values()].filter(node=>field.has(node)&&e.canStand(node.point.x,node.point.z,.25,n.floor)&&!e.npcs.some(o=>o!==n&&o.floor===n.floor&&!o.dead&&!o.evacuated&&!o.lying&&!o.baby&&distance(o.pos,node.point)<.62)).sort((a,b)=>distance(a.point,n.pos)-distance(b.point,n.pos))[0]||nav.nearest(n.pos,field);if(node)n.pos.set(node.point.x,0,node.point.z);
     }
     n.visual.root.rotation.set(0,0,0);n.activity=null;n.seated=n.lying=false;n.baselineY=0;n.pos.y=0;n.hitOffset=null;n.reaction=0;n.path=[];n.cursor=0;
   }
   startEvacuation(){
     if(this.evacuating||this.e.mission.china&&!this.e.mission.policeAlert)return;this.evacuating=true;if(this.e.life){if(this.e.life.queue)this.e.life.queue.length=0;if(this.e.life.dialogues)this.e.life.dialogues.length=0;this.e.life.privacy?.leave();}this.e.audio.cancelVoices?.();this.e.audio.sound('alarm');for(const entrance of this.e.hospitals?.[0]?.entrances||[]){entrance.open=true;updateEntrance(entrance,true,2);}this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
     for(const level of this.e.levels)for(const door of level.doors){door.locked=false;door.open=true;}
-    for(const n of this.e.npcs){if(n.dead||n.baby||n.rescuePatient||n.role==='police'||n===this.e.extras?.lure?.contact&&n.lying||n.emergencyResponder)continue;if(n.operationDoctor&&this.e.mission.type==='rescue'){n.reporting=null;n.path=[];n.activity='worried';continue;}if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.sneezeUntil=0;if(n.tissue)n.tissue.visible=false;n.evacGoal=n.floor?{x:0,z:-24}:{x:0,z:39};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.8;this.route(n,n.evacGoal);}
+    for(const n of this.e.npcs){if(n.dead||n.baby||n.rescuePatient||n.role==='police'||n===this.e.extras?.lure?.contact&&n.lying||n.emergencyResponder)continue;if(n.operationDoctor&&this.e.mission.type==='rescue'){n.reporting=null;n.path=[];n.activity='worried';continue;}if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.sneezeUntil=0;if(n.tissue)n.tissue.visible=false;n.evacLane=((this.e.npcs.indexOf(n)*7)%6)*.48+.15;n.evacGoal=n.floor?{x:0,z:-24}:{x:n.evacLane,z:39};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.2+this.e.mission.random()*1.4;this.route(n,n.evacGoal);}
     const nearby=this.e.npcs.filter(n=>n.floor===this.e.floor&&!n.dead&&!n.baby).slice(0,3);for(const [i,n]of nearby.entries())this.e.audio.evacuationScream?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},i*.7);
     this.e.hooks.soundCaption?.('People scream. The alarm sounds. Staff and ambulatory patients rush toward the exits. Newborns remain protected.');
   }
@@ -52,7 +52,7 @@ export class MissionSystems{
     }
     if(n.evacuating){
       if(distance(n.pos,n.evacGoal)<1.2){
-        if(n.floor){const arrival=this.arrivalSpot(0,n);if(!arrival){n.wait=.3;return true;}n.floor=0;n.pos.set(arrival.x,0,arrival.z);n.visual.root.visible=e.floor===0;n.evacGoal={x:0,z:39};this.route(n,n.evacGoal);}
+        if(n.floor){const arrival=this.arrivalSpot(0,n);if(!arrival){n.wait=.3;return true;}n.floor=0;n.pos.set(arrival.x,0,arrival.z);n.visual.root.visible=e.floor===0;n.evacGoal={x:n.evacLane||0,z:39};this.route(n,n.evacGoal);}
         else{n.evacuated=true;n.visual.root.visible=false;n.path=[];}
       }else if(n.cursor>=n.path.length&&n.wait<0)this.route(n,n.evacGoal);
       return true;

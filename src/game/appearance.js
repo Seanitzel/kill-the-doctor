@@ -393,7 +393,7 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
   const top=find('Outfit_Top');
   const premium=PREMIUM_OUTFITS.find(o=>o.id===person.outfit);
   if(role==='civilian'&&premium&&top){for(const mesh of meshes)if(/Outfit_Top|Outfit_Bottom/.test(mesh.material?.name||'')){mesh.material.map=null;mesh.material.color.set(premium.color);}fitOutfit(model,top,premium.base,premium.color);premiumDetails(model,top,premium);}
-  else if(role==='civilian'&&top && ['jacket','tactical','suit'].includes(person.outfit))fitOutfit(model,top,person.outfit,person.accent || '#526778');
+  else if(['civilian','patient'].includes(role)&&top && ['jacket','tactical','suit'].includes(person.outfit))fitOutfit(model,top,person.outfit,person.accent || '#526778');
   const hair=find('Hair'), skin=find('Skin');
   if(hair){const style=person.hairstyle||'original',hex=person.hair||'#342b25';if(['cropped','slick','ponytail','ponytail-front','ponytail-side'].includes(style))fitHair(model,hair,skin,style,hex);else if(['afro','braids','straight','curls-short','curls-long'].includes(style))extendedHair(model,hair,skin,style,hex);
     colorHair(hair,model,hex,person.highlights);model.traverse(object=>{if(object.userData.appearanceOwned&&/hair$|ponytail$/.test(object.name))colorHair(object,model,hex,person.highlights);});}
@@ -498,7 +498,7 @@ export function completeHands(model,person,role,donor=null){
    }
    geometry.setAttribute(name,new THREE.BufferAttribute(values,size));
  }
- geometry.computeBoundingBox();geometry.computeBoundingSphere();const hand=new THREE.SkinnedMesh(geometry,clothMaterial(person.skin||'#c69b7c'));hand.name='KTD complete hand '+side;hand.position.copy(base.position);hand.quaternion.copy(base.quaternion);hand.scale.copy(base.scale);hand.bindMode=base.bindMode;hand.bindMatrix.copy(base.bindMatrix);hand.bindMatrixInverse.copy(base.bindMatrixInverse);hand.skeleton=base.skeleton;hand.castShadow=hand.receiveShadow=true;hand.frustumCulled=false;hand.userData.appearanceOwned=true;base.parent.add(hand);
+ geometry.computeBoundingBox();geometry.computeBoundingSphere();const hand=new THREE.SkinnedMesh(geometry,clothMaterial(person.skin||'#c69b7c',{side:THREE.DoubleSide}));hand.name='KTD complete hand '+side;hand.position.copy(base.position);hand.quaternion.copy(base.quaternion);hand.scale.copy(base.scale);hand.bindMode=base.bindMode;hand.bindMatrix.copy(base.bindMatrix);hand.bindMatrixInverse.copy(base.bindMatrixInverse);hand.skeleton=base.skeleton;hand.normalizeSkinWeights();hand.castShadow=hand.receiveShadow=true;hand.frustumCulled=false;hand.userData.appearanceOwned=true;base.parent.add(hand);
  }
 }
 // Fit the source's bare hand to the destination's actual wrist/finger skeleton.
@@ -540,7 +540,7 @@ function attachBareHand(model,base,donor,side,person){
    normal.fromBufferAttribute(source.attributes.normal,index).applyMatrix3(normalMatrix.getNormalMatrix(conversion)).normalize();normals.push(...normal.toArray());
  }
  const geometry=new THREE.BufferGeometry();geometry.setIndex(indices.map(index=>vertexIndex.get(index)));geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(skinIndices,4));geometry.setAttribute('skinWeight',new THREE.Float32BufferAttribute(skinWeights,4));geometry.computeBoundingBox();geometry.computeBoundingSphere();
- const hand=new THREE.SkinnedMesh(geometry,clothMaterial(person.skin||'#c69b7c'));hand.name='KTD complete hand '+side;hand.position.copy(base.position);hand.quaternion.copy(base.quaternion);hand.scale.copy(base.scale);hand.bindMode=base.bindMode;hand.bindMatrix.copy(base.bindMatrix);hand.bindMatrixInverse.copy(base.bindMatrixInverse);hand.skeleton=base.skeleton;hand.castShadow=hand.receiveShadow=true;hand.frustumCulled=false;hand.userData.appearanceOwned=true;hand.userData.bareHand=true;hand.userData.handScale=ratio;base.parent.add(hand);
+ const hand=new THREE.SkinnedMesh(geometry,clothMaterial(person.skin||'#c69b7c',{side:THREE.DoubleSide}));hand.name='KTD complete hand '+side;hand.position.copy(base.position);hand.quaternion.copy(base.quaternion);hand.scale.copy(base.scale);hand.bindMode=base.bindMode;hand.bindMatrix.copy(base.bindMatrix);hand.bindMatrixInverse.copy(base.bindMatrixInverse);hand.skeleton=base.skeleton;hand.normalizeSkinWeights();hand.castShadow=hand.receiveShadow=true;hand.frustumCulled=false;hand.userData.appearanceOwned=true;hand.userData.bareHand=true;hand.userData.handScale=ratio;base.parent.add(hand);
 }
 export function fitPregnancy(visual){
  const model=visual.model;if(!model)return;model.updateMatrixWorld(true);let top;model.traverse(o=>{if(o.material?.name.includes('Outfit_Top'))top=o;});if(!top)return;

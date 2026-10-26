@@ -1,3 +1,4 @@
+import {freestyleFixture} from './helpers/freestyle.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -13,11 +14,11 @@ import {buildHospital} from '../src/game/hospital.js';
 import {makeNavigation} from '../src/game/navigation.js';
 import {MissionSystems} from '../src/game/systems.js';
 import {disposeObjectResources} from '../src/game/resources.js';
-function saveFor(type){const save=defaultSave();selectAssignmentType(save,type);prepareAssignment(save,()=>.5,123);return save;}
+function saveFor(type){const save=freestyleFixture(defaultSave());selectAssignmentType(save,type);prepareAssignment(save,()=>.5,123);return save;}
 test('Special mission selection produces a complete stable assignment and campaign rotation advances',()=>{
   const save=saveFor('rescue'),a=prepareAssignment(save);assert.equal(a.type,'rescue');assert.equal(a.seed,123);assert.equal(a.story.id,'special-rescue');markIntroSeen(save);save.attempts++;assert.equal(prepareAssignment(save).seed,123);
   const restored=readSave({getItem:()=>JSON.stringify(save)});assert.equal(prepareAssignment(restored).type,'rescue');assert.equal(prepareAssignment(restored).introSeen,false);
-  save.completed=1;assert.equal(assignmentType(save),'standard');save.completed=2;assert.equal(assignmentType(save),'evidence');save.completed=4;assert.equal(scheduledType(5),'rescue');assert.equal(selectAssignmentType(save,'bogus'),false);
+  save.completed=1;assert.equal(assignmentType(save),'standard');save.completed=2;delete save.activeAssignment;assert.equal(scheduledType(3),'evidence');save.completed=4;assert.equal(scheduledType(5),'rescue');assert.equal(selectAssignmentType(save,'bogus'),false);
 });
 test('Evidence assignments require three distinct photographs, no casualties and a final escape',()=>{
   const m=new Mission(saveFor('evidence'),123);assert.equal(m.escape(),undefined);assert.equal(m.collectKey('x'),false);assert.equal(m.collectKey('basement'),true);assert.equal(m.collectKey('basement'),false);

@@ -26,7 +26,7 @@ export class HospitalIncidents{
   arrive(){
     const e=this.e;if(this.contact||!this.arrivalAt||e.mission.elapsed<this.arrivalAt||e.mission.state==='escape'||e.mission.result)return false;
     const person=contactIdentity(e.mission.round,e.mission.seed,e.mission.countryAttempt||0),visual=makePlayer(e.assets,person.gender,{...person,outfit:'jacket'},'civilian'),n=e.spawnNPC(person,'patient',0,{x:3,z:30},null,'unexpected-contact',{visual});
-    n.recruit={state:'panicked',nextBurst:e.mission.elapsed,speakAt:e.mission.elapsed+4,shotAt:0,phase:'calm'};n.activity='panic';n.speed=4.3;n.contamination=0;n.name=person.name;n.person=person;this.contact=n;
+    n.recruit={state:'panicked',nextBurst:e.mission.elapsed,speakAt:e.mission.elapsed+4,shotAt:0,phase:'calm'};n.activity='panic';n.speed=4.3;n.contamination=0;n.name=person.name;n.person={...person,voiceCountry:e.mission.country?.id,voiceRole:'patient',recruit:true};this.contact=n;
     this.privateRoom=e.levels[0].rooms.find(r=>r.kind==='bathroom');return true;
   }
   hearShot(origin,floor){

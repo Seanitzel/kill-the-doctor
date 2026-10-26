@@ -134,7 +134,7 @@ export const REVISED_CASEFILES = [
   {
     id: 'marcus-invisible-infection', title: 'Marcus — The Invisible Infection', theme: 'Client file / Marcus',
     source: null, artId: 'missing-truth', panels: [
-      ['Normal recovery, they said', 'Marcus went home after routine surgery, then developed fever, severe pain and growing weakness. He returned to Nhalewick several times. His surgeon repeatedly described the symptoms as normal recovery and sent him home without identifying the infection becoming increasingly dangerous.'],
+      ['Normal recovery, they said', 'Marcus contracted an infection during his stay at Nhalewick for routine surgery. After discharge, his fever, pain and weakness grew steadily worse. He returned repeatedly, but his doctors dismissed him and failed to investigate or identify the hospital-acquired infection. Their neglect allowed it to spread untreated.'],
       ['The collapse', 'Marcus eventually collapsed and needed emergency treatment for a severe hospital-acquired infection. He survived with permanent organ damage. Later, he discovered that his surgical department had already been investigating an infection-control problem before the operation that put him at risk.'],
       ['The danger left unexplained', 'Marcus believes his surgeon knew about the risk, failed to inform him and then dismissed the warning signs. He has hired you, an assassin, to find that doctor. Marcus supplies the department’s records; you enter Nhalewick to carry out his contract.'],
     ],

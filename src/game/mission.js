@@ -7,7 +7,6 @@ import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,migrateCharacterSav
 import {assignmentType,ASSIGNMENT_TYPES} from './assignment-types.js';
 export const SAVE_KEY = 'ktd-northline-v1';
 export const UPGRADE_INFO = [
-  {id:'covertCamera',name:'Covert badge camera',description:'Concealed video camera for the China infiltration. Purchased once and reused.',cost:40,max:1},
   { id: 'shoes', name: 'Lightweight footwear', description: 'Move 8% faster per level. Quieter steps reduce suspicion.', cost: 120, max: 3 },
   { id: 'light', name: 'High-output flashlight', description: 'A longer, brighter beam for the emergency corridors.', cost: 90, max: 3 },
   { id: 'filter', name: 'Recovery filter', description: 'Recover 25% faster from fictional patient status effects.', cost: 100, max: 3 },
@@ -67,13 +66,13 @@ export class Mission {
     this.difficulty = save.settings.difficulty;this.challenge=campaignChallenge(this.round,this.difficulty);
     const doctors=STAFF.filter(s=>s.name.startsWith('Dr.'));const targetIndex=(attempt+Math.floor(this.random()*3))%doctors.length;
     const floor = attempt === 0 ? 0 : Math.floor(this.random() * 3);
-    const availableRooms = makeLayout(floor,this.country.index).rooms.filter(r => !(coffeeLevel(this.round)?!['office','clinic'].includes(r.kind):['cafe', 'office', 'utility', 'morgue', 'bathroom'].includes(r.kind)));
+    const availableRooms = makeLayout(floor,this.country.index).rooms.filter(r => !(coffeeLevel(this.round)?!['clinic'].includes(r.kind):['cafe', 'office', 'utility', 'morgue', 'bathroom'].includes(r.kind)));
     this.target = { ...doctors[targetIndex],name:this.country.doctor,gender:this.country.gender, id: 'target', floor, room: availableRooms[Math.floor(this.random() * availableRooms.length)] };
     if(this.type!=='standard')this.target={...doctors[0],name:this.country.doctor,gender:this.country.gender,id:'operation-doctor-0',floor:3,room:makeLayout(3).rooms[0]};
     this.target=countryPerson(this.target,'doctor',this.country,this.seed,'target',0);
     this.state = 'investigate'; this.clues = []; this.elapsed = 0; this.timer = 0;
     this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
-    this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
+    this.recordsNotice=false;this.locatedRecords=false;this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
   }
   get photoOnly(){return this.type==='evidence'&&!this.china;}
   clue(type) {

@@ -69,8 +69,8 @@ export function sign(text, subtitle, width = 2.6, height = .65, options = {}) {
   const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = Math.round(1024 * height / width);
   const ctx = canvas.getContext('2d'); ctx.fillStyle = options.background || '#21485f'; ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#b7d5e8'; ctx.fillRect(0, 0, 9, canvas.height);
-  ctx.textBaseline = 'middle'; ctx.fillStyle = options.color || '#eef7fd'; ctx.font = `600 ${subtitle ? 68 : 85}px Arial`; ctx.fillText(text, 48, subtitle ? canvas.height * .35 : canvas.height / 2, 925);
-  if (subtitle) { ctx.font = '400 38px Arial'; ctx.fillStyle = '#afd1e5'; ctx.fillText(subtitle, 50, canvas.height * .73, 920); }
+  ctx.textBaseline = 'middle'; ctx.fillStyle = options.color || '#eef7fd'; ctx.textAlign=options.center?'center':'left'; ctx.font = `600 ${options.fontSize||(subtitle ? 68 : 85)}px Arial`; ctx.fillText(text, options.center?512:48, subtitle ? canvas.height * .35 : canvas.height / 2, 925);
+  if (subtitle) { ctx.font = `400 ${options.subFontSize||38}px Arial`; ctx.fillStyle = '#afd1e5'; ctx.fillText(subtitle, options.center?512:50, canvas.height * .73, 920); }
   const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   const mat = new THREE.MeshStandardMaterial({ map: t, roughness: .6, emissiveMap: t, emissive: '#ffffff', emissiveIntensity: .12, side: THREE.FrontSide });
   return new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);
@@ -218,7 +218,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
         const name = o.material.name;
         if (person) {
           if (name.includes('Outfit_Top')) { const color = role === 'nurse' ? NURSE_UNIFORM : role === 'doctor' ? '#d9e4ea' : ['security','police'].includes(role) ? '#344b62' : person.accent || '#718e9c'; o.material.map = recolorCloth(o.material.map,color,assets,clothLeases); o.material.color.set('#ffffff'); }
-          if (name.includes('Outfit_Bottom')) { o.material.map = recolorCloth(o.material.map,role === 'nurse' ? NURSE_UNIFORM : role === 'patient' ? '#acbcc4' : role==='civilian'&&person.outfit==='suit' ? person.accent||'#485766' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
+          if (name.includes('Outfit_Bottom')) { o.material.map = recolorCloth(o.material.map,role === 'nurse' ? NURSE_UNIFORM : role === 'patient' ? person.pants||'#6b6055' : role==='civilian'&&person.outfit==='suit' ? person.accent||'#485766' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
           if (name.includes('Hair')) o.material.color.set(person.hair || '#3b302c');
           if (name.includes('Skin') || name.includes('Body')) o.material.color.set(person.skin || '#e0ad87');
           if (name.includes('Glasses')) o.visible = !!person.glasses;
@@ -244,7 +244,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     mesh('box', material(person.accent || '#5288a2'), [.07,.03,.016], [.14,1.31,.22], root);
   }
   const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
-  const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.03:joint===2?.08:.05))});}
+  const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Thumb','Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.03:joint===2?.08:.05))});}
+  const wrists=['LeftHand','RightHand'].map(name=>({bone:activityBones[name],bind:activityBones[name]?.quaternion.clone()})).filter(w=>w.bone);
   const orient = (name, child, direction) => {
     const bone=activityBones[name], tip=activityBones[child]; if(!bone || !tip) return;
     const parent=bone.parent.getWorldQuaternion(new THREE.Quaternion());
@@ -274,6 +275,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.24, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
     const action=actions[next],footfalls=speed>.15&&action?animationFootfalls(action.time,dt,action.timeScale,action.getClip().duration):0;
     mixer.update(dt);
+    for(const w of wrists){const angle=w.bind.angleTo(w.bone.quaternion);if(angle>.65)w.bone.quaternion.slerp(w.bind,1-.65/angle);w.bone.quaternion.normalize();}
     for(const finger of restingFingers)finger.bone.quaternion.copy(finger.bind).multiply(finger.curl);
     if (aim) for (const item of arms) item.arm.quaternion.copy(item.q);
     return {footfalls,animation:current};

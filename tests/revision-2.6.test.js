@@ -35,8 +35,8 @@ test('Ground-floor antidotes cure once per cabinet, preserve clean doses, protec
  e.antidotes=withCanvas(()=>new AntidoteStations(e));assert.ok(e.antidotes.stations.every(s=>s.available));
  }finally{dispose(e);}
 });
-test('A target consultation lasts 3–5 game minutes; first warning waits a full 30 seconds and finishing releases privacy',()=>{
- for(const sample of [0,.01,.5,.99,1]){const a=new TargetAppointment(()=>sample);assert.ok(a.duration>=180&&a.duration<=300);assert.equal(a.update(999),false);a.start(40);assert.equal(a.start(50),false);assert.equal(a.update(40+a.duration-.001),false);assert.equal(a.update(40+a.duration),true);assert.equal(a.update(999),false);assert.equal(a.remaining(999),0);}
+test('A target consultation lasts 2–5 game minutes; first warning waits a full 30 seconds and finishing releases privacy',()=>{
+ for(const sample of [0,.01,.5,.99,1]){const a=new TargetAppointment(()=>sample);assert.ok(a.duration>=120&&a.duration<=300);assert.equal(a.update(999),false);a.start(40);assert.equal(a.start(50),false);assert.equal(a.update(40+a.duration-.001),false);assert.equal(a.update(40+a.duration),true);assert.equal(a.update(999),false);assert.equal(a.remaining(999),0);}
  const p=new RoomPrivacy();assert.equal(p.enter('target',5,{warningDelay:30,reportDelay:40}),'request');assert.equal(p.update('target',34.999),null);assert.equal(p.update('target',35),'warning');assert.equal(p.update('target',44.999),null);assert.equal(p.update('target',45),'security');p.release('target');assert.equal(p.update('target',99),null);assert.equal(p.enter('target',100,{warningDelay:30,reportDelay:40}),'request');
 });
 test('The assigned clinical doctor examines a real patient and waiting outside ends the examination with a physical departure',()=>{

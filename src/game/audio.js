@@ -1,3 +1,4 @@
+import {countryVoice} from './country-voices.js';
 import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
 import { native,stopNativeSpeech } from '../mobile/platform.js';
@@ -262,8 +263,8 @@ export class HospitalAudio {
     if(synth.speaking&&this.speechPriority>priority)return;
     if(this.utterance){this.utterance.onend=null;this.utterance.onerror=null;}
     synth.cancel();this.speechPriority=priority;const serial=++this.speechSerial;
-    const utterance=new SpeechSynthesisUtterance(text);utterance.lang='en-US';utterance.rate=1;utterance.pitch=1;utterance.volume=this.settings.volume*Math.min(1,gain)*(priority>1?.7:.85);
-    const english=synth.getVoices().filter(v=>v.lang.startsWith('en')),american=english.filter(v=>/^en[-_]US/i.test(v.lang)),voices=american.length?american:english;
+    const utterance=new SpeechSynthesisUtterance(text);utterance.lang=person.voiceLanguage||'en-US';utterance.rate=1;utterance.pitch=1;utterance.volume=this.settings.volume*Math.min(1,gain)*(priority>1?.7:.85);
+    const english=synth.getVoices().filter(v=>v.lang.toLowerCase().startsWith((person.voiceLanguage||'en').slice(0,2).toLowerCase())),american=english.filter(v=>/^en[-_]US/i.test(v.lang)),voices=american.length?american:english;
     const match=person.gender==='female'?/Samantha|Zira|Victoria|Susan|Allison|Joanna|Female/i:/David|Alex|Fred|Aaron|Tom|Male/i;
     const voice=voices.find(v=>match.test(v.name))||voices[person.gender==='female'?0:Math.min(1,voices.length-1)];if(voice)utterance.voice=voice;
     const finish=()=>{if(!this.disposed&&serial===this.speechSerial){this.speechPriority=0;this.utterance=null;}};utterance.onend=finish;utterance.onerror=finish;this.utterance=utterance;synth.speak(utterance);
@@ -280,7 +281,7 @@ export class HospitalAudio {
     if(pending){this.dialogueBuffers.delete(key);this.dialogueBuffers.set(key,pending);return pending;}
     if(this.dialogueRequests.size>=DIALOGUE_MAX_PENDING)return null;
     const controller=new AbortController();this.dialogueRequests.set(key,controller);
-    pending=this.fetchBuffer(assetUrl(`audio/dialogue/${key}.mp3`)+`?v=${AUDIO_REVISION}`,ctx,controller).then(buffer=>{
+    pending=this.fetchBuffer(assetUrl(`audio/${key.startsWith('countries/')?'':'dialogue/'}${key}.mp3`)+`?v=${AUDIO_REVISION}`,ctx,controller).then(buffer=>{
       if(this.dialogueBuffers.get(key)===pending){
         const size=Math.max(0,(buffer.length||0)*(buffer.numberOfChannels||1)*4);this.dialogueSizes.set(key,size);this.dialogueBytes+=size;this.pruneDialogue();
       }return buffer;
@@ -291,22 +292,22 @@ export class HospitalAudio {
     if(this.disposed||!this.enabled||!this.settings.speech||!this.settings.volume)return;
     if(options.isCurrent&&!options.isCurrent())return;
     if(options.speakerId)for(const record of [...this.activeSamples])if(record.speakerId===options.speakerId)this.releaseSample(record,true);
-    const ctx=this.ctx,baseKey=dialogueKey(text,person.gender),epoch=this.voiceEpoch;
-    if(!this.ownsContext(ctx)){if(!options.publicAddress)this.speak(text,person,gain,urgent?4:1);return;}
-    const key=baseKey+(dialogueRegion(person)==='southern'?'-alt':'');
+    const take=options.countryTake||countryVoice(text,person);if(take)person={...person,voiceLanguage:take.language};const ctx=this.ctx,baseKey=dialogueKey(text,person.gender),epoch=this.voiceEpoch;
+    if(!this.ownsContext(ctx)){if(!options.publicAddress)this.speak(take?.spokenText||text,person,gain,urgent?4:1);return;}
+    const key=take?.key||baseKey+(dialogueRegion(person)==='southern'?'-alt':'');
     try {
       const pending=this.dialogueBuffer(key,ctx);if(!pending)return;const buffer=await pending;
       if(!this.voiceIsCurrent(epoch,ctx,position)||options.isCurrent&&!options.isCurrent())return;
       if(options.publicAddress&&options.announcementSerial!==this.announcementSerial)return;
       if(options.publicAddress){this.paChimeBuffer||=announcementChimeBuffer(ctx);this.sampleNodes('pa-chime',position||this.listenerPosition,.65,false,this.paChimeBuffer,{publicAddress:true});}
       return this.sampleNodes(`voice-${key}`,position||{x:0,y:1,z:0},gain*.9,false,buffer,{...options,startDelay:options.publicAddress?.78:0});
-    }catch(error){if(!options.publicAddress&&(!options.isCurrent||options.isCurrent())&&error?.name!=='AbortError'&&this.voiceIsCurrent(epoch,ctx,position))this.speak(text,person,gain,urgent?4:1);}
+    }catch(error){if(!options.publicAddress&&(!options.isCurrent||options.isCurrent())&&error?.name!=='AbortError'&&this.voiceIsCurrent(epoch,ctx,position))this.speak(take?.spokenText||text,person,gain,urgent?4:1);}
   }
   announce(text) {
     if(this.disposed||!ANNOUNCEMENT_LINES.includes(text))return;
     const announcementSerial=this.announcementSerial=(this.announcementSerial||0)+1;
     for(const record of [...this.activeSamples])if(record.publicAddress)this.releaseSample(record,true);
-    return this.dialogue(text,{gender:'female',voiceRegion:'standard'},.8,true,this.listenerPosition,{publicAddress:true,announcementSerial});
+    return this.dialogue(text,{gender:'female',voiceRegion:'standard',voiceCountry:this.countryId,voiceRole:'staff'},.8,true,this.listenerPosition,{publicAddress:true,announcementSerial});
   }
   update(dt, proximity, emergency, impairment, moving, running,footfalls=null) {
     if (!this.ctx || !this.enabled || this.disposed) return;

@@ -8,8 +8,8 @@ export const PATIENT_PAGE_LINES = [
 
 export const ROOM_WARNING_LINES = {
   request: 'Excuse me. Please wait outside while we finish with this patient.',
-  warning: 'You need to leave this room now, or I will call security.',
-  security: 'Security, please come to this room. We need assistance.',
+  warning: 'I have already asked you to leave. Your presence is becoming suspicious. Please wait outside.',
+  security: 'You ignored both warnings. I am calling security now.',
 };
 
 export const JAMIE_SELF_TALK_LINES = [

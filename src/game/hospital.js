@@ -21,7 +21,7 @@ export function buildLift(layout,m){
   const leaves=[];
   for(const side of [-1,1]){
     box('Lift brushed-steel jamb',m.steel,[.10,2.80,.13],[x+side*1.31,1.40,faceZ+.065]);
-    const leaf=box(side<0?'Lift left sliding door':'Lift right sliding door',m.steel,[1.24,2.63,.045],[x+side*.62,1.345,faceZ+.060]);leaf.userData.side=side;leaf.userData.bodyBounds=footprint(x+side*.62,faceZ+.06,1.24,.07,2.7,0,'lift-door');leaves.push(leaf);
+    const leaf=box(side<0?'Lift left sliding door':'Lift right sliding door',m.steel,[1.24,2.63,.045],[x+side*.62,1.345,faceZ+.060]);leaf.userData.side=side;if(side<0){const seam=mesh('box',m.dark,[.008/1.24,1,.12],[.497,0,.53],leaf);seam.name='Lift central separation seam';leaf.userData.seam=seam;}leaf.userData.bodyBounds=footprint(x+side*.62,faceZ+.06,1.24,.07,2.7,0,'lift-door');leaves.push(leaf);
   }
   box('Lift door header',m.steel,[2.72,.115,.13],[x,2.745,faceZ+.065]);
   group.userData.lift={x,faceZ,leaves,open:false,amount:0,selectionUsed:false,choosing:false};
@@ -32,7 +32,7 @@ export function buildLift(layout,m){
   box('Lift call panel',m.dark,[.24,.42,.035],[x+1.55,1.28,faceZ+.018]);
   box('Lift call button',m.steel,[.075,.075,.018],[x+1.55,1.24,faceZ+.043]);
   box('Lift call indicator',m.light,[.035,.018,.009],[x+1.55,1.39,faceZ+.042]);
-  const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);const wallNumber=sign(layout.floor===3?'B':String(layout.floor),'FLOOR',.65,.92,{background:'#203b4a',color:'#e1edf0'});wallNumber.name='Large floor number left of elevator';wallNumber.position.set(x-1.92,1.72,faceZ+.03);group.add(wallNumber);
+  const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);const wallNumber=sign(layout.floor===3?'B':String(layout.floor),'FLOOR',.65,.92,{background:'#203b4a',color:'#e1edf0',center:true,fontSize:740,subFontSize:110});wallNumber.name='Large floor number left of elevator';wallNumber.position.set(x-1.92,1.72,faceZ+.03);group.add(wallNumber);
   return group;
 }
 export function buildHospital(layout, m, site=null) {
@@ -234,8 +234,8 @@ export function buildHospital(layout, m, site=null) {
   }
   for (const object of [layout.directory, layout.schedule]) {
     cube(m.dark, object.x, .57, object.z, .55, 1.14, .44); cube(m.steel, object.x, 1.15, object.z, .8, .07, .6); cube(m.blue, object.x, 1.54, object.z, .9, .65, .14);
-    placeSign(object === layout.directory ? 'STAFF DIRECTORY' : 'ROUNDS / SCHEDULE', 'NHALEWICK • INFORMATION', object.x, 1.54, object.z + .075, 0, .84, .59);
-    interactables.push({ type: object === layout.directory ? 'directory' : 'schedule', label: object.label, x: object.x, z: object.z }); Object.assign(collider(object.x,object.z,.9,.55),{maxY:1.9,type:'terminal'});
+    placeSign(object === layout.directory ? 'HOSPITAL INFORMATION' : 'ROUNDS / SCHEDULE', 'NHALEWICK • INFORMATION', object.x, 1.54, object.z + .075, 0, .84, .59);
+    interactables.push({ type: object === layout.directory ? 'directory' : 'schedule', label: object===layout.directory?'Read hospital information':object.label, x: object.x, z: object.z }); Object.assign(collider(object.x,object.z,.9,.55),{maxY:1.9,type:'terminal'});
   }
   const e = layout.elevator;
   const lift=buildLift(layout,m);group.add(lift);
@@ -254,10 +254,13 @@ export function buildHospital(layout, m, site=null) {
     for(const x of [-1.5,4.5])mesh('box',m.steel,[.10,2.85,.19],[x,1.425,34.5],entry);
     mesh('box',m.steel,[6.1,.13,.25],[1.5,2.85,34.5],entry);
     const doorGlass=material('#91bbc9',{transparent:true,opacity:.36,roughness:.17,metalness:.15,depthWrite:false,side:THREE.DoubleSide});
-    const leaves=[];for(const side of [-1,1]){const leaf=new THREE.Group();leaf.position.set(1.5+side*1.5,0,34.5);entry.add(leaf);mesh('box',doorGlass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of [-1.5,1.5])mesh('box',m.steel,[.045,2.7,.075],[x,1.4,0],leaf);for(const y of [.07,1.1,2.73])mesh('box',m.steel,[3,.045,.075],[0,y,0],leaf);for(const face of [-1,1]){const decal=sign('←  AUTOMATIC  →','',1.85,.32,{background:'#456275',color:'#ecf6f7'});decal.position.set(0,1.55,face*.045);decal.rotation.y=face<0?Math.PI:0;leaf.add(decal);}leaf.userData.side=side;leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,34.5,3,.06),{minY:0,maxY:2.78,type:'entrance-glass'});leaves.push(leaf);}
+    const leaves=[];for(const side of [-1,1]){const leaf=new THREE.Group();leaf.position.set(1.5+side*1.5,0,34.5);entry.add(leaf);mesh('box',doorGlass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of [-1.5,1.5])mesh('box',m.steel,[.045,2.7,.075],[x,1.4,0],leaf);for(const y of [.07,1.1,2.73])mesh('box',m.steel,[3,.045,.075],[0,y,0],leaf);for(const face of [-1,1]){const decal=sign('←  AUTOMATIC  →','',1.85,.32,{background:'#456275',color:'#ecf6f7'});decal.position.set(0,1.55,face*.045);decal.rotation.y=face<0?Math.PI:0;leaf.add(decal);}leaf.userData.side=side;if(side<0){const seam=mesh('box',m.dark,[.008/1.24,1,.12],[.497,0,.53],leaf);seam.name='Lift central separation seam';leaf.userData.seam=seam;}leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,34.5,3,.06),{minY:0,maxY:2.78,type:'entrance-glass'});leaves.push(leaf);}
     group.userData.entrance={leaves,open:false,amount:0};
     cube(m.dark,1.5,.01,37,5.7,.015,4.8);
-    addNightStreet(group,batch,m);
+    // Triage stays in the entrance atrium, leaving the central exit route free.
+    cube(m.white,5.25,.54,31.2,1.9,1.08,.72);cube(m.blue,5.25,.64,31.57,1.8,.42,.025);Object.assign(collider(5.25,31.2,2,.8),{maxY:1.12,type:'triage-desk'});
+    const triage=placeSign('TRIAGE','INITIAL ASSESSMENT',5.25,1.38,31.6,0,1.65,.4);triage.name='Main entrance triage sign';group.userData.triage={clerk:{x:5.25,z:30.15,yaw:0},desk:{x:5.25,z:31.2}};interactables.push({type:'triage',label:'Main triage · initial assessment',x:5.25,z:32.15});
+    addNightStreet(group,batch,m,site);
     interactables.push({ type: 'exit', label: 'Leave the hospital', x: layout.exit.x, z: layout.exit.z });
   } else if(layout.floor!==3)placeSign('PATIENT SERVICES', `${FLOORS[layout.floor].toUpperCase()} / NHALEWICK`, 3, 2.9, 33.25, Math.PI, 3.8, .68);
   for (const p of (layout.floor===3?[]:[[-1.5,0],[-1.5,18],[-21,0],[21,0],[-1.5,-18]])) {

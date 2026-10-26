@@ -5,6 +5,7 @@ export function setLiftOpening(lift,amount){
  for(const leaf of lift.leaves){
   const width=1.24*(1-lift.amount),x=lift.x+leaf.userData.side*(1.24-width/2);
   leaf.position.x=x;leaf.scale.x=width;leaf.visible=width>.0001;
+  if(leaf.userData.seam){const seam=leaf.userData.seam;seam.visible=width>.012;seam.position.x=.5-.004/Math.max(width,.0001);seam.scale.x=.008/Math.max(width,.0001);}
   const bounds=leaf.userData.bodyBounds;bounds.minX=x-width/2;bounds.maxX=x+width/2;
  }
 }

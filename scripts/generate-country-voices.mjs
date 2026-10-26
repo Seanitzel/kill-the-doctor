@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 const accents={france:'French',nigeria:'Nigerian',china:'Chinese',japan:'Japanese',israel:'Israeli',india:'Indian',italy:'Italian',germany:'German',congo:'Congolese',canada:'Canadian',england:'British',america:'American',spain:'Spanish',brazil:'Brazilian',kenya:'Kenyan',morocco:'Moroccan',pakistan:'Pakistani',ireland:'Irish','south-africa':'South African',sudan:'Sudanese'};
-const out=new URL('../public/audio/countries/',import.meta.url),manifestFile=new URL('manifest.json',out),ledgerFile=new URL('../artifacts/revision-3.8/voice-spend.json',import.meta.url);
+const out=new URL('../public/audio/countries/',import.meta.url),manifestFile=new URL('../src/game/country-voice-manifest.json',import.meta.url),ledgerFile=new URL('../artifacts/revision-3.8/voice-spend.json',import.meta.url);
 const jobs=[];for(const country of COUNTRIES)for(const gender of ['female','male']){
  const cast=COUNTRY_DIALOGUE[country.id],voice=gender==='female'?'Rachel':'Drew';
  for(const text of ALL_DIALOGUE_LINES){const tag=/calling|ignored|police|leave/i.test(text)?'firm':'conversational',prompt=`[${accents[country.id]} accent] [${tag}] ${text}`;jobs.push({key:`${country.id}/${gender}/${dialogueKey(text,gender)}`,country:country.id,gender,voice,prompt,text,language:'en'});}

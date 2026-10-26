@@ -1,4 +1,4 @@
-import manifest from '../../public/audio/countries/manifest.json' with {type:'json'};
+import manifest from './country-voice-manifest.json' with {type:'json'};
 import {dialogueKey,CONVERSATIONS,PATIENT_PAIN_LINES,CLINICAL_CONVERSATIONS} from './life-rules.js';
 import {countryPatientLine} from './country-dialogue.js';
 const localized=new Map();

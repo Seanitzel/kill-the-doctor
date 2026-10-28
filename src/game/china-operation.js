@@ -1,3 +1,4 @@
+import {remainingWalkSeconds} from './appointments.js';
 import {OfficeStatus} from './office-status.js';
 import {ROOM_WARNING_LINES,OFFICE_VISITOR_LINES} from './dialogue-v25.js';
 import{footprint}from'./collision.js';
@@ -17,7 +18,7 @@ export class ChinaOperation{
   this.doctor=e.spawnNPC({name:'Dr. Liu Wen',gender:'male',skin:'#d3a98a',hair:'#242323',hairstyle:'cropped',accent:'#e2e8ec',castCountry:'china',voiceCountry:'china',voiceRole:'doctor'},'doctor',0,this.home,this.office,'china-third-doctor',{fixed:true});this.phase='working';this.breakAt=18+e.mission.random()*12;this.doctor.activity='rest';this.doctor.visual.root.rotation.y=Math.PI/2;this.statusSign=new OfficeStatus(e.hospitals[0].group,this.doors[0],this.office);
   this.cupPoint=work?.cup||{x:this.home.x,z:this.home.z+.6};const cup=this.prop(0,this.cupPoint.x,.91,this.cupPoint.z,'Third doctor personal cup');mesh('cylinder',material('#e7e8dc'),[.07,.14,.07],[0,0,0],cup);mesh('cylinder',material('#41302a'),[.06,.005,.06],[0,.073,0],cup);
   const bathroom=e.hospitals[0].bathrooms[0],room=e.levels[0].rooms.find(r=>r.kind==='bathroom');this.changePoint=nav.nearest(bathroom?.anchors?.center||room.center).point;const locker=this.prop(0,this.changePoint.x,.75,this.changePoint.z-.5,'Disguise supply locker');mesh('box',material('#587b91'),[.55,1.5,.35],[0,0,0],locker);const label=sign('STAFF SCRUBS','CAP / MASK',.65,.25);label.position.set(0,.50,.19);locker.add(label);this.obstacle(0,this.changePoint.x,this.changePoint.z-.5,.55,.35,1.6);
-  this.bathroomGoal={...nav.nearest(room.center).point};this.setupDrawers(nav);
+  this.bathroomGoal={...nav.nearest(room.center).point};this.returnWalkSeconds=remainingWalkSeconds({pos:this.bathroomGoal,path:nav.smoothRoute(this.bathroomGoal,this.home),cursor:0,speed:this.doctor.speed},this.home);this.setupDrawers(nav);
   this.trayPoint={x:3,z:-3};this.tray=instrumentTray(this.root,this.trayPoint.x,this.trayPoint.z);this.obstacle(3,this.trayPoint.x,this.trayPoint.z,2.8,.8,1.34);this.trayView={position:new T.Vector3(3,2.35,-.9),target:new T.Vector3(3,1.05,-3)};
   this.angles=[{...RECORDING_ANGLES[0],x:-5,z:-1},{...RECORDING_ANGLES[1],x:1.5,z:1.5},{...RECORDING_ANGLES[2],x:3,z:-9}];
   const navB=e.systems.navigationFor(3),used=[];this.angles=this.angles.map(a=>{const candidates=[...navB.nodes.values()].filter(n=>dist(n.point,this.patient.pos)>2.4&&dist(n.point,this.patient.pos)<9&&used.every(p=>dist(n.point,p)>2.5)&&e.lineOfSight(n.point,this.patient.pos,3)).sort((p,q)=>dist(p.point,a)-dist(q.point,a));const point=candidates[0]?.point||navB.nearest(a).point;used.push(point);return{...a,...point};});
@@ -96,8 +97,7 @@ export class ChinaOperation{
  doctorTiming(){
   const e=this.e,n=this.doctor,away=this.officeClear(),now=e.mission.elapsed;if(!away)return{away:false,awaySeconds:0,returnSeconds:null};
   const goal=this.phase==='outbound'?this.bathroomGoal:this.home;
-  let walk=dist(n.pos,goal);if(n.path?.length>n.cursor){let from=n.pos;walk=0;for(const cell of n.path.slice(n.cursor)){const to={x:(cell.x-11)*3,z:(cell.z-11)*3};walk+=dist(from,to);from=to;}}
-  const travel=walk/Math.max(.5,n.speed||1.3),homeTrip=dist(this.bathroomGoal,this.home)/Math.max(.5,n.speed||1.3);
+  const travel=remainingWalkSeconds(n,goal),homeTrip=this.returnWalkSeconds||dist(this.bathroomGoal,this.home)/Math.max(.5,n.speed||1.3);
   return{away:true,awaySeconds:Math.max(0,Math.floor(now-(this.awaySince??now))),returnSeconds:Math.ceil(this.phase==='returning'?travel:Math.max(0,(this.returnAt??now+52)-now)+homeTrip+(this.phase==='outbound'?travel:0)),returning:this.phase==='returning'};
  }
  updateDoctor(dt){

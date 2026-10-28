@@ -7,3 +7,11 @@ export class TargetAppointment {
   interrupt(now){if(this.completed)return false;this.start(now);this.endsAt=now;return true;}
   remaining(now){return this.startedAt===null?this.duration:Math.max(0,Math.ceil(this.endsAt-now));}
 }
+
+// The same world-space route used by NPC movement drives the return estimate.
+export function remainingWalkSeconds(n,goal){
+ let length=0,from=n.pos;
+ if(n.path?.length>n.cursor){for(let i=n.cursor;i<n.path.length;i++){const cell=n.path[i],to={x:(cell.x-11)*3,z:(cell.z-11)*3};length+=Math.hypot(to.x-from.x,to.z-from.z);from=to;}}
+ else length=Math.hypot(goal.x-from.x,goal.z-from.z);
+ return length/Math.max(.5,n.speed||1.3);
+}

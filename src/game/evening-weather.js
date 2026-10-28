@@ -15,7 +15,7 @@ export function addEveningWeather(parent,country='france'){
   car.updateMatrixWorld(true);const groups=new Map();for(const part of [...car.children]){if(!part.isMesh||part.material.transparent)continue;const geometry=part.geometry.clone().applyMatrix4(part.matrix);if(!groups.has(part.material))groups.set(part.material,[]);groups.get(part.material).push(geometry);part.removeFromParent();}for(const [mat,geometries]of groups){const merged=mergeGeometries(geometries,false);geometries.forEach(g=>g.dispose());car.add(new T.Mesh(merged,mat));}
   cars.push({root:car,offset:i*19,direction:i%2?1:-1,speed:4.2+i*.45});
  }
- const count=weather==='clear'?0:weather==='storm'?360:240,positions=new Float32Array(count*3),geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(positions,3));
+ const count=weather==='clear'?0:weather==='storm'?260:170,positions=new Float32Array(count*3),geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(positions,3));
  const snow=weather==='snow',particles=new T.Points(geometry,new T.PointsMaterial({color:snow?'#d6dfeb':'#8ba6bb',size:snow?.065:.028,transparent:true,opacity:snow?.62:.42,depthWrite:false}));particles.name=`Evening ${weather}`;particles.frustumCulled=false;particles.visible=false;root.add(particles);
  const state={root,cars,particles,positions,count,weather};parent.userData.evening=state;updateEveningWeather(parent,false,0);return state;
 }
@@ -23,6 +23,6 @@ export function updateEveningWeather(parent,outside,time=0){
  const state=parent?.userData.evening;if(!state)return;const{cars,particles,positions,count,weather}=state;
  for(const car of cars){const position=((time*car.speed+car.offset)%94)-47;car.root.position.set(position*car.direction,0,car.direction>0?50:55.5);car.root.rotation.y=car.direction*Math.PI/2;}
  particles.visible=outside;if(!outside)return;
- const snow=weather==='snow';for(let i=0;i<count;i++){const seed=(i*17.931)%1;positions[i*3]=-24+(i*7.391%48)+(snow?Math.sin(time*.45+i)*.45:0);positions[i*3+1]=((i*1.73-time*(snow?.6:9))%9+9)%9;positions[i*3+2]=35+(i*3.73%25)+(snow?Math.cos(time*.3+i)*.2:seed*.4);}
+ const snow=weather==='snow';for(let i=0;i<count;i++){const seed=(i*17.931)%1;positions[i*3]=-24+(i*7.391%48)+(snow?Math.sin(time*.45+i)*.45:((time*.32+i*.07)%1)*.6);positions[i*3+1]=((i*1.73-time*(snow?.6:3.8))%9+9)%9;positions[i*3+2]=35+(i*3.73%25)+(snow?Math.cos(time*.3+i)*.2:seed*.4);}
  particles.geometry.attributes.position.needsUpdate=true;
 }

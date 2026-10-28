@@ -2329,6 +2329,54 @@
       "duration": 3.816,
       "bytes": 30765,
       "sha256": "c3587c1c01f0cadebf3f29e7fd8333a6fc135bc828153caf2e29c57ca50decd3"
+    },
+    "english/female/f-65f27293": {
+      "text": "Is the doctor around?",
+      "language": "en",
+      "country": "english",
+      "gender": "female",
+      "voice": "Rachel",
+      "engine": "ElevenLabs v3",
+      "predictionId": "9075d19g35rmw0d1g7w9arr0j8",
+      "duration": 1.968,
+      "bytes": 15981,
+      "sha256": "e8a3dda0fb3564738e8a338a60c38337531c09ccc5c46c78b3b6ad15e0fe3b38"
+    },
+    "english/female/f-b6aef79b": {
+      "text": "What number are you? I thought I was next.",
+      "language": "en",
+      "country": "english",
+      "gender": "female",
+      "voice": "Rachel",
+      "engine": "ElevenLabs v3",
+      "predictionId": "wcwyg9sk61rmy0d1g7wts62350",
+      "duration": 3.816,
+      "bytes": 30765,
+      "sha256": "e4aa9d7b6f68eb22e76eb9846f453ae1f7e32bf78da65df20db3dd764a1bb0cf"
+    },
+    "english/male/m-65f27293": {
+      "text": "Is the doctor around?",
+      "language": "en",
+      "country": "english",
+      "gender": "male",
+      "voice": "Drew",
+      "engine": "ElevenLabs v3",
+      "predictionId": "47wqxzvfjhrmr0d1g7wsbb5qng",
+      "duration": 1.968,
+      "bytes": 15981,
+      "sha256": "a691326df27cc50e0bc203f1c9f68e261a49688a240c6dc60ebe14efd94a0e14"
+    },
+    "english/male/m-b6aef79b": {
+      "text": "What number are you? I thought I was next.",
+      "language": "en",
+      "country": "english",
+      "gender": "male",
+      "voice": "Drew",
+      "engine": "ElevenLabs v3",
+      "predictionId": "j40xnbj85drmw0d1g7xb5bshsr",
+      "duration": 2.688,
+      "bytes": 21741,
+      "sha256": "dc10513b0f3e518d0c5518a18cb241ee631800a520aceef3585497f4b656d814"
     }
   },
   "mode": "english-shared"

@@ -1,5 +1,5 @@
 import{INFILTRATION_LINES}from'./infiltration-dialogue.js';
-import {ADDITIONAL_DIALOGUE_LINES,PATIENT_PAGE_LINES} from './dialogue-v25.js';
+import {ADDITIONAL_DIALOGUE_LINES,PATIENT_PAGE_LINES,OFFICE_VISITOR_LINES} from './dialogue-v25.js';
 export function exposureDuration(patient, filterLevel = 0) {
   const duration = Number(patient?.contamination) || 0;
   if (![30,60,180].includes(duration)) return 0;
@@ -105,7 +105,7 @@ export const WITNESS_LINES = {
   camera:'That camera is not allowed here. I am calling security.',
 };
 export const ALL_DIALOGUE_LINES = [...new Set([
-  ...INFILTRATION_LINES, 'Oh, sorry. Excuse me.', ...ADDITIONAL_DIALOGUE_LINES, ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
+  ...OFFICE_VISITOR_LINES, ...INFILTRATION_LINES, 'Oh, sorry. Excuse me.', ...ADDITIONAL_DIALOGUE_LINES, ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
   ...Object.values(CLINICAL_CONVERSATIONS).flat(2), ...PATIENT_PAIN_LINES,
   ...SUSPICION_LINES, ...RECRUIT_LINES, ...DISTRESS_LINES, ...ANNOUNCEMENT_LINES, ...Object.values(WITNESS_LINES),
 ])];

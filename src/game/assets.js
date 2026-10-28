@@ -227,7 +227,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       }
     }
   });
-  applyAppearance(model,person,role,assets.appearanceCache,assets.male);model.traverse(o=>{if(o.isMesh)o.frustumCulled=false;});
+  applyAppearance(model,person,role,assets.appearanceCache,null);model.traverse(o=>{if(o.isMesh)o.frustumCulled=false;});
   const mixer = new THREE.AnimationMixer(model); const actions = {};
   for (const name of ['Idle', 'Walk', 'Run']) {
     const clip = assets.animations[name];
@@ -275,7 +275,9 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.24, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
     const action=actions[next],footfalls=speed>.15&&action?animationFootfalls(action.time,dt,action.timeScale,action.getClip().duration):0;
     mixer.update(dt);
-    for(const w of wrists){const angle=w.bind.angleTo(w.bone.quaternion);if(angle>.65)w.bone.quaternion.slerp(w.bind,1-.65/angle);w.bone.quaternion.normalize();}
+    // Retargeting already supplies the wrist orientation in forearm space.
+    // Clamping it toward the T-pose twists palms inward during idle and turns.
+    for(const w of wrists)w.bone.quaternion.normalize();
     for(const finger of restingFingers)finger.bone.quaternion.copy(finger.bind).multiply(finger.curl);
     if (aim) for (const item of arms) item.arm.quaternion.copy(item.q);
     return {footfalls,animation:current};
@@ -338,6 +340,10 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       orient('LeftArm','LeftForeArm',[-.13,-.25,.35]); orient('LeftForeArm','LeftHand',[.02,-.15,.45]);
     } else if(activity==='cpr') {
       orient('RightArm','RightForeArm',[.09,-.6,.35]);orient('RightForeArm','RightHand',[-.06,-.45,.28]);orient('LeftArm','LeftForeArm',[-.10,-.6,.35]);orient('LeftForeArm','LeftHand',[.05,-.45,.28]);if(b.Spine2)b.Spine2.rotation.x+=.5+Math.sin(time*6)*.06;if(b.Head)b.Head.rotation.x+=.2;
+    } else if(activity==='stretcher-push'||activity==='stretcher-pull') {
+      const reach=activity==='stretcher-push'?1:-1;
+      orient('RightArm','RightForeArm',[.10,-.55,.25*reach]);orient('RightForeArm','RightHand',[-.04,-.3,.75*reach]);
+      orient('LeftArm','LeftForeArm',[-.10,-.55,.25*reach]);orient('LeftForeArm','LeftHand',[.04,-.3,.75*reach]);
     } else if(activity==='examine') {
       orient('RightArm','RightForeArm',[.08,-.19,.65]); orient('RightForeArm','RightHand',[0,-.16,.75]);
       orient('LeftArm','LeftForeArm',[-.1,-.2,.4]); orient('LeftForeArm','LeftHand',[0,.05,.5]);

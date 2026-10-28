@@ -125,7 +125,8 @@ export class HospitalLife {
     this.dialogues.push({actor,text,until:e.mission.elapsed+Math.max(4.5,text.length*.07)});
     this.history.push({speaker:actor.name,text,time:e.mission.elapsed});if(this.history.length>30)this.history.shift();
     const voiceVersion=actor.voiceVersion=(actor.voiceVersion||0)+1;
-    e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos)),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor},{countryTake,speakerId:actor.id,isCurrent:()=>!this.disposed&&actor.voiceVersion===voiceVersion});
+    const directory=/expecting visitors|staff directory|visitor|welcome/i.test(text);
+    e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos))*(directory?.38:urgent?.75:.52),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor},{countryTake,rate:directory?.94:1,speakerId:actor.id,isCurrent:()=>!this.disposed&&actor.voiceVersion===voiceVersion});
     actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07);
   }
   privacyWitness(room){
@@ -282,13 +283,13 @@ export class HospitalLife {
     }
     this.props.children.forEach(o=>{if(o.userData.floor!==undefined)o.visible=o.userData.floor===e.floor;});
     if(!emergency&&now>=this.nextAmbient) {
-      const near=this.groups.filter(g=>g.floor===e.floor&&g.next<=now&&g.actors.every(n=>!n.dead)&&dist(e.playerPos,g.actors[0].pos)<11).sort((a,b)=>dist(e.playerPos,a.actors[0].pos)-dist(e.playerPos,b.actors[0].pos));
+      const near=this.groups.filter(g=>g.floor===e.floor&&g.next<=now&&g.actors.every(n=>!n.dead&&!n.officeVisitor)&&dist(e.playerPos,g.actors[0].pos)<11).sort((a,b)=>dist(e.playerPos,a.actors[0].pos)-dist(e.playerPos,b.actors[0].pos));
       if(near.length) {
         const group=near[0],lines=CONVERSATIONS[group.kind][group.conversation++%CONVERSATIONS[group.kind].length];this.speak(group.actors[0],lines[0]);
         this.queue.push({actor:group.actors[1],text:lines[1],time:now+Math.max(4.2,lines[0].length*.07)+.4});group.next=now+14+e.mission.random()*10;this.nextAmbient=now+Math.max(14,(lines[0].length+lines[1].length)*.07+2);
       }
     }
-    for(let i=this.queue.length-1;i>=0;i--)if(this.queue[i].time<=now){const line=this.queue.splice(i,1)[0];if(!emergency)this.speak(line.actor,line.text);}
+    for(let i=this.queue.length-1;i>=0;i--)if(this.queue[i].time<=now){const line=this.queue.splice(i,1)[0];if(!emergency&&!line.actor.officeVisitor)this.speak(line.actor,line.text);}
     this.dialogues=this.dialogues.filter(d=>d.until>now&&!d.actor.dead);
     if(this.newbornSource) {
       const source=this.newbornSource,d=dist(e.playerPos,source),gain=activityVolume(d,source.floor===e.floor,room?.kind==='maternity');

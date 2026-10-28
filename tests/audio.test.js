@@ -1,3 +1,4 @@
+import {OFFICE_VISITOR_LINES} from '../src/game/dialogue-v25.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -65,7 +66,8 @@ test('Longer story captions receive enough automatic reading time',()=>{
 });
 test('Every conversation has two bundled neural takes with matching text keys and asset hashes',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../public/audio/dialogue/manifest.json',import.meta.url)));
-  const lines=ALL_DIALOGUE_LINES;
+  // The retained legacy bank predates the new ElevenLabs-only office questions.
+  const lines=ALL_DIALOGUE_LINES.filter(text=>!OFFICE_VISITOR_LINES.includes(text));
   assert.equal(manifest.length,lines.length*2);
   for(const text of lines)for(const gender of ['male','female']){
     const key=dialogueKey(text,gender),entry=manifest.find(e=>e.key===key);assert.equal(entry.text,text);assert.equal(entry.synthetic,true);

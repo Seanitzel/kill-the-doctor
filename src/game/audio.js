@@ -141,7 +141,7 @@ export class HospitalAudio {
     if (name === 'flicker') this.hospitalMachine('zap',options.position||this.listenerPosition,.55);
     if(name==='rifle'){this.noise(.32,.68,2200);this.tone(48,.32,.4,'triangle');}
     if(name==='gasp'){if(this.samples.gasp){this.sampleNodes('gasp',{x:0,y:1,z:0},.6);return;}this.noise(.35,.28,2300);this.tone(310,.17,.05,'sine');}
-    if(name==='sneeze'&&this.samples.sneeze)this.playSample('sneeze',options.position||this.listenerPosition,.65);
+    if(name==='sneeze'&&this.samples.sneeze)this.playSample('sneeze',options.position||this.listenerPosition,.24);
     if(name==='magnet'){this.tone(90,1.1,.25,'sawtooth');this.noise(.8,.18,500);}
     if (name === 'shot') { this.noise(.22, this.settings.suppressor ? .25 : .6, 3400); this.tone(62, .2, .4, 'triangle'); }
     if (name === 'step') this.noise(.065, .048, 550);
@@ -167,7 +167,7 @@ export class HospitalAudio {
     this.tone(659.25,.42,.14,'sine');this.tone(523.25,.48,.08,'sine');
   }
   patientWarning(name,position){
-    if(['cough','sneeze'].includes(name)&&this.samples[name])this.playSample(name,position,.65);else if(name!=='sneeze')this.sound(name);
+    if(['cough','sneeze'].includes(name)&&this.samples[name])this.playSample(name,position,name==='sneeze'?.24:.42);else if(name!=='sneeze')this.sound(name);
   }
   hospitalMachine(kind,position=this.listenerPosition,gain=.3){
     if(!this.ownsContext(this.ctx)||!this.enabled||gain<=0||!Object.hasOwn(MACHINE_DURATIONS,kind))return null;
@@ -216,18 +216,21 @@ export class HospitalAudio {
       const high=this.ctx.createBiquadFilter(),low=this.ctx.createBiquadFilter(),speaker=this.ctx.createBiquadFilter();high.type='highpass';high.frequency.value=430;low.type='lowpass';low.frequency.value=2200;speaker.type='lowpass';speaker.frequency.value=2600;
       source.connect(high);high.connect(low);low.connect(speaker);speaker.connect(volume);filters.push(high,low,speaker);
     }else{
-      panner.panningModel='HRTF';panner.distanceModel='inverse';panner.refDistance=4;panner.maxDistance=25;panner.rolloffFactor=.65;
+      panner.panningModel='HRTF';panner.distanceModel='inverse';panner.refDistance=name==='sneeze'?1.8:3;panner.maxDistance=25;panner.rolloffFactor=name==='sneeze'?1.15:.9;
       panner.positionX.value=position.x;panner.positionY.value=position.y||1;panner.positionZ.value=position.z;
       source.connect(panner);panner.connect(volume);
     }
-    volume.gain.value=gain;volume.connect(this.lowpass);
-    const record={source,panner,volume,filters,name,speakerId:options.speakerId,publicAddress:!!options.publicAddress,floor:options.publicAddress?undefined:position.floor};this.activeSamples.add(record);
+    const conversation=name.startsWith('voice-')&&!options.publicAddress;
+    volume.gain.value=gain*(conversation&&this.paActive()?.28:1);volume.connect(this.lowpass);source.playbackRate.value=options.rate||1;
+    const record={source,panner,volume,filters,name,speakerId:options.speakerId,publicAddress:!!options.publicAddress,conversation,baseGain:gain,floor:options.publicAddress?undefined:position.floor};this.activeSamples.add(record);if(record.publicAddress)this.duckConversations();
     source.onended=()=>this.releaseSample(record);
     if(this.activeSamples.size>24)this.releaseSample([...this.activeSamples].find(item=>!item.source.loop)||this.activeSamples.values().next().value,true);
     try{source.start(this.ctx.currentTime+(options.startDelay||0));}catch{this.releaseSample(record,true);return null;}return record;
   }
+  paActive(){return [...this.activeSamples].some(record=>record.publicAddress&&!record.released);}
+  duckConversations(){if(!this.ctx)return;const factor=this.paActive()?.28:1;for(const record of this.activeSamples)if(record.conversation&&!record.released)record.volume.gain.setTargetAtTime(this.enabled&&(record.floor===undefined||record.floor===this.listenerFloor)?record.baseGain*factor:0,this.ctx.currentTime,factor<1?.12:.55);}
   releaseSample(record,stop=false){
-    if(!record||record.released)return;record.released=true;this.activeSamples.delete(record);record.source.onended=null;
+    if(!record||record.released)return;record.released=true;this.activeSamples.delete(record);record.source.onended=null;if(record.publicAddress)this.duckConversations();
     if(stop)try{record.source.stop();}catch{}
     disconnect(record.source);disconnect(record.panner);disconnect(record.volume);for(const filter of record.filters||[])disconnect(filter);try{record.source.buffer=null;}catch{}
     for(const [key,channel]of this.ambientChannels)if(channel===record)this.ambientChannels.delete(key);
@@ -307,7 +310,7 @@ export class HospitalAudio {
     if(this.disposed||!ANNOUNCEMENT_LINES.includes(text))return;
     const announcementSerial=this.announcementSerial=(this.announcementSerial||0)+1;
     for(const record of [...this.activeSamples])if(record.publicAddress)this.releaseSample(record,true);
-    return this.dialogue(text,{gender:'female',voiceRegion:'standard',voiceCountry:this.countryId,voiceRole:'staff'},.8,true,this.listenerPosition,{publicAddress:true,announcementSerial});
+    return this.dialogue(text,{gender:'female',voiceRegion:'standard',voiceCountry:this.countryId,voiceRole:'staff'},text.includes('staff directory')?.46:.8,true,this.listenerPosition,{publicAddress:true,announcementSerial,rate:text.includes('staff directory')?.95:1});
   }
   update(dt, proximity, emergency, impairment, moving, running,footfalls=null) {
     if (!this.ctx || !this.enabled || this.disposed) return;

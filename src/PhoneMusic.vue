@@ -1,9 +1,9 @@
 <script setup>
 import {ref,onMounted,onBeforeUnmount,watch} from 'vue';
-import {X,Headphones,Cigarette,Play,Pause,SkipBack,SkipForward} from 'lucide-vue-next';
+import {X,Headphones,Cigarette,Play,Pause,SkipBack,SkipForward,ChevronRight,ChevronLeft} from 'lucide-vue-next';
 import {PHONE_TRACKS,nextPhoneTrack,PhoneAudio} from './game/phone-playlist.js';
-const props=defineProps({appointment:Object,outside:Boolean,smoking:Boolean,volume:{type:Number,default:.5}});
-const emit=defineEmits(['close','smoke','playing']);
+const props=defineProps({appointment:Object,outside:Boolean,smoking:Boolean,collapsed:Boolean,volume:{type:Number,default:.5}});
+const emit=defineEmits(['close','smoke','playing','collapse']);
 const state=ref({selected:0,playing:false,buffering:false,time:0,duration:0,error:''});let player;
 const time=seconds=>`${Math.floor(seconds/60)}:${String(Math.floor(seconds%60)).padStart(2,'0')}`;
 watch(()=>props.volume,value=>player?.setVolume(value));
@@ -11,7 +11,10 @@ onMounted(()=>{player=new PhoneAudio({volume:props.volume,onChange:value=>{state
 onBeforeUnmount(()=>{player?.dispose();player=null;emit('playing',false);});
 </script>
 <template>
- <section class="phone-music" aria-label="Character phone music" @pointerdown.stop @keydown.esc.stop.prevent="emit('close')" @keydown.stop>
+ <section class="phone-music" :class="{collapsed}" aria-label="Character phone music" @pointerdown.stop @keydown.esc.stop.prevent="emit('close')" @keydown.stop>
+  <button class="phone-collapse" :aria-label="collapsed?'Expand music player':'Collapse music player and keep listening'" :aria-expanded="!collapsed" @click="emit('collapse',!collapsed)"><ChevronLeft v-if="collapsed" :size="22"/><ChevronRight v-else :size="22"/></button>
+  <div v-if="collapsed" class="phone-mini"><button aria-label="Expand music player" @click="emit('collapse',false)"><Headphones :size="18"/><strong>{{PHONE_TRACKS[state.selected].title}}</strong></button><small class="phone-mini-time">{{time(state.time)}}</small><button :aria-label="state.playing?'Pause music':'Play music'" @click="player.toggle()"><Pause v-if="state.playing||state.buffering" :size="19"/><Play v-else :size="19"/></button><button v-if="smoking" aria-label="Finish smoke break" @click="emit('smoke')"><Cigarette :size="18"/></button><button aria-label="Stop music and put phone away" @click="emit('close')"><X :size="18"/></button></div>
+  <div v-show="!collapsed" class="phone-expanded">
   <header><span><Headphones :size="17"/> NIGHT SHIFT / PHONE</span><button aria-label="Put phone away" @click="emit('close')"><X :size="20"/></button></header>
   <div class="phone-wait" role="status"><b>{{appointment?.complete?'Doctor is available':appointment?`Patient appointment · ${time(appointment.seconds)} left`:'A moment to yourself'}}</b><small>The hospital keeps moving while you listen.</small></div>
   <div class="phone-player" :class="{playing:state.playing}"><div class="phone-record"><span>VENUS<small>AFTER HOURS</small></span></div><div class="phone-waves" aria-hidden="true"><i v-for="n in 18" :key="n" :style="{'--bar':`${n%5*.13}s`}"></i></div></div>
@@ -19,6 +22,7 @@ onBeforeUnmount(()=>{player?.dispose();player=null;emit('playing',false);});
   <nav aria-label="Your music playlist"><button v-for="(song,index) in PHONE_TRACKS" :key="song.id" :class="{selected:index===state.selected}" @click="player.select(index)"><span>{{index===state.selected&&state.playing?'♫':String(index+1).padStart(2,'0')}}</span><strong>{{song.title}}<small>{{song.artist}}</small></strong><Headphones v-if="index===state.selected" :size="15"/></button></nav>
   <p v-if="state.error" class="phone-error" role="alert">{{state.error}}</p>
   <footer><button v-if="outside" class="phone-smoke" :aria-pressed="smoking" @click="emit('smoke')"><Cigarette :size="16"/>{{smoking?'Finish smoke break':'Take a smoke break'}}</button><small v-else>For a smoke break, walk through the glass entrance doors and open your phone outside.</small><button class="phone-return" @click="emit('close')">PUT PHONE AWAY</button></footer>
+  </div>
  </section>
 </template>
 <style>
@@ -28,4 +32,10 @@ onBeforeUnmount(()=>{player?.dispose();player=null;emit('playing',false);});
 @media(max-height:580px) and (min-width:600px){.phone-music{width:500px;display:grid;grid-template-columns:minmax(200px,1.2fr) minmax(160px,1fr);gap:0 16px;padding:14px;max-height:calc(100dvh - 24px);top:12px;right:max(12px,env(safe-area-inset-right))}.phone-music header,.phone-wait{grid-column:1/-1}.phone-music header{margin-bottom:7px}.phone-wait{margin-bottom:9px}.phone-player{grid-column:1;grid-row:3;height:150px}.phone-transport{grid-column:1;grid-row:4}.phone-track-status{padding:5px 0}.phone-music nav{grid-column:2;grid-row:3/5;align-content:center}.phone-music nav button{padding:6px 9px}.phone-music footer{grid-column:1/-1;grid-template-columns:1fr 1fr;align-items:center}.phone-error{grid-column:1/-1}.phone-launch{bottom:75px;max-width:220px}.phone-launch small{display:none}}
 @media(max-width:599px){.phone-music{right:16px;top:max(12px,env(safe-area-inset-top));max-height:calc(100dvh - 24px)}.phone-launch{bottom:180px;font-size:11px;white-space:nowrap}.phone-launch small{display:none}}
 @media(prefers-reduced-motion:reduce){.phone-waves i{animation:none}}
+</style>
+
+<style>
+.phone-music{overflow:visible;display:block}.phone-expanded{max-height:calc(100dvh - 82px);overflow:auto}.phone-collapse{position:absolute;left:-32px;top:45%;width:32px;min-height:62px;display:grid;place-items:center;background:#142e3d;border:1px solid #91b0bf88;border-right:0;border-radius:12px 0 0 12px;cursor:pointer;touch-action:manipulation!important}.phone-music.collapsed{width:min(320px,calc(100vw - 80px));top:max(128px,env(safe-area-inset-top));padding:10px;border-radius:14px}.phone-music.collapsed~.reticle{display:block}.phone-mini-time{font:9px monospace;color:#a5bfcd}.phone-mini{display:flex;align-items:center;gap:8px}.phone-mini button{min-height:42px;min-width:32px;background:transparent;border:0;display:flex;align-items:center;gap:8px;cursor:pointer}.phone-mini button:first-child{flex:1;min-width:0}.phone-mini strong{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.phone-music.collapsed .phone-collapse{top:0;min-height:62px}.game-shell:has(.phone-music.collapsed) .hud-bottom{display:flex}
+@media(max-height:580px) and (min-width:600px){.phone-expanded{display:grid;grid-template-columns:minmax(200px,1.2fr) minmax(160px,1fr);gap:0 16px}}
+@media(max-height:600px){.phone-music.collapsed{top:105px}.phone-music .phone-expanded{max-height:calc(100dvh - 65px)}}
 </style>

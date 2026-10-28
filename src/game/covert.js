@@ -1,3 +1,4 @@
+import {OfficeStatus} from './office-status.js';
 import {coffeeLevel} from './population.js';
 import * as THREE from 'three';
 import {mesh,material,sign} from './assets.js';
@@ -25,7 +26,7 @@ export class CovertAssignments{
     const target=e.npcs.find(n=>n.id==='target');this.target=target;if(!target)return;this.targetHome={x:target.pos.x,z:target.pos.z};
     if(!coffeeLevel(m.round))return;
     const floor=target.floor,work=e.hospitals[floor].workstations.find(w=>w.room===target.room.id);if(!work)return;
-    const nav=e.systems.navigationFor(floor);this.coffeeGoal={...nav.nearest(work.stand).point};this.targetHome={...this.coffeeGoal};this.coffeeOffice=target.room;
+    const nav=e.systems.navigationFor(floor);this.coffeeGoal={...nav.nearest(work.stand).point};this.targetHome={...this.coffeeGoal};this.coffeeOffice=target.room;this.statusSign=new OfficeStatus(e.hospitals[floor].group,e.levels[floor].doors.find(d=>d.room===target.room.id),target.room);
     const bathroom=e.levels[floor].rooms.find(r=>r.kind==='bathroom');this.bathroomGoal={...nav.nearest({x:bathroom.center.x,z:bathroom.center.z}).point};
     this.cup=this.prop(floor,work.cup.x,.90,work.cup.z);this.cup.name='Target personal coffee on office desk';
     mesh('cylinder',material('#e5e8dd'),[.075,.14,.075],[0,.02,0],this.cup);mesh('cylinder',material('#392820'),[.064,.004,.064],[0,.093,0],this.cup);
@@ -36,6 +37,7 @@ export class CovertAssignments{
   }
   insideOffice(n){const cell=tileAt(n.pos.x,n.pos.z);return n.floor===0&&this.e.levels[0].cells.get(key(cell.x,cell.z))?.room===this.office.id;}
   seen(point,floor,owner=null){const e=this.e;return e.npcs.some(n=>{if(n.dead||n.evacuated||n.lying||n.baby||n.blind||n.floor!==floor)return false;const d=distance(n.pos,point);if(d>8)return false;const dx=point.x-n.pos.x,dz=point.z-n.pos.z,yaw=n.visual.root.rotation.y;return (n===owner||d<1.5||(dx*Math.sin(yaw)+dz*Math.cos(yaw))/Math.max(d,.01)>.15)&&e.lineOfSight(n.pos,point,floor);});}
+  targetOfficeClear(){if(!this.target||!this.coffeeOffice)return false;const cell=tileAt(this.target.pos.x,this.target.pos.z);return this.e.levels[this.target.floor].cells.get(key(cell.x,cell.z))?.room!==this.coffeeOffice.id;}
   interactions(){
     const e=this.e;if(e.mission.type!=='standard'||e.mission.targetDown)return [];
     const items=[];if(!this.documentTaken&&this.document&&e.floor===0)items.push({type:'covert-document',label:this.action?'Collecting document…':mustSteal(e)?'Take confidential staff rota':'Read staff directory',x:this.desk.x,z:this.desk.z});
@@ -54,7 +56,7 @@ export class CovertAssignments{
     if(item.type==='covert-cup'){
       if(!e.mission.identified){e.notify('Confirm the assigned doctor’s badge first','warning');return false;}
       if(!this.capsule){e.notify('Collect the fictional KTD compound from Pharmacy first');return false;}
-      if(this.targetPhase!=='bathroom'&&this.targetPhase!=='outbound'){e.notify('Wait until the doctor leaves for the bathroom','warning');return false;}
+      if(!this.targetOfficeClear()){e.notify('Wait until the doctor leaves for the bathroom','warning');return false;}
       if(this.seen(e.playerPos,e.floor,this.target))return this.caught('A witness saw you tampering with the doctor’s coffee.');
       this.tampered=true;this.capsule=false;e.notify('Coffee prepared · leave the office unseen before the doctor returns','clue');return true;
     }return false;
@@ -78,8 +80,9 @@ export class CovertAssignments{
       if(this.phase==='returning'&&distance(n.pos,this.home)<.35){this.phase='working';n.activity='rest';n.path=[];this.breakAt=now+45;this.backAt=null;}
     }
     if(this.action){if(e.floor!==0||distance(e.playerPos,this.action.from)>.5){this.action=null;e.notify('Rota collection cancelled · stay beside the document');}else if(mustSteal(e)&&(this.insideOffice(this.custodian)||this.seen(e.playerPos,e.floor,this.custodian))){this.action=null;return this.caught('You were caught taking confidential staff schedules.');}else if(now>=this.action.until){this.action=null;this.documentTaken=true;this.document.visible=false;const clue=m.clue(m.challenge?.scheduleRequired?'schedule':'directory');if(clue)e.hooks.clue?.(clue);e.audio.sound('clue');e.notify('Confidential rota collected · department and room recorded','clue');}}
-    const target=this.target;if(!target||target.dead||!this.cup)return;
+    const target=this.target;this.statusSign?.update(this.targetOfficeClear(),target?.dead);if(!target||target.dead||!this.cup)return;
     const appointment=e.life?.targetCase;
+    if(this.targetOfficeClear())this.targetAwaySince??=now;else this.targetAwaySince=null;
     if(this.targetPhase==='working'&&now>=this.nextTargetBreak&&(!appointment||appointment.completed)){
       target.activity=null;target.path=[];target.reaction=0;this.targetPhase='outbound';e.routeNPC(target,this.bathroomGoal);
     }
@@ -91,6 +94,6 @@ export class CovertAssignments{
   }
 
   objective(){const m=this.e.mission;if(m.type!=='standard'||m.targetDown)return null;if(this.document&&!this.documentTaken)return !m.recordsNotice?'Read the hospital information board':!m.locatedRecords?`Locate Records office · room ${this.office.number} · ground floor`:'Find the staff directory / rota inside Records';return null;}
-  hud(){if(this.e.mission.type!=='standard')return null;return {level:this.e.mission.round,label:this.e.mission.challenge?.label,documentRequired:!!this.document,stealthRequired:mustSteal(this.e),documentTaken:this.documentTaken,breakState:this.phase==='working'?'Wait for coffee break':this.phase==='returning'?'Doctor returning':this.custodian&&this.insideOffice(this.custodian)?'Doctor leaving':'Room clear',window:this.backAt?Math.max(0,Math.ceil(this.backAt-this.e.mission.elapsed)):null,coffee:this.tampered?'prepared':this.capsule?'compound collected':'optional',targetBreak:this.targetPhase};}
-  dispose(){for(const {floor,c} of this.addedColliders){const colliders=this.e.hospitals[floor].colliders,index=colliders.indexOf(c);if(index>=0)colliders.splice(index,1);}this.addedColliders=[];this.action=null;this.root.removeFromParent();disposeObjectResources(this.root,{textures:true});this.root.clear();this.e=null;}
+  hud(){if(this.e.mission.type!=='standard')return null;return {level:this.e.mission.round,label:this.e.mission.challenge?.label,documentRequired:!!this.document,stealthRequired:mustSteal(this.e),documentTaken:this.documentTaken,breakState:this.phase==='working'?'Wait for coffee break':this.phase==='returning'?'Doctor returning':this.custodian&&this.insideOffice(this.custodian)?'Doctor leaving':'Room clear',window:this.backAt?Math.max(0,Math.ceil(this.backAt-this.e.mission.elapsed)):null,coffee:this.tampered?'prepared':this.capsule?'compound collected':'optional',targetBreak:this.targetOfficeClear()?'Office clear · doctor away':this.targetPhase,awaySeconds:this.targetAwaySince==null?null:Math.max(0,Math.floor(this.e.mission.elapsed-this.targetAwaySince)),returnSeconds:this.bathroomUntil&&this.targetOfficeClear()?Math.max(0,Math.ceil(this.bathroomUntil-this.e.mission.elapsed+distance(this.target.pos,this.coffeeGoal)/Math.max(.5,this.target.speed||1.3))):null};}
+  dispose(){this.statusSign?.dispose();this.statusSign=null;for(const {floor,c} of this.addedColliders){const colliders=this.e.hospitals[floor].colliders,index=colliders.indexOf(c);if(index>=0)colliders.splice(index,1);}this.addedColliders=[];this.action=null;this.root.removeFromParent();disposeObjectResources(this.root,{textures:true});this.root.clear();this.e=null;}
 }

@@ -1,6 +1,6 @@
 import {PREMIUM_OUTFITS} from './loadout.js';
 import * as THREE from 'three';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const NURSE_UNIFORM='#8bbbd8';
 export const OUTFIT_STYLES = ['casual','jacket','tactical','suit'];
@@ -379,9 +379,9 @@ export function fitNurseScrubs(model,person){
   }
 }
 
-export function applyAppearance(model, person, role = 'civilian', cache = irisCache, handDonor = null) {
+export function applyAppearance(model, person, role = 'civilian', cache = irisCache) {
   if(!person)return;
-  if(handDonor||['doctor','nurse','patient'].includes(role))completeHands(model,person,role,handDonor);
+  completeHands(model,person,role);
   if(role==='nurse'){fitNurseScrubs(model,person);attachNurseBadge(model,person);}
   model.updateMatrixWorld(true);
   const leases=model.userData.appearanceTextureLeases=new Set();appearanceCaches.set(model,cache);
@@ -452,7 +452,7 @@ function premiumDetails(model,top,item){
 // Preserve the real finger skinning while replacing the source outfit’s glove
 // atlas. Separating faces avoids z-fighting or a rigid mitten over the hand.
 const handFaceCache=new WeakMap();
-export function completeHands(model,person,role,donor=null){
+export function completeHands(model,person,role){
  model.updateMatrixWorld(true);const sources=[];model.traverse(o=>{if(o.isSkinnedMesh&&/Wolf3D_Body|Wolf3D_Outfit_Top/.test(o.material?.name||''))sources.push(o);});
  const chunks={Left:[],Right:[]};
  for(const sourceMesh of sources){
@@ -470,10 +470,8 @@ export function completeHands(model,person,role,donor=null){
  if(!(role==='nurse'&&sourceMesh.material.name.includes('Outfit_Top'))){const remaining=source.clone();remaining.setIndex(keep);remaining.clearGroups();sourceMesh.geometry=remaining;sourceMesh.userData.appearanceGeometryOwned=true;}
  for(const side of ['Left','Right'])if(selected[side].length)chunks[side].push({source,indices:selected[side],mesh:sourceMesh});
  }
- let bare;donor?.traverse(mesh=>{if(mesh.isSkinnedMesh&&mesh.material?.name==='Wolf3D_Body')bare=mesh;});
  for(const side of ['Left','Right']){
  const parts=chunks[side];if(!parts.length)continue;const base=parts[0].mesh;
- if(bare){attachBareHand(model,base,bare,side,person);continue;}
  const geometry=new THREE.BufferGeometry();
  // Meshopt quantization is baked into each mesh's inverse bind matrices.
  // Body and outfit vertices cannot share one skeleton until their bind spaces
@@ -498,49 +496,8 @@ export function completeHands(model,person,role,donor=null){
    }
    geometry.setAttribute(name,new THREE.BufferAttribute(values,size));
  }
- geometry.computeBoundingBox();geometry.computeBoundingSphere();const hand=new THREE.SkinnedMesh(geometry,clothMaterial(person.skin||'#c69b7c',{side:THREE.DoubleSide}));hand.name='KTD complete hand '+side;hand.position.copy(base.position);hand.quaternion.copy(base.quaternion);hand.scale.copy(base.scale);hand.bindMode=base.bindMode;hand.bindMatrix.copy(base.bindMatrix);hand.bindMatrixInverse.copy(base.bindMatrixInverse);hand.skeleton=base.skeleton;hand.normalizeSkinWeights();hand.castShadow=hand.receiveShadow=true;hand.frustumCulled=false;hand.userData.appearanceOwned=true;base.parent.add(hand);
+ const indexed=mergeVertices(geometry,1e-6);geometry.dispose();indexed.computeBoundingBox();indexed.computeBoundingSphere();const hand=new THREE.SkinnedMesh(indexed,clothMaterial(person.skin||'#c69b7c',{side:THREE.DoubleSide}));hand.userData.bareHand=true;hand.userData.nativeHand=true;hand.name='KTD complete hand '+side;hand.position.copy(base.position);hand.quaternion.copy(base.quaternion);hand.scale.copy(base.scale);hand.bindMode=base.bindMode;hand.bindMatrix.copy(base.bindMatrix);hand.bindMatrixInverse.copy(base.bindMatrixInverse);hand.skeleton=base.skeleton;hand.normalizeSkinWeights();hand.castShadow=hand.receiveShadow=true;hand.frustumCulled=false;hand.userData.appearanceOwned=true;base.parent.add(hand);
  }
-}
-// Fit the source's bare hand to the destination's actual wrist/finger skeleton.
-// Blended bind matrices preserve smooth joint weights; no rigid glove overlays,
-// cuff geometry or per-finger draw calls are added.
-function attachBareHand(model,base,donor,side,person){
- const source=donor.geometry,si=source.attributes.skinIndex,sw=source.attributes.skinWeight;
- const prefix=side+'Hand',weights=new Float32Array(si.count);
- for(let i=0;i<si.count;i++)for(let j=0;j<4;j++)if(donor.skeleton.bones[si.getComponent(i,j)].name.startsWith(prefix))weights[i]+=sw.getComponent(i,j);
- const sourceIndices=source.index?.array||Array.from({length:si.count},(_,i)=>i),indices=[];
- for(let i=0;i<sourceIndices.length;i+=3)if(weights[sourceIndices[i]]+weights[sourceIndices[i+1]]+weights[sourceIndices[i+2]]>.15)indices.push(sourceIndices[i],sourceIndices[i+1],sourceIndices[i+2]);
- const targetBones=new Map(base.skeleton.bones.map((bone,i)=>[bone.name,i])),remap=donor.skeleton.bones.map(bone=>targetBones.get(bone.name));
- const length=(bones,name)=>bones.find(b=>b.name===name)?.position.length()||.1;
- const ratio=THREE.MathUtils.clamp(length(base.skeleton.bones,prefix+'Middle1')/length(donor.skeleton.bones,prefix+'Middle1'),.8,1.1),size=new THREE.Matrix4().makeScale(ratio,ratio,ratio);
- const positions=[],normals=[],skinIndices=[],skinWeights=[],point=new THREE.Vector3(),normal=new THREE.Vector3(),normalMatrix=new THREE.Matrix3();
- const targetSkin=new THREE.Matrix4(),fit=new THREE.Matrix4(),term=new THREE.Matrix4(),conversion=new THREE.Matrix4();
- const wrist=model.getObjectByName(prefix).getWorldPosition(new THREE.Vector3()),elbow=model.getObjectByName(side+'ForeArm').getWorldPosition(new THREE.Vector3()),axis=wrist.clone().sub(elbow).normalize(),radial=new THREE.Vector3();
- const modelScale=model.getWorldScale(new THREE.Vector3()).x,wristRadius=(person.gender==='female'?.024:.029)*modelScale;
- const unique=[...new Set(indices)],vertexIndex=new Map(unique.map((index,i)=>[index,i]));
- for(const index of unique){
-   targetSkin.elements.fill(0);fit.elements.fill(0);
-   for(let j=0;j<4;j++){
-     const donorIndex=si.getComponent(index,j),targetIndex=remap[donorIndex],weight=sw.getComponent(index,j),bone=base.skeleton.bones[targetIndex];
-     skinIndices.push(targetIndex);skinWeights.push(weight);if(!weight)continue;
-     term.multiplyMatrices(bone.matrixWorld,base.skeleton.boneInverses[targetIndex]);for(let k=0;k<16;k++)targetSkin.elements[k]+=term.elements[k]*weight;
-     term.copy(bone.matrixWorld).multiply(size).multiply(donor.skeleton.boneInverses[donorIndex]);for(let k=0;k<16;k++)fit.elements[k]+=term.elements[k]*weight;
-   }
-   targetSkin.multiply(base.bindMatrix).invert();conversion.copy(targetSkin).multiply(fit);
-   point.fromBufferAttribute(source.attributes.position,index).applyMatrix4(fit);
-   const along=point.clone().sub(wrist).dot(axis);
-   if(along<0){
-     // Tuck the open extraction edge just inside the actual forearm. The donor
-     // sleeve used to conceal a jagged, wide boundary several cm above the wrist.
-     const t=THREE.MathUtils.clamp(-along/(.045*modelScale),0,1);
-     radial.copy(point).sub(wrist).addScaledVector(axis,-along).clampLength(0,wristRadius*(1-.08*t));
-     point.copy(wrist).addScaledVector(axis,-.018*modelScale*t).add(radial);
-   }
-   point.applyMatrix4(targetSkin);positions.push(...point.toArray());
-   normal.fromBufferAttribute(source.attributes.normal,index).applyMatrix3(normalMatrix.getNormalMatrix(conversion)).normalize();normals.push(...normal.toArray());
- }
- const geometry=new THREE.BufferGeometry();geometry.setIndex(indices.map(index=>vertexIndex.get(index)));geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(skinIndices,4));geometry.setAttribute('skinWeight',new THREE.Float32BufferAttribute(skinWeights,4));geometry.computeBoundingBox();geometry.computeBoundingSphere();
- const hand=new THREE.SkinnedMesh(geometry,clothMaterial(person.skin||'#c69b7c',{side:THREE.DoubleSide}));hand.name='KTD complete hand '+side;hand.position.copy(base.position);hand.quaternion.copy(base.quaternion);hand.scale.copy(base.scale);hand.bindMode=base.bindMode;hand.bindMatrix.copy(base.bindMatrix);hand.bindMatrixInverse.copy(base.bindMatrixInverse);hand.skeleton=base.skeleton;hand.normalizeSkinWeights();hand.castShadow=hand.receiveShadow=true;hand.frustumCulled=false;hand.userData.appearanceOwned=true;hand.userData.bareHand=true;hand.userData.handScale=ratio;base.parent.add(hand);
 }
 export function fitPregnancy(visual){
  const model=visual.model;if(!model)return;model.updateMatrixWorld(true);let top;model.traverse(o=>{if(o.material?.name.includes('Outfit_Top'))top=o;});if(!top)return;

@@ -1,0 +1,4 @@
+// Four-second seeded loops are reused and released through the normal audio lifecycle.
+export function weatherBuffer(ctx,kind){const seconds=4,buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*seconds),ctx.sampleRate),data=buffer.getChannelData(0);let seed=58719,low=0,mid=0;
+ for(let i=0;i<data.length;i++){const t=i/ctx.sampleRate;seed=(Math.imul(seed,1664525)+1013904223)>>>0;const white=seed/4294967296*2-1;low+=.004*(white-low);mid+=.15*(white-mid);if(kind==='siren'){const phase=2*Math.PI*(860*t-260*2/(2*Math.PI)*Math.cos(2*Math.PI*t/2));data[i]=(.20*Math.sin(phase)+.035*Math.sin(phase*3))*(.85+.15*Math.cos(2*Math.PI*t/4));}else if(kind==='thunder'){const edge=Math.min(1,t/.08,(4-t)/.7);data[i]=Math.max(0,edge)*Math.exp(-t*.7)*(low*4+.14*mid);}else{const wind=(.65+.2*Math.cos(t*Math.PI/2)+.15*Math.cos(t*Math.PI));data[i]=kind==='snow'?low*1.8*wind:kind==='wind'?low*3*wind:((white-mid)*.16+low*1.1)*(kind==='storm'?1.4:1);}}
+ return buffer;}

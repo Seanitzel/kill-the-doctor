@@ -14,16 +14,16 @@ export class HospitalExtras{
       const plaque=this.prop('Country hospital identity',0,10.39,2.4,31.5);const label=sign(c.hospital.toUpperCase(),`${c.city.toUpperCase()} / ${c.name.toUpperCase()} · FICTIONAL HOSPITAL`,3.9,.7,{background:c.accent,color:'#f3f7f7'});plaque.add(label);plaque.rotation.y=-Math.PI/2;
       const countrySign=this.prop('Arrival country signage',0,-10.39,2.50,29.5);countrySign.add(sign(c.name.toUpperCase(),`NIGHT SHIFT / ${c.hospital.toUpperCase()}`,2.2,.44,{background:'#19303d',color:'#cfe7ec'}));countrySign.rotation.y=Math.PI/2;
     }
-    for(const level of e.levels.filter(l=>l.floor<3)){
-      const g=this.prop('Mystery Soda vending machine',level.floor,VENDING_LOCATION.x,0,VENDING_LOCATION.z);g.rotation.y=-Math.PI/2;
+    for(const level of e.levels){
+      const vending=level.floor===3?{x:.92,z:-19}:VENDING_LOCATION;const g=this.prop('Mystery Soda vending machine',level.floor,vending.x,0,vending.z);g.rotation.y=-Math.PI/2;
       const b=new Batcher(g),shell=material('#213e50'),glass=material('#88b6c6',{metalness:.35,roughness:.25}),trim=material(c?.accent||'#729bac'),cans=['#88ada9','#a39abc','#d8b784','#638eaa'].map(color=>material(color));
       b.box(shell,0,1.02,0,1.1,2,.7);b.box(glass,-.12,1.22,.365,.69,1.25,.025);
       for(let row=0;row<4;row++){b.box(trim,-.12,.72+row*.29,.25,.70,.025,.30);for(let col=0;col<4;col++)b.cylinder(cans[col],-.38+col*.17,.82+row*.29,.39,.052,.18,.052);}
       b.box(material('#101d27'),-.1,.34,.37,.70,.40,.04);b.box(trim,.42,1.15,.38,.15,.31,.04);b.finish();
       const label=sign('MYSTERY SODA','5 COINS · 60% SLOW / 40% FAST',.98,.25,{background:'#19303c',color:'#e2e9dd'});label.position.set(0,1.87,.37);g.add(label);
-      const collider=vendingBounds();e.hospitals[level.floor].colliders.push(collider);this.colliders.push({floor:level.floor,collider});
+      const collider=level.floor===3?{...vendingBounds(),minX:vending.x-.37,maxX:vending.x+.37,minZ:vending.z-.57,maxZ:vending.z+.57}:vendingBounds();e.hospitals[level.floor].colliders.push(collider);this.colliders.push({floor:level.floor,collider});
       const bottle=new THREE.Group();bottle.name='Dispensed Mystery Soda bottle';bottle.visible=false;bottle.position.set(-.1,1.45,.43);g.add(bottle);const bottleGeometry=new THREE.LatheGeometry([[0,-.12],[.05,-.12],[.055,-.10],[.055,.10],[.027,.14],[.027,.20],[0,.20]].map(([x,y])=>new THREE.Vector2(x,y)),12);const colors=[];for(let v=0;v<bottleGeometry.attributes.position.count;v++){const y=bottleGeometry.attributes.position.getY(v),color=new THREE.Color(y>.17?'#353a56':Math.abs(y)<.07?'#d8e4d9':'#89b7b1');colors.push(color.r,color.g,color.b);}bottleGeometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));bottle.add(new THREE.Mesh(bottleGeometry,material('#ffffff',{vertexColors:true,roughness:.28})));
-      this.items.push({type:'extra-vending',floor:level.floor,x:7.65,z:29.5,label:'Mystery Soda · buy for 5 coins',bottle});
+      this.items.push({type:'extra-vending',floor:level.floor,x:vending.x-1.05,z:vending.z,label:'Mystery Soda · buy for 5 coins',bottle});
     }
     // One service key opens both entrances to each locked laboratory.
     const lockedFloors=[];for(const level of e.levels)for(const room of level.rooms.filter(r=>r.kind==='lab')){
@@ -40,7 +40,7 @@ export class HospitalExtras{
     }
   }
   interactions(){const e=this.e,m=e.mission;if(m.result||m.state==='escape')return [];const out=this.items.filter(i=>i.floor===e.floor&&!(i.type==='extra-vending'&&this.dispense?.item===i)&&(i.type!=='extra-key'||!m.keys.includes('laboratory'))&&(i.type!=='extra-potion'||!this.potion&&!this.lure));
-    if(this.dispense?.ready&&this.dispense.item.floor===e.floor)out.unshift({type:'extra-soda',floor:e.floor,x:7.9,z:29.5,label:'Pick up Mystery Soda from collection slot'});
+    if(this.dispense?.ready&&this.dispense.item.floor===e.floor)out.unshift({type:'extra-soda',floor:e.floor,x:this.dispense.item.x,z:this.dispense.item.z,label:'Pick up Mystery Soda from collection slot'});
     const n=e.incidents?.contact;if(this.potion&&n&&!n.dead&&['escort','recruited'].includes(n.recruit.state)&&n.floor===e.floor)out.push({type:'extra-diversion',floor:e.floor,x:n.pos.x,z:n.pos.z,label:'Offer Dream Vial · only outside target office'});
     if(this.lure?.phase==='collapsed'&&e.floor===m.target.floor)out.push({type:'extra-help',floor:e.floor,door:this.lure.door,...this.lure.callPoint,label:'Call the target doctor for help'});
     return out;
@@ -87,6 +87,6 @@ export class HospitalExtras{
         if(e.mission.targetDown)for(const actor of [l.contact,l.responder]){actor.evacGoal=actor.floor?{x:0,z:-24}:{x:0,z:39};e.systems.stand(actor,actor.evacGoal);actor.evacuating=true;e.systems.route(actor,actor.evacGoal);}e.notify('Emergency staff take over. Your contact is recovering.');}
     }
   }
-  hud(){return {sodas:this.sodas,potion:this.potion,lure:this.lure?.phase||null};}
+  hud(){return {vending:this.items.filter(i=>i.type==='extra-vending').map(({floor,x,z})=>({floor,x,z})),sodas:this.sodas,potion:this.potion,lure:this.lure?.phase||null};}
   dispose(){for(const {floor,collider} of this.colliders){const list=this.e.hospitals[floor].colliders,i=list.indexOf(collider);if(i>=0)list.splice(i,1);}this.can?.removeFromParent();disposeObjectResources(this.can);this.root.removeFromParent();disposeObjectResources(this.root,{textures:true});this.root.clear();this.e=null;this.items=[];this.colliders=[];this.lure=null;}
 }

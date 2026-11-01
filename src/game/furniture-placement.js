@@ -7,5 +7,5 @@ export function chairFits(x,z,rotation,layout,colliders){
  const seat=footprint(x,z,.8,.76,1.18,rotation,'chair');
  if(layout.floor<3&&overlaps(seat,vendingBounds(),.15))return false;
  if(layout.doors.some(d=>overlaps(seat,doorClearance(d),.1)))return false;
- return !colliders.some(c=>(c.minY??0)<1.18&&(c.maxY??3.6)>0&&overlaps(seat,obstacleBounds(c),.015));
+ return !colliders.some(c=>(c.minY??0)<1.18&&(c.maxY??3.6)>0&&overlaps(seat,obstacleBounds(c),c.type==='terminal'?1.3:.015));
 }

@@ -7,24 +7,17 @@ import {prepareAssignment,markIntroSeen} from '../src/game/assignment.js';
 import {Mission,defaultSave,readSave} from '../src/game/mission.js';
 import {GameEngine} from '../src/game/engine.js';
 
-test('Exhaustion holds a steady walk while sprint stays held, then permits a recovered sprint',()=>{
+test('Run remains stable indefinitely while Shift is held',()=>{
   const e=Object.create(GameEngine.prototype),speeds=[];
   Object.assign(e,{keys:new Set(['KeyW','ShiftLeft']),touchInput:{forward:0,strafe:0,sprint:false,crouch:false},yaw:0,time:0,stamina:1,maxStamina:100,impairment:0,aiming:false,playerPos:new THREE.Vector3(),player:{root:new THREE.Group(),animate:(time,speed)=>speeds.push(speed)},weapon:new THREE.Group(),mission:{save:defaultSave(),targetDown:false,state:'investigate'},visited:new Set(),floor:0,audio:{update(){}},proximity:()=>0});
   e.move=(dx,dz)=>{e.playerPos.x+=dx;e.playerPos.z+=dz;};
   for(let i=0;i<600;i++){e.time+=1/60;e.updatePlayer(1/60);}
-  assert.ok(speeds.slice(8).every(speed=>Math.abs(speed-3.35)<1e-6),'No alternating walk/run frames after depletion');
-  assert.equal(e.stamina,100);assert.equal(e.sprintExhausted,true);
+  assert.ok(speeds.slice(8).every(speed=>Math.abs(speed-5.5)<1e-6),'No automatic running timeout');
+  assert.equal(e.stamina,100);assert.equal(e.sprintExhausted,false);
   e.keys.delete('ShiftLeft');e.updatePlayer(1/60);e.keys.add('ShiftLeft');e.updatePlayer(1/60);
   assert.ok(speeds.at(-1)>5);assert.equal(e.sprintExhausted,false);
 });
-test('Touch sprint turns off on exhaustion and requires a recovery reserve',()=>{
-  let state={stamina:.1,maxStamina:175};
-  state=advanceSprint(state,{dt:1/60,requested:true,moving:true});assert.equal(state.sprintExhausted,true);
-  for(let i=0;i<100;i++)state=advanceSprint({...state,maxStamina:175},{dt:1/60,requested:false,moving:true});
-  assert.equal(state.sprintExhausted,true);
-  for(let i=0;i<40;i++)state=advanceSprint({...state,maxStamina:175},{dt:1/60,requested:false,moving:true});
-  assert.equal(state.sprintExhausted,false);
-});
+test('Touch running needs no recovery reserve and stops only when released',()=>{let state={stamina:0,maxStamina:175};for(let i=0;i<36000;i++){state=advanceSprint({...state,maxStamina:175},{dt:1/60,requested:true,moving:true});assert.equal(state.running,true);assert.equal(state.sprintExhausted,false);}assert.equal(advanceSprint(state,{dt:.1,requested:false,moving:true}).running,false);});
 test('One case and target persist through failures, reloads and retries; success unlocks a new case',()=>{
   let save=defaultSave();const first=prepareAssignment(save,()=>.3,1234);markIntroSeen(save);
   const original=new Mission(save,first.seed,first.attempt);original.finish(false,'Retry');

@@ -40,6 +40,7 @@ export function evacuationStep(engine,n,goal,step,dt){
  // A person directly ahead keeps their place. Overtaking a same-direction
  // queue caused the previous crowd to fan out and block the entire corridor.
  if(blocker){const ahead=(blocker.pos.x-n.pos.x)*vx+(blocker.pos.z-n.pos.z)*vz;if(ahead>.17&&n.queueTime<1.5)return false;if(ahead<.17&&n.id.localeCompare(blocker.id)>0&&n.queueTime<2)return false;}
- for(const angle of[.55,-.55,1.05,-1.05,1.57,-1.57]){const x=(vx*Math.cos(angle)-vz*Math.sin(angle))*step,z=(vz*Math.cos(angle)+vx*Math.sin(angle))*step;if(move(n.pos.x+x,n.pos.z+z))return true;}
+ const turns=n.queueTime>1.8?[.55,-.55,1.05,-1.05,1.57,-1.57,2.1,-2.1,Math.PI]:[.55,-.55,1.05,-1.05,1.57,-1.57];
+ for(const angle of turns){const x=(vx*Math.cos(angle)-vz*Math.sin(angle))*step,z=(vz*Math.cos(angle)+vx*Math.sin(angle))*step;if(move(n.pos.x+x,n.pos.z+z))return true;}
  return false;
 }

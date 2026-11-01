@@ -20,7 +20,7 @@ test('repeated phone and smoke cycles reuse fixed resources and dispose every ow
 });
 
 test('night sky stays hidden indoors, animates outdoors without allocation, and retains bounded geometry',()=>{
- const root=new T.Group(),sky=addNightSky(root),{stars,haze}=root.userData.nightSky,positions=stars.geometry.attributes.position;assert.equal(sky.visible,false);assert.equal(positions.count,400);assert.equal(sky.children.length,3);assert.ok(stars.material.fog===false);updateNightSky(root,true,1);assert.equal(sky.visible,true);const scale=haze.scale.x;
+ const root=new T.Group(),sky=addNightSky(root),{stars,haze}=root.userData.nightSky,positions=stars.geometry.attributes.position;assert.equal(sky.visible,false);assert.equal(positions.count,400);assert.equal(sky.children.length,4);assert.ok(stars.material.fog===false);updateNightSky(root,true,1);assert.equal(sky.visible,true);const scale=haze.scale.x;
  for(let i=0;i<100;i++)updateNightSky(root,true,i);assert.equal(stars.geometry.attributes.position,positions);assert.notEqual(haze.scale.x,scale);updateNightSky(root,false,100);assert.equal(sky.visible,false);root.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
 });
 

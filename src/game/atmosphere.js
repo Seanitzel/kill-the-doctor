@@ -1,3 +1,4 @@
+import {settleBedPatient} from './body-pose.js';
 import {countryVoice} from './country-voices.js';
 import {fitPregnancy} from './appearance.js';
 import {TargetAppointment,TARGET_PRIVACY_GRACE} from './appointments.js';
@@ -29,7 +30,7 @@ export class HospitalLife {
     n.visual.root.rotation.y=options.yaw||0;n.contamination=options.contamination||0;n.nextCough=3;
     if(options.lying) {
       n.lying=true;n.visual.root.quaternion.setFromAxisAngle(Y,options.bedRotation||0).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2));
-      n.hitOffset=new THREE.Vector3(-Math.sin(options.bedRotation||0)*.9,.13,-Math.cos(options.bedRotation||0)*.9);n.hitRadius=.46;
+      n.hitOffset=new THREE.Vector3(-Math.sin(options.bedRotation||0)*.9,.13,-Math.cos(options.bedRotation||0)*.9);n.hitRadius=.46;n.bedRotation=options.bedRotation||0;settleBedPatient(n);
     }
     return n;
   }
@@ -247,7 +248,7 @@ export class HospitalLife {
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
         n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
       }else if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
-      if(n.activity==='drink'&&!n.heldCoffeeCup&&n.visual.hand){const cup=new THREE.Group();cup.name='Coffee held during break';n.visual.hand.add(cup);cup.position.set(-.025,.02,.07);mesh('cylinder',material('#eeeade'),[.048,.09,.048],[0,0,0],cup);mesh('cylinder',material('#403027'),[.041,.004,.041],[0,.046,0],cup);mesh('box',material('#eeeade'),[.034,.04,.012],[.05,0,0],cup);n.heldCoffeeCup=cup;}
+      if(n.activity==='drink'&&!n.personalCoffeeCup&&!n.heldCoffeeCup&&n.visual.hand){const cup=new THREE.Group();cup.name='Coffee held during break';n.visual.hand.add(cup);cup.position.set(-.025,.02,.07);mesh('cylinder',material('#eeeade'),[.048,.09,.048],[0,0,0],cup);mesh('cylinder',material('#403027'),[.041,.004,.041],[0,.046,0],cup);mesh('box',material('#eeeade'),[.034,.04,.012],[.05,0,0],cup);n.heldCoffeeCup=cup;}
       if(n.heldCoffeeCup)n.heldCoffeeCup.visible=n.activity==='drink';
       if(emergency){n.sneezeUntil=0;if(n.tissue)n.tissue.visible=false;}
       if(!emergency&&n.sneezeUntil){

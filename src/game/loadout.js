@@ -23,15 +23,16 @@ export const OUTFITS=[{id:'casual',name:'Casual shirt'},{id:'jacket',name:'Field
 export const HAIRSTYLE_CHOICES=[{id:'original',name:'Signature cut'},{id:'cropped',name:'Cropped'},{id:'slick',name:'Slicked back'},{id:'ponytail',name:'Back ponytail'},{id:'ponytail-front',name:'Side-part ponytail'},{id:'ponytail-side',name:'Side ponytail'},{id:'afro',name:'Natural afro'},{id:'braids',name:'Long braids'},{id:'straight',name:'Long straight'},{id:'curls-short',name:'Short curls'},{id:'curls-long',name:'Long curls'}];
 export const TATTOO_CHOICES=[{id:'none',name:'No tattoos'},{id:'botanical',name:'Botanical ink'},{id:'geometric',name:'Geometric ink'}];
 const validHex=value=>typeof value==='string'&&/^#[a-f0-9]{6}$/i.test(value);
-export function defaultAppearance(c=CHARACTERS[0]){return {eyeShape:'natural',mouthShape:'natural',noseShape:'natural',name:'',gender:c.gender||'male',accent:c.accent,hair:c.hair,skin:c.skin,eyes:EYE_COLORS[0],outfit:c.id==='male'?'suit':'casual',hairstyle:c.id==='female'?'slick':'original',highlights:'none',tattoos:'none',glasses:false,sunglasses:false,cap:false,watch:false,purse:false,jewelry:false};}
+export function defaultAppearance(c=CHARACTERS[0]){return {eyeShape:'natural',mouthShape:'natural',noseShape:'natural',name:'',gender:c.gender||'male',accent:c.accent,pants:'#455b70',hair:c.hair,skin:c.skin,eyes:EYE_COLORS[0],outfit:c.id==='male'?'suit':'casual',hairstyle:c.id==='female'?'slick':'original',highlights:'none',tattoos:'none',glasses:false,sunglasses:false,cap:false,watch:false,purse:false,necklace:false,earrings:false,jewelry:false};}
 export function normalizeAppearance(value={},base=CHARACTERS[0]){
   value=value&&typeof value==='object'?value:{};const result=defaultAppearance(base);if(typeof value.name==='string')result.name=value.name.slice(0,24);
   if(['male','female'].includes(value.gender))result.gender=value.gender;
-  for(const key of ['accent','hair','skin','eyes'])if(validHex(value[key]))result[key]=value[key];
+  for(const key of ['accent','pants','hair','skin','eyes'])if(validHex(value[key]))result[key]=value[key];
   if(value.highlights==='none'||validHex(value.highlights))result.highlights=value.highlights;
   for(const [key,options] of [['outfit',OUTFITS],['hairstyle',HAIRSTYLE_CHOICES],['tattoos',TATTOO_CHOICES]])if(options.some(option=>option.id===value[key]))result[key]=value[key];
-  for(const key of ['glasses','sunglasses','cap','watch','purse','jewelry'])result[key]=value[key]===true;
+  for(const key of ['glasses','sunglasses','cap','watch','purse','necklace','earrings','jewelry'])result[key]=value[key]===true;
   for(const [key,choices] of Object.entries(FACE_SHAPES))if(choices.some(o=>o.id===value[key]))result[key]=value[key];
+  if(value.necklace===undefined&&value.jewelry)result.necklace=true;if(value.earrings===undefined&&value.jewelry)result.earrings=true;result.jewelry=result.necklace||result.earrings;
   if(result.sunglasses)result.glasses=false;
   return result;
 }
@@ -52,11 +53,13 @@ export function selectCharacter(save,id){const c=CHARACTERS.find(c=>c.id===id);i
 export function unlockCharacter(save,id){return CHARACTERS.some(c=>c.id===id)&&!save.unlockedCharacters?.includes(id)?selectCharacter(save,id):false;}
 export function weaponInfo(save,kind=save.loadout?.weapon||'pistol'){
   const sniper=kind==='sniper'&&save.upgrades?.sniper>0,mag=save.upgrades?.magazine||0;
-  return sniper?{id:'sniper',name:'SCOPED RIFLE',capacity:4+mag,reserve:16,range:80,cooldown:1.05,reload:2.2,fov:19}:{id:'pistol',name:'SERVICE PISTOL',capacity:6+mag*2,reserve:30,range:28,cooldown:.32,reload:1.4,fov:48};
+  return sniper?{id:'sniper',name:'SCOPED RIFLE',capacity:4+mag,reserve:16,range:80,cooldown:1.05,reload:2.2/(1+(save.upgrades?.reload||0)*.18),assist:1+(save.upgrades?.accuracy||0)*.12,damage:1+(save.upgrades?.power||0)*.5,fov:19}:{id:'pistol',name:'SERVICE PISTOL',capacity:6+mag*2,reserve:30,range:28,cooldown:.32/(1+(save.upgrades?.power||0)*.12),reload:1.4/(1+(save.upgrades?.reload||0)*.18),assist:1+(save.upgrades?.accuracy||0)*.12,damage:1+(save.upgrades?.power||0)*.5,fov:48};
 }
-export function maskProtects(save){return !!(save.upgrades?.mask&&save.loadout?.mask);}
+export function maskProtects(save){return !!(save.loadout?.mask&&((save.loadout.maskType||'n95')==='n95')&&(save.upgrades?.n95||save.upgrades?.mask));}
+export function gasBlocked(save,random=Math.random){return maskProtects(save)||!!(save.loadout?.mask&&save.loadout.maskType==='regular'&&save.upgrades?.regularMask&&random()<.7);}
+export function hasMask(save){return !!(save.upgrades?.mask||save.upgrades?.n95||save.upgrades?.regularMask);}
 export const STAFF_BONUS=25;
-export function mayHitStaff(mission,npc){return npc.role==='patient'||npc.id==='target'||mission.targetDown;}
+export function mayHitStaff(mission,npc){return npc.id==='target'||!!(mission.targetDown&&(npc.complicity||npc.operationDoctor||['security','police'].includes(npc.role)));}
 export function seesDrawnWeapon(observer,player,yaw,visible,range=11){
   if(!visible)return false;const dx=player.x-observer.x,dz=player.z-observer.z,d=Math.hypot(dx,dz);
   return d<range&&(d<2.5||(dx*Math.sin(yaw)+dz*Math.cos(yaw))/Math.max(d,.001)>.1);

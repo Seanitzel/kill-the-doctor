@@ -1,3 +1,5 @@
+import {securityCount} from './security-rules.js';
+import {evidenceRoom,evidenceLabel} from './campaign-locations.js';
 import {ChinaCase,chinaMission} from './china-rules.js';
 import {countryPerson,coffeeLevel} from './population.js';
 import {countryFor,campaignLevel,migrateInternational,recordInternationalResult} from './international.js';
@@ -11,10 +13,15 @@ export const UPGRADE_INFO = [
   { id: 'light', name: 'High-output flashlight', description: 'A longer, brighter beam for the emergency corridors.', cost: 90, max: 3 },
   { id: 'filter', name: 'Recovery filter', description: 'Recover 25% faster from fictional patient status effects.', cost: 100, max: 3 },
   { id: 'suppressor', name: 'Sound suppressor', description: 'Reduce shot noise and delay the police response by 15 seconds.', cost: 180, max: 1 },
-  {id:'mask',name:'Protective face mask',description:'Blocks new gas exposure while equipped. Equip or remove it in your loadout.',cost:150,max:1},
+  {id:'mask',name:'N95 respirator (owned legacy upgrade)',description:'Complete protection against new gas exposure.',cost:150,max:1},
   {id:'sniper',name:'Scoped rifle',description:'Unlock an 80 m rifle with a magnified scope. Switch weapons from the action bar.',cost:350,max:1},
   {id:'magazine',name:'Extended magazines',description:'Adds two pistol rounds and one rifle round per level.',cost:160,max:3},
-  {id:'vitals',name:'Endurance training',description:'Adds 25 stamina per level for a longer sprint.',cost:130,max:3},
+  {id:'vitals',name:'Protective lining',description:'Absorb one additional security hit per level.',cost:130,max:3},
+  {id:'reload',name:'Quick-change reload',description:'Reload 18% faster per level.',cost:100,max:3},
+  {id:'accuracy',name:'Precision sights',description:'Wider target acquisition and steadier aim per level.',cost:130,max:3},
+  {id:'power',name:'Weapon tuning',description:'Improved shot recovery and guard stopping power.',cost:160,max:3},
+  {id:'regularMask',name:'Regular face mask',description:'70% chance to block each new contamination exposure.',cost:60,max:1},
+  {id:'n95',name:'N95 respirator',description:'Complete protection from new gas exposure while equipped.',cost:150,max:1},
 ];
 export const STAFF = [
   { name: 'Dr. Elias Voss', role: 'Consultant', gender: 'male', hair: '#3a2921', skin: '#d4a078', accent: '#47758a', glasses: true },
@@ -24,7 +31,7 @@ export const STAFF = [
   { name: 'Dr. Sofia Vale', role: 'Attending', gender: 'female', hair: '#573a2d', skin: '#c58d6c', accent: '#426e79', glasses: true },
   { name: 'Nurse Jonas Beck', role: 'Senior nurse', gender: 'male', hair: '#8b7761', skin: '#dfbba0', accent: '#4a8193', glasses: false },
 ];
-export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],playMode:'story',internationalVersion:2,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(20).fill(0),loadout:{weapon:'pistol',mask:false},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
+export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],playMode:'story',internationalVersion:2,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(20).fill(0),loadout:{weapon:'pistol',mask:false,maskType:'n95'},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
 export function readSave(storage) {
   const blank = defaultSave();
   try {
@@ -33,7 +40,7 @@ export function readSave(storage) {
     for (const k of ['coins', 'completed', 'attempts']) blank[k] = Math.max(0, Math.floor(Number(data[k]) || 0));
     Object.assign(blank,migrateCharacterSave(data),migrateInternational(data));blank.ownedOutfits=normalizeWardrobe(data.ownedOutfits);
     for (const u of UPGRADE_INFO) blank.upgrades[u.id] = Math.min(u.max, Math.max(0, Math.floor(Number(data.upgrades?.[u.id]) || 0)));
-    blank.loadout={weapon:data.loadout?.weapon==='sniper'&&blank.upgrades.sniper?'sniper':'pistol',mask:!!data.loadout?.mask&&!!blank.upgrades.mask};
+    blank.loadout={weapon:data.loadout?.weapon==='sniper'&&blank.upgrades.sniper?'sniper':'pistol',mask:!!data.loadout?.mask&&!!(blank.upgrades.mask||blank.upgrades.n95||blank.upgrades.regularMask),maskType:data.loadout?.maskType==='regular'?'regular':'n95'};
     blank.storySeen=Array.isArray(data.storySeen)?data.storySeen.filter(id=>typeof id==='string').slice(-128):[];blank.lastStory=typeof data.lastStory==='string'?data.lastStory:'';
     const a=data.activeAssignment;
     // The case and target persist; watching its intro belongs to this page session.
@@ -56,7 +63,7 @@ export function purchase(save, id) {
   const cost = info.cost * (save.upgrades[id] + 1);
   if (save.coins < cost) return false;
   save.coins -= cost; save.upgrades[id]++;
-  if(id==='mask')save.loadout.mask=true;if(id==='sniper')save.loadout.weapon='sniper';
+  if(['mask','n95','regularMask'].includes(id)){save.loadout.mask=true;save.loadout.maskType=id==='regularMask'?'regular':'n95';}if(id==='sniper')save.loadout.weapon='sniper';
   return true;
 }
 export class Mission {
@@ -71,7 +78,7 @@ export class Mission {
     if(this.type!=='standard')this.target={...doctors[0],name:this.country.doctor,gender:this.country.gender,id:'operation-doctor-0',floor:3,room:makeLayout(3).rooms[0]};
     this.target=countryPerson(this.target,'doctor',this.country,this.seed,'target',0);
     this.state = 'investigate'; this.clues = []; this.elapsed = 0; this.timer = 0;
-    this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
+    this.accompliceKills=0;this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
     this.recordsNotice=false;this.locatedRecords=false;this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
   }
   get photoOnly(){return this.type==='evidence'&&!this.china;}
@@ -79,7 +86,7 @@ export class Mission {
     if (this.clues.some(c => c.type === type) || this.result) return null;
     const target = this.china?{...this.target,name:'Dr. Liu Wen',floor:0,room:makeLayout(0,this.country.index).rooms.find(r=>r.kind==='office')}:this.target;
     const clues = {
-      directory: { title: this.type==='standard'&&this.challenge.scheduleRequired?'Restricted staff allocation':'Department confirmed', text: this.type==='standard'&&this.challenge.scheduleRequired?`${target.name} works on the ${FLOORS[target.floor].toLowerCase()}, ${target.room.wing} wing. Exact allocations are restricted. Find the paper rota in Records while its custodian is on a coffee break.`:`${target.name} is assigned to ${target.room.name}, ${target.room.wing} wing, ${FLOORS[target.floor].toLowerCase()}.`, source: `${this.country.hospital} staff directory` },
+      directory: { title: this.type==='standard'&&this.challenge.scheduleRequired?'Restricted staff allocation':'Department confirmed', text: this.type==='standard'&&this.challenge.scheduleRequired?`${target.name} works on the ${FLOORS[target.floor].toLowerCase()}, ${target.room.wing} wing. Exact allocations are restricted. Find the paper rota in ${evidenceLabel(this.country)} while its custodian is on a coffee break.`:`${target.name} is assigned to ${target.room.name}, ${target.room.wing} wing, ${FLOORS[target.floor].toLowerCase()}.`, source: `${this.country.hospital} staff directory` },
       schedule: { title: 'Rounds schedule', text: `${target.name} is on consultation rounds in room ${target.room.number}. Look for ${target.glasses ? 'dark-rimmed glasses and ' : ''}${target.accent === '#47758a' ? 'slate-blue' : 'blue'} scrubs.`, source: 'Staff allocation terminal' },
       log: { title: 'Location verified', text: `The latest handover places ${target.name} inside ${target.room.name}, room ${target.room.number}. Their badge must match before you act.`, source: `${target.room.wing} wing handover log` },
     };
@@ -91,6 +98,7 @@ export class Mission {
     if (this.result || npc.dead) return;
     this.shots++;
     if (npc.role === 'patient') { return this.finish(false, 'A patient was harmed. The assignment is void.'); }
+    if(this.targetDown&&(this.type!=='evidence'||this.china)&&mayHitStaff(this,npc)){if(!['security','police'].includes(npc.role))this.staffKills++;if(npc.complicity)this.accompliceKills++;return true;}
     if(this.china){if(!npc.operationDoctor||this.china.recordings.length<3||this.operationDoctors.includes(npc.id))return false;this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;if(this.targetDown)this.beginEscape(30);return true;}
     if(this.type==='evidence')return this.finish(false,'A person was harmed. This was an evidence-only assignment.');
     if(this.type==='rescue'){
@@ -99,14 +107,14 @@ export class Mission {
     }
     if(!mayHitStaff(this,npc)){this.suspicion=Math.min(100,this.suspicion+20);return false;}
     if(npc.role==='police'){this.suspicion=100;return true;}
-    this.staffKills++;
+    this.staffKills++;if(npc.id!=='target'&&npc.complicity)this.accompliceKills++;
     if (npc.id === 'target') {
       this.targetDown = true; this.state = 'escape';
       this.beginEscape(65);
     } else { this.suspicion = Math.min(100, this.suspicion + 38); }
     return true;
   }
-  beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]*this.challenge.escapeScale+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0);}this.suspicion=Math.max(this.suspicion,suspicion);}
+  beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]*this.challenge.escapeScale+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0)+(securityCount(this.round)-1)*9;}this.suspicion=Math.max(this.suspicion,suspicion);}
   collectKey(id){if(this.result||!['basement','theatre','laboratory'].includes(id)||this.keys.includes(id))return false;this.keys.push(id);return true;}
   photograph(id){if(this.type!=='evidence'||this.result||!['ledger','consent','theatre'].includes(id)||this.photos.includes(id))return false;this.photos.push(id);if(this.photos.length===3)this.beginEscape(0);return true;}
   releasePatient(){if(this.type!=='rescue'||!this.targetDown||this.patientReleased||this.result)return false;this.patientReleased=true;return true;}
@@ -120,10 +128,10 @@ export class Mission {
   finish(success, reason) {
     if (this.result) return this.result;
     this.state = 'results';
-    const breakdown = success ? this.china?[{label:'Three verified video angles',coins:300},{label:'Stolen identity infiltration',coins:100},{label:'Successful escape',coins:160}]:this.type==='evidence'?[{label:'Verified photographs',coins:this.photos.length*100},{label:'Nonviolent escape',coins:160}]:this.type==='rescue'?[{label:'Patient rescued',coins:300},{label:'Operation stopped',coins:160},{label:'Successful escort',coins:100}]:[
+    const breakdown = success ? this.china?[{label:'Three verified video angles',coins:300},{label:'Stolen identity infiltration',coins:100},{label:'Successful escape',coins:160},{label:'Marked accomplices',coins:this.accompliceKills*STAFF_BONUS}]:this.type==='evidence'?[{label:'Verified photographs',coins:this.photos.length*100},{label:'Nonviolent escape',coins:160}]:this.type==='rescue'?[{label:'Patient rescued',coins:300},{label:'Operation stopped',coins:160},{label:'Successful escort',coins:100},{label:'Marked accomplices',coins:this.accompliceKills*STAFF_BONUS}]:[
       { label: 'Assigned target', coins: 140 }, { label: 'Successful escape', coins: 100 },
       { label: 'Evidence collected', coins: this.clues.length * 20 },
-      { label: 'Additional staff', coins: Math.max(0, this.staffKills - 1) * STAFF_BONUS },
+      { label: 'Marked accomplices', coins: this.accompliceKills * STAFF_BONUS },
       { label: 'Efficient escape', coins: Math.min(60, Math.floor(this.timer / 3)) },
     ] : [];
     const coins = breakdown.reduce((sum, row) => sum + row.coins, 0);

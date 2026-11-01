@@ -365,7 +365,7 @@ export function fitNurseScrubs(model,person){
   for(let i=0;i<p.count;i++){const v=new THREE.Vector3().fromBufferAttribute(p,i).applyMatrix4(inverse).applyMatrix4(inverseSkinMatrix(top,i));p.setXYZ(i,v.x,v.y,v.z);}
   geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();top.userData.appearanceGeometryOwned=true;top.userData.scrubUniform=true;top.userData.originalTopGeometry=original;
   top.material.side=THREE.DoubleSide;model.traverse(m=>{if(m.material?.name.includes('Outfit_Top')||m.material?.name.includes('Outfit_Bottom')){for(const key of ['map','normalMap','roughnessMap','metalnessMap','aoMap'])m.material[key]=null;m.material.color.set(NURSE_UNIFORM);m.material.needsUpdate=true;}});
-  const skinColor=head?.material.color||new THREE.Color(person.skin||'#bd9479');
+  const skinColor=new THREE.Color(person.skin||'#bd9479');
   fittedPanel(model,model.getObjectByName('Spine2'),[[-.066,neck.y-.025],[0,neck.y-.15],[.066,neck.y-.025]],()=>centerZ+.055,clothMaterial(skinColor),'KTD scrub V-neck skin',false,.002);
   for(const side of ['Left','Right']){
     const arm=model.getObjectByName(side+'Arm'),fore=model.getObjectByName(side+'ForeArm'),wrist=model.getObjectByName(side+'Hand');if(!arm||!fore||!wrist)continue;
@@ -392,7 +392,7 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
   }
   const top=find('Outfit_Top');
   const premium=PREMIUM_OUTFITS.find(o=>o.id===person.outfit);
-  if(role==='civilian'&&premium&&top){for(const mesh of meshes)if(/Outfit_Top|Outfit_Bottom/.test(mesh.material?.name||'')){mesh.material.map=null;mesh.material.color.set(premium.color);}fitOutfit(model,top,premium.base,premium.color);premiumDetails(model,top,premium);}
+  if(role==='civilian'&&premium&&top){for(const mesh of meshes)if(/Outfit_Top|Outfit_Bottom/.test(mesh.material?.name||'')){mesh.material.map=null;mesh.material.color.set(mesh.material.name.includes('Bottom')?person.pants||premium.color:person.accent||premium.color);}fitOutfit(model,top,premium.base,person.accent||premium.color);premiumDetails(model,top,premium);}
   else if(['civilian','patient'].includes(role)&&top && ['jacket','tactical','suit'].includes(person.outfit))fitOutfit(model,top,person.outfit,person.accent || '#526778');
   const hair=find('Hair'), skin=find('Skin');
   if(hair){const style=person.hairstyle||'original',hex=person.hair||'#342b25';if(['cropped','slick','ponytail','ponytail-front','ponytail-side'].includes(style))fitHair(model,hair,skin,style,hex);else if(['afro','braids','straight','curls-short','curls-long'].includes(style))extendedHair(model,hair,skin,style,hex);

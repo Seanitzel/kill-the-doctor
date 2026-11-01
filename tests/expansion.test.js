@@ -51,9 +51,9 @@ test('Weapon changes retain separate magazines; switching while reloading cannot
 test('Only the assigned doctor starts evacuation; staff bonuses bank once after escape',()=>{
   const save=defaultSave(),m=new Mission(save,110);assert.ok(m.target.name.startsWith('Dr.'));
   assert.equal(m.eliminate({id:'other',role:'nurse'}),false);assert.equal(m.staffKills,0);
-  m.eliminate({id:'target',role:'doctor'});m.eliminate({id:'extra1',role:'doctor'});m.eliminate({id:'extra2',role:'nurse'});m.eliminate({id:'police',role:'police'});
+  m.eliminate({id:'target',role:'doctor'});m.eliminate({id:'extra1',role:'doctor',complicity:'Unauthorized research'});m.eliminate({id:'extra2',role:'nurse',complicity:'Concealed records'});m.eliminate({id:'police',role:'police'});
   assert.equal(m.staffKills,3);assert.equal(save.coins,0);const result=m.escape();
-  assert.equal(result.breakdown.find(r=>r.label==='Additional staff').coins,STAFF_BONUS*2);const coins=save.coins;m.escape();assert.equal(save.coins,coins);
+  assert.equal(result.breakdown.find(r=>r.label==='Marked accomplices').coins,STAFF_BONUS*2);const coins=save.coins;m.escape();assert.equal(save.coins,coins);
   const failed=new Mission(defaultSave(),110);failed.eliminate({id:'target',role:'doctor'});failed.eliminate({id:'extra',role:'nurse'});assert.equal(failed.finish(false,'caught').coins,0);
 });
 test('Assignments cover three floors and remain doctor-only',()=>{
@@ -82,7 +82,7 @@ function simulation(){
 }
 test('Drawing in view causes one audible gasp and a report; walls and holstering prevent detection',()=>{
   const e=simulation(),n=actor('witness',0,0,24);e.npcs=[n];e.playerPos.set(0,0,27);let gasps=0;e.audio.gasp=()=>gasps++;
-  e.systems.update(.2);assert.equal(gasps,0);e.weaponDrawn=true;e.systems.update(.2);assert.equal(gasps,1);assert.ok(n.reporting);e.systems.update(.2);assert.equal(gasps,1);
+  e.systems.update(.2);assert.equal(gasps,0);e.mission.legitimateDraw=true;e.weaponDrawn=true;e.systems.update(.2);assert.equal(gasps,1);assert.ok(n.reporting);e.systems.update(.2);assert.equal(gasps,1);
   e.mission.elapsed=n.reporting.deadline+.01;e.systems.prepareNPC(n);assert.equal(e.mission.result,null);assert.equal(e.mission.policeAlert,true);assert.equal(e.mission.state,'escape');assert.ok(e.mission.timer>0);assert.equal(e.finished,undefined);
   const blocked=simulation();blocked.npcs=[actor('other',0,0,24)];blocked.playerPos.set(0,0,27);blocked.weaponDrawn=true;blocked.lineOfSight=()=>false;blocked.systems.update(.2);assert.equal(blocked.npcs[0].reporting,undefined);
 });
@@ -107,10 +107,10 @@ test('Evacuees physically reach lifts and ground exit without passing through fu
 });
 test('The full hospital crowd can evacuate while protected newborns remain in the nursery',()=>{
   const e=simulation();e.scene=new THREE.Scene();e.playerPos.set(6,0,33);e.spawnNPCs();e.life=new HospitalLife(e);
-  const target=e.npcs.find(n=>n.id==='target');target.dead=true;e.mission.eliminate({id:'target',role:'doctor'});e.systems.startEvacuation();
+  e.npcs=e.npcs.filter(n=>n.role!=='security');const target=e.npcs.find(n=>n.id==='target');target.dead=true;e.mission.eliminate({id:'target',role:'doctor'});e.systems.startEvacuation();
   for(const l of levels)for(const d of l.doors){d.angle=0;d.pivot.rotation.y=0;}
   Object.assign(e,{muzzle:{intensity:0},blackout:0,impairment:0,coughCooldown:999,nextBlackout:Infinity,nextPA:Infinity,shotCooldown:0});
-  const adults=e.npcs.filter(n=>!n.dead&&!n.baby);
+  const adults=e.npcs.filter(n=>!n.dead&&!n.baby&&n.role!=='security');
   for(let frame=0;frame<3600&&!adults.every(n=>n.evacuated);frame++){e.mission.elapsed+=1/30;e.time+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);if(frame%30===0)for(const n of adults.filter(n=>!n.evacuated))assert.ok(e.canStand(n.pos.x,n.pos.z,.21,n.floor),`crowd collision: ${n.id}`);}
   const remaining=adults.filter(n=>!n.evacuated).map(n=>({id:n.id,floor:n.floor,pos:n.pos.toArray(),cursor:n.cursor,path:n.path.length}));
   assert.ok(adults.every(n=>n.evacuated),JSON.stringify(remaining));assert.ok(e.npcs.filter(n=>n.baby).every(n=>!n.dead&&!n.evacuated));
@@ -119,12 +119,12 @@ function shootingEngine(){
   const e=simulation();Object.assign(e,{scene:new THREE.Scene(),effects:[],paused:false,aiming:true,weaponDrawn:true,ammo:6,reserve:30,shotCooldown:0,reloading:0,weaponKind:'pistol',muzzle:{intensity:0,position:new THREE.Vector3()},say(){},emitHUD(){}});return e;
 }
 test('Actual shooting keeps early staff alive, sounds the alarm for the primary and awards later staff',()=>{
-  const e=shootingEngine(),staff=actor('staff',0,0,18),target=actor('target',0,0,12);target.role='doctor';
+  const e=shootingEngine(),staff=actor('staff',0,0,18),target=actor('target',0,0,12);target.role='doctor';staff.complicity='Unauthorized research';
   e.playerPos.set(0,0,24);e.npcs=[staff,target];const ray=new THREE.Ray(new THREE.Vector3(0,1.2,24),new THREE.Vector3(0,0,-1));let alarms=0;e.audio.sound=kind=>{if(kind==='alarm')alarms++;};
   e.shoot({touch:true,aimRay:ray});assert.equal(e.lastShot.hitId,'staff');assert.equal(!!staff.dead,false);assert.equal(e.mission.staffKills,0);
   staff.pos.x=3;e.shotCooldown=0;e.shoot({touch:true,aimRay:ray});assert.equal(target.dead,true);assert.equal(e.mission.targetDown,true);assert.equal(alarms,1);assert.equal(staff.evacuating,true);
   staff.pos.set(0,0,18);e.shotCooldown=0;e.shoot({touch:true,aimRay:ray});assert.equal(staff.dead,true);assert.equal(e.mission.staffKills,2);assert.equal(e.mission.save.coins,0);
-  const result=e.mission.escape();assert.equal(result.breakdown.find(r=>r.label==='Additional staff').coins,25);
+  const result=e.mission.escape();assert.equal(result.breakdown.find(r=>r.label==='Marked accomplices').coins,25);
 });
 test('The scoped rifle can hit across the hospital concourse beyond pistol range',()=>{
   const e=shootingEngine(),target=actor('target',0,0,30);target.role='doctor';e.npcs=[target];e.playerPos.set(0,0,-21);

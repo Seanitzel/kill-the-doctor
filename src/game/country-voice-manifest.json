@@ -3,7 +3,7 @@
   "engine": "ElevenLabs v3 via Replicate",
   "entries": {
     "english/female/f-6676aa8": {
-      "text": "Finally, you’ve arrived. We were expecting Dr. Liu Wen.",
+      "text": "Finally, you\u2019ve arrived. We were expecting Dr. Liu Wen.",
       "language": "en",
       "country": "english",
       "gender": "female",
@@ -15,7 +15,7 @@
       "sha256": "0092e0031b5ee44cacb5a336ba9d22c13ceb26eff96252f126165eb37e09ab3e"
     },
     "english/male/m-6676aa8": {
-      "text": "Finally, you’ve arrived. We were expecting Dr. Liu Wen.",
+      "text": "Finally, you\u2019ve arrived. We were expecting Dr. Liu Wen.",
       "language": "en",
       "country": "english",
       "gender": "male",
@@ -2377,6 +2377,54 @@
       "duration": 2.688,
       "bytes": 21741,
       "sha256": "dc10513b0f3e518d0c5518a18cb241ee631800a520aceef3585497f4b656d814"
+    },
+    "english/male/m-f24fad5f": {
+      "text": "Shut up! Just shut up!",
+      "language": "en",
+      "country": "english",
+      "gender": "male",
+      "voice": "Drew",
+      "engine": "ElevenLabs v3",
+      "predictionId": "06ehbt4axdrmw0d1jh3a6qstac",
+      "duration": 2.616,
+      "bytes": 21165,
+      "sha256": "645675dde528c1793dd110b1ae77e9512e161da4014f2495cf2ee8408b604a65"
+    },
+    "english/male/m-9f9ed24b": {
+      "text": "I knew it. They're coming for me!",
+      "language": "en",
+      "country": "english",
+      "gender": "male",
+      "voice": "Drew",
+      "engine": "ElevenLabs v3",
+      "predictionId": "bb3gyq6z0xrmy0d1jh3rg7f9p0",
+      "duration": 2.304,
+      "bytes": 18669,
+      "sha256": "072e43d5da9344d78eaaae1d7ad3eb989798bb1d435379284ceac2f91a09790c"
+    },
+    "english/female/f-f24fad5f": {
+      "text": "Shut up! Just shut up!",
+      "language": "en",
+      "country": "english",
+      "gender": "female",
+      "voice": "Rachel",
+      "engine": "ElevenLabs v3",
+      "predictionId": "s7beqqvcjsrmr0d1jh5bc8943m",
+      "duration": 2.544,
+      "bytes": 20589,
+      "sha256": "654d67ace9440a9561f779201591526f7636c23550662a9efee478e1fff0a341"
+    },
+    "english/female/f-9f9ed24b": {
+      "text": "I knew it. They're coming for me!",
+      "language": "en",
+      "country": "english",
+      "gender": "female",
+      "voice": "Rachel",
+      "engine": "ElevenLabs v3",
+      "predictionId": "307gg21ks9rmt0d1jh4rf3t8cw",
+      "duration": 1.896,
+      "bytes": 15405,
+      "sha256": "89456af4b019cf69e5f937db5b1445d5c0b0db6ad09409ac7a0ea0eecf1febd0"
     }
   },
   "mode": "english-shared"

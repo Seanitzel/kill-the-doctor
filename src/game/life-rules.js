@@ -82,7 +82,9 @@ export const RECRUIT_DIALOGUE = {
 };
 export const RECRUIT_LINES = Object.values(RECRUIT_DIALOGUE);
 // Spoken after a panic burst has stopped; the visitor's claims are fictional dialogue.
+export const FOLLOWER_REACTION_LINES=["I knew it. They're coming for me!",'Shut up! Just shut up!'];
 export const DISTRESS_LINES = [
+  ...FOLLOWER_REACTION_LINES,
   "I'm dying.",
   "I'm burning up, I can't breathe.",
   'The doctors are evil.',

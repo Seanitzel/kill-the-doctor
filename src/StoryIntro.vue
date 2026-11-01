@@ -19,8 +19,10 @@ watch(()=>props.paused,schedule);onMounted(()=>{schedule();window.addEventListen
     <div class="story-top"><button :disabled="finished" @click="back" class="story-skip"><ArrowLeft :size="16"/>{{panel?'Previous picture':ending?'Go to debrief':'Back to menu'}}</button><span class="eyebrow">KTD / {{ending?'CASE CLOSED':'CLIENT FILES'}}</span><button :disabled="finished" @click="finish" class="story-skip">{{ending?'Go to debrief':'Skip story'}} <SkipForward :size="16"/></button></div>
     <Transition name="story-fade" mode="out-in"><div :key="panel" class="story-scene">
       <div class="story-art" @click="panel<story.panels.length-1&&next()"><svg :viewBox="crop" preserveAspectRatio="xMidYMid slice" role="img" :aria-label="`Illustrated ${ending?'mission ending':'fictional case'}: ${story.title}, scene ${panel+1}`"><image :href="assetUrl(visual.src)" :width="visual.width" :height="visual.height"/></svg><div class="story-shade"></div></div>
-      <div class="story-copy"><span class="eyebrow">{{story.theme}} / {{String(panel+1).padStart(2,'0')}}</span><h1>{{panel===0?story.title:story.panels[panel][0]}}</h1><p>{{story.panels[panel][1]}}</p></div>
+      <div class="story-copy"><span class="eyebrow">{{story.theme}} / {{String(panel+1).padStart(2,'0')}}</span><h1>{{panel===0?story.title:story.panels[panel][0]}}</h1><ol v-if="panel===story.panels.length-1&&story.assignmentSteps?.length" class="assignment-tasks"><li v-for="step in story.assignmentSteps" :key="step">{{step}}</li></ol><p v-else>{{story.panels[panel][1]}}</p></div>
     </div></Transition>
     <footer class="story-bottom"><div><div class="story-progress"><i v-for="n in story.panels.length" :key="n" :class="{active:n<=panel+1}"></i></div><small>{{ending?'Your evidence is secured. Your mission reward has been saved.':STORY_NOTICE}}</small><button v-if="!ending" @click="emit('references')"><BookOpen :size="13"/> Story references</button></div><button class="primary" :disabled="finished" @click="next"><span>{{finished?'GAME LOADING':panel===story.panels.length-1?(ending?'VIEW DEBRIEF':'ENTER THE HOSPITAL'):'CONTINUE'}}</span><ArrowRight :size="21"/></button></footer>
   </section>
 </template>
+
+<style scoped>.assignment-tasks{font-size:clamp(12px,1.35vw,18px);line-height:1.5;padding-left:1.3em;max-width:760px}.assignment-tasks li{margin:6px 0}</style>

@@ -1,3 +1,8 @@
+import {SecurityResponse} from './security-response.js';
+import {evidenceRoom,evidenceLabel} from './campaign-locations.js';
+import {announcementCaption} from './announcement-caption.js';
+import {securityCount,complicityFor} from './security-rules.js';
+import {beginBodyFall,updateBodyFall} from './body-pose.js';
 import {EmergencyArrivals} from './emergency-arrivals.js';
 import {updateEveningWeather} from './evening-weather.js';
 import{trimMirrorMemory}from'./mirrors.js';
@@ -19,7 +24,7 @@ import {makeNavigation,segmentBox} from './navigation.js';
 import {obstacleBounds,circleOverlaps,cameraFraction,segmentHit3D,blocksBody,interactionScore,STRUCTURE_CLEARANCE} from './collision.js';
 import * as THREE from 'three';
 import { makeLayout, TILE, world, tileAt, key, findPath, edgeKey, FLOORS, FLOOR_THEMES } from './layout.js';
-import {profileFor,weaponInfo,maskProtects,STAFF_BONUS} from './loadout.js';
+import {profileFor,weaponInfo,maskProtects,gasBlocked,hasMask,mayHitStaff,seesDrawnWeapon,STAFF_BONUS} from './loadout.js';
 import {MissionSystems,securityAlert} from './systems.js';
 import {weaponModel,playerAccessories} from './gear.js';
 import { STAFF } from './mission.js';
@@ -102,7 +107,7 @@ export class GameEngine {
         if (!e.repeat) {
           if (!this.paused && this.mission) {
             if (k === 'KeyE') this.interact(); if (k === 'KeyF') this.toggleFlash(); if (k === 'KeyM' || k === 'Tab') { e.stopImmediatePropagation(); this.hooks.map?.(); }
-            if (k === 'KeyJ') { e.stopImmediatePropagation(); this.hooks.journal?.(); } if (k === 'KeyR') this.reload(); if (k === 'KeyV') this.toggleAim(); if(k==='KeyG')this.toggleWeapon(); if(k==='KeyQ')this.switchWeapon(); if(k==='KeyB')this.toggleMask();
+            if (k === 'KeyJ') { e.stopImmediatePropagation(); this.hooks.journal?.(); } if (k === 'KeyR') this.reload(); if (k === 'KeyV') this.toggleAim(); if(k==='KeyG')this.toggleWeapon(); if(k==='KeyQ')this.switchWeapon(); if(k==='KeyB')this.toggleMask();if(k==='KeyH')this.toggleHide();
           }
         }
         this.keys.add(k);
@@ -180,7 +185,7 @@ export class GameEngine {
     await task.stage('Preparing objectives',.79,'Setting up evidence and mission interactions');
     this.visitors=new HospitalVisitors(this);this.systems=new MissionSystems(this);this.incidents=new HospitalIncidents(this);this.incidents.setup();this.objectives=new AssignmentObjectives(this);this.antidotes=new AntidoteStations(this);this.covert=new CovertAssignments(this);this.extras=new HospitalExtras(this);this.arrivals=new EmergencyArrivals(this);
     await task.stage('Preparing patient details',.84,'Finishing the hospital scene');
-    this.patientDetails=new PatientDetails(this);this.systems.prepare();this.playerGear.update(mission.save);this.player.root.visible=true;
+    this.securityResponse=new SecurityResponse(this);this.playerSeated=null;this.patientDetails=new PatientDetails(this);this.systems.prepare();this.playerGear.update(mission.save);this.player.root.visible=true;
     this.camera.position.set(.6,2.4,33.5);this.updateCamera(.1,true);this.updateLights();
     for(const n of this.npcs)n.visual.root.visible=n.floor===0&&distance(n.pos,this.playerPos)<34;
     await task.stage('Preparing graphics',.90,'Getting the entrance, lights and characters ready');
@@ -215,7 +220,7 @@ export class GameEngine {
 
   setFloor(floor) {
     this.floor = floor;trimMirrorMemory(this.hospitals,floor,this.playerPos); this.antidotes?.update(); this.hospitals.forEach((h, i) => h.group.visible = i === floor);
-    this.npcs.forEach(n => n.visual.root.visible = n.floor === floor && !n.dead && !n.evacuated);
+    this.npcs.forEach(n => n.visual.root.visible = n.floor === floor && !n.evacuated);
     this.flash.shadow.needsUpdate = true;
   }
   setPhoneOpen(value){
@@ -227,7 +232,7 @@ export class GameEngine {
   pause(value) { if(this.disposed)return;this.pauseRevision++;this.paused = value;this.lastFrameAt=-Infinity;this.clock.getDelta(); this.keys.clear(); this.resetTouch(); this.aiming = false; this.audio.pause(value); if(value){this.objectives?.china?.recorder.end(false);if(this.mission?.china)this.mission.china.progress=0;document.exitPointerLock?.();} }
   stop() { this.startGeneration++;this.startTask?.cancel();this.retireMission(); }
   retireMission() { this.setPhoneOpen(false);updateNightSky(this.hospitals?.[0]?.group,false,this.time);updateEveningWeather(this.hospitals?.[0]?.group,false,this.time);this.scene.background?.set?.('#182c3b');if(this.scene.fog&&this.scene.background?.isColor)this.scene.fog.color.copy(this.scene.background);this.pause(true);this.clearEffects(); this.mission = null;this.systems=null;this.weaponDrawn=false; this.player.root.visible = false; this.clearNPCs(); this.flashlight = false; this.blackout = 0; this.setFloor(0);this.renderer.renderLists.dispose(); }
-  clearNPCs() { this.arrivals?.dispose();this.arrivals=null; for(const level of this.levels||[])for(const door of level.doors)delete door.traffic;this.cameraObstacleCache=null;this.patientDetails?.dispose();this.patientDetails=null;this.extras?.dispose();this.extras=null;this.covert?.dispose();this.covert=null;this.antidotes?.dispose();this.antidotes=null;this.objectives?.dispose();this.objectives=null;this.visitors?.dispose();this.visitors=null;this.incidents?.dispose();this.incidents=null;this.life?.dispose(); this.life=null; for (const n of this.npcs) {n.visual.root.removeFromParent();if(n.visual.dispose)n.visual.dispose();else disposeObjectResources(n.visual.root);} this.npcs = []; }
+  clearNPCs() { this.securityResponse?.dispose();this.securityResponse=null; this.arrivals?.dispose();this.arrivals=null; for(const level of this.levels||[])for(const door of level.doors)delete door.traffic;this.cameraObstacleCache=null;this.patientDetails?.dispose();this.patientDetails=null;this.extras?.dispose();this.extras=null;this.covert?.dispose();this.covert=null;this.antidotes?.dispose();this.antidotes=null;this.objectives?.dispose();this.objectives=null;this.visitors?.dispose();this.visitors=null;this.incidents?.dispose();this.incidents=null;this.life?.dispose(); this.life=null; for (const n of this.npcs) {n.visual.root.removeFromParent();if(n.visual.dispose)n.visual.dispose();else disposeObjectResources(n.visual.root);} this.npcs = []; }
   clearEffects(){for(const effect of this.effects){effect.mesh.removeFromParent();disposeObjectResources(effect.mesh);}this.effects.length=0;}
   handleVisibility(){
     if(this.disposed)return;
@@ -243,7 +248,7 @@ export class GameEngine {
       const nearest = candidates.map(c => world(c.x,c.z)).sort((a,b) => distance(a,pos)-distance(b,pos))[0];
       const spawnPos = options.fixed ? pos : nearest || pos; visual.root.position.set(spawnPos.x, 0, spawnPos.z); this.scene.add(visual.root);
       const npc = { id, name: person.name || (role === 'patient' ? 'Visitor / patient' : 'Hospital security'), role, person, floor, pos: visual.root.position, visual, room, path: [], cursor: 0, wait: this.mission.random() * 6, dead: false, speed: role === 'security' ? (this.mission.challenge?.patrolSpeed||1.35) : .8 + this.mission.random() * .4, nextCough: this.mission.random() * 20, home: { x: pos.x, z: pos.z }, routine: 0 };
-      visual.root.visible = floor === this.floor; this.npcs.push(npc); return npc;
+      visual.root.visible = floor === this.floor; npc.complicity=complicityFor(npc);this.npcs.push(npc); return npc;
   }
   spawnNPCs(){for(const _ of this.spawnNPCBatches()){} }
   *spawnNPCBatches() {
@@ -262,12 +267,14 @@ export class GameEngine {
         yield room.id;
       }
       for (const [i, p] of [[0, { x: 4.7, z: 18 }], [1, { x: -20, z: 1.7 }], [2, { x: 22, z: -2 }], [3, { x: 7, z: 29 }]]) { const patient=spawn({ gender: i % 2 ? 'female' : 'male', skin: i % 2 ? '#bf8c6c' : '#d9b296', hair: '#62594e' }, 'patient', floor, p, null, `patient-${floor}-${i}`); patient.contamination = i === 1 ? 30 : i === 2 ? ((mission.seed+floor*17)%5===0?180:60) : 0; }
-      for (const [i, p] of [[0, world(10, 8)], [1, world(3, 14)]]) spawn({ skin: '#bd9275', hair: '#302b26' }, 'security', floor, p, null, `security-${floor}-${i}`);
+      for(let i=0;i<securityCount(mission.round);i++){if((i===0?0:(i-1)%3)!==floor)continue;const p=i===0?[...this.navLayouts[0].cells.values()].map(c=>world(c.x,c.z)).filter(p=>p.z>35&&this.canStand(p.x,p.z,.3,0)).sort((a,b)=>distance(a,{x:5.4,z:38})-distance(b,{x:5.4,z:38}))[0]||{x:0,z:39}:i%2?world(10,8):world(3,14);const guard=spawn({skin:'#bd9275',hair:'#302b26'},'security',floor,p,null,`security-${i}`,{fixed:i===0});guard.outsideGuard=i===0;guard.guardPost={...p};guard.stationary=i===0||i%3===2;guard.wait=0;}
       yield floor;
     }
   }
-  say(text, label = 'PUBLIC ADDRESS') { if(this.mission)this.nextPA=Math.max(this.nextPA||0,this.mission.elapsed+75);this.hooks.announcement?.({ text, label }); this.audio.announce(text); }
+  say(text, label = 'PUBLIC ADDRESS') { if(this.mission)this.nextPA=Math.max(this.nextPA||0,this.mission.elapsed+75);this.hooks.announcement?.({ text:announcementCaption(text), label }); this.audio.announce(text); }
   notify(text, kind = 'info') { this.hooks.notify?.({ text, kind }); }
+  toggleDuck(){this.touchInput.crouch=!this.touchInput.crouch;this.touchInput.hide=false;}
+  toggleHide(){this.touchInput.hide=!this.touchInput.hide;if(this.touchInput.hide){this.weaponDrawn=false;this.aiming=false;this.notify('Hiding low · stay behind solid cover to break security sightlines.');}else this.notify('Standing.');}
   toggleFlash() { this.flashlight = !this.flashlight; this.audio.tone(450, .04, .035); this.emitHUD(); }
   setTorchBrightness(value,persist=true){if(!Number.isFinite(value))return false;this.settings.flashlightBrightness=Math.min(2.5,Math.max(.5,value));this.flashlight=true;if(persist)this.commitTorchBrightness();return true;}
   commitTorchBrightness(){this.emitHUD();this.hooks.persist?.();}
@@ -278,14 +285,16 @@ export class GameEngine {
   applyDoctorDisguise(){const old=this.player;this.waitBreak?.dispose();this.playerGear?.dispose();this.weapon.removeFromParent();const person={...this.playerProfile,hairstyle:'cropped',cap:false,glasses:false,sunglasses:false};this.player=makePlayer(this.assets,person.gender,person,'doctor');this.player.root.position.copy(this.playerPos);this.player.root.rotation.y=old.root.rotation.y;this.player.model?.traverse(o=>{if(o.isMesh&&(/hair/i.test(o.name)||/hair/i.test(o.material?.name||'')))o.visible=false;});this.scene.add(this.player.root);this.player.root.add(this.weapon);this.playerGear=playerAccessories(this.player);this.waitBreak=new WaitBreak(this.player);old.root.removeFromParent();old.dispose?.();}
   triggerCough(patient = {name:'Sick patient',contamination:30}) {
     if(this.mission?.elapsed<(this.antidoteProtectionUntil||0))return false;
-    if(this.mission.china?.disguised||maskProtects(this.mission.save)){this.notify('Mask protected you from the gas','info');this.coughCooldown=5;return false;}
+    if(this.mission.china?.disguised||gasBlocked(this.mission.save,this.mission.random)){this.notify('Mask protected you from the gas','info');this.coughCooldown=5;return false;}
     const duration=exposureDuration(patient,this.mission.save.upgrades.filter);if(!duration)return false;
     this.impairment=Math.max(this.impairment,duration);this.impairmentTotal=Math.max(this.impairmentTotal||0,duration);this.exposureSource=patient.name;
     this.coughCooldown=5;this.notify(`Contaminated · ${Math.round(duration)}s recovery. Find the ground-floor antidote marked + on your map.`, 'warning');return true;
   }
+  seatInteractions(){if(this.playerSeated)return [{type:'seat',label:'Stand up',x:this.playerPos.x,z:this.playerPos.z}];return (this.hospitals[this.floor].seats||[]).filter(s=>!this.npcs.some(n=>n.floor===this.floor&&!n.dead&&!n.evacuated&&Math.hypot(n.pos.x-s.x,n.pos.z-s.z)<.65)).map(s=>({...s,type:'seat',label:'Sit down'}));}
+  sit(seat){if(this.playerSeated){this.playerSeated=null;this.playerPos.copy(this.seatExit);this.player.root.rotation.x=0;return;}if(this.weaponDrawn){this.notify('Holster your weapon before sitting.');return;}this.seatExit=this.playerPos.clone();this.playerSeated={...seat};this.playerPos.set(seat.x,0,seat.z);this.player.root.position.set(seat.x,-.35,seat.z);this.player.root.rotation.y=seat.rotation;this.notify('Seated · use again or move to stand.');}
   nearestInteractable() {
     let best = null, score = Infinity;
-    const extras=this.extras?.interactions()||[];
+    const extras=[...(this.extras?.interactions()||[]),...this.seatInteractions()];
     for (const i of [...extras.filter(i=>i.type==='extra-help'),...this.hospitals[this.floor].interactables,...(this.objectives?.interactions()||[]),...(this.antidotes?.interactions()||[]),...(this.covert?.interactions()||[]),...extras.filter(i=>i.type!=='extra-help')]) {
       const candidate=interactionScore(this.playerPos,this.yaw,i);
       if(candidate<score&&this.interactionVisible(i)){best=i;score=candidate;}
@@ -307,6 +316,7 @@ export class GameEngine {
   }
   interact() {
     const i = this.nearestInteractable(); if (!i || this.paused) return;
+    if(i.type==='seat'){this.sit(i);return;}
     if(i.type.startsWith('china-')){this.objectives?.china?.interact(i);return;}
     if(i.type.startsWith('extra-')){this.extras?.interact(i);return;}
     if(i.type.startsWith('covert-')){this.covert?.interact(i);return;}
@@ -320,7 +330,7 @@ export class GameEngine {
       else{i.door.open=!i.door.open;this.audio.sound('door');}
     }
     if (['directory', 'schedule', 'log'].includes(i.type)) {
-      if(i.type==='directory'&&this.mission.type==='standard'&&!this.mission.recordsNotice){this.mission.recordsNotice=true;const room=this.levels[0].rooms.find(r=>r.kind==='office');this.mission.recordsLocation={number:room.number,wing:room.wing};this.hooks.clue?.({title:'Locate the Records office',source:'Hospital information',text:`The staff directory and confidential rota are kept inside Records, room ${room.number}, ${room.wing} wing, ground floor. Locate that room first, then find the document inside.`});this.notify(`Locate Records office · room ${room.number} · ground floor`,'clue');this.emitHUD();return;}
+      if(i.type==='directory'&&this.mission.type==='standard'&&!this.mission.recordsNotice){this.mission.recordsNotice=true;const room=evidenceRoom(this.mission.country);this.mission.recordsLocation=room;this.hooks.clue?.({title:'Locate the rota',source:'Hospital information',text:`The staff directory and confidential rota are in ${evidenceLabel(this.mission.country)}. Locate that room first, then find the document inside.`});this.notify(`Locate ${evidenceLabel(this.mission.country)}`,'clue');this.emitHUD();return;}
       if(this.covert?.restrictClue(i.type))return;
       const clue = this.mission.clue(i.type);
       if (clue) { this.audio.sound('clue'); this.hooks.clue?.(clue); this.notify(clue.title, 'clue'); }
@@ -347,21 +357,23 @@ export class GameEngine {
   travelToFloor(dest){
     if(!Number.isInteger(dest)||dest<0||dest>=this.levels.length||dest===this.floor)return false;
     if(dest===3&&this.mission.china&&!this.mission.china.ready){this.notify('Complete your stolen identity, camera and disguise before entering the basement.','warning');return false;}
-    if(dest===3&&!this.mission.china&&(this.mission?.type==='standard'||!this.mission?.keys.includes('basement'))){this.notify('Basement lift locked · collect the access pass in Records');return false;}
+    if(dest===3&&!this.mission.china&&(this.mission?.type==='standard'||!this.mission?.keys.includes('basement'))){this.notify(`Basement lift locked · collect the access pass in ${evidenceLabel(this.mission.country)}`);return false;}
     this.setFloor(dest);const lift=this.hospitals[dest].lift;if(lift){lift.open=true;lift.closeTimer=3.5;setLiftOpening(lift,1);lift.choosing=false;lift.selectionUsed=true;}this.playerPos.set(this.levels[dest].elevator.x,0,lift?lift.faceZ-1.1:this.levels[dest].elevator.z+3);this.player.root.position.copy(this.playerPos);this.yaw=0;this.audio.sound('door');this.hooks.transition?.();this.updateCamera(.2,true);this.notify(`${FLOORS[dest]} · ${FLOOR_THEMES[dest]}`);this.emitHUD();return true;
   }
   drawWeapon(){
     const m=this.mission;if(!m||m.result||this.paused)return false;
     if(m.type==='standard'&&!m.targetDown&&!m.policeAlert){const target=this.npcs.find(n=>n.id==='target'&&!n.dead);const near=target&&target.floor===this.floor&&distance(target.pos,this.playerPos)<8&&this.lineOfSight(this.playerPos,target.pos);
-      if(!near){this.weaponDrawn=false;this.aiming=false;m.finish(false,'You drew your weapon before reaching the assigned doctor. The assignment was exposed.');this.finish();return false;}
-      m.policeAlert=true;m.beginEscape(60);this.notify('Target confrontation · eliminate the doctor and escape before the countdown ends.','danger');
+      m.legitimateDraw=!!near;
+      if(!near&&this.weaponWitness()){this.weaponDrawn=false;this.aiming=false;m.finish(false,'A witness saw you draw a weapon without confronting the assigned target.');this.finish();return false;}
+      if(near){m.policeAlert=true;m.beginEscape(60);this.notify('Target confrontation · eliminate the doctor and escape before the countdown ends.','danger');}
     }
     this.weaponDrawn=true;return true;
   }
+  weaponWitness(){return this.npcs.find(n=>!n.dead&&!n.evacuated&&!n.baby&&!n.blind&&!n.lying&&!n.rescuePatient&&n.recruit?.state!=='recruited'&&n.floor===this.floor&&seesDrawnWeapon(n.pos,this.playerPos,n.visual.root.rotation.y,this.lineOfSight(n.pos,this.playerPos),this.mission.challenge?.witnessRange||11));}
   setAiming(value){if(value&&!this.mission?.photoOnly&&!this.weaponDrawn&&!this.drawWeapon())return;this.aiming=!!value;}
   toggleAim(){this.setAiming(!this.aiming);this.emitHUD();}
   toggleWeapon(){if(this.paused)return;if(this.mission?.photoOnly){this.setAiming(!this.aiming);this.notify(this.aiming?'Camera ready · center the evidence and take a photo':'Camera lowered');this.emitHUD();return;}if(!this.weaponDrawn){if(!this.drawWeapon())return;}else this.weaponDrawn=false;if(!this.weaponDrawn)this.aiming=false;this.notify(this.weaponDrawn?'Weapon drawn · stay out of sight':'Weapon holstered');this.emitHUD();}
-  toggleMask(){if(this.mission.china?.disguised){this.notify('Keep the surgical mask on to maintain your disguise.');return;}if(!this.mission.save.upgrades.mask){this.notify('Buy the protective mask in Equipment first');return;}this.mission.save.loadout.mask=!this.mission.save.loadout.mask;this.hooks.persist?.();this.playerGear?.update(this.mission.save);this.emitHUD();}
+  toggleMask(){if(this.mission.china?.disguised){this.notify('Keep the surgical mask on to maintain your disguise.');return;}if(!hasMask(this.mission.save)){this.notify('Buy a face mask in the character studio or Equipment first');return;}this.mission.save.loadout.mask=!this.mission.save.loadout.mask;this.hooks.persist?.();this.playerGear?.update(this.mission.save);this.emitHUD();}
   setWeapon(kind,initial=false){
     if(!this.mission)return;const info=weaponInfo(this.mission.save,kind);
     if(!initial&&this.reloading)return;
@@ -389,7 +401,7 @@ export class GameEngine {
       const center = n.pos.clone().add(n.hitOffset || new THREE.Vector3(0, 1.1, 0));
       const hit = n.hitOffset
         ? ray.intersectSphere(new THREE.Sphere(center, n.hitRadius || .46), new THREE.Vector3())
-        : ray.intersectBox(new THREE.Box3(n.pos.clone().add(new THREE.Vector3(-.35,.06,-.35)), n.pos.clone().add(new THREE.Vector3(.35,1.85,.35))), new THREE.Vector3());
+        : ray.intersectBox(new THREE.Box3(n.pos.clone().add(new THREE.Vector3(-.35*(this.aiming?info.assist||1:1),.06,-.35*(this.aiming?info.assist||1:1))), n.pos.clone().add(new THREE.Vector3(.35*(this.aiming?info.assist||1:1),1.85,.35*(this.aiming?info.assist||1:1)))), new THREE.Vector3());
       if (!hit) continue;
       const d = hit.distanceTo(ray.origin);
       if (d < closest && this.lineOfSight(this.playerPos, n.pos)) { closest = d; best = n; }
@@ -402,13 +414,14 @@ export class GameEngine {
     if (best) {
       if(best.recruit?.state==='recruited'){this.notify('Your contact is helping you','info');this.emitHUD();return;}
       const before = this.mission.state;
+      if(['security','police'].includes(best.role)&&this.mission.targetDown){best.guardHealth=(best.guardHealth??2)-(this.weaponKind==='sniper'?3:1+(this.mission.save.upgrades.power||0)*.5);if(best.guardHealth>0){this.mission.shots++;this.hooks.hit?.();this.notify('Guard hit · stay behind cover','warning');this.emitHUD();return;}}
       const allowed=this.mission.eliminate(best);
-      if(allowed===false){this.notify(this.mission.china?'Secure all three recordings before shooting the operating team':this.mission.type==='rescue'?'Only the two operating doctors are rescue targets':'Primary target first · other staff cannot be harmed yet','warning');this.emitHUD();return;}
-      if(best.role!=='patient'){best.dead=true;best.falling=1;best.visual.root.rotation.z=0;best.reporting=null;this.hooks.hit?.();}
+      if(allowed===false){this.notify(this.mission.targetDown?'Protected staff · only red-marked accomplices and armed responders are targets':this.mission.china?'Secure all three recordings before shooting the operating team':this.mission.type==='rescue'?'Only the two operating doctors are rescue targets':'Protected staff · only the primary doctor, marked accomplices after the target, and responding guards may be hit','warning');this.emitHUD();return;}
+      if(best.role!=='patient'){best.dead=true;beginBodyFall(best,this);best.reporting=null;this.hooks.hit?.();}
       if (before !== 'escape' && this.mission.state === 'escape'&&!this.mission.china) {
         this.say('Code blue. Security incident reported. All staff follow emergency protocol. Police units are responding.', 'EMERGENCY PROTOCOL');
-        this.systems?.startEvacuation();this.notify(this.mission.type==='rescue'?'Alarm raised · stop both operating doctors, release the patient and escape':`Primary target down · staff now earn +${STAFF_BONUS} coins each · escape to bank them`,'danger'); this.hooks.emergency?.();
-      } else if(!this.mission.result&&best.id!=='target')this.notify(this.mission.china?(this.mission.targetDown?'Operating team stopped · escape with the recordings':`Operating doctors stopped · ${this.mission.operationDoctors.length}/2`):this.mission.type==='rescue'?(this.mission.targetDown?'Operation stopped · release and escort the patient':`Operating doctors stopped · ${this.mission.operationDoctors.length}/2`):best.role==='police'?'Police stopped':`Staff bonus +${STAFF_BONUS} coins · escape to bank it`,'clue');
+        this.systems?.startEvacuation();this.notify(this.mission.type==='rescue'?'Alarm raised · stop both operating doctors, release the patient and escape':`Primary target down · red-marked accomplices earn +${STAFF_BONUS} coins each · escape to bank them`,'danger'); this.hooks.emergency?.();
+      } else if(!this.mission.result&&best.id!=='target')this.notify(this.mission.china?(this.mission.targetDown?'Operating team stopped · escape with the recordings':`Operating doctors stopped · ${this.mission.operationDoctors.length}/2`):this.mission.type==='rescue'?(this.mission.targetDown?'Operation stopped · release and escort the patient':`Operating doctors stopped · ${this.mission.operationDoctors.length}/2`):['security','police'].includes(best.role)?'Armed response stopped':`Accomplice bonus +${STAFF_BONUS} coins · escape to bank it`,'clue');
       if (this.mission.result) this.finish();
     } else { this.mission.suspicion = Math.min(100, this.mission.suspicion + (this.mission.save.upgrades.suppressor ? 8 : 20)); }
     this.emitHUD();
@@ -416,17 +429,17 @@ export class GameEngine {
   eliminateCoffeeTarget(target){
     if(this.mission?.type!=='standard'||this.mission.targetDown||this.mission.result||target?.dead)return false;
     const allowed=this.mission.eliminate(target);if(allowed!==true)return false;
-    target.dead=true;target.falling=1;target.reporting=null;target.path=[];
+    target.dead=true;beginBodyFall(target,this);target.reporting=null;target.path=[];
     this.mission.covertDeath=true;this.mission.state='covert-escape';this.mission.timer=0;this.notify('Target down · leave through the glass entrance before anyone discovers the body','clue');this.emitHUD();return true;
   }
   alertCovertShot(){if(this.mission.covertDeath&&!this.mission.bodyDiscovered){this.mission.bodyDiscovered=true;this.mission.beginEscape(65);this.systems?.startEvacuation();this.hooks.emergency?.();}}
   allyShot(actor,target){
-    if(this.mission?.type!=='standard'||!this.mission?.targetDown||this.mission.result||actor.dead||target.dead||target.evacuated||!['doctor','nurse','security','police'].includes(target.role)||target.floor!==actor.floor)return false;
+    if(this.mission?.type!=='standard'||!this.mission?.targetDown||this.mission.result||actor.dead||target.dead||target.evacuated||!mayHitStaff(this.mission,target)||target.floor!==actor.floor)return false;
     if(!this.lineOfSight(actor.pos,target.pos,actor.floor))return false;
     const start=actor.pos.clone().setY(1.4),end=target.pos.clone().setY(1.1);
     const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([start,end]),new THREE.LineBasicMaterial({color:'#f1cc94',transparent:true,opacity:.8}));this.scene.add(line);this.effects.push({mesh:line,life:.09});
     this.alertCovertShot();this.audio.sound('shot');const allowed=this.mission.eliminate(target);if(allowed===false)return false;
-    target.dead=true;target.falling=1;target.reporting=null;this.emitHUD();return true;
+    target.dead=true;beginBodyFall(target,this);target.reporting=null;this.emitHUD();return true;
   }
   lineOfSight(a, b,floor=this.floor) {
     const dx = b.x - a.x, dz = b.z - a.z;
@@ -471,12 +484,13 @@ export class GameEngine {
     if (this.keys.has('ArrowLeft')) this.yaw += dt * 1.9; if (this.keys.has('ArrowRight')) this.yaw -= dt * 1.9;
     const f = ((this.phoneOpen&&!this.phoneCollapsed)||this.instrumentView)?0:this.touchInput.forward + Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) - Number(this.keys.has('KeyS') || this.keys.has('ArrowDown'));
     const strafe = ((this.phoneOpen&&!this.phoneCollapsed)||this.instrumentView)?0:this.touchInput.strafe + Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA'));
-    const moving = f !== 0 || strafe !== 0; this.crouched = this.keys.has('KeyC') || this.touchInput.crouch;
-    const sprint=advanceSprint(this,{dt,moving,allowed:!this.crouched&&!this.aiming&&!this.nearStructure(this.playerPos,this.floor),requested:this.keys.has('ShiftLeft')||this.keys.has('ShiftRight')||this.touchInput.sprint});
+    const moving = f !== 0 || strafe !== 0; this.crouched = this.keys.has('KeyC')&&!this.keys.has('ShiftLeft')&&!this.keys.has('ShiftRight') || this.touchInput.crouch || this.touchInput.hide;
+    const sprint=advanceSprint(this,{dt,moving,allowed:!this.crouched&&!this.aiming,requested:this.keys.has('ShiftLeft')||this.keys.has('ShiftRight')||this.touchInput.sprint});
     const {running}=sprint;Object.assign(this,sprint);
-    if(this.sprintExhausted)this.touchInput.sprint=false;
+
     const modifier = 1 + this.mission.save.upgrades.shoes * .08;
-    if(Math.abs(f)+Math.abs(strafe)>.05)this.smoking=false;
+    if(this.smoking&&!isOutsideHospital(this.floor,this.playerPos)){this.setPhoneOpen(false);this.hooks.closePhone?.();}
+    if(this.playerSeated){if(moving){this.sit({});}else{this.player.root.position.set(this.playerSeated.x,-.35,this.playerSeated.z);this.player.root.rotation.y=this.playerSeated.rotation;this.player.animate(this.time,0,dt);this.player.poseActivity?.('rest',this.time,{seated:true});this.playerSpeed=0;return;}}
     const speed = (running ? 5.5 : this.crouched ? 1.3 : this.aiming ? 1.85 : 3.35) * modifier * (this.impairment > 0 ? .53 : 1);
     const amount = Math.max(1,Math.hypot(f, strafe));
     const old = this.playerPos.clone();
@@ -560,7 +574,7 @@ export class GameEngine {
   waitForDoor(n,dt){
     const door=this.doorOnRoute(n);if(!door)return false;
     if(door.locked){n.path=[];n.wait=1.5;return true;}
-    door.open=true;if(Math.abs(door.angle-door.openAngle)<=.025)return queueAtDoor(this,n,door);
+    door.open=true;if(Math.abs(door.angle-door.openAngle)<=.025)return n.evacuating?false:queueAtDoor(this,n,door);
     // Wait beyond the swing rather than repeatedly walking into a closed leaf.
     const pivot=door.pivot.position,dx=n.pos.x-pivot.x,dz=n.pos.z-pivot.z,length=Math.hypot(dx,dz);
     if(length<2.3){const amount=Math.min(2*dt,2.32-length),axis=door.axis==='z'?'x':'z',side=Math.sign(n.pos[axis]-door[axis])||1;
@@ -574,16 +588,16 @@ export class GameEngine {
     if(this.camera){this.viewFrustum ||= new THREE.Frustum();this.viewMatrix ||= new THREE.Matrix4();this.npcSphere ||= new THREE.Sphere(new THREE.Vector3(),1.8);this.camera.updateMatrixWorld();this.viewMatrix.multiplyMatrices(this.camera.projectionMatrix,this.camera.matrixWorldInverse);this.viewFrustum.setFromProjectionMatrix(this.viewMatrix);}
     for (const n of this.npcs) {
       if(n.evacuated)continue;
-      if (n.dead) { if (n.falling > 0) { n.falling = Math.max(0, n.falling - dt * 2); n.visual.root.rotation.z = (1 - n.falling) * Math.PI / 2; n.visual.root.position.y = -.4 * (1 - n.falling); } continue; }
+      if(n.dead){updateBodyFall(n,dt,this);n.visual.root.visible=n.floor===this.floor&&distance(n.pos,this.playerPos)<45;continue;}
       const layout = this.navLayouts[n.floor]; const local = n.floor === this.floor; const d = local ? distance(this.playerPos, n.pos) : 100;
       n.visual.root.visible = local && d < 34;
       let speed = 0;
       const hostile=n.role==='police'||n.role==='security'&&!n.evacuating&&securityAlert(mission);
       n.wait -= dt;n.reaction=Math.max(0,(n.reaction||0)-dt);
-      const directed=this.systems?.prepareNPC(n);if(mission.result)return;
+      const directed=this.securityResponse?.prepare(n)||this.systems?.prepareNPC(n);if(mission.result)return;
       if(!directed&&hostile && local && n.wait < 0) {
         this.routeNPC(n,this.playerPos);n.wait=.85;
-      } else if (!directed && !hostile && !n.activity && !n.reaction && n.cursor >= n.path.length && n.wait < 0) {
+      } else if (!directed && !hostile && !n.stationary && !n.activity && !n.reaction && n.cursor >= n.path.length && n.wait < 0) {
         const start = tileAt(n.pos.x, n.pos.z); let end;
         if (n.room && (n.id === 'target' || n.routine % 3 !== 2)) {
           const candidates = [...layout.cells.values()].filter(c => c.room === n.room.id);
@@ -597,14 +611,14 @@ export class GameEngine {
       let destination = n.activity || n.reaction ? null : n.path[n.cursor];
       if(destination&&this.waitForDoor(n,dt))destination=null;
       if (destination) {
-        const p = world(destination.x, destination.z), dist = distance(n.pos, p);
+        const p = world(destination.x, destination.z), dist = distance(n.pos, p);if(n.evacuating&&dist<.14){n.cursor++;continue;}
         const current = n.path[Math.max(0, n.cursor - 1)], door = layout.doorEdges.get(edgeKey(key(current.x, current.z), key(destination.x, destination.z)));
         if (door && !door.locked && dist < 4) door.open = true;
         speed=n.evacuating?(n.blind?1.25:4+(n.id.length%5)*.12):n.reporting?4.1:hostile?mission.difficulty==='hard'?3.6:2.65:n.speed;
         if(speed>3.7&&this.nearStructure(n.pos,n.floor))speed=3.2;
         const dx=p.x-n.pos.x,dz=p.z-n.pos.z,step=Math.min(dist,speed*dt),nx=n.pos.x+dx/Math.max(dist,.001)*step,nz=n.pos.z+dz/Math.max(dist,.001)*step;
         if((n.evacuating||n.reporting?evacuationStep:crowdStep)(this,n,p,step,dt)){n.blocked=0;if(distance(n.pos,p)<.055)n.cursor++;}
-        else{speed=0;n.blocked=(n.blocked||0)+dt;if(n.blocked>2.4){n.path=[];n.wait=.5+(n.routine%3)*.12;n.blocked=0;n.passing=null;if(n.recruit)n.recruit.nextRoute=mission.elapsed+.5;}}
+        else{speed=0;n.blocked=(n.blocked||0)+dt;if(n.blocked>2.4){if(!this.systems?.rerouteCrowd(n)){n.path=[];n.wait=.5+(n.routine%3)*.12;}n.blocked=0;n.passing=null;if(n.recruit)n.recruit.nextRoute=mission.elapsed+.5;}}
 
       }
       if(Math.hypot(n.pos.x-previousX,n.pos.z-previousZ)>.001){const heading=Math.atan2(n.pos.x-previousX,n.pos.z-previousZ);n.visual.root.rotation.y+=Math.atan2(Math.sin(heading-n.visual.root.rotation.y),Math.cos(heading-n.visual.root.rotation.y))*Math.min(1,dt*10);}
@@ -619,6 +633,7 @@ export class GameEngine {
       if (local && n.role === 'security' && d < 5 && this.keys.has('ShiftLeft') && mission.state !== 'escape') mission.suspicion = Math.min(100, mission.suspicion + dt * (this.mission.save.upgrades.shoes ? 2 : 4));
       if (hostile && local && d < .85 && this.lineOfSight(n.pos, this.playerPos)) this.captureTime += dt;
     }
+    this.securityResponse?.update(dt);
     this.captureTime = Math.max(0, this.captureTime - dt * .3);
     if (this.captureTime > 1.1) { this.mission.finish(false, 'Security intercepted you before you reached safety.'); this.finish(); }
   }
@@ -639,7 +654,7 @@ export class GameEngine {
   updateEnvironment(dt) {
     if(this.mission.elapsed>=(this.nextMirrorTrim||0)){trimMirrorMemory(this.hospitals,this.floor,this.playerPos);this.nextMirrorTrim=this.mission.elapsed+1;}
     if(this.phoneOpen&&!canTakeBreak(this)){this.setPhoneOpen(false);this.hooks.closePhone?.();}
-    const outside=isOutsideHospital(this.floor,this.playerPos);updateEveningWeather(this.hospitals?.[0]?.group,outside,this.time);updateNightSky(this.hospitals?.[0]?.group,outside,this.time);this.scene.background?.set?.(outside?'#070f20':'#182c3b');if(this.scene.fog&&this.scene.background?.isColor)this.scene.fog.color.copy(this.scene.background);
+    const outside=isOutsideHospital(this.floor,this.playerPos);updateEveningWeather(this.hospitals?.[0]?.group,outside,this.time,this.audio);updateNightSky(this.hospitals?.[0]?.group,outside,this.time,!!this.smoking);this.scene.background?.set?.(outside?'#070f20':'#182c3b');if(this.scene.fog&&this.scene.background?.isColor)this.scene.fog.color.copy(this.scene.background);
     const lift=this.hospitals?.[this.floor]?.lift;if(lift){const inside=liftAutoClose(lift,dt,this.playerPos,this.npcs,this.floor);if(!inside&&this.playerPos.z>lift.faceZ+.5){lift.choosing=false;}setLiftOpening(lift,THREE.MathUtils.damp(lift.amount,lift.open?1:0,5,dt));if(inside&&lift.amount>.85&&!lift.choosing&&!lift.selectionUsed){lift.choosing=true;this.hooks.lift?.(this.floor);}}
     for(const entrance of this.hospitals?.[0]?.entrances||[]){
       const near=p=>Math.abs(p.x-1.5)<4&&Math.abs(p.z-34.5)<3.7;
@@ -659,8 +674,8 @@ export class GameEngine {
   }
   updateLights() {
     const dark = this.blackout > 0, emergency = this.mission?.state === 'escape'&&(!this.mission.china||this.mission.policeAlert);
-    const flicker=this.life?.flickerLevel() || 1,privateOffice=this.objectives?.china,officeDark=privateOffice?.case.lightsOff&&this.floor===0&&privateOffice.roomOf(this.playerPos)===privateOffice.office.id;
-    this.ambient.intensity = dark||officeDark ? .14 : .95; this.ambient.color.set(dark ? '#50647e' : '#d3e3f0'); this.rim.intensity = dark||officeDark ? .3 : 2.5;
+    const flicker=this.life?.flickerLevel() || 1,privateOffice=this.objectives?.china;
+    this.ambient.intensity = dark ? .14 : .95; this.ambient.color.set(dark ? '#50647e' : '#d3e3f0'); this.rim.intensity = dark ? .3 : 2.5;
     this.materials.light.emissiveIntensity = dark ? .015 : 1.6;
     const lightAnchor = this.mission ? this.playerPos : this.camera.position;
     const near=this.nearestFixtures;near.length=0;
@@ -671,11 +686,11 @@ export class GameEngine {
       if(index<this.localLights.length){near.splice(index,0,fixture);if(near.length>this.localLights.length)near.pop();}
     }
     this.localLights.forEach((light, i) => {
-      light.position.copy(near[i] || this.playerPos); light.intensity = dark||officeDark ? .05 : emergency && i % 3 === 0 ? 7 + Math.sin(this.time * 5) * 3 : 10;
+      light.position.copy(near[i] || this.playerPos); light.intensity = dark ? .05 : emergency && i % 3 === 0 ? 7 + Math.sin(this.time * 5) * 3 : 10;
       if(this.life?.flicker?.floor === this.floor && this.life.flicker.fixture.distanceTo(light.position)<.5) light.intensity*=flicker;
       light.color.set(emergency && i % 3 === 0 ? '#ef7373' : '#d5edff');
     });
-    this.overhead.position.copy(near[0] || lightAnchor); this.overhead.target.position.copy(lightAnchor); this.overhead.target.position.y = 0; this.overhead.intensity = dark||officeDark ? 0 : 18*(this.life?.flicker?.fixture.distanceTo(this.overhead.position)<.5?flicker:1);
+    this.overhead.position.copy(near[0] || lightAnchor); this.overhead.target.position.copy(lightAnchor); this.overhead.target.position.y = 0; this.overhead.intensity = dark||privateOffice?.case.lightsOff&&this.floor===0&&privateOffice.roomOf(lightAnchor)===privateOffice.office.id ? 0 : 18*(this.life?.flicker?.fixture.distanceTo(this.overhead.position)<.5?flicker:1);
     this.flash.visible = this.flashlight; this.flash.intensity = (45 + (this.mission?.save.upgrades.light || 0) * 20)*THREE.MathUtils.clamp(this.settings.flashlightBrightness??1,.5,2.5); this.flash.distance = 24 + (this.mission?.save.upgrades.light || 0) * 5;
     this.beam.visible = this.flashlight && dark;
     const beamDirection=this.lightDirection.copy(this.flash.target.position).sub(this.flash.position).normalize(); this.beam.position.copy(this.flash.position).addScaledVector(beamDirection,5);this.beam.quaternion.setFromUnitVectors(DOWN,beamDirection);
@@ -688,8 +703,8 @@ export class GameEngine {
     const i = this.nearestInteractable(), cell = this.levels[this.floor].cells.get(key(tileAt(this.playerPos.x, this.playerPos.z).x, tileAt(this.playerPos.x, this.playerPos.z).z));
     const room = this.levels[this.floor].rooms.find(r => r.id === cell?.room);
     const objective = (this.mission.policeAlert&&!this.mission.targetDown?'Police alerted · eliminate the assigned target, then escape':null) || this.covert?.objective() || this.objectives?.hud().label || (this.mission.state==='covert-escape'?'Leave quietly through the ground-floor glass exit':this.mission.state === 'escape' ? (this.mission.type==='standard'&&!this.mission.targetDown?'Police alerted · eliminate the assigned target, then escape':'Return to the main entrance') : this.mission.identified ? 'Eliminate the confirmed target' : this.mission.clues.length ? `Investigate ${this.mission.target.room.name}` : 'Find the staff directory');
-    const prompt = !i ? null : { type: i.type, text:['mission-key','release-patient','photo-subject'].includes(i.type)?i.label:i.type==='npc'&&i.npc.keyCarrier&&!this.mission.keys.includes('theatre')?'Lift theatre key · crouch behind nurse': i.type === 'door' ? this.objectives?.china?.doorPrompt(i.door)||`${i.door.locked?'Unlock':i.door.open ? 'Close' : 'Open'} · ${i.label}` : i.type === 'npc' ? i.npc.recruit ? this.incidents?.prompt(i.npc) || 'Talk' : i.npc.role === 'patient' ? 'Patient · protected' : 'Inspect badge' : i.label };
-    this.hooks.hud?.({ outside:isOutsideHospital(this.floor,this.playerPos),smoking:!!this.smoking, state: this.mission.state, objective, location: room?.name || (this.playerPos.z > 26 ? 'Main atrium' : this.playerPos.x < -6 ? 'West passage' : this.playerPos.x > 9 ? 'East passage' : 'Central concourse'), floor: this.floor, x: this.playerPos.x, z: this.playerPos.z, yaw: this.yaw, timer: this.mission.timer, elapsed: this.mission.elapsed, stamina:this.stamina/(this.maxStamina||100)*100,sprintEnabled:this.touchInput.sprint,sprintExhausted:this.sprintExhausted,weaponName:this.mission.photoOnly?'EVIDENCE CAMERA':weaponInfo(this.mission.save,this.weaponKind).name,weaponKind:this.weaponKind,weaponDrawn:this.weaponDrawn,scoped:this.aiming&&this.weaponKind==='sniper',masked:!!this.mission.china?.disguised||maskProtects(this.mission.save),hasMask:!!this.mission.save.upgrades.mask,reports:this.systems?.reports()||[],bonus:this.mission.type==='standard'?Math.max(0,this.mission.staffKills-1)*STAFF_BONUS:0,evacuated:this.npcs.filter(n=>n.evacuated).length,magnet:!!this.systems?.magnet,suspicion: this.mission.suspicion, flashlight: this.flashlight,flashlightBrightness:this.settings.flashlightBrightness||1, blackout: this.blackout, impairment: this.impairment, impairmentStrength: recoveryStrength(this.impairment,this.impairmentTotal), exposureSource:this.exposureSource, dialogues:this.life?.dialogueHUD()||[],assignment:this.objectives?.hud(),antidotes:this.antidotes?.hud()||[],extras:this.extras?.hud(),country:this.mission.country,appointment:this.life?.appointmentHUD()||null,covert:this.covert?.hud()||null,contact:this.incidents?.hud()||null,cameraZoom:this.cameraZoom, aiming: this.aiming, ammo: this.ammo, reserve: this.reserve, reloading: this.reloading > 0, prompt, proximity: this.proximity(), crouched: this.crouched, targetConfirmed: this.mission.identified, clues: this.mission.clues.length });
+    const prompt = !i ? null : { type: i.type, text:i.type==='seat'?i.label:['mission-key','release-patient','photo-subject'].includes(i.type)?i.label:i.type==='npc'&&i.npc.keyCarrier&&!this.mission.keys.includes('theatre')?'Lift theatre key · crouch behind nurse': i.type === 'door' ? this.objectives?.china?.doorPrompt(i.door)||`${i.door.locked?'Unlock':i.door.open ? 'Close' : 'Open'} · ${i.label}` : i.type === 'npc' ? i.npc.recruit ? this.incidents?.prompt(i.npc) || 'Talk' : i.npc.role === 'patient' ? 'Patient · protected' : 'Inspect badge' : i.label };
+    this.hooks.hud?.({ outside:isOutsideHospital(this.floor,this.playerPos),smoking:!!this.smoking, state: this.mission.state, objective, location: room?.name || (this.playerPos.z > 26 ? 'Main atrium' : this.playerPos.x < -6 ? 'West passage' : this.playerPos.x > 9 ? 'East passage' : 'Central concourse'), floor: this.floor, x: this.playerPos.x, z: this.playerPos.z, yaw: this.yaw, timer: this.mission.timer, elapsed: this.mission.elapsed, stamina:this.stamina/(this.maxStamina||100)*100,sprintEnabled:this.touchInput.sprint,hiding:!!this.touchInput.hide,health:this.securityResponse?.health,sprintExhausted:this.sprintExhausted,weaponName:this.mission.photoOnly?'EVIDENCE CAMERA':weaponInfo(this.mission.save,this.weaponKind).name,weaponKind:this.weaponKind,weaponDrawn:this.weaponDrawn,scoped:this.aiming&&this.weaponKind==='sniper',masked:!!this.mission.china?.disguised||!!(hasMask(this.mission.save)&&this.mission.save.loadout.mask),hasMask:hasMask(this.mission.save),reports:this.systems?.reports()||[],bonus:(this.mission.accompliceKills||0)*STAFF_BONUS,evacuated:this.npcs.filter(n=>n.evacuated).length,magnet:!!this.systems?.magnet,suspicion: this.mission.suspicion, flashlight: this.flashlight,flashlightBrightness:this.settings.flashlightBrightness||1, blackout: this.blackout, impairment: this.impairment, impairmentStrength: recoveryStrength(this.impairment,this.impairmentTotal), exposureSource:this.exposureSource, dialogues:this.life?.dialogueHUD()||[],assignment:this.objectives?.hud(),antidotes:this.antidotes?.hud()||[],extras:this.extras?.hud(),country:this.mission.country,appointment:this.life?.appointmentHUD()||null,covert:this.covert?.hud()||null,contact:this.incidents?.hud()||null,cameraZoom:this.cameraZoom, aiming: this.aiming, ammo: this.ammo, reserve: this.reserve, reloading: this.reloading > 0, prompt, proximity: this.proximity(), crouched: this.crouched, targetConfirmed: this.mission.identified, clues: this.mission.clues.length });
   }
   frame(){
     if(this.disposed||this.starting||this.contextLost||this.runtimeFailed||document.hidden)return;
@@ -710,7 +725,7 @@ export class GameEngine {
         if(this.introPending&&mission.elapsed>1.2){this.introPending=false;this.say('Visitors: the staff directory is available in the entrance atrium. Please check department signage before proceeding.','PUBLIC ADDRESS');}
         for(const system of [this.incidents,this.objectives,this.covert,this.extras,this.systems,this.arrivals]){system?.update(dt);if(this.mission!==mission||mission.result)return;}
         this.updateNPCs(dt);if(this.mission!==mission||mission.result)return;
-        this.life?.update(dt);this.patientDetails?.update(dt);this.antidotes?.update();this.updateEnvironment(dt);this.updateCamera(dt);
+        this.life?.update(dt);this.objectives?.china?.syncCupGrip();this.patientDetails?.update(dt);this.antidotes?.update();this.updateEnvironment(dt);this.updateCamera(dt);
         if(this.touchInput.shot){const aimRay=this.queuedTouchRay;this.touchInput.shot=false;this.queuedTouchRay=null;this.shoot({touch:true,aimRay});if(this.mission!==mission||mission.result)return;}
       }
       this.hudClock += dt; if (this.hudClock > .07) { this.emitHUD(); this.hudClock = 0; }

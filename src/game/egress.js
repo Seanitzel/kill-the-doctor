@@ -66,6 +66,13 @@ export class EgressNavigation{
     }
     if(!found)return [];const path=[];for(let node=end;node;node=previous.get(node))path.push({x:node.point.x/3+11,z:node.point.z/3+11});return path.reverse();
   }
+  routeAvoiding(position,goal,people){
+    const clearPeople=(a,b)=>people.every(p=>{const dx=b.x-a.x,dz=b.z-a.z,len=dx*dx+dz*dz,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.z-a.z)*dz)/Math.max(len,.0001))),before=Math.hypot(a.x-p.x,a.z-p.z),nearest=Math.hypot(a.x+t*dx-p.x,a.z+t*dz-p.z);return nearest>=.51||before<.51&&Math.hypot(b.x-p.x,b.z-p.z)>before&&(a.x-p.x)*dx+(a.z-p.z)*dz>=0;});
+    const start=[...this.nodes.values()].sort((a,b)=>distance2(a.point,position)-distance2(b.point,position)).slice(0,80).find(n=>this.clearDeparture(position,n.point)&&clearPeople(position,n.point)),end=this.nearest(goal);if(!start||!end)return [];
+    const open=[start],previous=new Map([[start,null]]),cost=new Map([[start,0]]),closed=new Set(),heuristic=n=>Math.abs(n.gx-end.gx)+Math.abs(n.gz-end.gz);
+    while(open.length){let best=0;for(let i=1;i<open.length;i++)if(cost.get(open[i])+heuristic(open[i])<cost.get(open[best])+heuristic(open[best]))best=i;const node=open.splice(best,1)[0];if(node===end){const path=[];for(let n=end;n;n=previous.get(n))path.push({x:n.point.x/3+11,z:n.point.z/3+11});return path.reverse();}closed.add(node);for(const next of node.edges){if(closed.has(next)||!clearPeople(node.point,next.point))continue;const score=cost.get(node)+1;if(score<(cost.get(next)??Infinity)){if(!cost.has(next))open.push(next);cost.set(next,score);previous.set(next,node);}}}
+    return [];
+  }
   smoothRoute(position,goal){
     const path=this.routeTransient(position,goal);if(!path.length)return [];
     return this.smoothPath(position,path);

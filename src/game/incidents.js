@@ -1,3 +1,4 @@
+import {mayHitStaff} from './loadout.js';
 import {lateContactRound} from './international.js';
 import {JAMIE_SELF_TALK_LINES} from './dialogue-v25.js';
 import {tileAt,key,rng} from './layout.js';
@@ -103,6 +104,8 @@ export class HospitalIncidents{
       if(distance(n.pos,lift)<2){const arrival=e.systems.arrivalSpot(e.floor,n);if(arrival){n.floor=e.floor;n.pos.set(arrival.x,0,arrival.z);n.path=[];r.nextRoute=0;r.routeGoal=null;}}
       else if(now>=(r.nextRoute||0)&&(n.cursor>=n.path.length||!r.routeGoal||distance(r.routeGoal,lift)>.9)){n.activity=null;n.speed=4.5;this.route(n,lift);}return;
     }
+    const portal=e.levels[n.floor].doors.find(d=>distance(n.pos,d)<1.8&&distance(e.playerPos,d)<3.5);
+    if(portal){const nav=e.systems.navigationFor(n.floor),side=nav.nearest({x:portal.x+(portal.axis==='x'?2.1:0),z:portal.z+(portal.axis==='x'?0:2.1)},nav.fieldFor(e.playerPos)).point;if(distance(side,n.pos)>.6&&distance(side,e.playerPos)>.9){n.activity=null;n.speed=2.3;if(now>=(r.nextRoute||0))this.route(n,side);return;}}
     const gap=distance(n.pos,e.playerPos),sameArea=this.roomAt(n.pos,n.floor)?.id===this.roomAt(e.playerPos,e.floor)?.id,visible=e.lineOfSight(n.pos,e.playerPos,n.floor),moving=(e.playerSpeed||0)>.25;
     if(sameArea&&visible&&(gap<1.65||!moving&&gap<2.5)){n.path=[];n.cursor=0;n.activity=now<(r.laughUntil||0)?'laugh':'rest';r.routeGoal=null;return;}
     n.activity=null;const goal=sameArea&&visible?this.followGoal(n):e.playerPos;
@@ -149,7 +152,7 @@ export class HospitalIncidents{
   prepareAlly(n){
     const e=this.e,r=n.recruit,now=e.mission.elapsed;n.activity=null;n.worriedUntil=0;n.evacuating=false;r.weapon.visible=true;n.speed=3.7;
     if(n.floor!==e.floor){const lift=e.levels[n.floor].elevator;if(distance(n.pos,lift)<2){const arrival=e.systems.arrivalSpot(e.floor,n);if(arrival){n.floor=e.floor;n.pos.set(arrival.x,0,arrival.z);n.path=[];r.nextRoute=0;}}else if(now>=(r.nextRoute||0))this.route(n,lift);return true;}
-    const targets=e.npcs.filter(other=>!other.dead&&!other.evacuated&&other.floor===n.floor&&['doctor','nurse','security','police'].includes(other.role));
+    const targets=e.npcs.filter(other=>!other.dead&&!other.evacuated&&other.floor===n.floor&&mayHitStaff(e.mission,other));
     let target=null,nearest=Infinity;for(const candidate of targets){const d=distance(n.pos,candidate.pos);if(d<nearest){nearest=d;target=candidate;}}
     if(target){
       if(nearest<13&&e.lineOfSight(n.pos,target.pos,n.floor)){
@@ -175,7 +178,7 @@ export class HospitalIncidents{
     }
     const n=this.contact;if(!n||n.dead||n.evacuated||e.mission.targetDown||!['panicked','escort','accepted','recruited'].includes(n.recruit.state))return;
     const r=n.recruit;r.nextLaugh??=now+12+e.mission.random()*13;
-    if(now>=r.nextLaugh&&r.phase!=='running')this.playLaugh(n);
+    if(now>=r.nextLaugh&&r.phase!=='running'){if(['escort','accepted','recruited'].includes(r.state)&&e.mission.random()<.65){r.nextLaugh=now+9+e.mission.random()*14;const reaction=Math.floor(e.mission.random()*3);if(reaction===0){e.audio.distress?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},.45);e.hooks.soundCaption?.(`${n.name} screams in sudden panic.`);}else{const lines=DISTRESS_LINES.filter(line=>line!==r.lastDistress);const line=lines[Math.floor(e.mission.random()*lines.length)];r.lastDistress=line;e.life?.speak(n,line,true);}}else this.playLaugh(n);}
     if(r.state==='panicked'&&r.phase==='calm'&&now>=r.speakAt&&n.floor===e.floor&&distance(n.pos,e.playerPos)<15){
       r.speakAt=now+22;
       if(r.gesture==='laugh'){if(now>=(r.laughUntil||0))this.playLaugh(n);}

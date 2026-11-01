@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {dialogueKey,ALL_DIALOGUE_LINES} from '../src/game/life-rules.js';
+import {dialogueKey,FOLLOWER_REACTION_LINES,ALL_DIALOGUE_LINES} from '../src/game/life-rules.js';
 import {HospitalFoley,FOLEY_FILES,roomImpulse} from '../src/game/foley.js';
 import {HospitalAudio} from '../src/game/audio.js';
 import {STORIES,storyDuration} from '../src/game/stories.js';
@@ -67,7 +67,7 @@ test('Longer story captions receive enough automatic reading time',()=>{
 test('Every conversation has two bundled neural takes with matching text keys and asset hashes',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../public/audio/dialogue/manifest.json',import.meta.url)));
   // The retained legacy bank predates the new ElevenLabs-only office questions.
-  const lines=ALL_DIALOGUE_LINES.filter(text=>!OFFICE_VISITOR_LINES.includes(text));
+  const lines=ALL_DIALOGUE_LINES.filter(text=>!OFFICE_VISITOR_LINES.includes(text)&&!FOLLOWER_REACTION_LINES.includes(text));
   assert.equal(manifest.length,lines.length*2);
   for(const text of lines)for(const gender of ['male','female']){
     const key=dialogueKey(text,gender),entry=manifest.find(e=>e.key===key);assert.equal(entry.text,text);assert.equal(entry.synthetic,true);

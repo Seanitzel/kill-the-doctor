@@ -48,6 +48,6 @@ export function addHangingToiletSign(group,batch,materials,door){
  // Projecting, traditionally outlined plaque beside the actual bathroom door.
  const near=new THREE.Group();near.name='Bathroom projecting plaque';near.position.set(door.x+1.62,2.96,door.z-.64);near.rotation.y=Math.PI/2;
  const a=doorPlaque('left');a.position.z=.016;near.add(a);const b=doorPlaque('right');b.rotation.y=Math.PI;b.position.z=-.016;near.add(b);
- for(const y of [2.73,3.19])batch.box(materials.steel,near.position.x,y,door.z-.29,.035,.035,.64);
+ for(const y of [3.32,3.42])batch.box(materials.steel,near.position.x,y,door.z-.29,.035,.035,.64);
  group.add(near);return root;
 }

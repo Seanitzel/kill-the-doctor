@@ -12,11 +12,11 @@ export function weaponModel(kind){
   return g;
 }
 export function playerAccessories(visual){
-  const group=new THREE.Group(),mask=new THREE.Group(),jewelry=new THREE.Group();group.add(mask,jewelry);visual.root.add(group);
+  const group=new THREE.Group(),mask=new THREE.Group(),jewelry=new THREE.Group(),earrings=new THREE.Group();group.add(mask,jewelry,earrings);visual.root.add(group);
   mesh('box',material('#9bbbc8'),[.23,.105,.07],[0,-.065,.15],mask);
   const gold=material('#9babb7',{metalness:.9,roughness:.22});
   const chain=new THREE.Mesh(new THREE.TorusGeometry(.13,.012,6,24),gold);chain.position.set(0,-.33,.03);chain.rotation.x=1.1;jewelry.add(chain);
-  for(const x of [-.16,.16]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.023,.006,6,12),gold);ring.position.set(x,-.08,.015);jewelry.add(ring);}
-  const headPosition=new THREE.Vector3();let disposed=false;
-  return {update(save){mask.visible=!!save.upgrades?.mask&&!!save.loadout?.mask;jewelry.visible=!!save.appearance?.jewelry;visual.root.updateMatrixWorld(true);if(visual.head){const head=visual.head.getWorldPosition(headPosition);group.position.copy(visual.root.worldToLocal(head));}else group.position.set(0,1.68,0);},dispose(){if(disposed)return;disposed=true;disposeObjectResources(group);group.removeFromParent();}};
+  for(const x of [-.16,.16]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.023,.006,6,12),gold);ring.position.set(x,-.08,.015);earrings.add(ring);}
+  const headPosition=new THREE.Vector3(),headQuaternion=new THREE.Quaternion(),rootQuaternion=new THREE.Quaternion();let disposed=false;
+  return {update(save){mask.visible=!!(save.upgrades?.mask||save.upgrades?.n95||save.upgrades?.regularMask)&&!!save.loadout?.mask;jewelry.visible=!!save.appearance?.necklace||(save.appearance?.necklace===undefined&&!!save.appearance?.jewelry);earrings.visible=!!save.appearance?.earrings||(save.appearance?.earrings===undefined&&!!save.appearance?.jewelry);visual.root.updateMatrixWorld(true);if(visual.head){const head=visual.head.getWorldPosition(headPosition);group.position.copy(visual.root.worldToLocal(head));visual.head.getWorldQuaternion(headQuaternion);visual.root.getWorldQuaternion(rootQuaternion);group.quaternion.copy(rootQuaternion.invert().multiply(headQuaternion));}else group.position.set(0,1.68,0);},dispose(){if(disposed)return;disposed=true;disposeObjectResources(group);group.removeFromParent();}};
 }

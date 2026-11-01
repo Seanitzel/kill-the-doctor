@@ -127,7 +127,7 @@ export function makeHuman(person, role = 'doctor') {
   const skin = material(person.skin || '#c79776'); const hair = material(person.hair || '#2b2725');
   const outfit = material(role === 'nurse' ? '#9bcce6' : role === 'patient' ? '#8098a2' : role === 'security' || role === 'police' ? '#263c51' : person.accent || '#568195');
   const coat = material(role === 'doctor' ? '#dde3e2' : outfit.color);
-  const pants = material(role==='nurse'?'#9bcce6':role === 'patient' ? '#a1b2b8' : '#324654'); const shoes = material('#15212a');
+  const pants = material(role==='nurse'?'#9bcce6':role === 'patient' ? '#a1b2b8' : person.pants||'#324654'); const shoes = material('#15212a');
   const torso = mesh('capsule', coat, [.54, .42, .32], [0, 1.15, 0], body); // capsule base height = 2
   const head = mesh('sphere', skin, [.155, .215, .17], [0, 1.77, 0], body);
   mesh('cylinder', skin, [.065, .15, .065], [0, 1.54, 0], body);
@@ -218,9 +218,9 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
         const name = o.material.name;
         if (person) {
           if (name.includes('Outfit_Top')) { const color = role === 'nurse' ? NURSE_UNIFORM : role === 'doctor' ? '#d9e4ea' : ['security','police'].includes(role) ? '#344b62' : person.accent || '#718e9c'; o.material.map = recolorCloth(o.material.map,color,assets,clothLeases); o.material.color.set('#ffffff'); }
-          if (name.includes('Outfit_Bottom')) { o.material.map = recolorCloth(o.material.map,role === 'nurse' ? NURSE_UNIFORM : role === 'patient' ? person.pants||'#6b6055' : role==='civilian'&&person.outfit==='suit' ? person.accent||'#485766' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
+          if (name.includes('Outfit_Bottom')) { o.material.map = recolorCloth(o.material.map,role === 'nurse' ? NURSE_UNIFORM : role === 'patient' ? person.pants||'#6b6055' : role==='civilian' ? person.pants||'#455b70' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
           if (name.includes('Hair')) o.material.color.set(person.hair || '#3b302c');
-          if (name.includes('Skin') || name.includes('Body')) o.material.color.set(person.skin || '#e0ad87');
+          if(name.includes('Skin')||name.includes('Body')){o.material.map=recolorCloth(o.material.map,'#ffffff',assets,clothLeases);o.material.color.set(person.skin||'#e0ad87');o.material.emissive.set(person.skin||'#e0ad87');o.material.emissiveIntensity=.035;o.material.metalness=0;o.material.userData.skinAlbedo=true;}
           if (name.includes('Glasses')) o.visible = !!person.glasses;
         } else if (name.includes('Outfit_Top')) o.material.color.set(gender === 'male' ? '#667683' : '#697b88');
         if (name.includes('Outfit_Footwear')) o.material.color.set('#4a5b66');
@@ -353,7 +353,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       if(b.Head) b.Head.rotation.z += Math.sin(time*2.4)*.055;
     } else if(activity==='phone'||activity==='smoke-break') {
       const raised=activity==='smoke-break'&&Math.sin(time*.55)>.25;
-      orient('RightArm','RightForeArm',[.15,-.34,.25]);orient('RightForeArm','RightHand',raised?[-.14,.42,.12]:[-.03,.16,.38]);
+      orient('RightArm','RightForeArm',[.15,-.34,.25]);orient('RightForeArm','RightHand',raised?[-.14,.42,.12]:[-.03,.16,.38]);if(raised&&activity==='smoke-break')reachHead(time,new THREE.Vector3(.03,.055,.11));
       if(b.Head)b.Head.rotation.x+=raised?0:.14;
     } else if(activity==='chat') {
       const gesture=Math.sin(time*1.8)*.12;
@@ -452,7 +452,7 @@ function recolorCloth(source,hex,assets,leases) {
   const scale=Math.min(1,limit/Math.max(image.width,image.height));canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));
   const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,canvas.width,canvas.height);
   const pixels=ctx.getImageData(0,0,canvas.width,canvas.height),d=pixels.data;
-  const base=new THREE.Color(hex),rgb=[base.r,base.g,base.b].map(v=>Math.round(THREE.MathUtils.clamp(v,0,1)*255));
+  const base=new THREE.Color(hex).convertLinearToSRGB(),rgb=[base.r,base.g,base.b].map(v=>Math.round(THREE.MathUtils.clamp(v,0,1)*255));
   for(let i=0;i<d.length;i+=4){const lum=(d[i]+d[i+1]+d[i+2])/765,shade=.68+lum*.32;d[i]=rgb[0]*shade;d[i+1]=rgb[1]*shade;d[i+2]=rgb[2]*shade;}
   ctx.putImageData(pixels,0,0);const texture=new THREE.CanvasTexture(canvas);texture.flipY=source.flipY;texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=source.wrapS;texture.wrapT=source.wrapT;
   const entry={texture,users:1,cache};cache.set(key,entry);leases.add(entry);trimClothCache(cache);return texture;

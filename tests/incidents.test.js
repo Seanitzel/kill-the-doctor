@@ -37,8 +37,8 @@ test('Dismissal never arms the visitor and an accepted contact is excluded from 
   n.recruit={state:'recruited'};e.audio.sound=()=>{};e.levels[0].doors=[];e.systems=new MissionSystems(e);e.systems.startEvacuation();assert.equal(n.evacuating,false);assert.equal(n.recruit.nextRoute,0);
 });
 test('An autonomous contact cannot shoot before the primary target, harm patients or fire through walls',()=>{
-  const e=Object.create(GameEngine.prototype),save=defaultSave();Object.assign(e,{mission:new Mission(save,123),scene:new THREE.Scene(),effects:[],audio:{sound(){}},emitHUD(){},lineOfSight:()=>true});
-  const ally=person('contact',0,0,0),staff=person('staff',0,0,5),patient=person('patient',0,0,5);patient.role='patient';
+  const e=Object.create(GameEngine.prototype),save=defaultSave();Object.assign(e,{mission:new Mission(save,123),scene:new THREE.Scene(),effects:[],audio:{sound(){}},emitHUD(){},canStand:()=>true,lineOfSight:()=>true});
+  const ally=person('contact',0,0,0),staff=person('staff',0,0,5),patient=person('patient',0,0,5);patient.role='patient';staff.complicity='Concealed records';
   assert.equal(e.allyShot(ally,staff),false);e.mission.eliminate({id:'target',role:'doctor'});assert.equal(e.allyShot(ally,patient),false);assert.equal(patient.dead,undefined);
   e.lineOfSight=()=>false;assert.equal(e.allyShot(ally,staff),false);e.lineOfSight=()=>true;assert.equal(e.allyShot(ally,staff),true);assert.equal(staff.dead,true);assert.equal(e.mission.staffKills,2);assert.equal(e.allyShot(ally,staff),false);
   e.clearEffects();assert.equal(e.effects.length,0);
@@ -66,7 +66,7 @@ test('The contact physically follows into a private room and waits for the prima
   e.systems=new MissionSystems(e);e.incidents=new HospitalIncidents(e);e.incidents.setup();e.mission.elapsed=e.incidents.arrivalAt;e.incidents.arrive();const contact=e.incidents.contact;assert.ok(contact);assert.equal(e.incidents.choose('escort'),true);
   for(let frame=0;frame<1200&&!e.incidents.privateTogether(contact);frame++){e.time+=1/30;e.mission.elapsed+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);assert.equal(e.canStand(contact.pos.x,contact.pos.z,.21,contact.floor),true);}
   assert.equal(e.incidents.privateTogether(contact),true);assert.equal(e.incidents.choose('recruit'),true);assert.equal(e.incidents.choose('handover'),true);
-  const staff=person('staff',0,room.center.x,room.center.z-3);staff.role='doctor';staff.speed=0;staff.visual.animate=()=>{};e.npcs.push(staff);
+  const staff=person('staff',0,room.center.x,room.center.z-3);staff.role='doctor';staff.complicity='Concealed records';staff.speed=0;staff.visual.animate=()=>{};e.npcs.push(staff);
   for(let i=0;i<30;i++){e.time+=1/30;e.mission.elapsed+=1/30;e.updateNPCs(1/30);}assert.equal(staff.dead,undefined);assert.equal(contact.recruit.weapon.visible,false);
   e.mission.eliminate({id:'target',role:'doctor'});e.systems.startEvacuation();for(let i=0;i<180&&!staff.dead;i++){e.time+=1/30;e.mission.elapsed+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);}
   assert.equal(staff.dead,true);assert.equal(contact.recruit.weapon.visible,true);assert.equal(e.mission.staffKills,2);e.clearEffects();for(const n of e.npcs)n.visual.dispose?.();for(const h of hospitals){disposeObjectResources(h.group,{textures:true});for(const wall of h.wallMeshes)disposeObjectResources(wall);}

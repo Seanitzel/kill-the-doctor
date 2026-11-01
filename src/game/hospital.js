@@ -32,7 +32,7 @@ export function buildLift(layout,m){
   box('Lift call panel',m.dark,[.24,.42,.035],[x+1.55,1.28,faceZ+.018]);
   box('Lift call button',m.steel,[.075,.075,.018],[x+1.55,1.24,faceZ+.043]);
   box('Lift call indicator',m.light,[.035,.018,.009],[x+1.55,1.39,faceZ+.042]);
-  const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);const wallNumber=sign(layout.floor===3?'B':String(layout.floor),'FLOOR',.65,.92,{background:'#203b4a',color:'#e1edf0',center:true,fontSize:740,subFontSize:110});wallNumber.name='Large floor number left of elevator';wallNumber.position.set(x-1.92,1.72,faceZ+.03);group.add(wallNumber);
+  const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);const wallNumber=sign(FLOOR_CODES[layout.floor],'FLOOR',.65,.92,{background:'#203b4a',color:'#e1edf0',center:true,fontSize:740,subFontSize:110});wallNumber.name='Large floor number left of elevator';wallNumber.position.set(x-1.92,1.72,faceZ+.03);group.add(wallNumber);
   return group;
 }
 export function buildHospital(layout, m, site=null) {
@@ -212,14 +212,14 @@ export function buildHospital(layout, m, site=null) {
         chairAt(x,z-1.45,0,room.id);chairAt(x,z+1.45,Math.PI,room.id);
       }
     } else {
-      for (const z of [minZ + 3, maxZ - 3]) { deskAt(room,minX+2,z,Math.PI/2); chairAt(minX+2,z+1.7,0,room.id); }
+      for (const z of [minZ + 3, maxZ - 3]) { deskAt(room,minX+2,z,Math.PI/2); chairAt(minX+3.65,z,-Math.PI/2,room.id); }
       if (room.kind === 'clinic') { bed(batch,m,maxX-1.9,cz); }
       else { cube(m.white, maxX - .7, 1.05, cz, .8, 2.1, 3); furnitureCollider(maxX - .7, cz, .85, 3); for (let i = 0; i < 4; i++) cube(m.blue, maxX - .25, .5 + i * .45, cz, .03, .025, 2.8); }
     }
     // Each wing carries a physical handover log, rather than a target marker.
     if (layout.floor!==3&&(room.index === 0 || room.index === 2)) {
       const x = cx+1.15, z = room.z < 10 ? maxZ + .35 : minZ - .35;
-      cube(m.steel, x, 1.15, z, .075, 1.7, .075); cube(m.blue, x, 1.74, z, .65, .45, .12);
+      cube(m.steel, x, .92, z, .075, 1.84, .075); cube(m.blue, x, 1.74, z, .65, .45, .12);
       placeSign('HANDOVER', 'READ / INSPECT', x, 1.73, z + .071, 0, .59, .38);
       Object.assign(collider(x,z,.1,.1),{maxY:1.95,type:'post'});
       interactables.push({ type: 'log', label: `${room.wing} wing handover log`, x, z });

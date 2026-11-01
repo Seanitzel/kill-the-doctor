@@ -1,3 +1,4 @@
+import {weatherBuffer} from './weather-audio.js';
 import {countryVoice} from './country-voices.js';
 import {HospitalFoley,FOLEY_FILES} from './foley.js';
 import { assetUrl } from './asset-url.js';
@@ -236,6 +237,8 @@ export class HospitalAudio {
     for(const [key,channel]of this.ambientChannels)if(channel===record)this.ambientChannels.delete(key);
   }
   playSample(name,position,gain=.5) {if(!this.enabled||gain<=0)return;return this.sampleNodes(name,position,gain);}
+  weather(kind,outside,stormPulse=false){if(!this.ctx||!this.enabled)return;const type=['rain','storm','snow'].includes(kind)?kind:'wind';if(!this.samples[`weather-${type}`])this.samples[`weather-${type}`]=weatherBuffer(this.ctx,type);this.ambientSample('weather',`weather-${type}`,this.listenerPosition,outside?(type==='storm'?.32:type==='snow'?.17:.25):.015);if(stormPulse&&outside){if(!this.samples.thunder)this.samples.thunder=weatherBuffer(this.ctx,'thunder');this.playSample('thunder',this.listenerPosition,.65);}}
+  siren(active,position){if(!this.ctx||!this.enabled)return;if(active&&!this.samples['ambulance-siren'])this.samples['ambulance-siren']=weatherBuffer(this.ctx,'siren');this.ambientSample('ambulance','ambulance-siren',{...position,floor:0},active?(this.listenerFloor===0?.6:.03):0);}
   ambientSample(key,name,position,gain) {
     if(!this.ownsContext(this.ctx))return;
     let channel=this.ambientChannels.get(key);

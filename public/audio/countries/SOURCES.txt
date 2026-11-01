@@ -25,3 +25,5 @@ repository and bundled into the application. No API token is shipped.
 
 Human cough, sneeze, pain, scream and laughter recordings remain separate
 assets with their existing source and license notices.
+
+2026-11-01: Added two follower reactions in both Rachel and Drew voices (4 clips). Same ElevenLabs v3 provider, no voice cloning. English/shared bank now contains 202 clips. Silent transcription checks matched every new spoken line.

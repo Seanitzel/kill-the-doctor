@@ -13,15 +13,15 @@ export const UPGRADE_INFO = [
   { id: 'light', name: 'High-output flashlight', description: 'A longer, brighter beam for the emergency corridors.', cost: 90, max: 3 },
   { id: 'filter', name: 'Recovery filter', description: 'Recover 25% faster from fictional patient status effects.', cost: 100, max: 3 },
   { id: 'suppressor', name: 'Sound suppressor', description: 'Reduce shot noise and delay the police response by 15 seconds.', cost: 180, max: 1 },
-  {id:'mask',name:'N95 respirator (owned legacy upgrade)',description:'Complete protection against new gas exposure.',cost:150,max:1},
+  {id:'mask',name:'N95 respirator (owned legacy upgrade)',description:'Complete protection against new gas exposure.',cost:800,max:1},
   {id:'sniper',name:'Scoped rifle',description:'Unlock an 80 m rifle with a magnified scope. Switch weapons from the action bar.',cost:350,max:1},
   {id:'magazine',name:'Extended magazines',description:'Adds two pistol rounds and one rifle round per level.',cost:160,max:3},
   {id:'vitals',name:'Protective lining',description:'Absorb one additional security hit per level.',cost:130,max:3},
   {id:'reload',name:'Quick-change reload',description:'Reload 18% faster per level.',cost:100,max:3},
   {id:'accuracy',name:'Precision sights',description:'Wider target acquisition and steadier aim per level.',cost:130,max:3},
   {id:'power',name:'Weapon tuning',description:'Improved shot recovery and guard stopping power.',cost:160,max:3},
-  {id:'regularMask',name:'Regular face mask',description:'70% chance to block each new contamination exposure.',cost:60,max:1},
-  {id:'n95',name:'N95 respirator',description:'Complete protection from new gas exposure while equipped.',cost:150,max:1},
+  {id:'regularMask',name:'Regular face mask',description:'70% chance to block each new contamination exposure.',cost:400,max:1},
+  {id:'n95',name:'N95 respirator',description:'Complete protection from new gas exposure while equipped.',cost:800,max:1},
 ];
 export const STAFF = [
   { name: 'Dr. Elias Voss', role: 'Consultant', gender: 'male', hair: '#3a2921', skin: '#d4a078', accent: '#47758a', glasses: true },

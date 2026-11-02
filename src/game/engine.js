@@ -1,3 +1,4 @@
+import {SeatMotion} from './seat-motion.js';
 import {SecurityResponse} from './security-response.js';
 import {evidenceRoom,evidenceLabel} from './campaign-locations.js';
 import {announcementCaption} from './announcement-caption.js';
@@ -185,7 +186,7 @@ export class GameEngine {
     await task.stage('Preparing objectives',.79,'Setting up evidence and mission interactions');
     this.visitors=new HospitalVisitors(this);this.systems=new MissionSystems(this);this.incidents=new HospitalIncidents(this);this.incidents.setup();this.objectives=new AssignmentObjectives(this);this.antidotes=new AntidoteStations(this);this.covert=new CovertAssignments(this);this.extras=new HospitalExtras(this);this.arrivals=new EmergencyArrivals(this);
     await task.stage('Preparing patient details',.84,'Finishing the hospital scene');
-    this.securityResponse=new SecurityResponse(this);this.playerSeated=null;this.patientDetails=new PatientDetails(this);this.systems.prepare();this.playerGear.update(mission.save);this.player.root.visible=true;
+    this.securityResponse=new SecurityResponse(this);this.playerSeated=null;this.seatMotion=null;this.patientDetails=new PatientDetails(this);this.systems.prepare();this.playerGear.update(mission.save);this.player.root.visible=true;
     this.camera.position.set(.6,2.4,33.5);this.updateCamera(.1,true);this.updateLights();
     for(const n of this.npcs)n.visual.root.visible=n.floor===0&&distance(n.pos,this.playerPos)<34;
     await task.stage('Preparing graphics',.90,'Getting the entrance, lights and characters ready');
@@ -290,8 +291,10 @@ export class GameEngine {
     this.impairment=Math.max(this.impairment,duration);this.impairmentTotal=Math.max(this.impairmentTotal||0,duration);this.exposureSource=patient.name;
     this.coughCooldown=5;this.notify(`Contaminated · ${Math.round(duration)}s recovery. Find the ground-floor antidote marked + on your map.`, 'warning');return true;
   }
-  seatInteractions(){if(this.playerSeated)return [{type:'seat',label:'Stand up',x:this.playerPos.x,z:this.playerPos.z}];return (this.hospitals[this.floor].seats||[]).filter(s=>!this.npcs.some(n=>n.floor===this.floor&&!n.dead&&!n.evacuated&&Math.hypot(n.pos.x-s.x,n.pos.z-s.z)<.65)).map(s=>({...s,type:'seat',label:'Sit down'}));}
-  sit(seat){if(this.playerSeated){this.playerSeated=null;this.playerPos.copy(this.seatExit);this.player.root.rotation.x=0;return;}if(this.weaponDrawn){this.notify('Holster your weapon before sitting.');return;}this.seatExit=this.playerPos.clone();this.playerSeated={...seat};this.playerPos.set(seat.x,0,seat.z);this.player.root.position.set(seat.x,-.35,seat.z);this.player.root.rotation.y=seat.rotation;this.notify('Seated · use again or move to stand.');}
+  seatInteractions(){if(this.playerSeated)return [{type:'seat',label:'Stand up',x:this.playerPos.x,z:this.playerPos.z}];return (this.hospitals[this.floor].seats||[]).filter(s=>!s.security&&!this.npcs.some(n=>n.floor===this.floor&&!n.dead&&!n.evacuated&&Math.hypot(n.pos.x-s.x,n.pos.z-s.z)<.65)).map(s=>({...s,type:'seat',label:'Sit down'}));}
+  sit(seat){if(this.playerSeated){this.seatMotion.stand();return;}if(this.weaponDrawn){this.notify('Holster your weapon before sitting.');return;}this.seatExit=this.playerPos.clone();this.playerSeated={...seat};this.seatMotion=new SeatMotion(this.playerPos,seat);this.notify('Sitting down · use again or move to stand.');}
+  updateSeating(dt){const motion=this.seatMotion,p=motion.update(dt),seat=this.playerSeated;this.playerPos.set(p.x,0,p.z);this.player.root.position.set(p.x,p.y,p.z);this.player.root.rotation.y+=Math.atan2(Math.sin(seat.rotation-this.player.root.rotation.y),Math.cos(seat.rotation-this.player.root.rotation.y))*Math.min(1,dt*9);this.player.animate?.(this.time,0,dt);this.player.poseActivity?.('rest',this.time);this.player.poseSeated?.(p.weight,p.lean);this.playerGear?.update(this.mission.save);this.playerSpeed=0;if(motion.done&&!motion.target){this.playerSeated=null;this.seatMotion=null;this.playerPos.copy(this.seatExit);this.player.root.position.copy(this.playerPos);}}
+
   nearestInteractable() {
     let best = null, score = Infinity;
     const extras=[...(this.extras?.interactions()||[]),...this.seatInteractions()];
@@ -333,7 +336,7 @@ export class GameEngine {
       if(i.type==='directory'&&this.mission.type==='standard'&&!this.mission.recordsNotice){this.mission.recordsNotice=true;const room=evidenceRoom(this.mission.country);this.mission.recordsLocation=room;this.hooks.clue?.({title:'Locate the rota',source:'Hospital information',text:`The staff directory and confidential rota are in ${evidenceLabel(this.mission.country)}. Locate that room first, then find the document inside.`});this.notify(`Locate ${evidenceLabel(this.mission.country)}`,'clue');this.emitHUD();return;}
       if(this.covert?.restrictClue(i.type))return;
       const clue = this.mission.clue(i.type);
-      if (clue) { this.audio.sound('clue'); this.hooks.clue?.(clue); this.notify(clue.title, 'clue'); }
+      if (clue) { this.emitHUD();this.audio.sound('clue'); this.hooks.clue?.(clue); this.notify(clue.title, 'clue'); }
       else this.notify(this.mobile ? 'Already recorded · Tap the journal icon to review it' : 'Already recorded in your clue journal · J');
     }
     if(i.type==='photo-subject'){this.notify(this.mobile?'Center the document in the camera and tap PHOTO':'Center the document in the camera, aim and click to take a photograph');return;}
@@ -490,7 +493,7 @@ export class GameEngine {
 
     const modifier = 1 + this.mission.save.upgrades.shoes * .08;
     if(this.smoking&&!isOutsideHospital(this.floor,this.playerPos)){this.setPhoneOpen(false);this.hooks.closePhone?.();}
-    if(this.playerSeated){if(moving){this.sit({});}else{this.player.root.position.set(this.playerSeated.x,-.35,this.playerSeated.z);this.player.root.rotation.y=this.playerSeated.rotation;this.player.animate(this.time,0,dt);this.player.poseActivity?.('rest',this.time,{seated:true});this.playerSpeed=0;return;}}
+    if(this.playerSeated){if(moving&&this.seatMotion.target)this.sit({});this.updateSeating(dt);return;}
     const speed = (running ? 5.5 : this.crouched ? 1.3 : this.aiming ? 1.85 : 3.35) * modifier * (this.impairment > 0 ? .53 : 1);
     const amount = Math.max(1,Math.hypot(f, strafe));
     const old = this.playerPos.clone();
@@ -725,7 +728,7 @@ export class GameEngine {
         if(this.introPending&&mission.elapsed>1.2){this.introPending=false;this.say('Visitors: the staff directory is available in the entrance atrium. Please check department signage before proceeding.','PUBLIC ADDRESS');}
         for(const system of [this.incidents,this.objectives,this.covert,this.extras,this.systems,this.arrivals]){system?.update(dt);if(this.mission!==mission||mission.result)return;}
         this.updateNPCs(dt);if(this.mission!==mission||mission.result)return;
-        this.life?.update(dt);this.objectives?.china?.syncCupGrip();this.patientDetails?.update(dt);this.antidotes?.update();this.updateEnvironment(dt);this.updateCamera(dt);
+        this.life?.update(dt);this.securityResponse?.pose();this.objectives?.china?.syncCupGrip();this.patientDetails?.update(dt);this.antidotes?.update();this.updateEnvironment(dt);this.updateCamera(dt);
         if(this.touchInput.shot){const aimRay=this.queuedTouchRay;this.touchInput.shot=false;this.queuedTouchRay=null;this.shoot({touch:true,aimRay});if(this.mission!==mission||mission.result)return;}
       }
       this.hudClock += dt; if (this.hudClock > .07) { this.emitHUD(); this.hudClock = 0; }

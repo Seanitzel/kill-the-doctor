@@ -65,13 +65,13 @@ test('basement shots reach real operating doctors, keep public floors out of eva
  }finally{dispose(e);}
 });
 test('an unexpected visiting patient physically opens the office, approaches the doctor, then leaves without walking forever',()=>{
- const e=simulation();try{const op=e.objectives.china,visitor=e.spawnNPC({name:'Visitor',gender:'female'},'patient',0,{x:3,z:0},null,'visitor');e.playerPos.set(0,0,30);Object.assign(e,{blackout:0,impairment:0,coughCooldown:99,nextBlackout:Infinity,nextPA:Infinity,reloading:0,shotCooldown:0,muzzle:{intensity:0}});op.nextVisitor=0;let reached=false,returned=false;
+ const e=simulation();try{const op=e.objectives.china,visitor=e.spawnNPC({name:'Visitor',gender:'female'},'patient',0,{x:3,z:0},null,'visitor');e.playerPos.set(0,0,30);Object.assign(e,{blackout:0,impairment:0,coughCooldown:99,nextBlackout:Infinity,nextPA:Infinity,reloading:0,shotCooldown:0,muzzle:{intensity:0}});op.doctor.pos.set(op.bathroomGoal.x,0,op.bathroomGoal.z);op.phase='bathroom';op.returnAt=1000;e.playerPos.set(op.cupPoint.x,0,op.cupPoint.z);e.lineOfSight=()=>false;op.poisonAction={from:e.playerPos.clone()};op.nextVisitor=0;let reached=false,returned=false;
  for(let i=0;i<6500&&!returned;i++){e.mission.elapsed+=.05;e.time+=.05;op.update(.05);e.updateNPCs(.05);e.updateEnvironment(.05);if(op.visitPhase==='waiting')reached=true;if(reached&&!op.visitor)returned=true;assert.equal(e.mission.result,null);}
  assert.ok(reached,'patient reaches the office');assert.ok(returned,visitor.pos.toArray().join(','));assert.ok(e.canStand(visitor.pos.x,visitor.pos.z,.22,0));
  }finally{dispose(e);}
 });
 test('China props detach and remove only their own collision surfaces on disposal; retries do not accumulate equipment',()=>{
- const e=simulation();try{const op=e.objectives.china,owned=op.addedColliders.slice(),root=op.root;assert.equal(owned.length,3);for(const {floor,c}of owned)assert.ok(e.hospitals[floor].colliders.includes(c));op.dispose();op.dispose();assert.equal(root.parent,null);assert.equal(root.children.length,0);for(const {floor,c}of owned)assert.equal(e.hospitals[floor].colliders.includes(c),false);e.objectives.china=null;
+ const e=simulation();try{const op=e.objectives.china,owned=op.addedColliders.slice(),root=op.root;assert.equal(owned.length,2);for(const {floor,c}of owned)assert.ok(e.hospitals[floor].colliders.includes(c));op.dispose();op.dispose();assert.equal(root.parent,null);assert.equal(root.children.length,0);for(const {floor,c}of owned)assert.equal(e.hospitals[floor].colliders.includes(c),false);e.objectives.china=null;
  }finally{dispose(e);}
 });
 

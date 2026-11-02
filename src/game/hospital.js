@@ -212,7 +212,7 @@ export function buildHospital(layout, m, site=null) {
         chairAt(x,z-1.45,0,room.id);chairAt(x,z+1.45,Math.PI,room.id);
       }
     } else {
-      for (const z of [minZ + 3, maxZ - 3]) { deskAt(room,minX+2,z,Math.PI/2); chairAt(minX+3.65,z,-Math.PI/2,room.id); }
+      for (const z of [minZ + (site?.id==='china'&&room.kind==='office'?4.6:3), maxZ - (site?.id==='china'&&room.kind==='office'?4.6:3)]) { deskAt(room,minX+2,z,Math.PI/2); chairAt(minX+3.65,z,-Math.PI/2,room.id); }
       if (room.kind === 'clinic') { bed(batch,m,maxX-1.9,cz); }
       else { cube(m.white, maxX - .7, 1.05, cz, .8, 2.1, 3); furnitureCollider(maxX - .7, cz, .85, 3); for (let i = 0; i < 4; i++) cube(m.blue, maxX - .25, .5 + i * .45, cz, .03, .025, 2.8); }
     }

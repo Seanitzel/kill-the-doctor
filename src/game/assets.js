@@ -243,6 +243,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     const badge = mesh('box', material('#dcebf2'), [.095,.13,.012], [.14,1.28,.21], root);
     mesh('box', material(person.accent || '#5288a2'), [.07,.03,.016], [.14,1.31,.22], root);
   }
+  const seatThigh=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2),seatShin=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2);
   const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
   const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Thumb','Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.03:joint===2?.08:.05))});}
   const wrists=['LeftHand','RightHand'].map(name=>({bone:activityBones[name],bind:activityBones[name]?.quaternion.clone()})).filter(w=>w.bone);
@@ -281,6 +282,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     for(const finger of restingFingers)finger.bone.quaternion.copy(finger.bind).multiply(finger.curl);
     if (aim) for (const item of arms) item.arm.quaternion.copy(item.q);
     return {footfalls,animation:current};
+  }, poseSeated(weight=1,lean=0){
+    const b=activityBones,t=THREE.MathUtils.clamp(weight,0,1);for(const side of ['Left','Right']){const thigh=b[side+'UpLeg'],shin=b[side+'Leg'];if(thigh)thigh.quaternion.slerp(seatThigh,t);if(shin)shin.quaternion.slerp(seatShin,t);}if(b.Spine2)b.Spine2.rotation.x+=lean;
   }, poseActivity(activity, time, { seated=false, reaction=0, look=0,restricted=false } = {}) {
     const b=activityBones;model.updateMatrixWorld(true);
     if(seated) for(const side of ['Left','Right']) { if(b[`${side}UpLeg`]) b[`${side}UpLeg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2); if(b[`${side}Leg`]) b[`${side}Leg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2); }
@@ -292,7 +295,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       else if(/mouthSmile/i.test(name))o.morphTargetInfluences[index]=smile;
     }});
     // Keep the safe idle/walk arms when a nearby wall or door leaves no room to gesture.
-    if(restricted){expressions();return;}
+    if(restricted&&!['guard','guard-aim'].includes(activity)){expressions();return;}
     if(b.Spine) b.Spine.rotation.x += activity==='examine' ? .15 : activity==='labor' ? Math.sin(time*2.6)*.05 : 0;
     if(reaction>0) {
       orient('RightArm','RightForeArm',[.15,-.2,.6]); orient('RightForeArm','RightHand',[.1,.5,.3]);
@@ -358,8 +361,13 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     } else if(activity==='chat') {
       const gesture=Math.sin(time*1.8)*.12;
       orient('RightArm','RightForeArm',[.15,-.45,.15]); orient('RightForeArm','RightHand',[.04,-.1+gesture,.4]);
+    } else if(activity==='guard'||activity==='guard-aim'){
+      const aiming=activity==='guard-aim';
+      for(const side of ['Right','Left']){const sign=side==='Right'?-1:1;orient(side+'Arm',side+'ForeArm',aiming?[sign*.10,-.28,.43]:[sign*.16,-.65,.025]);orient(side+'ForeArm',side+'Hand',aiming?[sign*-.04,.07,.52]:[sign*.035,-.56,.08]);}
+      for(const w of wrists)w.bone.quaternion.copy(w.bind);
     } else if(activity==='rest') {
-      orient('RightArm','RightForeArm',[.15,-.6,.02]); orient('LeftArm','LeftForeArm',[-.15,-.6,.02]);
+      orient('RightForeArm','RightHand',[-.025,-.55,.07]);orient('LeftForeArm','LeftHand',[.025,-.55,.07]);
+      orient('RightArm','RightForeArm',[-.15,-.6,.02]); orient('LeftArm','LeftForeArm',[.15,-.6,.02]);
     }
     if(reaction){mouth=.4;brow=.4;}else if(activity==='labor'){mouth=.35+.15*Math.sin(time*2.4);brow=.5;}
     expressions();

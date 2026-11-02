@@ -33,7 +33,7 @@ test('Three profiles remain free, legacy paid identities retain their look and c
   const legacy=readSave({getItem:()=>JSON.stringify({character:'iman',coins:220,appearance:{hair:'#2c2628'}})});assert.equal(legacy.character,'custom');assert.equal(profileFor(legacy).name,'Iman');assert.equal(profileFor(legacy).gender,'female');assert.equal(legacy.coins,220);
 });
 test('Mask and rifle purchases equip, preserve coins and survive save reload',()=>{
-  const save=defaultSave();save.coins=500;
+  const save=defaultSave();save.coins=1150;
   assert.equal(maskProtects(save),false);assert.equal(purchase(save,'mask'),true);assert.equal(maskProtects(save),true);
   assert.equal(purchase(save,'sniper'),true);assert.equal(save.coins,0);assert.equal(save.loadout.weapon,'sniper');
   const restored=readSave({getItem:()=>JSON.stringify(save)});assert.deepEqual(restored,save);

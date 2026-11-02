@@ -399,8 +399,9 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
     colorHair(hair,model,hex,person.highlights);model.traverse(object=>{if(object.userData.appearanceOwned&&/hair$|ponytail$/.test(object.name))colorHair(object,model,hex,person.highlights);});}
   if(person.refined&&skin){skin.material.roughness=.67;for(const mesh of meshes)if(mesh.material?.name.includes('Eye'))mesh.material.roughness=.24;}
   shapeFace(model,person,skin,meshes);
-  if(role==='civilian')accessories(model,person,skin,find('Glasses'),meshes);
-  else if(person.glasses)fittedGlasses(model,skin,meshes.filter(mesh=>mesh.material?.name.includes('Wolf3D_Eye')));
+  if(role==='civilian'||['security','police'].includes(role))accessories(model,['security','police'].includes(role)?{cap:true,hairstyle:'cropped'}:person,skin,find('Glasses'),meshes);
+  if(['security','police'].includes(role)){for(const m of meshes)if(/Outfit_Top|Outfit_Bottom/.test(m.material?.name||'')){m.material.map=null;m.material.color.set(m.material.name.includes('Bottom')?'#17212b':'#253a50');}const chest=model.getObjectByName('Spine2');if(chest){const neck=bonePoint(model,'Neck'),g=new THREE.BoxGeometry(.10,.07,.012);g.translate(.11,neck.y-.17,.14);attachGeometry(model,chest,g,clothMaterial('#bcc4b3'),'KTD security shield');}}
+  else if(role!=='civilian'&&person.glasses)fittedGlasses(model,skin,meshes.filter(mesh=>mesh.material?.name.includes('Wolf3D_Eye')));
 }
 
 export function disposeAppearance(model) {

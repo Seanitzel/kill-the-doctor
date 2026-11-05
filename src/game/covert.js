@@ -7,7 +7,7 @@ import {mesh,material,sign} from './assets.js';
 import {footprint} from './collision.js';
 import {tileAt,key} from './layout.js';
 import {disposeObjectResources} from './resources.js';
-const mustSteal=e=>!!e.mission.challenge?.scheduleRequired;
+const mustSteal=e=>e.mission.country?.id==='france'||!!e.mission.challenge?.scheduleRequired;
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 // Deliberately fictional game items. No real substance, dose or preparation.
 export class CovertAssignments{
@@ -23,7 +23,7 @@ export class CovertAssignments{
       this.custodian=e.npcs.find(n=>n.floor===this.officeFloor&&n.room?.id===room.id&&!n.recruit&&n.role==='doctor'&&n.id!=='target');
       if(!this.custodian)this.custodian=e.spawnNPC({name:'Dr. Morgan Fell',gender:'male',skin:'#91654e',hair:'#2d211c'},'doctor',this.officeFloor,spot.point,room,'rota-custodian',{fixed:true});
       this.custodian.complicity='Management concealed patient records';this.custodian.pos.set(spot.point.x,0,spot.point.z);this.custodian.activity='rest';this.custodian.path=[];this.home={...spot.point};
-      this.breakGoal=nav.nearest({x:-1.2,z:0},nav.fieldFor({x:0,z:0})).point;this.custodianReturnSeconds=remainingWalkSeconds({pos:this.breakGoal,path:nav.smoothRoute(this.breakGoal,this.home),cursor:0,speed:this.custodian.speed},this.home);this.breakAt=32+m.random()*22;this.phase='working';
+      const bathroom=e.levels[this.officeFloor].rooms.find(r=>r.kind==='bathroom');this.breakGoal=nav.nearest(bathroom.center).point;this.custodianReturnSeconds=remainingWalkSeconds({pos:this.breakGoal,path:nav.smoothRoute(this.breakGoal,this.home),cursor:0,speed:this.custodian.speed},this.home);this.breakAt=32+m.random()*22;this.phase='working';
     }
     const target=e.npcs.find(n=>n.id==='target');this.target=target;if(!target)return;this.targetHome={x:target.pos.x,z:target.pos.z};
     if(!coffeeLevel(m.round))return;
@@ -65,7 +65,7 @@ export class CovertAssignments{
   }
   caught(reason){const e=this.e;e.audio.sound('alarm');e.mission.finish(false,reason+' Security intercepted you.');e.finish();return false;}
   prepareNPC(n){const e=this.e,m=e.mission;if(m.targetDown||n.dead||n.reporting||n.evacuating)return false;
-    if(n===this.custodian){if(this.phase==='working'){n.activity='rest';n.path=[];}else if(this.phase==='away'){n.activity=this.backAt?'drink':null;if(!this.backAt&&n.cursor>=n.path.length&&n.wait<0)e.routeNPC(n,this.breakGoal);}else if(this.phase==='returning'){n.activity=null;if(n.cursor>=n.path.length&&n.wait<0)e.routeNPC(n,this.home);}return true;}
+    if(n===this.custodian){if(this.phase==='working'){n.activity='rest';n.path=[];}else if(this.phase==='away'){n.activity=this.backAt?'rest':null;if(!this.backAt&&n.cursor>=n.path.length&&n.wait<0)e.routeNPC(n,this.breakGoal);}else if(this.phase==='returning'){n.activity=null;if(n.cursor>=n.path.length&&n.wait<0)e.routeNPC(n,this.home);}return true;}
     if(n===this.target&&this.targetPhase&&this.targetPhase!=='working'){
       n.activity=['bathroom','drinking'].includes(this.targetPhase)?this.targetPhase==='drinking'?'drink':'rest':null;
       const goal=this.targetPhase==='outbound'?this.bathroomGoal:this.coffeeGoal;
@@ -77,9 +77,9 @@ export class CovertAssignments{
     if(m.type!=='standard'||m.result)return;
     if(m.targetDown){if(m.covertDeath&&!m.bodyDiscovered){const witness=e.npcs.find(n=>n!==this.target&&!n.dead&&!n.evacuated&&!n.lying&&!n.baby&&n.floor===this.target.floor&&distance(n.pos,this.target.pos)<7&&e.lineOfSight(n.pos,this.target.pos,n.floor));if(witness){m.bodyDiscovered=true;m.beginEscape();e.systems.startEvacuation();e.notify('Body discovered · alarm raised · escape before the police arrive','danger');e.hooks.emergency?.();}}return;}
     if(this.custodian&&!this.custodian.dead){const n=this.custodian;
-      if(this.phase==='working'&&now>=this.breakAt){this.phase='away';n.activity=null;n.path=[];n.cursor=0;e.routeNPC(n,this.breakGoal);e.notify(`${this.office.name} custodian is leaving for coffee · watch for an opening`,'clue');}
-      if(this.phase==='away'&&distance(n.pos,this.breakGoal)<.35){n.activity='drink';this.backAt??=now+(m.challenge?.searchWindow||30);if(now>=this.backAt){this.phase='returning';n.activity=null;e.routeNPC(n,this.home);}}
-      if(this.phase==='returning'&&distance(n.pos,this.home)<.35){this.phase='working';n.activity='rest';n.path=[];this.breakAt=now+45;this.backAt=null;}
+      if(this.phase==='working'&&now>=this.breakAt){this.phase='away';n.activity=null;n.path=[];n.cursor=0;e.routeNPC(n,this.breakGoal);e.notify(`${this.office.name} custodian is leaving for a bathroom break · wait until the room is available`,'clue');}
+      if(this.phase==='away'&&distance(n.pos,this.breakGoal)<.35){n.activity='rest';if(this.backAt==null)e.notify('Room available · collect the rota unseen.','clue');this.backAt??=now+(m.challenge?.searchWindow||30);if(now>=this.backAt){this.phase='returning';n.activity=null;e.routeNPC(n,this.home);e.notify('Doctor returning · leave Records.','warning');}}
+      if(this.phase==='returning'&&distance(n.pos,this.home)<.35){this.phase='working';n.activity='rest';n.path=[];this.breakAt=now+45;e.notify('Records custodian returned · wait for the next bathroom break.','warning');this.backAt=null;}
     }
     const occupied=this.custodian&&!this.custodian.dead&&this.insideOffice(this.custodian)&&e.floor===this.officeFloor&&this.insideOffice({floor:e.floor,pos:e.playerPos})&&this.seen(e.playerPos,e.floor,this.custodian);
     if(occupied&&!this.officeOccupied&&!this.action&&!this.documentTaken&&mustSteal(e)){this.warnings++;if(this.warnings>2)return this.caught('After two warnings the custodian called the police.');e.life?.speak(this.custodian,this.warnings===1?'Excuse me. Please wait outside.':'You need to leave now, or I will call security.',true);e.notify(`Private records · leave the room. Warning ${this.warnings}/2.`,'warning');}
@@ -98,7 +98,7 @@ export class CovertAssignments{
     if(this.consumedAt!==null&&now>=this.consumedAt+7){if(e.eliminateCoffeeTarget(target)&&target.visual.head){const foam=mesh('sphere',material('#e3eadf'),[.026,.012,.014],[0,.015,.10],target.visual.head);foam.name='Fictional coffee effect foam';}}
   }
 
-  objective(){const m=this.e.mission;if(m.type!=='standard'||m.targetDown)return null;if(this.document&&!this.documentTaken)return !m.recordsNotice?'Read the hospital information board':!m.locatedRecords?`Locate ${evidenceLabel(m.country)}`:`Find the rota inside ${this.office.name}`;return null;}
+  objective(){const m=this.e.mission;if(m.type!=='standard'||m.targetDown)return null;if(this.document&&!this.documentTaken)return !m.recordsNotice?'Read the hospital information board':!m.locatedRecords?`Locate ${evidenceLabel(m.country)}`:this.insideOffice(this.custodian)?this.phase==='away'?'Doctor leaving · wait outside Records':'Wait for bathroom break · Records':this.phase==='returning'?'Doctor returning · leave Records':'Room available · collect the rota';return null;}
   returnEstimate(){if(!this.targetOfficeClear())return null;const now=this.e.mission.elapsed,walk=this.returnWalkSeconds||0;if(this.targetPhase==='outbound')return Math.ceil(remainingWalkSeconds(this.target,this.bathroomGoal)+24+walk);if(this.targetPhase==='bathroom')return Math.ceil(Math.max(0,(this.bathroomUntil||now)-now)+walk);return Math.ceil(remainingWalkSeconds(this.target,this.coffeeGoal));}
   hud(){if(this.e.mission.type!=='standard')return null;return {room:{name:this.office?.name,number:this.office?.number,floor:this.officeFloor,x:this.desk?.x,z:this.desk?.z},level:this.e.mission.round,label:this.e.mission.challenge?.label,documentRequired:!!this.document,stealthRequired:mustSteal(this.e),documentTaken:this.documentTaken,breakState:this.custodian&&this.insideOffice(this.custodian)?this.phase==='away'?'Doctor leaving':'Doctor in room':this.e.npcs.some(n=>n!==this.custodian&&!n.dead&&!n.evacuated&&!n.baby&&this.insideOffice(n))?'Visitor in room':this.phase==='returning'?'Doctor returning · room clear':'Room clear',window:this.phase==='away'&&this.backAt?Math.ceil(Math.max(0,this.backAt-this.e.mission.elapsed)+(this.custodianReturnSeconds||0)):this.phase==='returning'?Math.ceil(remainingWalkSeconds(this.custodian,this.home)):null,coffee:this.tampered?'prepared':this.capsule?'compound collected':'optional',targetBreak:this.targetOfficeClear()?'Office clear · doctor away':this.targetPhase,awaySeconds:this.targetAwaySince==null?null:Math.max(0,Math.floor(this.e.mission.elapsed-this.targetAwaySince)),returnSeconds:this.returnEstimate()};}
   dispose(){this.statusSign?.dispose();this.statusSign=null;for(const {floor,c} of this.addedColliders){const colliders=this.e.hospitals[floor].colliders,index=colliders.indexOf(c);if(index>=0)colliders.splice(index,1);}this.addedColliders=[];this.action=null;this.root.removeFromParent();disposeObjectResources(this.root,{textures:true});this.root.clear();this.e=null;}

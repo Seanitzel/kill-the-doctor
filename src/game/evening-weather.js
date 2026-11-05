@@ -25,7 +25,7 @@ export function updateEveningWeather(parent,outside,time=0,audio){
  const state=parent?.userData.evening;if(!state)return;const{cars,particles,positions,count,weather}=state;
  for(const car of cars){const position=((time*car.speed+car.offset)%94)-47;car.root.position.set(position*car.direction,0,car.direction>0?50:55.5);car.root.rotation.y=car.direction*Math.PI/2;}
  let thunder=false;if(weather==='storm'&&outside&&time>=state.nextThunder){state.lastThunder=time;state.nextThunder=time+50+(Math.floor(time)%31);thunder=true;}const flash=outside?Math.max(0,1-(time-state.lastThunder)/.45):0;state.lightning.material.opacity=flash;state.flash.intensity=flash*24;
- audio?.weather?.(weather,outside,thunder);particles.visible=outside;if(weather==='snow'){state.snowDepth=Math.min(.48,.18+time*.00022);for(const bank of state.banks){bank.scale.y=state.snowDepth/.18;bank.position.y=state.snowDepth/2;}}
+ audio?.weather?.(weather,outside,thunder);audio?.traffic?.(cars,outside);particles.visible=outside;if(weather==='snow'){state.snowDepth=Math.min(.48,.18+time*.00022);for(const bank of state.banks){bank.scale.y=state.snowDepth/.18;bank.position.y=state.snowDepth/2;}}
  if(!outside)return;
  const snow=weather==='snow';for(let i=0;i<count;i++){const x=-24+(i*7.391%48)+(snow?Math.sin(time*.45+i)*.45:((time*.32+i*.07)%1)*.6),y=((i*1.73-time*(snow?.6:6.5))%11+11)%11,z=35+(i*3.73%25);const at=i*(snow?3:6);positions[at]=x;positions[at+1]=y;positions[at+2]=z;if(!snow){positions[at+3]=x+.075;positions[at+4]=y+.34;positions[at+5]=z+.015;}}
  particles.geometry.attributes.position.needsUpdate=true;

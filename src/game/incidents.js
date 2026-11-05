@@ -168,7 +168,7 @@ export class HospitalIncidents{
       this.scan=.3;
       for(const n of e.npcs){
         const concern=n.noiseConcern;if(!concern)continue;if(now>=concern.until){n.noiseConcern=null;continue;}
-        if(n.dead||n.evacuated||n.reporting||n.baby||n.floor!==e.floor||distance(n.pos,e.playerPos)>12||!e.lineOfSight(e.playerPos,n.pos))continue;
+        if(n.dead||n.targetFlee||n.evacuated||n.reporting||n.baby||n.floor!==e.floor||distance(n.pos,e.playerPos)>12||!e.lineOfSight(e.playerPos,n.pos))continue;
         n.worriedUntil=concern.until;
         if(!concern.spoken&&now>=this.nextConversation){
           concern.spoken=true;this.nextConversation=now+7;n.reaction=Math.max(n.reaction||0,1.1);

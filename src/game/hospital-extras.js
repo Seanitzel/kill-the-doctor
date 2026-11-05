@@ -27,7 +27,7 @@ export class HospitalExtras{
     }
     // One service key opens both entrances to each locked laboratory.
     const lockedFloors=[];for(const level of e.levels)for(const room of level.rooms.filter(r=>r.kind==='lab')){
-      const locked=m.type==='standard'&&(m.round>=5||m.random()<.35);if(locked)lockedFloors.push(level.floor);
+      const locked=m.type==='standard'&&m.round>=5;if(locked)lockedFloors.push(level.floor);
       for(const door of level.doors.filter(d=>d.room===room.id)){door.open=false;door.angle=0;door.pivot&&(door.pivot.rotation.y=0);door.locked=locked;door.keyId=locked?'laboratory':null;}
     }
     if(lockedFloors.length){const room=e.levels[0].rooms.find(r=>r.kind==='office'),g=this.prop('Laboratory service key',0,room.center.x-.8,1.16,room.center.z+1.4);

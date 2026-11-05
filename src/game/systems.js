@@ -1,3 +1,4 @@
+import {complicityFor} from './security-rules.js';
 import {updateEntrance} from './entrance.js';
 import {EgressNavigation} from './egress.js';
 import * as THREE from 'three';
@@ -21,11 +22,11 @@ export class MissionSystems{
     n.visual.root.rotation.set(0,0,0);n.activity=null;n.seated=n.lying=false;n.baselineY=0;n.pos.y=0;n.hitOffset=null;n.reaction=0;n.path=[];n.cursor=0;
   }
   startEvacuation(){
-    if(this.evacuating||this.e.mission.china&&!this.e.mission.policeAlert)return;this.evacuating=true;if(this.e.life){if(this.e.life.queue)this.e.life.queue.length=0;if(this.e.life.dialogues)this.e.life.dialogues.length=0;this.e.life.privacy?.leave();}this.e.audio.cancelVoices?.();this.e.audio.sound('alarm');for(const entrance of this.e.hospitals?.[0]?.entrances||[]){entrance.open=true;updateEntrance(entrance,true,2);}this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
+    if(this.evacuating||this.e.mission.china&&!this.e.mission.policeAlert)return;this.evacuating=true;if(this.e.life){if(this.e.life.queue)this.e.life.queue.length=0;if(this.e.life.dialogues)this.e.life.dialogues.length=0;this.e.life.privacy?.leave();}this.e.audio.cancelVoices?.();if(this.e.mission.type==='standard'){this.alarmAt=this.e.mission.elapsed+60;this.escapePhase='security';this.waitingAccomplices=this.e.npcs.filter(n=>!n.dead&&n.id!=='target'&&!!(n.complicity||complicityFor(n)));for(const n of this.waitingAccomplices){n.complicity||=complicityFor(n);n.accompliceHeld=true;n.path=[];n.activity='rest';n.reporting=null;}}else this.e.audio.sound('alarm');for(const entrance of this.e.hospitals?.[0]?.entrances||[]){entrance.open=true;updateEntrance(entrance,true,2);}this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
     for(const level of this.e.levels)for(const door of level.doors){door.locked=false;door.open=true;}
-    for(const n of this.e.npcs){if(n.dead||n.baby||n.rescuePatient||['police','security'].includes(n.role)||n===this.e.extras?.lure?.contact&&n.lying||n.emergencyResponder)continue;if(n.operationDoctor&&this.e.mission.type==='rescue'){n.reporting=null;n.path=[];n.activity='worried';continue;}if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.sneezeUntil=0;if(n.tissue)n.tissue.visible=false;n.evacLane=((this.e.npcs.indexOf(n)*7)%6)*.48+.15;n.evacGoal=n.floor?{x:0,z:-24}:{x:n.evacLane,z:39};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.reaction=.2+this.e.mission.random()*1.4;this.route(n,n.evacGoal);}
+    for(const n of this.e.npcs){if(n.dead||n.baby||n.rescuePatient||n.accompliceHeld||['police','security'].includes(n.role)||n===this.e.extras?.lure?.contact&&n.lying||n.emergencyResponder)continue;if(n.operationDoctor&&this.e.mission.type==='rescue'){n.reporting=null;n.path=[];n.activity='worried';continue;}if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.sneezeUntil=0;if(n.tissue)n.tissue.visible=false;n.evacLane=((this.e.npcs.indexOf(n)*7)%6)*.48+.15;n.evacGoal=n.floor?{x:0,z:-24}:{x:n.evacLane,z:39};this.stand(n,n.evacGoal);n.reporting=null;n.evacuating=true;n.evacSpeed=n.blind?1.25:2.8+this.e.mission.random()*2;n.reaction=.15+this.e.mission.random()*1.4;n.evacHesitateAt=this.e.mission.elapsed+5+this.e.mission.random()*9;this.route(n,n.evacGoal);}
     const nearby=this.e.npcs.filter(n=>n.floor===this.e.floor&&!n.dead&&!n.baby).slice(0,3);for(const [i,n]of nearby.entries())this.e.audio.evacuationScream?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},i*.7);
-    this.e.hooks.soundCaption?.('People scream. The alarm sounds. Staff and ambulatory patients rush toward the exits. Newborns remain protected.');
+    this.e.hooks.soundCaption?.('People scream. Staff and ambulatory patients rush toward the exits. Security responds immediately. Newborns remain protected.');
   }
   witness(n,reason='weapon'){
     const e=this.e;if(e.mission.china&&n.operationDoctor){if(e.mission.china.recordings.length<3){e.mission.finish(false,'The operating doctors saw your weapon before you secured the recordings.');e.finish();}return;}if(n.operationDoctor&&e.mission.type==='rescue'){e.mission.beginEscape(65);this.startEvacuation();e.notify('Operating team alerted · stop the procedure and bring the patient out','danger');return;}
@@ -43,7 +44,9 @@ export class MissionSystems{
     return null;
   }
   prepareNPC(n){
-    const e=this.e,now=e.mission.elapsed;
+    const e=this.e,now=e.mission.elapsed;this.updateEscape();
+    if(n.accompliceHeld){n.path=[];n.activity='rest';n.reporting=null;return true;}
+    if(n.evacuating&&now>=(n.evacHesitateAt??Infinity)){n.reaction=.2+e.mission.random()*.6;n.evacHesitateAt=now+12+e.mission.random()*15;this.rerouteCrowd(n);}
     if(e.extras?.prepareNPC(n)||e.covert?.prepareNPC(n)||e.objectives?.prepareNPC(n)||e.visitors?.prepareNPC(n)||e.life?.prepareNPC?.(n))return true;
     if(e.incidents?.prepareNPC(n))return true;
     if(n.reporting&&(e.mission.china||(e.mission.type==='rescue'?e.mission.state!=='escape':!e.mission.targetDown))){
@@ -54,7 +57,7 @@ export class MissionSystems{
     if(n.evacuating){
       if(distance(n.pos,n.evacGoal)<1.2){
         if(n.floor){const arrival=this.arrivalSpot(0,n);if(!arrival){n.wait=.3;return true;}n.floor=0;n.pos.set(arrival.x,0,arrival.z);n.visual.root.visible=e.floor===0;n.evacGoal={x:n.evacLane||0,z:39};this.route(n,n.evacGoal);}
-        else{n.evacuated=true;n.visual.root.visible=false;n.path=[];}
+        else{n.evacuated=true;n.evacuating=false;n.visual.root.visible=false;n.path=[];n.movementSpeed=0;n.activity='rest';n.reporting=null;n.passing=null;}
       }else if(n.cursor>=n.path.length&&n.wait<0)this.route(n,n.evacGoal);
       return true;
     }
@@ -62,11 +65,11 @@ export class MissionSystems{
   }
   update(dt){
     const e=this.e;if((e.mission.targetDown&&!e.mission.china&&(!e.mission.covertDeath||e.mission.bodyDiscovered)||e.mission.type==='rescue'&&e.mission.state==='escape')&&!this.evacuating)this.startEvacuation();
-    this.scan-=dt;
+    this.updateEscape();this.scan-=dt;
     if((e.mission.state!=='escape'&&!e.mission.targetDown||e.mission.china&&!e.mission.policeAlert)&&e.weaponDrawn&&this.scan<=0){
       this.scan=.18;let reporting=e.npcs.filter(n=>n.reporting&&!n.dead).length;
       for(const n of e.npcs){
-        if(reporting>=3||e.mission.state==='escape'&&(!e.mission.china||e.mission.policeAlert))break;if(n.dead||n.evacuated||n.baby||n.blind||n.rescuePatient||n.lying||n.reporting||n.recruit?.state==='recruited'||n.floor!==e.floor)continue;
+        if(reporting>=3||e.mission.state==='escape'&&(!e.mission.china||e.mission.policeAlert))break;if(n.id==='target'||n.dead||n.evacuated||n.baby||n.blind||n.rescuePatient||n.lying||n.reporting||n.recruit?.state==='recruited'||n.floor!==e.floor)continue;
         const visible=distance(n.pos,e.playerPos)<(e.mission.challenge?.witnessRange||11)&&e.lineOfSight(n.pos,e.playerPos);
         if(seesDrawnWeapon(n.pos,e.playerPos,n.visual.root.rotation.y,visible,e.mission.challenge?.witnessRange||11)){if(e.mission.type==='standard'&&!e.mission.targetDown&&!e.mission.legitimateDraw){e.mission.finish(false,'A witness saw your weapon before a legitimate target confrontation.');e.finish();return;}this.witness(n);reporting++;}
       }
@@ -77,6 +80,16 @@ export class MissionSystems{
       this.magnet={age:0,from:e.playerPos.clone(),to:new THREE.Vector3(room.center.x,0,room.center.z-1)};e.audio.sound('magnet');e.notify('MRI magnet · steel jewelry caught in the field','danger');e.hooks.soundCaption?.('A dramatized MRI magnetic hazard is pulling the character toward the scanner.');
     }
     if(this.magnet){const m=this.magnet;m.age+=dt;e.playerPos.lerpVectors(m.from,m.to,Math.min(1,m.age/.95));e.player.root.position.copy(e.playerPos);if(m.age>=.95){e.mission.finish(false,'Steel jewelry was pulled into the MRI magnet. Remove it in the character studio before entering Radiology.');e.finish();}}
+  }
+  alarmActive(){const m=this.e.mission;return m.state==='escape'&&(m.type==='standard'?this.evacuating&&!!this.alarmAnnounced:!m.china||!!m.policeAlert);}
+  escapeObjective(){if(!this.evacuating||this.e.mission.type!=='standard')return null;return this.escapePhase==='security'?'Eliminate security first, then target the marked accomplices':this.waitingAccomplices?.length?'Marked accomplices are moving out · watch for red targets, then escape':'Escape through the ground-floor glass entrance';}
+  updateEscape(){
+    const e=this.e,m=e.mission;if(!this.evacuating||m.type!=='standard')return;
+    if(!this.alarmAnnounced&&m.elapsed>=this.alarmAt){this.alarmAnnounced=true;e.audio.sound('alarm');e.audio.nextBeep=(e.audio.ctx?.currentTime||0)+2.4;e.say?.('Code blue. Security incident reported. All staff follow emergency protocol. Police units are responding.','EMERGENCY PROTOCOL');e.notify('Hospital alarm activated · escape before police arrive.','danger');}
+    if(this.escapePhase==='security'&&!e.npcs.some(n=>n.role==='security'&&!n.dead&&!n.evacuated)){this.escapePhase='accomplices';this.nextAccomplice=m.elapsed+2;e.notify('Security stopped · marked accomplices are moving through the hospital.','clue');}
+    if(this.escapePhase==='accomplices'&&this.waitingAccomplices?.length&&m.elapsed>=this.nextAccomplice){
+      const n=this.waitingAccomplices.shift();this.nextAccomplice=m.elapsed+6+m.random()*4;if(n.dead)return;n.accompliceHeld=false;n.evacLane=(m.random()-.5)*2.2;n.evacGoal=n.floor?{x:0,z:-24}:{x:n.evacLane,z:39};this.stand(n,n.evacGoal);n.evacuating=true;n.evacSpeed=2.9+m.random()*1.3;this.route(n,n.evacGoal);
+    }
   }
   reports(){return this.e.npcs.filter(n=>n.reporting&&!n.dead&&!n.evacuated).map(n=>({id:n.id,name:n.name,reason:n.reporting.reason,seconds:Math.max(0,Math.ceil(n.reporting.deadline-this.e.mission.elapsed))}));}
 }

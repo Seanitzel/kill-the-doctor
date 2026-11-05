@@ -59,7 +59,7 @@ export function maskProtects(save){return !!(save.loadout?.mask&&((save.loadout.
 export function gasBlocked(save,random=Math.random){return maskProtects(save)||!!(save.loadout?.mask&&save.loadout.maskType==='regular'&&save.upgrades?.regularMask&&random()<.7);}
 export function hasMask(save){return !!(save.upgrades?.mask||save.upgrades?.n95||save.upgrades?.regularMask);}
 export const STAFF_BONUS=25;
-export function mayHitStaff(mission,npc){return npc.id==='target'||!!(mission.targetDown&&(npc.complicity||npc.operationDoctor||['security','police'].includes(npc.role)));}
+export function mayHitStaff(mission,npc){return npc.id==='target'||!!(mission.targetDown&&!npc.accompliceHeld&&(npc.complicity||npc.operationDoctor||['security','police'].includes(npc.role)));}
 export function seesDrawnWeapon(observer,player,yaw,visible,range=11){
   if(!visible)return false;const dx=player.x-observer.x,dz=player.z-observer.z,d=Math.hypot(dx,dz);
   return d<range&&(d<2.5||(dx*Math.sin(yaw)+dz*Math.cos(yaw))/Math.max(d,.001)>.1);

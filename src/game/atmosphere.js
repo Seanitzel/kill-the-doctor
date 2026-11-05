@@ -131,9 +131,9 @@ export class HospitalLife {
     actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07);
   }
   privacyWitness(room){
-    if(this.engine.systems?.evacuating||this.engine.mission.state==='escape'||!room||room.kind==='emergency'||(!CLINICAL_KINDS.includes(room.kind)&&room.kind!=='office'))return null;
-    const e=this.engine;if(e.mission.china&&room.kind==='office')return null;if(this.targetCase?.room.id===room.id&&this.targetCase.appointment.completed)return null;
-    return e.npcs.filter(n=>n.room?.id===room.id&&n.floor===e.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===room.id&&!n.dead&&!n.evacuated&&!n.reporting&&['doctor','nurse'].includes(n.role)).sort((a,b)=>(a.id==='target'?0:a.role==='nurse'?1:2)-(b.id==='target'?0:b.role==='nurse'?1:2)||dist(e.playerPos,a.pos)-dist(e.playerPos,b.pos))[0]||null;
+    if(this.engine.systems?.evacuating||this.engine.mission.state==='escape'||!room||room.kind==='emergency'||(!CLINICAL_KINDS.includes(room.kind)&&!['office','lab'].includes(room.kind)))return null;
+    const e=this.engine;if(e.covert?.office?.id===room.id&&e.covert.officeFloor===e.floor&&!e.covert.documentTaken)return null;if(e.mission.china&&room.kind==='office')return null;if(this.targetCase?.room.id===room.id&&this.targetCase.appointment.completed)return null;
+    return e.npcs.filter(n=>n.floor===e.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===room.id&&!n.dead&&!n.evacuated&&!n.reporting&&['doctor','nurse'].includes(n.role)).sort((a,b)=>(a.id==='target'?0:a.role==='nurse'?1:2)-(b.id==='target'?0:b.role==='nurse'?1:2)||dist(e.playerPos,a.pos)-dist(e.playerPos,b.pos))[0]||null;
   }
   privacyResponse(actor,action){
     if(!actor||!action||this.engine.systems?.evacuating||this.engine.mission.state==='escape')return;const e=this.engine;
@@ -149,7 +149,7 @@ export class HospitalLife {
     this.privacyResponse(actor,this.privacy.enter(`${this.engine.floor}:${room.id}`,this.engine.mission.elapsed,room.id===this.engine.mission.target?.room.id?{warningDelay:TARGET_PRIVACY_GRACE,reportDelay:TARGET_PRIVACY_GRACE*2}:{}));
   }
   updateAppointment(room){
-    const e=this.engine,item=this.targetCase;if(!item||e.mission.targetDown||item.doctor.dead||e.mission.state==='escape')return;
+    const e=this.engine,item=this.targetCase;if(!item||e.mission.targetDown||item.doctor.targetFlee||item.doctor.dead||e.mission.state==='escape')return;
     const appointment=item.appointment,now=e.mission.elapsed;
     if(room?.id===item.room.id&&e.floor===item.room.floor)appointment.start(now);
     if(!appointment.update(now))return;
@@ -242,7 +242,7 @@ export class HospitalLife {
     if(roomKey!==this.lastRoom){this.lastRoom=roomKey;if(!emergency)this.reactToEntry(room);else this.privacy.leave();}
     if(!emergency&&room)this.privacyResponse(this.privacyWitness(room),this.privacy.update(`${e.floor}:${room.id}`,now));
     for(const n of e.npcs) {
-      if(n.dead||n.evacuated||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
+      if(n.dead||n.evacuated||n.targetFlee||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
       if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&(n.activity||n.worriedUntil>now)&&n.activity!=='newborn') {
         const pose=emergency&&!n.lying?'scream':n.worriedUntil>now&&!n.lying?'worried':n.activity;
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
@@ -259,7 +259,7 @@ export class HospitalLife {
     }
     if(!emergency&&now>=this.nextSneeze){const candidates=e.npcs.filter(n=>n.floor===e.floor&&n.role==='patient'&&!n.lying&&!n.baby&&!n.dead&&!n.evacuated&&!n.blind&&!n.recruit&&dist(n.pos,e.playerPos)<9&&dist(n.pos,e.playerPos)>1.5);if(candidates.length)this.sneeze(candidates[Math.floor(e.mission.random()*candidates.length)]);this.nextSneeze=now+35+e.mission.random()*35;}
     for(const item of this.cases) {
-      if(item.completed){item.cable.visible=item.disc.visible=false;continue;}
+      if(item.completed||emergency||!item.patient.lying||item.patient.dead||item.doctor.targetFlee){item.cable.visible=item.disc.visible=false;continue;}
       const diversion=e.extras?.lure,helping=diversion&&!diversion.recovered&&(item.doctor===diversion.responder||item.doctor===diversion.target&&diversion.phase!=='collapsed');
       const local=item.room.floor===e.floor,alive=!item.doctor.dead&&!item.doctor.evacuating&&!helping;item.cable.visible=item.disc.visible=local&&alive&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;
       const d=dist(e.playerPos,item.patient.pos),source={x:item.patient.pos.x,y:1.15,z:item.patient.pos.z,floor:item.room.floor};

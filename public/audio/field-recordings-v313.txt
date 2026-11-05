@@ -1,0 +1,28 @@
+KTD 3.13 environmental field recordings
+
+All four source recordings are CC0 / public domain from LaSonotheque.
+No audio from user-supplied YouTube references was downloaded or extracted.
+Source pages checked 2026-11-05. Adaptations: excerpt, mono 24 kHz,
+high/low pass, loudness adjustment, 350ms equal-power loop overlap, MP3 64kbps.
+
+rain-field-v313.mp3
+Joseph SARDIN — Pluie d'été sur terrasse, #1019
+https://lasonotheque.org/pluie-d-ete-sur-terrasse-s1019.html
+Source 15–47 seconds, adapted loop 31.65 seconds.
+
+ambulance-field-v313.mp3
+Joseph SARDIN — Ambulance, sirène 3 tons, moteur, #1465
+https://lasonotheque.org/ambulance-sirene-1-moteur-s1465.html
+Source 2–14 seconds, adapted loop 11.65 seconds.
+
+car-engine-v313.mp3
+DenisChardonnet — Moteur de voiture #2, #0291
+https://lasonotheque.org/moteur-de-voiture-2-s0291.html
+Source 1–6 seconds, adapted loop 4.65 seconds.
+
+car-road-v313.mp3
+Joseph SARDIN — Passage voiture 50km/h #12, #2996
+https://lasonotheque.org/passage-voiture-50km-h-12-s2996.html
+Source 5–9 seconds, adapted loop 3.65 seconds.
+
+CC0: https://creativecommons.org/publicdomain/zero/1.0/

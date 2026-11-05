@@ -20,7 +20,7 @@ export class EmergencyArrivals{
  this.patient=makePlayer(e.assets,'male',{gender:'male',skin:'#996d51',accent:'#8a929c',hairstyle:'cropped'},'patient');this.avatars.push(this.patient);this.crew.add(this.patient.root);this.patient.root.rotation.x=-Math.PI/2;this.patient.root.position.set(0,.99,.86);for(let i=0;i<8;i++)this.patient.animate(i*.05,0,.05);this.patient.poseActivity?.('rest',0);
  this.crew.visible=false;
  }
- setVan(x,z,heading){this.van.position.set(x,0,z);this.van.rotation.y=heading;const c=this.vanCollider,wide=Math.abs(Math.sin(heading))>.5;c.minX=x-(wide?2.65:1.15);c.maxX=x+(wide?2.65:1.15);c.minZ=z-(wide?1.15:2.65);c.maxZ=z+(wide?1.15:2.65);}
+ setVan(x,z,heading){const dt=Math.max(.016,this.e.mission.elapsed-(this.vanSampleAt??this.e.mission.elapsed));this.vanVelocity={x:this.vanSampleAt===undefined?0:(x-this.van.position.x)/dt,z:this.vanSampleAt===undefined?0:(z-this.van.position.z)/dt};this.vanSampleAt=this.e.mission.elapsed;this.van.position.set(x,0,z);this.van.rotation.y=heading;const c=this.vanCollider,wide=Math.abs(Math.sin(heading))>.5;c.minX=x-(wide?2.65:1.15);c.maxX=x+(wide?2.65:1.15);c.minZ=z-(wide?1.15:2.65);c.maxZ=z+(wide?1.15:2.65);}
  route(goal){const nav=this.e.systems.navigationFor(0);this.path=nav.smoothRoute(this.crew.position,goal).map(p=>({x:(p.x-11)*3,z:(p.z-11)*3}));if(this.path.length&&goal.z>40&&nav.clear(this.path.at(-1),goal))this.path.push({...goal});this.cursor=0;}
  start(){const e=this.e;this.van.visible=true;this.events++;this.stopping=this.events%3!==0;this.root.visible=true;this.phase='approach';this.phaseAt=e.mission.elapsed;this.setVan(-45,50,Math.PI/2);if(!e.hospitals[0].colliders.includes(this.vanCollider))e.hospitals[0].colliders.push(this.vanCollider);}
  moveCrew(dt){const e=this.e,goal=this.path?.[this.cursor];if(!goal)return !!this.path?.length;const pos=this.crew.position,d=distance(pos,goal);if(d<.08){this.cursor++;return this.cursor>=this.path.length;}
@@ -45,7 +45,7 @@ export class EmergencyArrivals{
  else if(this.phase==='return'&&this.moveCrew(dt)){this.phase='loading';this.phaseAt=now;}
  else if(this.phase==='loading'&&age>3){this.crew.visible=false;this.phase='depart';this.phaseAt=now;}
  else if(this.phase==='depart'){const t=Math.min(1,age/10),path=new T.CubicBezierCurve3(new T.Vector3(7.8,0,43.2),new T.Vector3(16,0,43.2),new T.Vector3(17,0,50),new T.Vector3(60,0,50)),point=path.getPoint(t*t),heading=path.getTangent(t*t);this.setVan(point.x,point.z,Math.atan2(heading.x,heading.z));if(age>10)this.finish();}
- e.audio.siren?.(['approach','depart'].includes(this.phase),{x:this.van.position.x,y:1.5,z:this.van.position.z});
+ e.audio.siren?.(['approach','depart'].includes(this.phase),{x:this.van.position.x,y:1.5,z:this.van.position.z},this.vanVelocity);
  for(const [index,medic]of(this.medics||[]).entries()){medic.animate(e.time,this.walking?1.15:0,dt);medic.poseActivity?.(index?'stretcher-pull':'stretcher-push',e.time);}
  }
  finish(){this.e.audio.siren?.(false,this.van.position);this.van.visible=false;this.phase='idle';this.nextAt=this.e.mission.elapsed+120+this.e.mission.random()*90;const list=this.e.hospitals[0].colliders,index=list.indexOf(this.vanCollider);if(index>=0)list.splice(index,1);this.van.visible=true;this.root.visible=!!this.patientResting;this.van.visible=false;}

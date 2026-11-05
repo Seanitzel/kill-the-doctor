@@ -295,7 +295,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       else if(/mouthSmile/i.test(name))o.morphTargetInfluences[index]=smile;
     }});
     // Keep the safe idle/walk arms when a nearby wall or door leaves no room to gesture.
-    if(restricted&&!['guard','guard-aim'].includes(activity)){expressions();return;}
+    if(restricted&&!['guard','guard-aim','guard-restrain','scratch','restrained'].includes(activity)){expressions();return;}
     if(b.Spine) b.Spine.rotation.x += activity==='examine' ? .15 : activity==='labor' ? Math.sin(time*2.6)*.05 : 0;
     if(reaction>0) {
       orient('RightArm','RightForeArm',[.15,-.2,.6]); orient('RightForeArm','RightHand',[.1,.5,.3]);
@@ -361,8 +361,12 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     } else if(activity==='chat') {
       const gesture=Math.sin(time*1.8)*.12;
       orient('RightArm','RightForeArm',[.15,-.45,.15]); orient('RightForeArm','RightHand',[.04,-.1+gesture,.4]);
-    } else if(activity==='guard'||activity==='guard-aim'){
-      const aiming=activity==='guard-aim';
+    } else if(activity==='scratch'){
+      orient('RightArm','RightForeArm',[-.14,-.10,.17]);reachHead(time,new THREE.Vector3(-.04,-.055,.04));if(b.Head)b.Head.rotation.z+=.08*Math.sin(time*8);if(b.Spine)b.Spine.rotation.z+=Math.sin(time*10)*.015;
+    } else if(activity==='restrained'){
+      for(const side of ['Right','Left']){const sign=side==='Right'?-1:1;orient(side+'Arm',side+'ForeArm',[sign*.14,-.5,-.12]);orient(side+'ForeArm',side+'Hand',[-sign*.12,.05,-.27]);}if(b.Spine)b.Spine.rotation.x+=.25;
+    } else if(activity==='guard'||activity==='guard-aim'||activity==='guard-restrain'){
+      const aiming=activity!=='guard';
       for(const side of ['Right','Left']){const sign=side==='Right'?-1:1;orient(side+'Arm',side+'ForeArm',aiming?[sign*.10,-.28,.43]:[sign*.16,-.65,.025]);orient(side+'ForeArm',side+'Hand',aiming?[sign*-.04,.07,.52]:[sign*.035,-.56,.08]);}
       for(const w of wrists)w.bone.quaternion.copy(w.bind);
     } else if(activity==='rest') {

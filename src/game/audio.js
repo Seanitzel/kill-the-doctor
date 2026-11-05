@@ -7,7 +7,7 @@ import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
 import {waitFor} from './startup.js';
 const AUDIO_REVISION='3.0.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
-export const HOSPITAL_SAMPLE_FILES=Object.freeze({'flight-airplane':'/audio/flight-airplane.mp3','laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
+export const HOSPITAL_SAMPLE_FILES=Object.freeze({'rain-field':'/audio/rain-field-v313.mp3','ambulance-field':'/audio/ambulance-field-v313.mp3','car-engine':'/audio/car-engine-v313.mp3','car-road':'/audio/car-road-v313.mp3','flight-airplane':'/audio/flight-airplane.mp3','laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
 const disconnect=node=>{try{node?.disconnect();}catch{}};
 
@@ -237,8 +237,21 @@ export class HospitalAudio {
     for(const [key,channel]of this.ambientChannels)if(channel===record)this.ambientChannels.delete(key);
   }
   playSample(name,position,gain=.5) {if(!this.enabled||gain<=0)return;return this.sampleNodes(name,position,gain);}
-  weather(kind,outside,stormPulse=false){if(!this.ctx||!this.enabled)return;if(!outside){this.ambientSample('weather','',this.listenerPosition,0);for(const record of this.activeSamples)if(record.name==='thunder')this.releaseSample(record,true);return;}const type=['rain','storm','snow'].includes(kind)?kind:'wind';if(!this.samples[`weather-${type}`])this.samples[`weather-${type}`]=weatherBuffer(this.ctx,type);this.ambientSample('weather',`weather-${type}`,this.listenerPosition,type==='storm'?.14:type==='snow'?.09:.10);if(stormPulse&&outside){if(!this.samples.thunder)this.samples.thunder=weatherBuffer(this.ctx,'thunder');this.playSample('thunder',this.listenerPosition,.65);}}
-  siren(active,position){if(!this.ctx||!this.enabled)return;if(active&&!this.samples['ambulance-siren'])this.samples['ambulance-siren']=weatherBuffer(this.ctx,'siren');this.ambientSample('ambulance','ambulance-siren',{...position,floor:0},active?(this.listenerFloor===0?.6:.03):0);}
+  weather(kind,outside,stormPulse=false){
+    if(!this.ctx||!this.enabled)return;
+    if(!outside){this.ambientSample('weather','',this.listenerPosition,0);for(const record of [...this.activeSamples])if(record.name==='thunder')this.releaseSample(record,true);return;}
+    const wet=kind==='rain'||kind==='storm',type=wet?'rain-field':kind==='snow'?'weather-snow':'weather-wind';
+    if(!wet&&!this.samples[type])this.samples[type]=weatherBuffer(this.ctx,kind==='snow'?'snow':'wind');
+    this.ambientSample('weather',type,this.listenerPosition,kind==='storm'?.30:kind==='snow'?.09:wet?.20:.09);
+    if(stormPulse){if(!this.samples.thunder)this.samples.thunder=weatherBuffer(this.ctx,'thunder');this.playSample('thunder',this.listenerPosition,.65);}
+  }
+  movingAudio(key,name,position,velocity,gain,reference=8){
+    this.ambientSample(key,name,{...position,floor:0},gain);const c=this.ambientChannels.get(key);if(!c)return;
+    const dx=position.x-this.listenerPosition.x,dz=position.z-this.listenerPosition.z,d=Math.max(1,Math.hypot(dx,dz));const radial=(dx*(velocity?.x||0)+dz*(velocity?.z||0))/d;
+    c.panner.refDistance=reference;c.panner.maxDistance=100;c.panner.rolloffFactor=1.3;c.source.playbackRate.setTargetAtTime(Math.max(.92,Math.min(1.08,343/(343+radial))),this.ctx.currentTime,.15);
+  }
+  traffic(cars,outside){if(!this.ctx||!this.enabled)return;for(const [i,car]of cars.entries()){const p=car.root.position,d=Math.hypot(p.x-this.listenerPosition.x,p.z-this.listenerPosition.z),gain=outside&&d<46?.40:0,velocity={x:car.speed*car.direction,z:0};this.movingAudio(`car-engine-${i}`,'car-engine',p,velocity,gain,6);this.movingAudio(`car-road-${i}`,'car-road',p,velocity,gain*.65,6);}}
+  siren(active,position,velocity={x:0,z:0}){if(!this.ctx||!this.enabled)return;this.movingAudio('ambulance','ambulance-field',position,velocity,active?(this.listenerFloor===0?.75:.025):0,11);}
   ambientSample(key,name,position,gain) {
     if(!this.ownsContext(this.ctx))return;
     let channel=this.ambientChannels.get(key);

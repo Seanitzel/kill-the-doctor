@@ -15,7 +15,7 @@ test('China alone replaces photos with a packed camera without a pharmacy purcha
 test('the third doctor meeting uses 15 minutes of game time, poisoning witnesses fail immediately, and gates cannot be skipped',()=>{
  let m=china(),c=m.china;assert.equal(THIRD_DOCTOR_ARRIVAL,900);assert.equal(c.takeBadge(),false);assert.equal(c.dress(),false);assert.equal(c.enter(),false);m.elapsed=899.99;c.tick();assert.equal(m.result,null);m.elapsed=900;c.tick();assert.equal(m.result.success,false);
  m=china();c=m.china;c.poison(true);assert.equal(m.result.success,false);assert.match(m.result.reason,/witness/i);assert.equal(c.poisoned,false);
- m=china();c=m.china;c.poison(false);m.elapsed=1200;c.tick();assert.equal(m.result,null);assert.equal(c.takeBadge(),false);c.sealed=true;assert.ok(c.takeBadge());assert.ok(c.dress());assert.equal(c.enter(),false);assert.ok(c.buyCamera());assert.ok(c.takeKeys());assert.ok(c.enter());assert.equal(c.enter(),true);assert.equal(c.nextOrder,1204);
+ m=china();c=m.china;c.poison(false);m.elapsed=1200;c.tick();assert.equal(m.result,null);assert.equal(c.takeBadge(),false);c.sealed=true;assert.ok(c.takeBadge());assert.ok(c.dress());assert.equal(c.enter(),false);assert.ok(c.buyCamera());assert.ok(c.takeKeys());assert.ok(c.enter());assert.equal(c.enter(),true);assert.equal(c.nextOrder,1208);
 });
 test('recording requires four uninterrupted clear seconds at each distinct angle and a correct equipment handover per angle',()=>{
  const m=china(),c=ready(m);c.recording=true;c.record('consent',5,true);assert.equal(c.recordings.length,0);assert.equal(c.progress,0);equipment(c);c.record('consent',2,true);assert.equal(c.progress,2);c.record('consent',.1,false);assert.equal(c.progress,0);c.record('forged-angle',5,true);assert.equal(c.recordings.length,0);record(c,'consent');c.recording=true;c.record('consent',5,true);assert.equal(c.recordings.length,1);c.record('procedure',5,true);assert.equal(c.recordings.length,1);equipment(c);record(c,'procedure');equipment(c);record(c,'equipment');assert.equal(c.recordings.length,3);assert.equal(c.request(),null);
@@ -71,7 +71,7 @@ test('an unexpected visiting patient physically opens the office, approaches the
  }finally{dispose(e);}
 });
 test('China props detach and remove only their own collision surfaces on disposal; retries do not accumulate equipment',()=>{
- const e=simulation();try{const op=e.objectives.china,owned=op.addedColliders.slice(),root=op.root;assert.equal(owned.length,2);for(const {floor,c}of owned)assert.ok(e.hospitals[floor].colliders.includes(c));op.dispose();op.dispose();assert.equal(root.parent,null);assert.equal(root.children.length,0);for(const {floor,c}of owned)assert.equal(e.hospitals[floor].colliders.includes(c),false);e.objectives.china=null;
+ const e=simulation();try{const op=e.objectives.china,owned=op.addedColliders.slice(),root=op.root;assert.equal(owned.length,8);for(const {floor,c}of owned)assert.ok(e.hospitals[floor].colliders.includes(c));op.dispose();op.dispose();assert.equal(root.parent,null);assert.equal(root.children.length,0);for(const {floor,c}of owned)assert.equal(e.hospitals[floor].colliders.includes(c),false);e.objectives.china=null;
  }finally{dispose(e);}
 });
 

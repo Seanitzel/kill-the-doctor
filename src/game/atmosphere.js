@@ -1,3 +1,4 @@
+import {MealProp} from './meal-prop.js';
 import {settleBedPatient} from './body-pose.js';
 import {countryVoice} from './country-voices.js';
 import {fitPregnancy} from './appearance.js';
@@ -14,7 +15,7 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const Y=new THREE.Vector3(0,1,0);
 export class HospitalLife {
   constructor(engine,{deferSetup=false}={}) {
-    this.infusions=[];this.nextSneeze=12;this.nextClinical=9;this.nextMachine=2;this.nextPain=18;this.listenerDirection=new THREE.Vector3();this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
+    this.meals=[];this.infusions=[];this.nextSneeze=12;this.nextClinical=9;this.nextMachine=2;this.nextPain=18;this.listenerDirection=new THREE.Vector3();this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
     this.props=new THREE.Group();this.props.name='hospital-life-props';engine.scene.add(this.props);
     this.lastRoom=null;this.roomReactions=new Map();this.privacy=new RoomPrivacy();this.nextAmbient=0;this.nextMaternity=0;
     this.nextFlicker=45+engine.mission.random()*35;this.flicker=null;
@@ -85,7 +86,7 @@ export class HospitalLife {
       const a=this.actor(`Cafeteria diner ${i*2+1}`,i===0?'nurse':'patient',i%2?'male':'female',0,cafe,x,z-1.45,'eat',{seated:true});
       const b=this.actor(`Cafeteria diner ${i*2+2}`,i===2?'doctor':'patient',i%2?'female':'male',0,cafe,x,z+1.45,'eat',{seated:true,yaw:Math.PI});
       this.groups.push({kind:'cafe',floor:0,actors:[a,b],next:2+i*3,conversation:i});
-      for(const diner of [a,b]) if(diner.visual.hand) {mesh('box',material('#b3c2ce',{metalness:.6}),[.14,.012,.015],[-.055,.015,.025],diner.visual.hand);mesh('sphere',material('#b3c2ce',{metalness:.6}),[.028,.008,.019],[-.14,.015,.025],diner.visual.hand);}
+      for(const diner of [a,b])if(diner.visual.hand){diner.meal=new MealProp(diner.visual);this.meals.push(diner.meal);}
       const tableProps=new THREE.Group();tableProps.name='cafeteria-meal';this.props.add(tableProps);
       for(const side of [-1,1]) {
         const plate=new THREE.Mesh(new THREE.CylinderGeometry(.21,.21,.025,24),material('#e4edf0'));plate.position.set(x,.874,z+side*.58);plate.userData.lifeOwned=true;tableProps.add(plate);
@@ -242,11 +243,12 @@ export class HospitalLife {
     if(roomKey!==this.lastRoom){this.lastRoom=roomKey;if(!emergency)this.reactToEntry(room);else this.privacy.leave();}
     if(!emergency&&room)this.privacyResponse(this.privacyWitness(room),this.privacy.update(`${e.floor}:${room.id}`,now));
     for(const n of e.npcs) {
+      if(n.meal&&(n.activity!=='eat'||emergency||n.movementSpeed>.15))n.meal.update(null);
       if(n.dead||n.evacuated||n.targetFlee||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
       if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&(n.activity||n.worriedUntil>now)&&n.activity!=='newborn') {
         const pose=emergency&&!n.lying?'scream':n.worriedUntil>now&&!n.lying?'worried':n.activity;
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
-        n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
+        const mealGrip=n.visual.poseActivity?.(pose,e.time+Number(n.id.length),{seated:n.seated,reaction:n.reaction||emergency&&!n.lying?1:0,look:n.reaction?THREE.MathUtils.clamp(Math.atan2(Math.sin(angle),Math.cos(angle)),-.6,.6):0,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});n.meal?.update(pose==='eat'?mealGrip:null);
       }else if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&n.reaction) n.visual.poseActivity?.('chat',e.time,{reaction:n.reaction,restricted:!!e.nearStructure?.(n.pos,n.floor,.8)});
       if(n.activity==='drink'&&!n.personalCoffeeCup&&!n.heldCoffeeCup&&n.visual.hand){const cup=new THREE.Group();cup.name='Coffee held during break';n.visual.hand.add(cup);cup.position.set(-.025,.02,.07);mesh('cylinder',material('#eeeade'),[.048,.09,.048],[0,0,0],cup);mesh('cylinder',material('#403027'),[.041,.004,.041],[0,.046,0],cup);mesh('box',material('#eeeade'),[.034,.04,.012],[.05,0,0],cup);n.heldCoffeeCup=cup;}
       if(n.heldCoffeeCup)n.heldCoffeeCup.visible=n.activity==='drink';
@@ -306,6 +308,7 @@ export class HospitalLife {
   }
   dispose() {
     if(this.disposed)return;this.disposed=true;
+    for(const meal of this.meals)meal.dispose();this.meals=[];
     for(const {floor,obstacle} of this.addedColliders){const list=this.engine.hospitals[floor].colliders,index=list.indexOf(obstacle);if(index>=0)list.splice(index,1);}
     this.engine.audio.stopAmbient();for(const infusion of this.infusions)infusion.dispose();this.infusions.length=0;this.engine.scene.remove(this.props);
     this.props.traverse(o=>{if(o.userData.lifeOwned||o===this.flickerCover||o.isPoints){o.geometry?.dispose();o.material?.dispose();}});

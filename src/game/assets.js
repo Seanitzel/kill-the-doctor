@@ -240,14 +240,10 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
   }
   let current = '', aim = false;
   const arms = ['Right','Left'].map(side => { const arm = model.getObjectByName(`${side}Arm`), fore = model.getObjectByName(`${side}ForeArm`); if (!arm || !fore) return null; const direction = new THREE.Vector3(side === 'Right' ? .03 : -.1, -.1, .4).normalize(); return { arm, q: new THREE.Quaternion().setFromUnitVectors(fore.position.clone().normalize(), direction) }; }).filter(Boolean);
-  if (person && role==='doctor') {
-    const badge = mesh('box', material('#dcebf2'), [.095,.13,.012], [.14,1.28,.21], root);
-    mesh('box', material(person.accent || '#5288a2'), [.07,.03,.016], [.14,1.31,.22], root);
-  }
   const seatThigh=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2),seatShin=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2);
   const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
   const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Thumb','Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.03:joint===2?.08:.05))});}
-  let smokingPose;
+  let smokingPose,eatingPose;const scratchBones=['RightArm','RightForeArm','RightHand','Head','Spine'].map(name=>({bone:activityBones[name],base:new THREE.Quaternion(),target:new THREE.Quaternion()})).filter(b=>b.bone);
   const wrists=['LeftHand','RightHand'].map(name=>({bone:activityBones[name],bind:activityBones[name]?.quaternion.clone()})).filter(w=>w.bone);
   const orient = (name, child, direction) => {
     const bone=activityBones[name], tip=activityBones[child]; if(!bone || !tip) return;
@@ -286,8 +282,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     return {footfalls,animation:current};
   }, poseSeated(weight=1,lean=0){
     const b=activityBones,t=THREE.MathUtils.clamp(weight,0,1);for(const side of ['Left','Right']){const thigh=b[side+'UpLeg'],shin=b[side+'Leg'];if(thigh)thigh.quaternion.slerp(seatThigh,t);if(shin)shin.quaternion.slerp(seatShin,t);}if(b.Spine2)b.Spine2.rotation.x+=lean;
-  }, poseActivity(activity, time, { seated=false, reaction=0, look=0,restricted=false } = {}) {
-    const b=activityBones;model.updateMatrixWorld(true);
+  }, poseActivity(activity, time, { seated=false, reaction=0, look=0,restricted=false,blend=1 } = {}) {
+    const b=activityBones;let mealGrip=null;if(activity==='scratch')for(const item of scratchBones)item.base.copy(item.bone.quaternion);model.updateMatrixWorld(true);
     if(seated) for(const side of ['Left','Right']) { if(b[`${side}UpLeg`]) b[`${side}UpLeg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2); if(b[`${side}Leg`]) b[`${side}Leg`].quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2); }
     if(b.Head) b.Head.rotation.y += look + Math.sin(time*.8)*.045;
     let mouth=0,brow=0,smile=0;
@@ -297,7 +293,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       else if(/mouthSmile/i.test(name))o.morphTargetInfluences[index]=smile;
     }});
     // Keep the safe idle/walk arms when a nearby wall or door leaves no room to gesture.
-    if(restricted&&!['guard','guard-aim','guard-restrain','scratch','restrained'].includes(activity)){expressions();return;}
+    if(restricted&&!['guard','guard-aim','guard-restrain','scratch','restrained'].includes(activity)&&!(activity==='eat'&&seated)){expressions();return;}
     if(b.Spine) b.Spine.rotation.x += activity==='examine' ? .15 : activity==='labor' ? Math.sin(time*2.6)*.05 : 0;
     if(reaction>0) {
       orient('RightArm','RightForeArm',[.15,-.2,.6]); orient('RightForeArm','RightHand',[.1,.5,.3]);
@@ -340,9 +336,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       orient('RightArm','RightForeArm',[.12,-.33,.23]);orient('RightForeArm','RightHand',[-.04,.38,.18]);
       if(b.Head)b.Head.rotation.x-=.05;
     } else if(activity==='eat') {
-      const bite=(Math.sin(time*1.25)+1)/2;
-      orient('RightArm','RightForeArm',[.06,-.28,.4]); orient('RightForeArm','RightHand',[-.06,.1+bite*.45,.3-bite*.23]);
-      orient('LeftArm','LeftForeArm',[-.13,-.25,.35]); orient('LeftForeArm','LeftHand',[.02,-.15,.45]);
+      eatingPose ||= new SmokingPose(model,restingFingers,'eat');mealGrip=eatingPose.update(time);
+      orient('LeftArm','LeftForeArm',[.12,-.5,.15]);orient('LeftForeArm','LeftHand',[-.02,-.25,.35]);
     } else if(activity==='cpr') {
       orient('RightArm','RightForeArm',[.09,-.6,.35]);orient('RightForeArm','RightHand',[-.06,-.45,.28]);orient('LeftArm','LeftForeArm',[-.10,-.6,.35]);orient('LeftForeArm','LeftHand',[.05,-.45,.28]);if(b.Spine2)b.Spine2.rotation.x+=.5+Math.sin(time*6)*.06;if(b.Head)b.Head.rotation.x+=.2;
     } else if(activity==='stretcher-push'||activity==='stretcher-pull') {
@@ -376,7 +371,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       orient('RightArm','RightForeArm',[-.15,-.6,.02]); orient('LeftArm','LeftForeArm',[.15,-.6,.02]);
     }
     if(reaction){mouth=.4;brow=.4;}else if(activity==='labor'){mouth=.35+.15*Math.sin(time*2.4);brow=.5;}
-    expressions();
+    if(activity==='scratch'&&blend<1)for(const item of scratchBones){item.target.copy(item.bone.quaternion);item.bone.quaternion.copy(item.base).slerp(item.target,Math.max(0,blend));}
+    expressions();return mealGrip;
   } };
 }
 const portraitBuffers=new WeakMap();

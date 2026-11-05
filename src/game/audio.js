@@ -1,3 +1,4 @@
+const smoothRange=(value,min,max)=>{const t=Math.max(0,Math.min(1,(value-min)/(max-min)));return t*t*(3-2*t);};
 import {weatherBuffer} from './weather-audio.js';
 import {countryVoice} from './country-voices.js';
 import {HospitalFoley,FOLEY_FILES} from './foley.js';
@@ -7,7 +8,7 @@ import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
 import {waitFor} from './startup.js';
 const AUDIO_REVISION='3.0.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
-export const HOSPITAL_SAMPLE_FILES=Object.freeze({'rain-field':'/audio/rain-field-v313.mp3','ambulance-field':'/audio/ambulance-field-v313.mp3','car-engine':'/audio/car-engine-v313.mp3','car-road':'/audio/car-road-v313.mp3','flight-airplane':'/audio/flight-airplane.mp3','laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
+export const HOSPITAL_SAMPLE_FILES=Object.freeze({'rain-field':'/audio/rain-field-v313.mp3','ambulance-field':'/audio/ambulance-field-v315.mp3','car-engine':'/audio/car-engine-v315.mp3','car-road':'/audio/car-road-v315.mp3','flight-airplane':'/audio/flight-airplane.mp3','laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
 const disconnect=node=>{try{node?.disconnect();}catch{}};
 
@@ -219,14 +220,14 @@ export class HospitalAudio {
     }else{
       panner.panningModel='HRTF';panner.distanceModel='inverse';panner.refDistance=name==='sneeze'?1.8:3;panner.maxDistance=25;panner.rolloffFactor=name==='sneeze'?1.15:.9;
       panner.positionX.value=position.x;panner.positionY.value=position.y||1;panner.positionZ.value=position.z;
-      source.connect(panner);panner.connect(volume);
+      if(['ambulance-field','car-engine','car-road'].includes(name)){const distanceFilter=this.ctx.createBiquadFilter();distanceFilter.type='lowpass';distanceFilter.frequency.value=6500;source.connect(distanceFilter);distanceFilter.connect(panner);filters.push(distanceFilter);}else source.connect(panner);panner.connect(volume);
     }
     const conversation=name.startsWith('voice-')&&!options.publicAddress;
     volume.gain.value=gain*(conversation&&this.paActive()?.28:1);volume.connect(this.lowpass);source.playbackRate.value=options.rate||1;
     const record={source,panner,volume,filters,name,speakerId:options.speakerId,publicAddress:!!options.publicAddress,conversation,baseGain:gain,floor:options.publicAddress?undefined:position.floor};this.activeSamples.add(record);if(record.publicAddress)this.duckConversations();
     source.onended=()=>this.releaseSample(record);
     if(this.activeSamples.size>24)this.releaseSample([...this.activeSamples].find(item=>!item.source.loop)||this.activeSamples.values().next().value,true);
-    try{source.start(this.ctx.currentTime+(options.startDelay||0));}catch{this.releaseSample(record,true);return null;}return record;
+    try{source.start(this.ctx.currentTime+(options.startDelay||0),options.offset||0);}catch{this.releaseSample(record,true);return null;}return record;
   }
   paActive(){return [...this.activeSamples].some(record=>record.publicAddress&&!record.released);}
   duckConversations(){if(!this.ctx)return;const factor=this.paActive()?.28:1;for(const record of this.activeSamples)if(record.conversation&&!record.released)record.volume.gain.setTargetAtTime(this.enabled&&(record.floor===undefined||record.floor===this.listenerFloor)?record.baseGain*factor:0,this.ctx.currentTime,factor<1?.12:.55);}
@@ -239,7 +240,7 @@ export class HospitalAudio {
   playSample(name,position,gain=.5) {if(!this.enabled||gain<=0)return;return this.sampleNodes(name,position,gain);}
   weather(kind,outside,stormPulse=false){
     if(!this.ctx||!this.enabled)return;
-    if(!outside){this.ambientSample('weather','',this.listenerPosition,0);for(const record of [...this.activeSamples])if(record.name==='thunder')this.releaseSample(record,true);return;}
+    this.outside=outside;if(!outside){this.ambientSample('weather','',this.listenerPosition,0);for(const record of [...this.activeSamples])if(record.name==='thunder')this.releaseSample(record,true);return;}
     const wet=kind==='rain'||kind==='storm',type=wet?'rain-field':kind==='snow'?'weather-snow':'weather-wind';
     if(!wet&&!this.samples[type])this.samples[type]=weatherBuffer(this.ctx,kind==='snow'?'snow':'wind');
     this.ambientSample('weather',type,this.listenerPosition,kind==='storm'?.30:kind==='snow'?.09:wet?.20:.09);
@@ -248,15 +249,15 @@ export class HospitalAudio {
   movingAudio(key,name,position,velocity,gain,reference=8){
     this.ambientSample(key,name,{...position,floor:0},gain);const c=this.ambientChannels.get(key);if(!c)return;
     const dx=position.x-this.listenerPosition.x,dz=position.z-this.listenerPosition.z,d=Math.max(1,Math.hypot(dx,dz));const radial=(dx*(velocity?.x||0)+dz*(velocity?.z||0))/d;
-    c.panner.refDistance=reference;c.panner.maxDistance=100;c.panner.rolloffFactor=1.3;c.source.playbackRate.setTargetAtTime(Math.max(.92,Math.min(1.08,343/(343+radial))),this.ctx.currentTime,.15);
+    const cutoff=Math.max(1000,6500/(1+d*.045))*(this.outside===false?.55:1);c.filters?.[0]?.frequency.setTargetAtTime(cutoff,this.ctx.currentTime,.25);c.panner.refDistance=reference;c.panner.maxDistance=100;c.panner.rolloffFactor=1.3;c.source.playbackRate.setTargetAtTime(Math.max(.92,Math.min(1.08,343/(343+radial))),this.ctx.currentTime,.15);
   }
-  traffic(cars,outside){if(!this.ctx||!this.enabled)return;for(const [i,car]of cars.entries()){const p=car.root.position,d=Math.hypot(p.x-this.listenerPosition.x,p.z-this.listenerPosition.z),gain=outside&&d<46?.40:0,velocity={x:car.speed*car.direction,z:0};this.movingAudio(`car-engine-${i}`,'car-engine',p,velocity,gain,6);this.movingAudio(`car-road-${i}`,'car-road',p,velocity,gain*.65,6);}}
-  siren(active,position,velocity={x:0,z:0}){if(!this.ctx||!this.enabled)return;this.movingAudio('ambulance','ambulance-field',position,velocity,active?(this.listenerFloor===0?.75:.025):0,11);}
+  traffic(cars,outside){if(!this.ctx||!this.enabled)return;for(const [i,car]of cars.entries()){const p=car.root.position,d=Math.hypot(p.x-this.listenerPosition.x,p.z-this.listenerPosition.z),gain=outside?.40*(1-smoothRange(d,28,70))*(1-smoothRange(Math.abs(p.x),34,46)):0,velocity={x:car.speed*car.direction,z:0};this.movingAudio(`car-engine-${i}`,'car-engine',p,velocity,gain,6);this.movingAudio(`car-road-${i}`,'car-road',p,velocity,gain*.65,6);}}
+  siren(active,position,velocity={x:0,z:0}){if(!this.ctx||!this.enabled)return;this.movingAudio('ambulance','ambulance-field',position,velocity,active?(this.listenerFloor===0?(this.outside===false?.20:.70):.025):0,11);}
   ambientSample(key,name,position,gain) {
     if(!this.ownsContext(this.ctx))return;
     let channel=this.ambientChannels.get(key);
     if(channel&&gain<=.003){this.releaseSample(channel,true);return;}
-    if(!channel&&gain>.003&&this.enabled) {channel=this.sampleNodes(name,position,0,true);if(channel)this.ambientChannels.set(key,channel);}
+    if(!channel&&gain>.003&&this.enabled) {const hash=Array.from(key).reduce((n,c)=>(Math.imul(n,31)+c.charCodeAt(0))>>>0,0),offset=(hash%997)/997*(this.samples[name]?.duration||0);channel=this.sampleNodes(name,position,0,true,null,{offset});if(channel)this.ambientChannels.set(key,channel);}
     if(channel){channel.floor=position.floor;channel.panner.positionX.value=position.x;channel.panner.positionY.value=position.y||1;channel.panner.positionZ.value=position.z;channel.volume.gain.setTargetAtTime(this.enabled?gain:0,this.ctx.currentTime,.55);}
   }
   cancelVoices(){

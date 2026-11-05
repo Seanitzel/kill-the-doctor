@@ -1,0 +1,56 @@
+[
+  {
+    "file": "car-engine-v315.mp3",
+    "source_range_seconds": [
+      3.0,
+      15.0
+    ],
+    "duration_seconds": 11.84,
+    "crossfade_seconds": 0.16,
+    "highpass_hz": 35,
+    "lowpass_hz": 8500,
+    "gain_db": 9.804286061946229,
+    "peak_dbfs": -6.452076395417525,
+    "rms_dbfs": -18.765947215559418,
+    "wrap_step": 0.0167236328125,
+    "ordinary_difference_99percentile": 0.03240966796875,
+    "size_bytes": 190632,
+    "sha256": "9f30fe3de7c7e7bb83678cd1cef19fffb9e3f16fbc2b6c3d80ab4900dbd64fac"
+  },
+  {
+    "file": "car-road-v315.mp3",
+    "source_range_seconds": [
+      34.0,
+      46.0
+    ],
+    "duration_seconds": 11.75,
+    "crossfade_seconds": 0.25,
+    "highpass_hz": 180,
+    "lowpass_hz": 8500,
+    "gain_db": -5.757497207405644,
+    "peak_dbfs": -6.4537479910806494,
+    "rms_dbfs": -22.47071925138974,
+    "wrap_step": 0.010040283203125,
+    "ordinary_difference_99percentile": 0.040130615234375,
+    "size_bytes": 188960,
+    "sha256": "c81058f16bbab02ba5e57b7e5351f997be18cf441507df6bdfe1b56d76766c29"
+  },
+  {
+    "file": "ambulance-field-v315.mp3",
+    "source_range_seconds": [
+      25.9,
+      30.43
+    ],
+    "duration_seconds": 4.45,
+    "crossfade_seconds": 0.08,
+    "highpass_hz": 320,
+    "lowpass_hz": 8500,
+    "gain_db": 6.633461640337749,
+    "peak_dbfs": -6.39487920425239,
+    "rms_dbfs": -20.137594854007055,
+    "wrap_step": 0.01275634765625,
+    "ordinary_difference_99percentile": 0.04985260009765646,
+    "size_bytes": 72350,
+    "sha256": "8d9a3bd4d95f2100f515f2256ae97a087dd883e79afc526bb6e4ceb2151ff0f5"
+  }
+]

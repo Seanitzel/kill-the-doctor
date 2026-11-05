@@ -1,4 +1,4 @@
-import*as T from'three';import{mesh,material}from'./assets.js';import{disposeObjectResources}from'./resources.js';
+import {measureHead} from './head-fit.js';import*as T from'three';import{mesh,material}from'./assets.js';import{disposeObjectResources}from'./resources.js';
 function instrumentLabel(letter){const canvas=document.createElement('canvas');canvas.width=256;canvas.height=192;const c=canvas.getContext('2d');c.fillStyle='#21485f';c.fillRect(0,0,256,192);c.fillStyle='#eef7fd';c.textBaseline='middle';c.textAlign='center';c.font='bold 145px Arial';c.fillText(letter,128,104);const map=new T.CanvasTexture(canvas);map.colorSpace=T.SRGBColorSpace;return new T.Mesh(new T.PlaneGeometry(.25,.19),new T.MeshBasicMaterial({map}));}
 export function instrumentTray(parent,x,z){
  const root=new T.Group();root.name='Interactive equipment station';root.position.set(x,0,z);parent.add(root);root.userData.floor=3;
@@ -13,7 +13,16 @@ export function instrumentTray(parent,x,z){
  return root;
 }
 export function disguiseProps(visual){
- const root=new T.Group();root.name='Stolen doctor identity: surgical cap, mask and camera';visual.root.add(root);const white=material('#c2dbe0'),dark=material('#152c36'),cap=mesh('sphere',white,[.18,.10,.17],[0,.115,0],root);cap.name='Surgical cap';const mask=mesh('box',white,[.23,.10,.055],[0,-.06,.14],root);mask.name='Surgical mask';
- const camera=mesh('box',dark,[.035,.035,.014],[0,-.42,.18],root);camera.name='Covert badge camera';let disposed=false;const pos=new T.Vector3();
- return{root,update(valid=true){if(disposed)return;mask.visible=valid;visual.root.updateMatrixWorld(true);if(visual.head){visual.head.getWorldPosition(pos);root.position.copy(visual.root.worldToLocal(pos));}else root.position.y=1.68;},dispose(){if(disposed)return;disposed=true;root.removeFromParent();disposeObjectResources(root);}};
+ const fit=measureHead(visual.model),root=new T.Group();root.name='Stolen doctor identity: surgical cap and mask';(fit?.head||visual.root).add(root);
+ const face=fit?.face||new T.Box3(new T.Vector3(-.09,0,-.07),new T.Vector3(.09,.22,.11)),eyes=fit?.eyes,cx=(face.min.x+face.max.x)/2,cz=(face.min.z+face.max.z)/2;
+ const rx=(face.max.x-face.min.x)*.47,rz=(face.max.z-face.min.z)*.50,base=Math.max(face.max.y-.064,(eyes?.max.y||.12)+.032),white=material('#bdd2d7'),dark=material('#152c36');
+ const dome=new T.SphereGeometry(1,28,14,0,Math.PI*2,0,Math.PI/2);dome.scale(rx,.065,rz);dome.translate(cx,base,cz);const cap=new T.Mesh(dome,white);cap.name='Surgical cap';root.add(cap);
+ const rim=new T.Mesh(new T.CylinderGeometry(rx,rx*.98,.012,28,1,true),white);rim.scale.z=rz/rx;rim.position.set(cx,base,cz);cap.add(rim); // rim coordinates stay in head space
+ const width=(face.max.x-face.min.x)*.76,height=.064,geometry=new T.PlaneGeometry(width,height,10,16),positions=geometry.attributes.position,maskY=(eyes?.min.y||.12)-.048;
+ for(let i=0;i<positions.count;i++){const x=positions.getX(i),y=positions.getY(i);positions.setXYZ(i,cx+x,maskY+y*(1-.13*(x/(width/2))**2),face.max.z-.045+.060*(1-(x/(width/2))**2)-.005*(y/(height/2))**2+.0015*Math.sin(y/height*Math.PI*12));}geometry.computeVertexNormals();
+ const mask=new T.Mesh(geometry,material('#bfd4da',{side:T.DoubleSide,roughness:.96}));mask.name='Surgical mask';root.add(mask);
+ const loops=new T.Group();mask.add(loops);for(const side of[-1,1]){const loop=new T.Mesh(new T.TorusGeometry(.025,.0016,5,16),white);loop.rotation.y=Math.PI/2;loop.position.set(cx+side*width*.53,maskY,face.max.z-.045);loops.add(loop);}
+ const camera=new T.Mesh(new T.BoxGeometry(.025,.025,.009),dark);camera.name='Covert badge camera';const chest=visual.model?.getObjectByName('Spine2');if(chest){visual.model.updateWorldMatrix(true,true);const point=new T.Vector3(.065,1.39,.145);visual.model.localToWorld(point);chest.worldToLocal(point);camera.position.copy(point);chest.add(camera);}else{camera.position.set(.065,1.39,.145);visual.root.add(camera);}
+ if(!fit)root.position.y=1.55;let disposed=false;
+ return {root,update(valid=true){if(!disposed){mask.visible=valid;loops.visible=valid;}},dispose(){if(disposed)return;disposed=true;camera.removeFromParent();disposeObjectResources(camera);root.removeFromParent();disposeObjectResources(root);}};
 }

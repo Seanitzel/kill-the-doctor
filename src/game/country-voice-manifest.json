@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "engine": "ElevenLabs v3 via Replicate",
+  "engine": "ElevenLabs v3 via Replicate; locally generated Qwen3-TTS for explicitly marked entries",
   "entries": {
     "english/female/f-6676aa8": {
       "text": "Finally, you\u2019ve arrived. We were expecting Dr. Liu Wen.",
@@ -2425,6 +2425,50 @@
       "duration": 1.896,
       "bytes": 15405,
       "sha256": "89456af4b019cf69e5f937db5b1445d5c0b0db6ad09409ac7a0ea0eecf1febd0"
+    },
+    "english/female/f-82adf7af": {
+      "text": "Finally, you\u2019re here.",
+      "language": "en",
+      "country": "english",
+      "gender": "female",
+      "voice": "northline-female-standard",
+      "voiceId": "northline-female-standard",
+      "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+      "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+      "modelRevision": "37e955a1deb861c088ae5f3a67043185f3d1a60c",
+      "synthetic": true,
+      "syntheticDesigned": true,
+      "generatedLocally": true,
+      "voiceRegion": "standard",
+      "accent": "General American (designed)",
+      "referenceSha256": "771ddf909ce1e5d60b25f86cd892879f7d94e43d17c4536e6c9dd6535857c90f",
+      "sourceKey": "f-82adf7af",
+      "sourceFile": "audio/dialogue/f-82adf7af.mp3",
+      "duration": 2.222,
+      "bytes": 23169,
+      "sha256": "659bf08493d8df19da6310921137476ac226201ef4e3b09055e995e687b231bc"
+    },
+    "english/male/m-82adf7af": {
+      "text": "Finally, you\u2019re here.",
+      "language": "en",
+      "country": "english",
+      "gender": "male",
+      "voice": "northline-male-standard",
+      "voiceId": "northline-male-standard",
+      "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+      "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+      "modelRevision": "37e955a1deb861c088ae5f3a67043185f3d1a60c",
+      "synthetic": true,
+      "syntheticDesigned": true,
+      "generatedLocally": true,
+      "voiceRegion": "standard",
+      "accent": "General American (designed)",
+      "referenceSha256": "dd10a5dab402d507231176253491b806343c5a5c82af1c9a74ebf130da7c6913",
+      "sourceKey": "m-82adf7af",
+      "sourceFile": "audio/dialogue/m-82adf7af.mp3",
+      "duration": 1.822,
+      "bytes": 19089,
+      "sha256": "28faf5270068357f94f69627bc0fd7994eb70e85ad457935057c3668bdc514e0"
     }
   },
   "mode": "english-shared"

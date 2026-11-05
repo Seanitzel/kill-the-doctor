@@ -216,15 +216,15 @@ onBeforeUnmount(() => { appDisposed=true;launchSerial++;portraitSerial++;menuMus
         </div>
       </section>
       <aside class="scene-label"><span class="eyebrow">{{currentCountry.hospital.toUpperCase()}} / MAIN BUILDING</span><span class="scene-title">The night shift.</span><p>Three public floors. A locked basement.<br/>More than one kind of assignment.</p><div class="scene-meta"><span>THREE CONNECTED WINGS</span><span>G + 1 + 2 + B</span></div></aside>
-      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.14.0 <ArrowUpRight :size="12"/></button></footer>
+      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.15.0 <ArrowUpRight :size="12"/></button></footer>
     </template>
     <TravelSequence v-if="screen==='travel' && flight" :from="flight.from" :to="flight.to" :audio="engine.audio" @finish="finishFlight"/>
     <StoryIntro v-if="screen==='story' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" @finish="enterHospital" @back="toMenu" @references="openOverlay('references')"/>
     <StoryIntro v-if="screen==='ending' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" ending @finish="showResults" @back="showResults"/>
     <template v-if="screen === 'game'">
       <HudNotices v-if="!overlay" :appointment="hud.appointment" :toast="toast" :phone-open="phoneOpen" :reports="!!hud.reports?.length"/>
-      <div v-if="hud.assignment?.infiltration && !overlay && (!phoneOpen || phoneCollapsed)" class="mission-status-stack">
-       <div v-if="hud.impairment>0" class="contamination-card" role="status"><Wind :size="15"/><strong>CONTAMINATION</strong><span>{{Math.ceil(hud.impairment)}}s recovery</span><small>Find the ground-floor antidote (+ on your map).</small></div>
+      <div v-if="hud.assignment?.infiltration && !overlay && (!phoneOpen || phoneCollapsed)" :class="instrumentOpen ? 'equipment-overlay' : 'mission-status-stack'">
+       <div v-if="hud.impairment>0 && !instrumentOpen" class="contamination-card" role="status"><Wind :size="15"/><strong>CONTAMINATION</strong><span>{{Math.ceil(hud.impairment)}}s recovery</span><small>Find the ground-floor antidote (+ on your map).</small></div>
        <InfiltrationHUD :state="hud.assignment.infiltration" :engine="engine" :instruments="instrumentOpen"/>
       </div>
       <PhoneMusic v-if="phoneOpen && !overlay" :collapsed="phoneCollapsed" @collapse="collapsePhone" :appointment="hud.appointment" :outside="hud.outside" :smoking="hud.smoking" :volume="save.settings.volume" @close="closePhone" @smoke="engine.toggleSmokeBreak()" @playing="phonePlaying"/>
@@ -235,7 +235,7 @@ onBeforeUnmount(() => { appDisposed=true;launchSerial++;portraitSerial++;menuMus
       <div v-if="hud.state === 'escape'" class="countdown" :class="{urgent: hud.timer < 30}"><Radio :size="15"/><span>{{mission?.photoOnly?'SECURITY SWEEP':'POLICE RESPONSE'}}</span><strong>{{ countdown }}</strong><small>Reach the main entrance · ground floor</small></div>
 
       <div v-if="hud.covert && !overlay && hud.state!=='escape' && (hud.covert.documentRequired || hud.covert.coffee!=='optional')" class="covert-stack">
-       <div v-if="hud.impairment>0" class="contamination-card" role="status"><Wind :size="15"/><strong>CONTAMINATION</strong><span>{{Math.ceil(hud.impairment)}}s recovery</span><small>Find the ground-floor antidote (+ on your map).</small></div>
+       <div v-if="hud.impairment>0 && !instrumentOpen" class="contamination-card" role="status"><Wind :size="15"/><strong>CONTAMINATION</strong><span>{{Math.ceil(hud.impairment)}}s recovery</span><small>Find the ground-floor antidote (+ on your map).</small></div>
        <div class="covert-status" role="status"><span v-if="hud.covert.documentRequired">ROTA: <b>{{hud.covert.documentTaken?'SECURED':!hud.covert.stealthRequired?'DIRECTORY IN RECORDS':`${hud.covert.breakState.toUpperCase()}${hud.covert.window?` · ${hud.covert.window}s`:''}`}}</b></span><span v-if="hud.covert.coffee!=='optional'" class="coffee-hint">COFFEE: {{hud.covert.coffee.toUpperCase()}}</span><span v-if="hud.covert.awaySeconds!==null">Doctor away <b>{{duration(hud.covert.awaySeconds)}}</b><template v-if="hud.covert.returnSeconds!==null"> · return ≈{{duration(hud.covert.returnSeconds)}}</template></span></div>
       </div>
       <div v-if="hud.scoped" class="scope-overlay" aria-label="Rifle scope"><span>SCOPED RIFLE / 80 M</span></div>

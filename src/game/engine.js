@@ -1,3 +1,5 @@
+import {INSTRUMENTS} from './china-rules.js';
+import {itchStrength} from './skin-irritation.js';
 import {SeatMotion} from './seat-motion.js';
 import {TargetThreat} from './target-threat.js';
 import {SecurityResponse} from './security-response.js';
@@ -104,6 +106,7 @@ export class GameEngine {
         if(this.starting||this.presentationOnly||!this.mission||this.mission.result||this.paused&&k!=='Escape'&&k!=='Space')return;
         if(['Space','Enter'].includes(k)&&e.target.closest?.('button,a,[role="button"]'))return;
         if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(k)) e.preventDefault();
+        if(this.instrumentView&&['KeyA','KeyB','KeyC','KeyD'].includes(k)){e.preventDefault();if(!e.repeat)this.objectives?.china?.chooseInstrument(INSTRUMENTS[['KeyA','KeyB','KeyC','KeyD'].indexOf(k)].id);return;}
         if(((this.phoneOpen&&!this.phoneCollapsed)||this.instrumentView)&&k!=='Escape'&&k!=='Space')return;
         if (k === 'Escape' || k === 'Space') { this.keys.delete(k); if(!e.repeat)this.hooks.pause?.(); return; }
         if (!e.repeat) {
@@ -284,7 +287,7 @@ export class GameEngine {
     this.blackout = duration; this.mission.blackoutCount++; this.audio.sound('blackout');
     this.say('A power fault has been reported. Emergency lighting is active. Please remain calm.', 'POWER INTERRUPTION'); this.notify(this.mobile ? 'Power interrupted · Tap LIGHT to use your flashlight' : 'Power interrupted · F to use your flashlight', 'warning');
   }
-  applyDoctorDisguise(){const old=this.player;this.waitBreak?.dispose();this.playerGear?.dispose();this.weapon.removeFromParent();const person={...this.playerProfile,hairstyle:'cropped',cap:false,glasses:false,sunglasses:false};this.player=makePlayer(this.assets,person.gender,person,'doctor');this.player.root.position.copy(this.playerPos);this.player.root.rotation.y=old.root.rotation.y;this.player.model?.traverse(o=>{if(o.isMesh&&(/hair/i.test(o.name)||/hair/i.test(o.material?.name||'')))o.visible=false;});this.scene.add(this.player.root);this.player.root.add(this.weapon);this.playerGear=playerAccessories(this.player);this.waitBreak=new WaitBreak(this.player);old.root.removeFromParent();old.dispose?.();}
+  applyDoctorDisguise(){this.patientDetails?.releaseRash();const old=this.player;this.waitBreak?.dispose();this.playerGear?.dispose();this.weapon.removeFromParent();const person={...this.playerProfile,name:this.objectives?.china?.doctor?.name||this.playerProfile.name,hospital:this.mission.country.hospital,accent:'#d5e4e8',pants:'#87a8bb',medicalScrubs:true,hairstyle:'cropped',cap:false,glasses:false,sunglasses:false};this.player=makePlayer(this.assets,person.gender,person,'doctor');this.player.root.position.copy(this.playerPos);this.player.root.rotation.y=old.root.rotation.y;this.player.model?.traverse(o=>{if(o.isMesh&&(/hair/i.test(o.name)||/hair/i.test(o.material?.name||'')))o.visible=false;});this.scene.add(this.player.root);this.player.root.add(this.weapon);this.playerGear=playerAccessories(this.player);this.waitBreak=new WaitBreak(this.player);old.root.removeFromParent();old.dispose?.();}
   triggerCough(patient = {name:'Sick patient',contamination:30}) {
     if(this.mission?.elapsed<(this.antidoteProtectionUntil||0))return false;
     if(this.mission.china?.disguised||gasBlocked(this.mission.save,this.mission.random)){this.notify('Mask protected you from the gas','info');this.coughCooldown=5;return false;}
@@ -485,7 +488,7 @@ export class GameEngine {
   }
   updatePlayer(dt) {
     if(this.systems?.magnet)return {moving:false,running:false};
-    if(this.mission.elapsed<(this.itchUntil||0)||this.securityResponse?.restraining){this.playerSpeed=0;this.player.animate(this.time,0,dt);this.player.poseActivity?.(this.securityResponse?.restraining?'restrained':'scratch',this.time);return {moving:false,running:false};}
+    if(this.mission.elapsed<(this.itchUntil||0)||this.securityResponse?.restraining){this.playerSpeed=0;this.player.animate(this.time,0,dt);this.player.poseActivity?.(this.securityResponse?.restraining?'restrained':'scratch',this.time,{blend:itchStrength((this.itchUntil||0)-this.mission.elapsed)});return {moving:false,running:false};}
     if (this.keys.has('ArrowLeft')) this.yaw += dt * 1.9; if (this.keys.has('ArrowRight')) this.yaw -= dt * 1.9;
     const f = ((this.phoneOpen&&!this.phoneCollapsed)||this.instrumentView)?0:this.touchInput.forward + Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) - Number(this.keys.has('KeyS') || this.keys.has('ArrowDown'));
     const strafe = ((this.phoneOpen&&!this.phoneCollapsed)||this.instrumentView)?0:this.touchInput.strafe + Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA'));
@@ -659,7 +662,7 @@ export class GameEngine {
   updateEnvironment(dt) {
     if(this.mission.elapsed>=(this.nextMirrorTrim||0)){trimMirrorMemory(this.hospitals,this.floor,this.playerPos);this.nextMirrorTrim=this.mission.elapsed+1;}
     if(this.phoneOpen&&!canTakeBreak(this)){this.setPhoneOpen(false);this.hooks.closePhone?.();}
-    const outside=isOutsideHospital(this.floor,this.playerPos);updateEveningWeather(this.hospitals?.[0]?.group,outside,this.time,this.audio);updateNightSky(this.hospitals?.[0]?.group,outside,this.time,!!this.smoking);this.scene.background?.set?.(outside?'#070f20':'#182c3b');if(this.scene.fog&&this.scene.background?.isColor)this.scene.fog.color.copy(this.scene.background);
+    const outside=isOutsideHospital(this.floor,this.playerPos);updateEveningWeather(this.hospitals?.[0]?.group,outside,this.time,this.audio);updateNightSky(this.hospitals?.[0]?.group,outside,this.time,!!this.smoking,this);this.scene.background?.set?.(outside?'#070f20':'#182c3b');if(this.scene.fog&&this.scene.background?.isColor)this.scene.fog.color.copy(this.scene.background);
     const lift=this.hospitals?.[this.floor]?.lift;if(lift){const inside=liftAutoClose(lift,dt,this.playerPos,this.npcs,this.floor);if(!inside&&this.playerPos.z>lift.faceZ+.5){lift.choosing=false;}setLiftOpening(lift,THREE.MathUtils.damp(lift.amount,lift.open?1:0,5,dt));if(inside&&lift.amount>.85&&!lift.choosing&&!lift.selectionUsed){lift.choosing=true;this.hooks.lift?.(this.floor);}}
     for(const entrance of this.hospitals?.[0]?.entrances||[]){
       const near=p=>Math.abs(p.x-1.5)<4&&Math.abs(p.z-34.5)<3.7;
@@ -675,7 +678,7 @@ export class GameEngine {
     if (this.mission.state === 'escape' && this.mission.timer < 45 && !this.policeSpawned) this.spawnPolice();
     if (this.reloading > 0) { this.reloading -= dt; if (this.reloading <= 0) { const refill = Math.min(weaponInfo(this.mission.save,this.weaponKind).capacity-this.ammo,this.reserve); this.ammo += refill; this.reserve -= refill; this.reloading = 0; } }
     this.shotCooldown = Math.max(0, this.shotCooldown - dt); this.muzzle.intensity = Math.max(0, this.muzzle.intensity - dt * 100);
-    for(const level of this.levels)for(const d of level.doors){const angle=THREE.MathUtils.damp(d.angle,d.open?d.openAngle:0,9,dt);if(angle!==d.angle&&this.doorCanSwingTo(d,angle,level.floor))d.angle=angle;d.pivot.rotation.y=d.angle;}
+    for(const level of this.levels)for(const d of level.doors){const angle=d.angle+THREE.MathUtils.clamp((d.open?d.openAngle:0)-d.angle,-1.4*dt,1.4*dt);if(angle!==d.angle&&this.doorCanSwingTo(d,angle,level.floor))d.angle=angle;d.pivot.rotation.y=d.angle;}
   }
   updateLights() {
     const dark = this.blackout > 0, emergency = this.mission?.state === 'escape'&&(!this.mission.china||this.mission.policeAlert);

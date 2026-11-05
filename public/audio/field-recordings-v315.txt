@@ -1,0 +1,99 @@
+KTD 3.15 — recorded vehicles
+Source/license pages checked 2026-11-05.
+
+All three selected source recordings are released under CC0 1.0 Universal.
+License: https://creativecommons.org/publicdomain/zero/1.0/
+The individual primary source pages below each explicitly display CC0.
+No paid assets, API generation, YouTube extraction, or synthesized vehicle
+oscillators were used for these files. Credits are retained voluntarily.
+
+car-engine-v315.mp3
+Creator: Nox_Sound
+Source: Vehicle_Car_Peugeot_308_Idle_Exterior_Loop_Mono_02.wav
+Primary source and CC0 proof:
+https://freesound.org/people/Nox_Sound/sounds/522225/
+Downloaded creator-supplied high-quality MP3 preview:
+https://cdn.freesound.org/previews/522/522225_9250976-hq.mp3
+The creator describes an exterior Peugeot 308 idle loop recorded with a
+Rode NTG4+. Original WAV metadata: mono, 48 kHz, 24-bit, 27.664 s.
+Downloaded MP3: mono, 48 kHz, approximately 176 kbps.
+Adaptation: source 3.000–15.000 s; 35 Hz high-pass and 8500 Hz low-pass
+(two-pole Butterworth each), 160 ms complementary raised-cosine loop join,
+constant gain +9.804 dB, mono 44.1 kHz MP3 128 kbps.
+Decoded loop: 11.840 s; sample peak -6.452 dBFS; RMS -18.766 dBFS.
+Size: 190632 bytes.
+Source SHA-256: 1d3c22d4dc64693e885c3d0062461cbf48b37a0bb7ce8041e2feb04f32a80f55
+Output SHA-256: 9f30fe3de7c7e7bb83678cd1cef19fffb9e3f16fbc2b6c3d80ab4900dbd64fac
+Role: steady exterior engine texture; no baked approach/departure envelope,
+source panning, or Doppler pass. This is idle, so restrained playback-rate
+variation can suggest gentle cruising; it is not a full RPM recording bank.
+
+car-road-v315.mp3
+Creator: Joseph SARDIN / BigSoundBank (LaSonotheque)
+Source: Car on a Road, sound 1286
+Primary source and CC0 proof:
+https://bigsoundbank.com/car-on-a-road-s1286.html
+Downloaded source:
+https://bigsoundbank.com/UPLOAD/mp3/1286.mp3
+Creator documents an onboard recording of a Peugeot 107 petrol driving on
+asphalt, with start, acceleration, steady travel, braking and shutdown;
+Sennheiser ME66 and SoundDevices MixPre-3, mono, original 48 kHz/24-bit.
+Downloaded MP3: mono, 48 kHz, 320 kbps, 70.585 s.
+Adaptation: steady-travel source 34.000–46.000 s; 180 Hz high-pass to reduce
+engine overlap and 8500 Hz low-pass (two-pole Butterworth each), 250 ms
+complementary raised-cosine loop join, constant gain -5.757 dB, mono
+44.1 kHz MP3 128 kbps.
+Decoded loop: 11.750 s; sample peak -6.454 dBFS; RMS -22.471 dBFS.
+Size: 188960 bytes.
+Source SHA-256: b7e0e45b264c2a5fa0a38f06d5f03872deee09c0487286e701d391c66172e2c6
+Output SHA-256: c81058f16bbab02ba5e57b7e5351f997be18cf441507df6bdfe1b56d76766c29
+Role: continuous recorded rolling/road texture, without a roadside passby
+ramp. It includes actual engine/wind as captured onboard; it is not an
+isolated laboratory tire stem. Layer below the exterior engine and apply
+vehicle position/distance outside the sample.
+
+ambulance-field-v315.mp3
+Creator: theblockofsound235
+Source: Ambulance Passing Wail And Yelp.MP3, Freesound 350949
+Primary source and CC0 proof:
+https://freesound.org/people/theblockofsound235/sounds/350949/
+Downloaded creator-supplied high-quality MP3 preview:
+https://cdn.freesound.org/previews/350/350949_2377160-hq.mp3
+The creator identifies an actual stereo ambulance pass, changing from
+wail to yelp and back. Source original: stereo MP3, 44.1 kHz, 192 kbps,
+68.063 s. Downloaded high-quality preview is approximately 182 kbps VBR.
+Adaptation: source 25.900–30.430 s, one complete recorded wail cycle before
+the closest pass; stereo folded to mono; 320 Hz high-pass to reduce road
+rumble and 8500 Hz low-pass (two-pole Butterworth each). A manual 0 to
+-4 dB linear-in-dB gain slope compensates the source's gradual approach
+within this one cycle. An 80 ms complementary raised-cosine loop join
+connects corresponding cycle phases. Final constant gain +6.633 dB;
+mono 44.1 kHz MP3 128 kbps.
+Decoded loop: 4.450 s; sample peak -6.395 dBFS; RMS -20.138 dBFS.
+Size: 72350 bytes.
+Source SHA-256: d64b7fb598f72b78e951abd7704d609ec3f1eb019cefa2c06a5838c68ae0d9a1
+Output SHA-256: 8d9a3bd4d95f2100f515f2256ae97a087dd883e79afc526bb6e4ceb2151ff0f5
+Role: recognizable slow rising/falling ambulance WAIL, rather than an alarm
+beep. The final loop intentionally contains the wail only. The source's
+yelp coincides with the close pass and was rejected as a moving-source
+loop. No full repeated approach/pass/departure sweep is baked into the
+final loop. Some outdoor ambience and slight approach Doppler remain;
+this is not a dry close-microphone siren recording. Do not apply a second
+large artificial Doppler sweep. Spatial gain, pan and distance filtering
+should come from vehicle position in the game.
+
+Processing/verification
+Total delivered audio: 451942 bytes (about 441 KiB).
+Preserved 44.1 kHz and 128 kbps, rather than v313's 24 kHz/64 kbps.
+No dynamic-range compression, limiting, pitch synthesis, added reverb,
+time stretching, or denoising was applied. Levels retain roughly 6 dB
+sample-peak headroom; loop gain should be set by the game mix.
+FFmpeg decoded every final MP3 successfully with matching logical duration
+and no introduced leading/trailing silence. Spectrograms confirm steady
+engine/road beds and a complete 4.45 s siren sweep. Circular boundary
+sample steps are below the 99th percentile of each clip's ordinary sample
+differences, and repeated-loop waveform/spectrogram joins were inspected.
+These checks establish decodability and numerical seam continuity, not
+perceptual transparency. No audible playback or gameplay listening was
+performed; no audio output or system mute setting was changed. Absence of faint speech and
+subjective quality still require a later authorized listening check.

@@ -84,7 +84,7 @@ export function buildHospital(layout, m, site=null) {
     joinedWalls.box(m.wall, w.x, 3.13, w.z, width, 1, .18);
     Object.assign(collider(w.x,w.z,1.93,.25),{minY:2.59,maxY:3.6,type:'header'});
     joinedWalls.box(m.steel, w.x - .93, 1.3, w.z, .08, 2.6, .25); joinedWalls.box(m.steel, w.x + .93, 1.3, w.z, .08, 2.6, .25); joinedWalls.box(m.steel, w.x, 2.63, w.z, 1.93, .08, .25);
-    const pivot = new THREE.Group(); pivot.position.set(w.x - .86, 0, w.z); group.add(pivot);
+    const pivot = new THREE.Group();pivot.name='Hinged office door'; pivot.position.set(w.x - .86, 0, w.z); group.add(pivot);for(const y of [.38,1.28,2.18])mesh('cylinder',m.steel,[.018,.12,.018],[0,y,0],pivot);
     mesh('box', m.blue, [1.72, 2.58, .08], [.86, 1.29, 0], pivot);
     mesh('box', m.glass, [.6, .55, .095], [.86, 1.84, 0], pivot);
     mesh('box', m.steel, [.18, .035, .13], [1.49, 1.12, .07], pivot);

@@ -1,4 +1,7 @@
+export const BASEMENT_GREETING='Finally, you’re here.';
 export const INFILTRATION_LINES=[
+ BASEMENT_GREETING,
+ // Retained for installed voice banks; arrival now uses the greeting above.
  "Finally, you’ve arrived. We were expecting Dr. Liu Wen.",
  'Pass me the surgical forceps, please.',
  'Pass me the retractor, please.',

@@ -9310,5 +9310,101 @@
         "sha256": "df6791b6a0558685dfb599e55465399a84e2b7fd61e273e14df947412c1c0e96"
       }
     ]
+  },
+  {
+    "text": "Finally, you\u2019re here.",
+    "gender": "female",
+    "key": "f-82adf7af",
+    "category": "greeting",
+    "spokenText": "Finally, you\u2019re here.",
+    "synthetic": true,
+    "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+    "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+    "variants": [
+      {
+        "file": "f-82adf7af.mp3",
+        "voice": "northline-female-standard",
+        "voiceId": "northline-female-standard",
+        "voiceRegion": "standard",
+        "accent": "General American (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "A warm adult American woman with a clear midrange feminine voice and a neutral General American accent. Conversational, grounded and confident, with natural connected speech and expressive but restrained intonation. Studio recording, no background sound.",
+        "referenceSha256": "771ddf909ce1e5d60b25f86cd892879f7d94e43d17c4536e6c9dd6535857c90f",
+        "delivery": "greeting",
+        "spokenText": "Finally, you\u2019re here.",
+        "seed": 258214,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 2.222,
+        "bytes": 23169,
+        "sha256": "659bf08493d8df19da6310921137476ac226201ef4e3b09055e995e687b231bc"
+      },
+      {
+        "file": "f-82adf7af-alt.mp3",
+        "voice": "northline-female-southern",
+        "voiceId": "northline-female-southern",
+        "voiceRegion": "southern",
+        "accent": "Southern American / Texas-inspired (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "An adult American woman from Texas, with a warm lower feminine voice and a mild authentic Southern American accent. A relaxed Texas drawl, friendly and conversational, clear intelligible words with natural connected speech. Not exaggerated. Studio recording, no background sound.",
+        "referenceSha256": "5d63c250593d128f7083b5fe8c4471bbe7a41fedc6932080ee26ca1d5a7bd66b",
+        "delivery": "greeting",
+        "spokenText": "Finally, you\u2019re here.",
+        "seed": 251764,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 1.742,
+        "bytes": 18369,
+        "sha256": "718214569bbc48c45f4775ed0e45d548bfce8e17e498de2589cb14edeacd1b29"
+      }
+    ]
+  },
+  {
+    "text": "Finally, you\u2019re here.",
+    "gender": "male",
+    "key": "m-82adf7af",
+    "category": "greeting",
+    "spokenText": "Finally, you\u2019re here.",
+    "synthetic": true,
+    "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+    "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+    "variants": [
+      {
+        "file": "m-82adf7af.mp3",
+        "voice": "northline-male-standard",
+        "voiceId": "northline-male-standard",
+        "voiceRegion": "standard",
+        "accent": "General American (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "An adult American man with a distinct low baritone masculine voice and a neutral General American accent. Relaxed, warm and clear, with conversational pacing and natural connected speech. Studio recording, no background sound.",
+        "referenceSha256": "dd10a5dab402d507231176253491b806343c5a5c82af1c9a74ebf130da7c6913",
+        "delivery": "greeting",
+        "spokenText": "Finally, you\u2019re here.",
+        "seed": 254365,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 1.822,
+        "bytes": 19089,
+        "sha256": "28faf5270068357f94f69627bc0fd7994eb70e85ad457935057c3668bdc514e0"
+      },
+      {
+        "file": "m-82adf7af-alt.mp3",
+        "voice": "northline-male-southern",
+        "voiceId": "northline-male-southern",
+        "voiceRegion": "southern",
+        "accent": "Southern American / Texas-inspired (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "An adult American man from Texas, with a warm deep masculine baritone voice and a mild authentic Southern American accent. A relaxed Texas drawl, friendly and grounded, clear intelligible words with natural connected speech. Not exaggerated. Studio recording, no background sound.",
+        "referenceSha256": "2e87b5968884e6d713ec7f634f2addf432d6bf4d7579f0f13e5c2b32ab9c0f89",
+        "delivery": "greeting",
+        "spokenText": "Finally, you\u2019re here.",
+        "seed": 259027,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 1.742,
+        "bytes": 18369,
+        "sha256": "d0f4f84f4fdedd9efbd10458ceb93f4ced7e02a7448fc5544464af0d21d8d86d"
+      }
+    ]
   }
 ]

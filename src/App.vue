@@ -16,6 +16,7 @@ import MapView from './MapView.vue';
 import StoryIntro from './StoryIntro.vue';
 import MissionLoading from './MissionLoading.vue';
 import PhoneMusic from './PhoneMusic.vue';
+import HudNotices from './HudNotices.vue';
 import InfiltrationHUD from './InfiltrationHUD.vue';
 import {yieldToBrowser} from './game/startup.js';
 import CharacterStudio from './CharacterStudio.vue';
@@ -215,14 +216,13 @@ onBeforeUnmount(() => { appDisposed=true;launchSerial++;portraitSerial++;menuMus
         </div>
       </section>
       <aside class="scene-label"><span class="eyebrow">{{currentCountry.hospital.toUpperCase()}} / MAIN BUILDING</span><span class="scene-title">The night shift.</span><p>Three public floors. A locked basement.<br/>More than one kind of assignment.</p><div class="scene-meta"><span>THREE CONNECTED WINGS</span><span>G + 1 + 2 + B</span></div></aside>
-      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.13.0 <ArrowUpRight :size="12"/></button></footer>
+      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.14.0 <ArrowUpRight :size="12"/></button></footer>
     </template>
     <TravelSequence v-if="screen==='travel' && flight" :from="flight.from" :to="flight.to" :audio="engine.audio" @finish="finishFlight"/>
     <StoryIntro v-if="screen==='story' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" @finish="enterHospital" @back="toMenu" @references="openOverlay('references')"/>
     <StoryIntro v-if="screen==='ending' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" ending @finish="showResults" @back="showResults"/>
     <template v-if="screen === 'game'">
-      <aside v-if="hud.appointment?.inside && !overlay && !phoneOpen" class="appointment-warning" role="alert"><strong>LEAVE THE OFFICE TO AVOID RAISING THE DOCTOR’S SUSPICION.</strong><span>Wait until the appointment is over · {{duration(hud.appointment.seconds)}} remaining</span><b>{{hud.appointment.warnings}} / 2 warnings · the next security threat ends the mission.</b></aside>
-      <aside v-else-if="hud.appointment && !hud.appointment.complete && !overlay && !phoneOpen" class="appointment-wait" role="status">Appointment ends in <b>{{duration(hud.appointment.seconds)}}</b><span>Wait outside · Mystery Soda changes this timer.</span></aside>
+      <HudNotices v-if="!overlay" :appointment="hud.appointment" :toast="toast" :phone-open="phoneOpen" :reports="!!hud.reports?.length"/>
       <div v-if="hud.assignment?.infiltration && !overlay && (!phoneOpen || phoneCollapsed)" class="mission-status-stack">
        <div v-if="hud.impairment>0" class="contamination-card" role="status"><Wind :size="15"/><strong>CONTAMINATION</strong><span>{{Math.ceil(hud.impairment)}}s recovery</span><small>Find the ground-floor antidote (+ on your map).</small></div>
        <InfiltrationHUD :state="hud.assignment.infiltration" :engine="engine" :instruments="instrumentOpen"/>
@@ -240,7 +240,6 @@ onBeforeUnmount(() => { appDisposed=true;launchSerial++;portraitSerial++;menuMus
       </div>
       <div v-if="hud.scoped" class="scope-overlay" aria-label="Rifle scope"><span>SCOPED RIFLE / 80 M</span></div>
       <div class="reticle" :class="{aiming: hud.aiming, scoped:hud.scoped, hit}"><span></span><i></i><b></b></div>
-      <div v-if="toast && !overlay && !hud.reports?.length" class="toast" :class="toast.kind"><span class="toast-line"></span><span>{{ toast.text }}</span></div>
       <button v-if="hud.prompt && !overlay" type="button" class="interaction-prompt" @pointerdown.stop @pointerup.stop.prevent="activatePrompt" @click.stop.prevent="activatePrompt"><kbd v-if="!isTouch">E</kbd><span>{{ hud.prompt.text }}</span></button>
       <div v-if="hud.reports?.length && !overlay && hud.state!=='escape'" class="witness-alert" role="status"><Eye :size="17"/><div><strong>{{hud.reports[0].reason==='privacy'?'SECURITY CALLED':hud.reports[0].reason==='camera'?'CAMERA SEEN':'WEAPON SEEN'}}</strong><span>{{hud.reports[0].name}} is reporting · {{hud.reports[0].seconds}}s</span><small>{{hud.reports[0].reason==='privacy'?'Staff are reporting the intrusion.':mission?.photoOnly?'Stay out of security’s view.':'Keep your weapon hidden until the objective.'}}</small></div></div>
       <div v-if="mission?.type==='standard' && hud.state==='escape' && !overlay" class="evacuation-reward"><Coins :size="15"/><span>STAFF BONUS <b>+{{hud.bonus||0}}</b></span><small>{{hud.evacuated||0}} evacuated · escape to bank coins</small></div>

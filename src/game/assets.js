@@ -1,3 +1,4 @@
+import {SmokingPose} from './smoking-pose.js';
 import { assetUrl } from './asset-url.js';
 import {applyAppearance,disposeAppearance,disposeAppearanceCache,NURSE_UNIFORM,staffBadgeTexture} from './appearance.js';
 import {waitFor,yieldToBrowser,canceledStart} from './startup.js';
@@ -246,6 +247,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
   const seatThigh=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2),seatShin=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2);
   const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
   const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Thumb','Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.03:joint===2?.08:.05))});}
+  let smokingPose;
   const wrists=['LeftHand','RightHand'].map(name=>({bone:activityBones[name],bind:activityBones[name]?.quaternion.clone()})).filter(w=>w.bone);
   const orient = (name, child, direction) => {
     const bone=activityBones[name], tip=activityBones[child]; if(!bone || !tip) return;
@@ -270,7 +272,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     orient('RightArm','RightForeArm',elbowTarget.sub(start).toArray());
     orient('RightForeArm','RightHand',target.sub(pointInModel(elbow)).toArray());
   };
-  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt, {running=false}={}) {
+  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, poseSmoking(time){smokingPose ||= new SmokingPose(model,restingFingers);return smokingPose.update(time);}, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt, {running=false}={}) {
     const next = running&&speed>1.5?'Run':locomotionForSpeed(speed,current);
     if (next !== current && actions[next]) { actions[current]?.fadeOut(.18); actions[next].reset().fadeIn(.18).play(); current = next; }
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.24, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
@@ -354,10 +356,10 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       orient('RightArm','RightForeArm',[.23,-.2,.2]); orient('RightForeArm','RightHand',[-.08,.22,.24]);
       orient('LeftArm','LeftForeArm',[-.23,-.2,.2]); orient('LeftForeArm','LeftHand',[.08,.22,.24]);
       if(b.Head) b.Head.rotation.z += Math.sin(time*2.4)*.055;
-    } else if(activity==='phone'||activity==='smoke-break') {
-      const raised=activity==='smoke-break'&&Math.sin(time*.55)>.25;
-      orient('RightArm','RightForeArm',[.15,-.34,.25]);orient('RightForeArm','RightHand',raised?[-.14,.42,.12]:[-.03,.16,.38]);if(raised&&activity==='smoke-break')reachHead(time,new THREE.Vector3(.03,.055,.11));
-      if(b.Head)b.Head.rotation.x+=raised?0:.14;
+    } else if(activity==='smoke-break') {
+      smokingPose ||= new SmokingPose(model,restingFingers);smokingPose.update(time);
+    } else if(activity==='phone') {
+      orient('RightArm','RightForeArm',[.15,-.34,.25]);orient('RightForeArm','RightHand',[-.03,.16,.38]);if(b.Head)b.Head.rotation.x+=.14;
     } else if(activity==='chat') {
       const gesture=Math.sin(time*1.8)*.12;
       orient('RightArm','RightForeArm',[.15,-.45,.15]); orient('RightForeArm','RightHand',[.04,-.1+gesture,.4]);

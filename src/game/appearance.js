@@ -75,7 +75,7 @@ function reshape(mesh, model, change) {
   points.forEach((point, i) => { change(point); point.applyMatrix4(inverse); if(mesh.isSkinnedMesh)point.applyMatrix4(inverseSkinMatrix(mesh,i));point.toArray(values, i * 3); });
   geometry.setAttribute('position', new THREE.BufferAttribute(values, 3));
   geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
-  mesh.geometry = geometry; mesh.userData.appearanceGeometryOwned = true;
+  if(mesh.userData.appearanceGeometryOwned)mesh.geometry.dispose();mesh.geometry = geometry; mesh.userData.appearanceGeometryOwned = true;
 }
 function attachGeometry(model, bone, geometry, mat, name) {
   const modelToBone = bone.matrixWorld.clone().invert().multiply(model.matrixWorld);
@@ -102,7 +102,7 @@ function surfaceAt(points, back) {
     return (back ? Math.min(...values) : Math.max(...values)) + (back ? -.012 : .012);
   };
 }
-function fitOutfit(model, top, style, accent) {
+function fitOutfit(model, top, style, accent, skinnedHem=false) {
   const spine = model.getObjectByName('Spine1'), chest = model.getObjectByName('Spine2'), neck = model.getObjectByName('Neck');
   if (!spine || !chest || !neck) return;
   const { points } = coordinates(top, model), box = new THREE.Box3().setFromPoints(points);
@@ -130,7 +130,7 @@ function fitOutfit(model, top, style, accent) {
       const button=new THREE.SphereGeometry(.005,8,5);button.scale(1,1,.5);button.translate(.025,waist+.16,front(.025,waist+.16)+.012);attachGeometry(model,spine,button,zip,'KTD suit button');
       fitSuitSleeves(model,top,dark);
     }else fittedPanel(model, spine, [[-.004,waist],[.004,waist],[.004,shoulder-.18],[-.004,shoulder-.18]], front, zip, 'KTD jacket zipper');
-    if(!suit)fittedPanel(model, spine, [[-.17,waist-.023],[.17,waist-.023],[.17,waist+.012],[-.17,waist+.012]], back, trim, 'KTD jacket back hem', true);
+    if(!suit&&!skinnedHem)fittedPanel(model, spine, [[-.17,waist-.023],[.17,waist-.023],[.17,waist+.012],[-.17,waist+.012]], back, trim, 'KTD jacket back hem', true);
   } else {
     const outline = [[-.105,shoulder+.015],[-.18,shoulder-.085],[-.165,waist],[.165,waist],[.18,shoulder-.085],[.105,shoulder+.015],[.065,shoulder-.06],[-.065,shoulder-.06]];
     fittedPanel(model, spine, outline, front, dark, 'KTD tactical vest front', false, .018);
@@ -405,7 +405,7 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
   }
   const top=find('Outfit_Top');
   const premium=PREMIUM_OUTFITS.find(o=>o.id===person.outfit);
-  if(role==='civilian'&&premium&&top){for(const mesh of meshes)if(/Outfit_Top|Outfit_Bottom/.test(mesh.material?.name||'')){mesh.material.map=null;mesh.material.color.set(mesh.material.name.includes('Bottom')?person.pants||premium.color:person.accent||premium.color);}fitOutfit(model,top,premium.base,person.accent||premium.color);premiumDetails(model,top,premium);}
+  if(role==='civilian'&&premium&&top){for(const mesh of meshes)if(/Outfit_Top|Outfit_Bottom/.test(mesh.material?.name||'')){mesh.material.map=null;mesh.material.color.set(mesh.material.name.includes('Bottom')?person.pants||premium.color:person.accent||premium.color);}fitOutfit(model,top,premium.base,person.accent||premium.color,premium.id==='expedition');premiumDetails(model,top,premium);}
   else if(['civilian','patient'].includes(role)&&top && ['jacket','tactical','suit'].includes(person.outfit))fitOutfit(model,top,person.outfit,person.accent || '#526778');
   const hair=find('Hair'), skin=find('Skin');
   if(hair){const style=person.hairstyle||'original',hex=person.hair||'#342b25';if(['cropped','slick','ponytail','ponytail-front','ponytail-side'].includes(style))fitHair(model,hair,skin,style,hex);else if(['afro','braids','straight','curls-short','curls-long'].includes(style))extendedHair(model,hair,skin,style,hex);
@@ -459,7 +459,15 @@ function premiumDetails(model,top,item){
   const {points}=coordinates(top,model),box=new THREE.Box3().setFromPoints(points),front=surfaceAt(points,false),y=bonePoint(model,'Hips').y+.18;
   const trim=clothMaterial(item.trim,{roughness:.6});
   for(const side of [-1,1])for(let i=0;i<(item.id==='nocturne'?3:1);i++){const x=side*.045,by=y+i*.065,g=new THREE.SphereGeometry(.006,8,6);g.scale(1,1,.4);g.translate(x,by,front(x,by)+.01);attachGeometry(model,spine,g,trim,'KTD '+item.id+' tailored button');}
-  if(item.id==='expedition'){const waist=bonePoint(model,'Hips').y+.06,geo=new THREE.CylinderGeometry(.18,.19,.16,24,1,true);geo.scale(1,1,.72);geo.translate(0,waist-.05,.01);attachGeometry(model,spine,geo,clothMaterial(item.color),'KTD expedition coat skirt');const belt=new THREE.TorusGeometry(.18,.012,5,24);belt.rotateX(Math.PI/2);belt.scale(1,.72,1);belt.translate(0,waist+.025,.01);attachGeometry(model,spine,belt,trim,'KTD expedition belt');}
+  if(item.id==='expedition'){
+    // Extend the existing skinned fabric, preserving its atlas and bone weights.
+    // The former rigid green cylinder was detached from the jacket silhouette.
+    const hem=box.min.y,waist=hem+.17;
+    reshape(top,model,p=>{if(p.y<waist){const t=THREE.MathUtils.smoothstep(p.y,hem,waist),amount=1-t;p.y-=.065*amount;p.x*=1-.025*amount;p.z-=(p.z-.01)*.025*amount;}});
+    top.userData.fittedCoatHem=true;
+    const updated=coordinates(top,model).points,frontHem=surfaceAt(updated,false);
+    for(const side of[-1,1])fittedPanel(model,spine,[[side*.065,hem+.19],[side*.15,hem+.19],[side*.15,hem+.165],[side*.065,hem+.165]],frontHem,trim,'KTD expedition pocket flap',false,.004);
+  }
   else{fittedPanel(model,chest,[[.085,box.max.y-.16],[.13,box.max.y-.16],[.13,box.max.y-.18],[.085,box.max.y-.18]],(x,y)=>front(x,y)+.014,trim,'KTD '+item.id+' pocket square');}
 }
 

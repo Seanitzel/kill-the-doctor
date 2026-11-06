@@ -1,4 +1,10 @@
+import groovy.json.JsonSlurper
+
 apply plugin: 'com.android.application'
+
+def ktdPackage = new JsonSlurper().parse(rootProject.file('../package.json'))
+def ktdVersion = ktdPackage.version.tokenize('.').collect { it as int }
+def ktdBuild = ktdVersion[0] * 1000000 + ktdVersion[1] * 1000 + ktdVersion[2]
 
 android {
     namespace = "com.ktd.northline"
@@ -7,8 +13,8 @@ android {
         applicationId "com.ktd.northline"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.2.0"
+        versionCode ktdBuild
+        versionName ktdPackage.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

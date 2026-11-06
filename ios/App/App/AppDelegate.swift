@@ -26,7 +26,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 class NorthlineViewController: CAPBridgeViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if #available(iOS 16.4, *) { webView?.isInspectable = true }
         #if DEBUG && NORTHLINE_QA
         startNativeQA()
         #endif
@@ -37,6 +36,7 @@ class NorthlineViewController: CAPBridgeViewController {
         webView?.scrollView.bounces = false
     }
     #if DEBUG && NORTHLINE_QA
+    deinit { qaTimer?.invalidate() }
     private var qaTimer: Timer?
     private var qaCommand: String?
     private var qaBusy = false

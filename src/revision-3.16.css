@@ -86,3 +86,19 @@
     display: none;
   }
 }
+
+/* Fit the new equipment row into short phone viewports; preserve scrolling
+   rather than allowing centred overflow to hide the first menu controls. */
+@media (orientation: landscape) and (max-height: 420px) {
+  .mobile-mode.menu .menu-content { align-items: safe center; }
+  .mobile-mode.menu .studio-equipment-row { margin: 4px 0; gap: 6px; }
+  .mobile-mode.menu .studio-launch,
+  .mobile-mode.menu .equipment-launch { min-height: 36px; padding: 4px 7px; font-size: 9px; }
+  .mobile-mode.menu .equipment-launch small { font-size: 8px; }
+  .mobile-mode.menu .campaign-selector,
+  .mobile-mode.menu .assignment-selector { min-height: 34px; padding: 5px 9px; margin-top: 5px; }
+  .mobile-mode.menu .campaign-selector small { display: none; }
+  .mobile-mode.menu .character-select { margin-bottom: 6px; }
+  .mobile-mode.menu .character-options button { min-height: 44px; padding: 4px 7px; }
+  .mobile-mode.menu .menu-links button { min-height: 32px; }
+}

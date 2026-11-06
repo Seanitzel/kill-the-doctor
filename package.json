@@ -1,6 +1,6 @@
 {
   "name": "kill-the-doctor",
-  "version": "3.16.0",
+  "version": "3.17.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,15 +10,21 @@
     "test": "node --test tests/*.test.js",
     "test:browser": "playwright test",
     "start": "node scripts/serve.mjs",
-    "native:sync": "npm run build && cap sync",
-    "native:test:sync": "vite build --mode native-test && cap sync",
+    "native:sync": "npm run build && node scripts/sync-native-version.mjs && cap sync",
+    "native:test:sync": "vite build --mode native-test && node scripts/sync-native-version.mjs && cap sync",
     "native:android": "node scripts/build-native.mjs android",
     "native:ios": "node scripts/build-native.mjs ios",
     "native:run:ios": "node scripts/build-native.mjs ios --run",
     "native:run:android": "node scripts/build-native.mjs android --run",
     "native:qa:ios": "node scripts/build-native.mjs ios --qa --run",
     "native:qa:android": "node scripts/build-native.mjs android --qa --run",
-    "build:pages": "vite build --mode github-pages --outDir artifacts/github-pages"
+    "build:pages": "vite build --mode github-pages --outDir artifacts/github-pages",
+    "native:doctor": "node scripts/native-doctor.mjs",
+    "native:release:android": "node scripts/build-native.mjs android --release",
+    "native:archive:ios": "node scripts/build-native.mjs ios --release",
+    "native:open:android": "cap open android",
+    "native:open:ios": "cap open ios",
+    "native:verify": "node scripts/verify-native-assets.mjs"
   },
   "dependencies": {
     "@capacitor-community/text-to-speech": "^8.0.2",

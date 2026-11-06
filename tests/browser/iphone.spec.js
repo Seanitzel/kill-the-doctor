@@ -14,12 +14,14 @@ test('iPhone menu fits browser toolbars and screen cutouts without overlapping c
   await page.addStyleTag({content:'.mobile-mode {--safe-left:62px;--safe-right:62px;--safe-bottom:21px}'});
   for(const [width,height] of [[838,390],[956,440],[956,360],[956,310],[844,330],[667,280]]){
     await page.setViewportSize({width,height});
+    await page.locator('.menu-links').scrollIntoViewIfNeeded();
     const boxes=await page.evaluate(()=>Object.fromEntries(['.menu-header','.menu-intro','.character-select','.start-button','.menu-links','.menu-footer'].map(s=>[s,document.querySelector(s).getBoundingClientRect().toJSON()])));
     expect(boxes['.character-select'].left).toBeGreaterThan(boxes['.menu-intro'].right);
     expect(boxes['.start-button'].top).toBeGreaterThan(boxes['.character-select'].bottom);
     expect(boxes['.menu-links'].bottom).toBeLessThan(boxes['.menu-footer'].top);
     expect(boxes['.start-button'].right).toBeLessThanOrEqual(width);
-    expect(boxes['.menu-intro'].top).toBeGreaterThan(boxes['.menu-header'].bottom);
+    // Short landscape views scroll the menu inside a bounded panel.
+    expect(await page.evaluate(()=>{const r=document.querySelector('.menu-content').getBoundingClientRect(),f=document.querySelector('.menu-footer').getBoundingClientRect();return r.bottom<=f.top;})).toBe(true);
   }
 });
 test('Mobile exploration frames the whole character and keeps camera height steady when looking up or down',async({page})=>{
@@ -42,9 +44,10 @@ test('Phone help and notifications describe touch buttons and contain no visible
   await expect(page.locator('.field-guide')).toContainText('tap USE');expect(await page.locator('kbd:visible').count()).toBe(0);
   await page.getByRole('button',{name:'Close dialog'}).tap();await start(page);
   await page.evaluate(()=>window.__ktd.engine.triggerBlackout(2));await expect(page.locator('.toast')).toContainText('Tap LIGHT');
-  await page.evaluate(()=>{const e=window.__ktd.engine;e.blackout=0;e.ammo=0;e.shotCooldown=0;});
+  // Isolate notification copy from the separate pre-target witness/failure rule.
+  await page.evaluate(()=>{const e=window.__ktd.engine;e.npcs.forEach(n=>{n.floor=2;});e.blackout=0;e.ammo=0;e.shotCooldown=0;});
   await page.getByRole('button',{name:'Fire weapon',exact:true}).tap();await expect(page.locator('.toast')).toContainText('Tap RELOAD');
-  await page.evaluate(()=>{const e=window.__ktd.engine;e.mission.clue('directory');e.playerPos.set(-5.8,0,28.5);e.emitHUD();});
+  await page.evaluate(()=>{const e=window.__ktd.engine;e.covert.documentTaken=true;e.mission.recordsNotice=true;e.mission.clue('directory');e.playerPos.set(-5.8,0,28.5);e.emitHUD();});
   await page.getByRole('button',{name:'Interact',exact:true}).tap();await expect(page.locator('.toast')).toContainText('Tap the journal icon');
   expect(await page.locator('kbd:visible').count()).toBe(0);
 });

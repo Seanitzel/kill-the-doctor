@@ -5,7 +5,21 @@
   "backgroundColor": "#0c1c27",
   "initialFocus": false,
   "loggingBehavior": "debug",
-  "ios": { "contentInset": "never", "backgroundColor": "#0c1c27", "webContentsDebuggingEnabled": true, "preferredContentMode": "mobile", "scrollEnabled": false },
-  "android": { "backgroundColor": "#0c1c27", "webContentsDebuggingEnabled": true, "captureInput": true },
-  "plugins": { "StatusBar": { "overlaysWebView": true, "style": "DARK", "backgroundColor": "#0c1c27" } }
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0c1c27",
+    "preferredContentMode": "mobile",
+    "scrollEnabled": false
+  },
+  "android": {
+    "backgroundColor": "#0c1c27",
+    "captureInput": true
+  },
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DARK",
+      "backgroundColor": "#0c1c27"
+    }
+  }
 }

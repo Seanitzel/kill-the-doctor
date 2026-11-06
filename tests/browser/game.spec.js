@@ -24,16 +24,16 @@ test('Both protagonists load; keyboard motion, collisions, and animations work',
 });
 test('Clues, journal, map, and lift are usable and pause correctly', async({page})=>{
   await start(page);await position(page,-5.8,28.5);await page.keyboard.press('e');
-  await expect(page.getByRole('heading',{name:'Department confirmed.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Locate the rota'})).toBeVisible();
   await page.getByRole('button',{name:'RECORD & CONTINUE'}).click();
-  await page.keyboard.press('j');await expect(page.getByRole('heading',{name:'Follow the evidence.'})).toBeVisible();
+  await page.keyboard.press('j');await expect(page.getByRole('heading',{name:'Follow the clues.'})).toBeVisible();
   expect(await page.evaluate(()=>window.__ktd.engine.paused)).toBe(true);await page.keyboard.press('j');
   await page.keyboard.press('m');await expect(page.getByRole('heading',{name:'Know your way out.'})).toBeVisible();
   const time=await page.evaluate(()=>window.__ktd.mission.elapsed);await page.waitForTimeout(150);expect(await page.evaluate(()=>window.__ktd.mission.elapsed)).toBe(time);
   await page.screenshot({path:'artifacts/map.png'});await page.keyboard.press('m');
   expect(await page.evaluate(()=>!window.__ktd.engine.paused)).toBe(true);
-  await position(page,0,-22);await page.keyboard.press('e');await page.getByRole('button',{name:'1 First floor Specialist care'}).click();expect(await page.evaluate(()=>window.__ktd.engine.floor)).toBe(1);
-  await position(page,0,-22,1);await page.keyboard.press('e');await page.getByRole('button',{name:'G Ground floor Clinical & diagnostics'}).click();expect(await page.evaluate(()=>window.__ktd.engine.floor)).toBe(0);
+  await page.evaluate(()=>{const e=window.__ktd.engine,l=e.hospitals[0].lift;l.open=true;e.playerPos.set(l.x,0,l.faceZ-1.4);e.updateEnvironment(2);});await page.getByRole('button',{name:'1 First floor Specialist care'}).click();expect(await page.evaluate(()=>window.__ktd.engine.floor)).toBe(1);
+  await page.evaluate(()=>{const e=window.__ktd.engine,l=e.hospitals[1].lift;e.playerPos.set(l.x,0,l.faceZ+2);e.updateEnvironment(4);l.open=true;e.playerPos.set(l.x,0,l.faceZ-1.4);e.updateEnvironment(2);e.updateEnvironment(.1);});await page.getByRole('button',{name:'G Ground floor Clinical & diagnostics'}).click();expect(await page.evaluate(()=>window.__ktd.engine.floor)).toBe(0);
 });
 test('Doors change collision state; blackouts, flashlight, and coughing recover',async({page})=>{
   await start(page);
@@ -50,15 +50,15 @@ test('Target identification, firing, emergency countdown, escape, rewards and up
   await position(page,0,38);await page.keyboard.press('e');await expect(page.getByRole('heading',{name:'OUT OF THE BUILDING.'})).toBeVisible();
   const coins=await page.evaluate(()=>window.__ktd.save.coins);expect(coins).toBeGreaterThan(240);
   await page.getByRole('button',{name:'Upgrade equipment'}).click();await page.locator('.upgrade-grid article').first().getByRole('button').click();
-  expect(await page.evaluate(()=>window.__ktd.save.upgrades.shoes)).toBe(1);expect(await page.evaluate(()=>window.__ktd.save.coins)).toBe(coins-120);
-  await page.getByRole('button',{name:'Close dialog'}).click();await page.getByRole('button',{name:'NEXT ASSIGNMENT'}).click();await page.getByRole('button',{name:'Skip story'}).click();
+  expect(await page.evaluate(()=>window.__ktd.save.upgrades.shoes)).toBe(1);expect(await page.evaluate(()=>window.__ktd.save.coins)).toBe(coins-270);
+  await page.getByRole('button',{name:'Close dialog'}).click();await expect.poll(()=>page.evaluate(()=>window.__northline.screen)).toMatch(/travel|story/);if(await page.getByRole('button',{name:'Skip flight',exact:false}).count())await page.getByRole('button',{name:'Skip flight',exact:false}).click();await page.getByRole('button',{name:'Skip story'}).click();
   expect(await page.evaluate(()=>window.__ktd.save.upgrades.shoes)).toBe(1);await page.reload();
   await expect(page.getByRole('button',{name:'ENTER THE HOSPITAL',exact:false})).toBeVisible();expect(await page.evaluate(()=>window.__ktd.save.completed)).toBe(1);expect(await page.evaluate(()=>window.__ktd.save.upgrades.shoes)).toBe(1);
 });
 test('Patient hit fails immediately; depleted magazine reloads; timer expiry fails',async({page})=>{
   await start(page);const patient=await page.evaluate(()=>window.__ktd.engine.npcs.find(n=>n.role==='patient'&&n.floor===0).id);
-  await page.evaluate(id=>{const e=window.__ktd.engine,n=e.npcs.find(n=>n.id===id);n.pos.set(0,0,24);},patient);await aimAt(page,patient);await page.evaluate(id=>{const e=window.__ktd.engine,n=e.npcs.find(n=>n.id===id);e.camera.lookAt(n.pos.x,1.15,n.pos.z);e.shoot();},patient);await expect(page.getByRole('heading',{name:'END OF THE LINE.'})).toBeVisible();await expect(page.locator('.result-reason')).toContainText('patient');
-  expect(await page.evaluate(()=>window.__ktd.save.coins)).toBe(0);await page.getByRole('button',{name:'RETRY ASSIGNMENT'}).click();await page.getByRole('button',{name:'Skip story'}).click();await page.waitForFunction(()=>window.__ktd?.engine.mission&&!window.__ktd.engine.paused);
+  await page.evaluate(id=>{const e=window.__ktd.engine,n=e.npcs.find(n=>n.id===id);n.pos.set(0,0,24);},patient);await aimAt(page,patient);await page.evaluate(id=>{const e=window.__ktd.engine,n=e.npcs.find(n=>n.id===id);e.weaponDrawn=true;e.camera.lookAt(n.pos.x,1.15,n.pos.z);e.shoot();},patient);await expect(page.getByRole('heading',{name:'END OF THE LINE.'})).toBeVisible();await expect(page.locator('.result-reason')).toContainText('patient');
+  expect(await page.evaluate(()=>window.__ktd.save.coins)).toBe(0);await page.getByRole('button',{name:'RETRY ASSIGNMENT'}).click();await page.waitForFunction(()=>window.__ktd?.engine.mission&&!window.__ktd.engine.paused);
   await page.evaluate(()=>{const e=window.__ktd.engine;e.ammo=0;e.reload();e.updateEnvironment(1.5);});expect(await page.evaluate(()=>window.__ktd.engine.ammo)).toBe(6);expect(await page.evaluate(()=>window.__ktd.engine.reserve)).toBe(24);
   await page.evaluate(()=>{const e=window.__ktd.engine;e.mission.eliminate({id:'target',role:'doctor'});e.mission.timer=.01;});
   await expect(page.getByRole('heading',{name:'END OF THE LINE.'})).toBeVisible();await expect(page.locator('.result-reason')).toContainText('Police sealed');

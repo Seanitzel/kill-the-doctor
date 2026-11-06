@@ -481,7 +481,7 @@ export class EscapeThreats {
         d < attack.range &&
         now >= (a.cooldown || 0)
       ) {
-        a.attack = { at: now, origin: { x: e.playerPos.x, z: e.playerPos.z } };
+        a.attack = { at: now, origin: { x: e.playerPos.x, z: e.playerPos.z }, aim:e.combat?.lockAim() };
         n.evacuating = false;
         n.activity = "guard-aim";
         n.path = [];
@@ -522,7 +522,8 @@ export class EscapeThreats {
                 ? distance(e.playerPos, a.attack.origin) > 1.15
                 : d > attack.range ||
                   distance(e.playerPos, a.attack.origin) > 0.95;
-          if (!dodged) {
+          if(a.kind==='gun'){e.combat?.hostileShot(n,a.attack.aim);if(e.mission.result)return;}
+          if (!dodged && a.kind!=='gun') {
             e.mission.finish(
               false,
               attack.reason + " Watch the warning and break line of sight.",

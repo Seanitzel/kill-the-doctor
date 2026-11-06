@@ -1032,9 +1032,9 @@ export const STORY_VISUALS={
     }
   ]
 };
-export function specialBriefVisuals(type){return STORY_VISUALS[`special-${type}`]||[];}
+export function specialBriefVisuals(type){return STORY_VISUALS[`special-${type==='infiltration'?'evidence':type}`]||[];}
 export function storyVisual(story,index){
-  const visual=story.visuals?.[index]||STORY_VISUALS[story.id]?.[index];
+  const visual=story.visuals?.[index]||STORY_VISUALS[story.id==='special-infiltration'?'special-evidence':story.id]?.[index];
   const art=visual&&STORY_ART[visual.artId];
   if(art){
     const panel=Math.max(0,Math.min(art.cuts.length-2,visual.panel??index));

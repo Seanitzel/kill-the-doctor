@@ -59,8 +59,8 @@ test('video capture is bounded, never uses device media, stops tracks and revoke
 
 test('basement shots reach real operating doctors, keep public floors out of evacuation, and unlock escape only after both',()=>{
  const e=simulation();try{const c=ready(e.mission);for(const a of RECORDING_ANGLES){equipment(c);record(c,a.id);}e.floor=3;Object.assign(e,{aiming:true,paused:false,ammo:6,reserve:30,shotCooldown:0,reloading:0,effects:[],muzzle:{intensity:0,position:new T.Vector3()},weaponKind:'pistol'});e.playerPos.set(-3,0,-1);
- let alarms=0;e.audio.sound=kind=>{if(kind==='alarm')alarms++;};
- for(const n of e.npcs.filter(n=>n.operationDoctor)){e.shotCooldown=0;const origin=new T.Vector3(n.pos.x,1.2,n.pos.z+1.8);e.playerPos.copy(origin).setY(0);const direction=new T.Vector3(0,0,-1);e.shoot({touch:true,aimRay:new T.Ray(origin,direction)});assert.equal(e.lastShot.hitId,n.id);assert.ok(n.dead);}
+ e.objectives.patient.pos.set(20,0,20);let alarms=0;e.audio.sound=kind=>{if(kind==='alarm')alarms++;};
+ const doctors=e.npcs.filter(n=>n.operationDoctor);for(let i=0;i<doctors.length;i++){const n=doctors[i];n.pos.set(-3+i*6,0,12);n.visual.root.rotation.y=0;}for(const [i,n] of doctors.entries()){n.pos.set(-3+i*6,0,12);n.visual.root.rotation.y=0;e.shotCooldown=0;const forward=new T.Vector3(Math.sin(n.visual.root.rotation.y),0,Math.cos(n.visual.root.rotation.y)),origin=n.pos.clone().setY(1.4).addScaledVector(forward,1.8);e.playerPos.copy(origin).setY(0);const direction=forward.clone().negate();e.shoot({touch:true,aimRay:new T.Ray(origin,direction)});assert.equal(e.lastShot.hitId,n.id);assert.ok(n.dead);}
  assert.ok(e.mission.targetDown);e.systems.startEvacuation();assert.equal(e.systems.evacuating,false);assert.equal(alarms,0);e.floor=0;e.playerPos.set(0,0,39);e.completeEscape();assert.ok(e.mission.result.success);for(const fx of e.effects){fx.mesh.geometry.dispose();fx.mesh.material.dispose();}
  }finally{dispose(e);}
 });

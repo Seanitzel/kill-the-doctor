@@ -2,7 +2,7 @@ export const THIRD_DOCTOR_ARRIVAL=15*60;
 export const RECORDING_SECONDS=4;
 export const INSTRUMENTS=Object.freeze([{id:'forceps',letter:'A',name:'Surgical forceps'},{id:'retractor',letter:'B',name:'Retractor'},{id:'monitor',letter:'C',name:'Portable monitor'},{id:'pump',letter:'D',name:'Infusion pump'}]);
 export const RECORDING_ANGLES=Object.freeze([{id:'consent',name:'Consent and treatment record'},{id:'procedure',name:'Operating team and patient'},{id:'equipment',name:'Equipment and identifying details'}]);
-export const chinaMission=m=>m?.type==='evidence'&&m.country?.id==='china';
+export const chinaMission=m=>!!(m?.explicitInfiltration||m?.type==='evidence'&&m.country?.id==='china'&&m.playMode!=='freestyle');
 // Mission logic is independent of rendering, wall-clock timers and UI overlays.
 export class ChinaCase{
  constructor(m){this.m=m;this.poisoned=false;this.sealed=false;this.badge=false;this.disguised=false;this.camera=true;this.basementKeys=false;this.coffeePrepared=false;this.mixedSeconds=0;this.lightsOff=false;this.entered=false;this.recordings=[];this.progress=0;this.recording=false;this.mistakes=0;this.correct=0;this.order=null;this.nextOrder=0;this.verificationAt=null;}

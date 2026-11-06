@@ -69,4 +69,4 @@ Browser tests start or reuse a local server automatically. Chromium's output is 
 
 The native GitHub Actions workflow builds an Android APK, unsigned AAB and iOS Simulator ZIP on changes and pull requests. Those checks catch compilation, plugin integration and asset packaging failures. Simulator/device interaction remains a separate smoke check; passing builds do not establish physical-device performance or store approval.
 
-See [release 3.17 notes](docs/release-3.17.md) for this revision's measured results and limits.
+See [release 3.18 notes](docs/release-3.18.md) for this revision's measured results and limits.

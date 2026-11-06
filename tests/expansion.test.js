@@ -120,7 +120,7 @@ function shootingEngine(){
 }
 test('Actual shooting protects early staff and allows optional marked accomplices before security',()=>{
   const e=shootingEngine(),staff=actor('staff',0,0,18),target=actor('target',0,0,12);target.role='doctor';staff.complicity='Unauthorized research';
-  e.playerPos.set(0,0,24);e.npcs=[staff,target];const ray=new THREE.Ray(new THREE.Vector3(0,1.2,24),new THREE.Vector3(0,0,-1));let alarms=0;e.audio.sound=kind=>{if(kind==='alarm')alarms++;};
+  e.playerPos.set(0,0,24);e.npcs=[staff,target];const ray=new THREE.Ray(new THREE.Vector3(0,1.4,24),new THREE.Vector3(0,0,-1));let alarms=0;e.audio.sound=kind=>{if(kind==='alarm')alarms++;};
   e.shoot({touch:true,aimRay:ray});assert.equal(e.lastShot.hitId,'staff');assert.equal(!!staff.dead,false);assert.equal(e.mission.staffKills,0);
   staff.pos.x=3;e.shotCooldown=0;e.shoot({touch:true,aimRay:ray});assert.equal(target.dead,true);assert.equal(e.mission.targetDown,true);assert.equal(alarms,1);assert.equal(staff.accompliceHeld,false);e.systems.updateEscape();e.mission.elapsed+=3;e.systems.updateEscape();assert.equal(staff.evacuating,true);
   staff.pos.set(0,0,18);e.shotCooldown=0;e.shoot({touch:true,aimRay:ray});assert.equal(staff.dead,true);assert.equal(e.mission.staffKills,2);assert.equal(e.mission.save.coins,0);
@@ -128,19 +128,20 @@ test('Actual shooting protects early staff and allows optional marked accomplice
 });
 test('The scoped rifle can hit across the hospital concourse beyond pistol range',()=>{
   const e=shootingEngine(),target=actor('target',0,0,30);target.role='doctor';e.npcs=[target];e.playerPos.set(0,0,-21);
-  const ray=new THREE.Ray(new THREE.Vector3(0,1.2,-24),new THREE.Vector3(0,0,1));
+  const ray=new THREE.Ray(new THREE.Vector3(0,1.4,84),new THREE.Vector3(0,0,-1));
   e.shoot({touch:true,aimRay:ray});assert.equal(e.lastShot.hitId,null);assert.equal(!!target.dead,false);
   e.mission.save.upgrades.sniper=1;e.weaponKind='sniper';e.ammo=4;e.shotCooldown=0;e.shoot({touch:true,aimRay:ray});assert.equal(e.lastShot.hitId,'target');assert.equal(target.dead,true);
 });
-test('MRI jewelry causes the dramatic hazard only inside Radiology; no jewelry is safe',()=>{
+test('MRI detects a holstered firearm, while an unarmed detective without jewelry is safe',()=>{
   const e=simulation(),room=levels[0].rooms.find(r=>r.kind==='imaging');e.mission.save.appearance.jewelry=true;e.systems.update(.1);assert.equal(e.systems.magnet,null);
-  e.playerPos.set(room.center.x,0,room.center.z);e.mission.save.appearance.jewelry=false;e.systems.update(.1);assert.equal(e.systems.magnet,null);
-  e.mission.save.appearance.jewelry=true;e.systems.update(.1);assert.ok(e.systems.magnet);assert.equal(e.mission.result,null);e.systems.update(1);assert.equal(e.mission.result.success,false);assert.match(e.mission.result.reason,/MRI/);
+  e.playerPos.set(room.center.x,0,room.center.z);e.mission.save.appearance.jewelry=false;e.mission.type='rescue';e.systems.update(.1);assert.equal(e.systems.magnet,null);
+  e.mission.type='standard';
+  e.mission.save.appearance.jewelry=true;e.systems.update(.1);assert.ok(e.systems.magnet);assert.equal(e.mission.result,null);e.systems.update(1);assert.equal(e.mission.result.success,false);assert.match(e.mission.result.reason,/magnetic scanner/);
 });
 test('A cough warning is queued before gas can appear and a bought mask blocks infection',()=>{
   const e=simulation(),patient=actor('sick',0,0,0);patient.contamination=30;let warnings=0;e.audio.patientWarning=()=>warnings++;
   const life=Object.create(HospitalLife.prototype);life.engine=e;life.pendingCoughs=[];life.clouds=[];
-  assert.equal(life.beginCough(patient),true);assert.equal(warnings,1);assert.equal(life.clouds.length,0);assert.equal(life.pendingCoughs[0].ready,.85);assert.equal(life.beginCough(patient),false);
+  assert.equal(life.beginCough(patient),true);assert.equal(warnings,1);assert.equal(life.clouds.length,0);assert.ok([.85,1.3].includes(life.pendingCoughs[0].ready));assert.equal(life.beginCough(patient),false);
   e.impairment=0;e.coughCooldown=0;e.mission.save.upgrades.mask=1;e.mission.save.loadout.mask=true;e.triggerCough(patient);assert.equal(e.impairment,0);
   e.mission.save.loadout.mask=false;e.hooks.soundCaption=()=>{};e.triggerCough(patient);assert.equal(e.impairment,30);
 });

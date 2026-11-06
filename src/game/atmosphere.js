@@ -187,8 +187,8 @@ export class HospitalLife {
     return [[.05,.14],[.3,.42],[.65,.75],[1.03,1.15],[1.4,1.48]].some(([a,b])=>t>=a&&t<b)?.12:1;
   }
   beginCough(patient){
-    const e=this.engine;if(!patient.contamination||this.pendingCoughs.some(p=>p.patient===patient))return false;
-    const sound=e.mission.random()<.3?'sneeze':'cough';patient.coughing=1.5;patient.nextCough=e.mission.elapsed+65+e.mission.random()*20;
+    const e=this.engine;if(!patient.contamination||this.pendingCoughs.some(p=>p.patient===patient))return false;this.nextExposure=e.mission.elapsed+50+e.mission.random()*40;
+    const sound=e.mission.random()<.3?'sneeze':'cough';patient.coughing=1.5;patient.nextCough=e.mission.elapsed+120+e.mission.random()*90;
     if(sound==='sneeze'&&!patient.lying)this.sneeze(patient);
     else e.audio.patientWarning?.(sound,{x:patient.pos.x,y:1.5,z:patient.pos.z,floor:patient.floor});
     e.hooks.soundCaption?.(`A nearby patient ${sound==='sneeze'?'sneezes':'coughs'}. Keep your distance or put on a mask.`);
@@ -244,7 +244,7 @@ export class HospitalLife {
     if(!emergency&&room)this.privacyResponse(this.privacyWitness(room),this.privacy.update(`${e.floor}:${room.id}`,now));
     for(const n of e.npcs) {
       if(n.meal&&(n.activity!=='eat'||emergency||n.movementSpeed>.15))n.meal.update(null);
-      if(n.dead||n.evacuated||n.targetFlee||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
+      if(n.dead||n.evacuated||n.targetFlee||n.operatingFlee||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
       if(n.animationVisible!==false&&!(n.movementSpeed>.15)&&(n.activity||n.worriedUntil>now)&&n.activity!=='newborn') {
         const pose=emergency&&!n.lying?'scream':n.worriedUntil>now&&!n.lying?'worried':n.activity;
         const angle=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z)-n.visual.root.rotation.y;
@@ -257,7 +257,7 @@ export class HospitalLife {
         if(now<n.sneezeUntil){n.visual.poseActivity?.('sneeze',e.time,{restricted:!!e.nearStructure?.(n.pos,n.floor,.65)});if(now>=n.sneezeApology){n.sneezeApology=Infinity;this.speak(n,'Oh, sorry. Excuse me.');}}
         else{n.tissue&&(n.tissue.visible=false);n.sneezeUntil=0;}
       }
-      if(n.contamination&&n.nextCough<=now&&e.coughCooldown<=0&&dist(e.playerPos,n.pos)<3.1&&e.lineOfSight(e.playerPos,n.pos))this.beginCough(n);
+      if(n.contamination&&n.nextCough<=now&&e.coughCooldown<=0&&now>=(this.nextExposure||0)&&dist(e.playerPos,n.pos)<3.1&&e.lineOfSight(e.playerPos,n.pos))this.beginCough(n);
     }
     if(!emergency&&now>=this.nextSneeze){const candidates=e.npcs.filter(n=>n.floor===e.floor&&n.role==='patient'&&!n.lying&&!n.baby&&!n.dead&&!n.evacuated&&!n.blind&&!n.recruit&&dist(n.pos,e.playerPos)<9&&dist(n.pos,e.playerPos)>1.5);if(candidates.length)this.sneeze(candidates[Math.floor(e.mission.random()*candidates.length)]);this.nextSneeze=now+35+e.mission.random()*35;}
     for(const item of this.cases) {

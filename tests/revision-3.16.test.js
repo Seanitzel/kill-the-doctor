@@ -332,8 +332,9 @@ test("all four attack types telegraph, respect solid cover, allow a dodge, and f
         if (dodge) e.lineOfSight = () => false;
         e.mission.elapsed += ATTACKS[kind].windup + 0.01;
         threats.update(0.1);
-        assert.equal(!!e.mission.result, !dodge, kind);
-        if (!dodge) assert.equal(e.mission.result.success, false);
+        assert.equal(!!e.mission.result, !dodge&&kind!=='gun', kind);
+        if (!dodge&&kind==='gun')assert.ok(e.playerInjury?.hits>0&&e.playerInjury.hits<3);
+        else if (!dodge) assert.equal(e.mission.result.success, false);
       } finally {
         threats.dispose();
         disposeSim(e);

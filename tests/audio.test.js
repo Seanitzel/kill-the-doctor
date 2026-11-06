@@ -67,7 +67,7 @@ test('Longer story captions receive enough automatic reading time',()=>{
 test('Every conversation has two bundled neural takes with matching text keys and asset hashes',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../public/audio/dialogue/manifest.json',import.meta.url)));
   // The retained legacy bank predates the new ElevenLabs-only office questions.
-  const lines=ALL_DIALOGUE_LINES.filter(text=>!OFFICE_VISITOR_LINES.includes(text)&&!FOLLOWER_REACTION_LINES.includes(text));
+  const lines=ALL_DIALOGUE_LINES;
   assert.equal(manifest.length,lines.length*2);
   for(const text of lines)for(const gender of ['male','female']){
     const key=dialogueKey(text,gender),entry=manifest.find(e=>e.key===key);assert.equal(entry.text,text);assert.equal(entry.synthetic,true);

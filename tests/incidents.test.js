@@ -37,10 +37,10 @@ test('Dismissal never arms the visitor and an accepted contact is excluded from 
   n.recruit={state:'recruited'};e.audio.sound=()=>{};e.levels[0].doors=[];e.systems=new MissionSystems(e);e.systems.startEvacuation();assert.equal(n.evacuating,false);assert.equal(n.recruit.nextRoute,0);
 });
 test('An autonomous contact cannot shoot before the primary target, harm patients or fire through walls',()=>{
-  const e=Object.create(GameEngine.prototype),save=defaultSave();Object.assign(e,{mission:new Mission(save,123),scene:new THREE.Scene(),effects:[],audio:{sound(){}},emitHUD(){},canStand:()=>true,lineOfSight:()=>true});
+  const e=Object.create(GameEngine.prototype),save=defaultSave();Object.assign(e,{mission:new Mission(save,123),scene:new THREE.Scene(),effects:[],audio:{sound(){}},hooks:{},notify(){},emitHUD(){},canStand:()=>true,lineOfSight:()=>true});
   const ally=person('contact',0,0,0),staff=person('staff',0,0,5),patient=person('patient',0,0,5);patient.role='patient';staff.complicity='Concealed records';
   assert.equal(e.allyShot(ally,staff),false);e.mission.eliminate({id:'target',role:'doctor'});assert.equal(e.allyShot(ally,patient),false);assert.equal(patient.dead,undefined);
-  e.lineOfSight=()=>false;assert.equal(e.allyShot(ally,staff),false);e.lineOfSight=()=>true;assert.equal(e.allyShot(ally,staff),true);assert.equal(staff.dead,true);assert.equal(e.mission.staffKills,2);assert.equal(e.allyShot(ally,staff),false);
+  e.lineOfSight=()=>false;assert.equal(e.allyShot(ally,staff),false);e.lineOfSight=()=>true;assert.equal(e.allyShot(ally,staff),true);assert.equal(staff.dead,undefined);assert.equal(staff.injury.wounds[0].part,'back');assert.equal(e.allyShot(ally,staff),true);assert.equal(staff.dead,undefined);assert.equal(e.allyShot(ally,staff),true);assert.equal(staff.dead,true);assert.equal(e.mission.staffKills,2);assert.equal(e.allyShot(ally,staff),false);
   e.clearEffects();assert.equal(e.effects.length,0);
 });
 test('Transient contact routes follow obstacles without growing the shared flow-field cache',()=>{

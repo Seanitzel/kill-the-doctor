@@ -132,7 +132,7 @@ export class HospitalIncidents{
         const points=[{x:-3,z:27},{x:0,z:18},{x:3,z:31}].sort((a,b)=>distance(n.pos,b)-distance(n.pos,a));
         r.nextBurst=now+15+e.mission.random()*9;r.burstUntil=now+4+e.mission.random()*2;r.phase='running';r.bursts=(r.bursts||0)+1;
         n.activity=null;n.reaction=0;n.worriedUntil=0;this.route(n,points[0]);
-        if(n.floor===e.floor&&distance(n.pos,e.playerPos)<18){e.audio.distress?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},.55);e.hooks.soundCaption?.(`${n.name} cries out and runs along the corridor.`);}
+        if(n.floor===e.floor&&distance(n.pos,e.playerPos)<18){this.scream(n);e.hooks.soundCaption?.(`${n.name} cries out and runs along the corridor.`);}
       }
       if(r.phase==='running'&&(now>=r.burstUntil||n.cursor>=n.path.length)){
         r.phase='calm';r.calmStarted=now;r.gesture=['selftalk','laugh','headTap','panic'][(r.bursts-1)%4];
@@ -178,13 +178,15 @@ export class HospitalIncidents{
     }
     const n=this.contact;if(!n||n.dead||n.evacuated||e.mission.targetDown||!['panicked','escort','accepted','recruited'].includes(n.recruit.state))return;
     const r=n.recruit;r.nextLaugh??=now+12+e.mission.random()*13;
-    if(now>=r.nextLaugh&&r.phase!=='running'){if(['escort','accepted','recruited'].includes(r.state)&&e.mission.random()<.65){r.nextLaugh=now+9+e.mission.random()*14;const reaction=Math.floor(e.mission.random()*3);if(reaction===0){e.audio.distress?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},.9,n);e.hooks.soundCaption?.(`${n.name} screams in sudden panic.`);}else{const lines=DISTRESS_LINES.filter(line=>line!==r.lastDistress);const line=lines[Math.floor(e.mission.random()*lines.length)];r.lastDistress=line;e.life?.speak(n,line,true);}}else this.playLaugh(n);}
+    if(now>=r.nextLaugh&&r.phase!=='running'){if(['escort','accepted','recruited'].includes(r.state)&&e.mission.random()<.65){r.nextLaugh=now+9+e.mission.random()*14;const reaction=Math.floor(e.mission.random()*3);if(reaction===0){this.scream(n);e.hooks.soundCaption?.(`${n.name} screams in sudden panic.`);}else{const lines=DISTRESS_LINES.filter(line=>line!==r.lastDistress);const line=lines[Math.floor(e.mission.random()*lines.length)];r.lastDistress=line;e.life?.speak(n,line,true);}}else this.playLaugh(n);}
     if(r.state==='panicked'&&r.phase==='calm'&&now>=r.speakAt&&n.floor===e.floor&&distance(n.pos,e.playerPos)<15){
-      r.speakAt=now+22;
+      r.speakAt=now+18+e.mission.random()*16;
       if(r.gesture==='laugh'){if(now>=(r.laughUntil||0))this.playLaugh(n);}
-      else if(now>=(r.laughUntil||0)){const lines=r.gesture==='selftalk'?JAMIE_SELF_TALK_LINES:DISTRESS_LINES;e.life?.speak(n,lines[Math.floor(e.mission.random()*lines.length)],true);}
+      else if(now>=(r.laughUntil||0)){const lines=(r.gesture==='selftalk'?[...JAMIE_SELF_TALK_LINES,...DISTRESS_LINES]:DISTRESS_LINES).filter(line=>line!==r.lastDistress);const line=lines[Math.floor(e.mission.random()*lines.length)];r.lastDistress=line;e.life?.speak(n,line,true);}
     }
   }
+  scream(n){const e=this.e,record=e.audio.distress?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},1,n);n.distressUntil=e.mission.elapsed+(record?.source?.buffer?.duration||2.8);}
+  pose(){const n=this.contact;if(n&&!n.dead&&n.floor===this.e.floor&&this.e.mission.elapsed<(n.distressUntil||0))n.visual.poseActivity?.('scream',this.e.time,{reaction:0,restricted:false});}
   hud(){const n=this.contact;if(!n||n.dead||n.evacuated||['dismissed','refused'].includes(n.recruit.state)||n.recruit.state==='panicked'&&(n.floor!==this.e.floor||distance(n.pos,this.e.playerPos)>16))return null;return {name:n.name,state:n.recruit.state,label:n.recruit.state==='panicked'?'Distressed visitor nearby':n.recruit.state==='escort'?'Lead your contact to the bathroom':n.recruit.state==='accepted'?'Hand over your spare pistol':this.e.mission.targetDown?'Covering your escape':'Waiting for your signal'};}
   dispose(){this.contact=null;this.trail=[];this.e=null;}
 }

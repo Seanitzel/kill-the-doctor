@@ -1,3 +1,4 @@
+import {OperatingTeamEscape} from './operating-team-escape.js';
 import {CoffeeSip} from './coffee-sip.js';
 import {BASEMENT_GREETING} from './infiltration-dialogue.js';
 import {OfficeDarkness} from './office-darkness.js';
@@ -11,7 +12,7 @@ import*as T from'three';import{mesh,material,sign}from'./assets.js';import{tileA
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 
 export class ChinaOperation{
- constructor(e,patient){this.e=e;this.patient=patient;this.case=e.mission.china;this.root=new T.Group();this.root.name='China covert operation';this.addedColliders=[];e.scene.add(this.root);this.recorder=new CovertRecorder(e.renderer?.domElement,e.mission.videoClips);this.nextVisitor=90+e.mission.random()*45;this.setup();}
+ constructor(e,patient){this.e=e;this.escape=new OperatingTeamEscape(e);this.patient=patient;this.case=e.mission.china;this.root=new T.Group();this.root.name='China covert operation';this.addedColliders=[];e.scene.add(this.root);this.recorder=new CovertRecorder(e.renderer?.domElement,e.mission.videoClips);this.nextVisitor=90+e.mission.random()*45;this.setup();}
  prop(floor,x,y,z,name){const root=new T.Group();root.position.set(x,y,z);root.userData.floor=floor;root.name=name;this.root.add(root);return root;}
  obstacle(floor,x,z,w,d,h){const c=footprint(x,z,w,d,h,0,'infiltration-prop');this.e.hospitals[floor].colliders.push(c);this.addedColliders.push({floor,c});this.e.systems.navigation[floor]=null;return c;}
  setup(){
@@ -89,7 +90,7 @@ export class ChinaOperation{
    if(c.poisoned&&c.sealed){for(const d of this.drawers)if(!d.searched)add(`drawer-${d.id}`,`Search ${d.kind} drawer ${d.index+1}`,d);for(const kind of ['desk','cupboard']){const group=this.drawers.filter(d=>d.kind===kind);if(group.some(d=>d.opened))add(`drawers-close-${kind}`,`Close ${kind} drawers`,{x:group[0].x+.7,z:group[0].z});else if(group.every(d=>d.searched))add(`drawers-open-${kind}`,`Open ${kind} drawers`,group[0]);}add('lights',c.lightsOff?'Switch office lights on':'Switch office lights off',this.switchPoint);}
    if(c.badge){if(!this.wardrobeOpen)add('wardrobe','Open doctor’s uniform cupboard',this.changePoint);else{if(!c.disguised)add('disguise','Change into doctor’s outfit · cupboard',this.changePoint);add('wardrobe-close','Close doctor’s uniform cupboard',{x:this.changePoint.x+.7,z:this.changePoint.z+.9});}}
   }
-  if(e.floor===3&&c.entered&&c.recordings.length<3){add('instruments',c.order?`Equipment requested: ${c.order.name}`:'Inspect instrument tray',this.trayPoint);for(const a of this.angles)if(!c.recordings.includes(a.id))add('record',`${c.recording?'Stop':'Start'} covert recording · ${a.name}`,a);}
+  if(e.floor===3&&c.entered&&c.recordings.length<3){add('instruments',c.order?'Choose from the equipment tray':'Inspect instrument tray',this.trayPoint);for(const a of this.angles)if(!c.recordings.includes(a.id))add('record',`${c.recording?'Stop':'Start'} covert recording · ${a.name}`,a);}
   return items;
  }
  interact(item){const e=this.e,c=this.case;if(e.paused||e.mission.result||dist(item,e.playerPos)>2.5)return false;
@@ -112,8 +113,9 @@ export class ChinaOperation{
  setDrawers(kind,opened){const e=this.e,group=this.drawers.filter(d=>d.kind===kind);if(e.paused||e.mission.result||e.floor!==0||!group.length||dist(e.playerPos,group[0])>2.6||!this.case.poisoned||!this.case.sealed)return false;for(const d of group)d.opened=opened;e.audio.sound('interact');e.systems.navigation[0]=null;e.notify(`${kind==='desk'?'Desk':'Cupboard'} drawers ${opened?'opened':'closed'}.`);e.emitHUD();return true;}
  openInstruments(){if(!this.case.entered||this.e.floor!==3)return;this.e.instrumentView=true;this.e.keys.clear();this.e.resetTouch();this.e.aiming=false;document.exitPointerLock?.();this.e.hooks.instruments?.(true);}
  closeInstruments(){this.e.instrumentView=false;this.e.hooks.instruments?.(false);}
- chooseInstrument(id){const tool=INSTRUMENTS.find(t=>t.id===id);if(this.case.verificationAt!==null||this.e.paused||!this.case.entered||this.e.floor!==3||(!tool&&id!=='timeout'))return false;if(tool)this.selectedInstrument=tool.id;if(!this.case.order){if(tool){this.e.notify(`${tool.name} selected · ready for the next request.`,'clue');this.e.emitHUD();return true;}return false;}const result=this.case.choose(id);if(result===null)return false;this.e.audio.sound(result?'clue':'empty');if(result){this.handoverUntil=this.e.mission.elapsed+1.3;this.say('Thank you. Keep it steady.');this.e.notify('Correct equipment handed over.','clue');}else if(this.case.mistakes===1){this.say('That is not what I asked for. Pay attention.');this.e.notify(id==='timeout'?'Equipment request missed · one mistake remains.':'Incorrect equipment · one mistake remains.','warning');}else{this.say('Hold on. Something is wrong. Take off your mask so we can verify who you are.');this.e.notify('Disguise exposed · you are forced to remove the mask.','danger');this.disguise?.update(false);}this.e.emitHUD();this.closeInstruments();return result;}
- prepareNPC(n){if(n!==this.doctor&&n!==this.visitor&&n.role==='patient'&&!n.lying&&n.floor===0){
+ chooseInstrument(id){const tool=INSTRUMENTS.find(t=>t.id===id);if(this.case.verificationAt!==null||this.e.paused||!this.case.entered||this.e.floor!==3||(!tool&&id!=='timeout'))return false;if(tool)this.selectedInstrument=tool.id;if(!this.case.order){if(tool){this.e.notify(`Instrument ${tool.letter} selected · ready for the next request.`,'clue');this.e.emitHUD();return true;}return false;}const result=this.case.choose(id);if(result===null)return false;this.e.audio.sound(result?'clue':'empty');if(result){this.handoverUntil=this.e.mission.elapsed+1.3;this.say('Thank you. Keep it steady.');this.e.notify('Correct equipment handed over.','clue');}else if(this.case.mistakes===1){this.say('That is not what I asked for. Pay attention.');this.e.notify(id==='timeout'?'Equipment request missed · one mistake remains.':'Incorrect equipment · one mistake remains.','warning');}else{this.say('Hold on. Something is wrong. Take off your mask so we can verify who you are.');this.e.notify('Disguise exposed · you are forced to remove the mask.','danger');this.disguise?.update(false);}this.e.emitHUD();this.closeInstruments();return result;}
+ panicDoctors(){this.escape.panic();}
+ prepareNPC(n){if(this.escape.prepare(n))return true;if(n!==this.doctor&&n!==this.visitor&&n.role==='patient'&&!n.lying&&n.floor===0){
   const e=this.e,end=n.path?.at(-1),destination=end?{x:(end.x-11)*3,z:(end.z-11)*3}:n.pos;
   if(!this.visitorAllowed()&&(this.roomOf(destination)===this.office.id||this.roomOf(n.pos)===this.office.id)&&!n.officeLeaving){const door=this.doors[0];n.officeLeaving=true;n.activity=null;e.systems.route(n,{x:door.x,z:door.z+1.8});}
   if(n.officeLeaving){if(this.roomOf(n.pos)!==this.office.id&&n.cursor>=n.path.length){n.officeLeaving=false;n.wait=3;}return true;}
@@ -173,8 +175,10 @@ export class ChinaOperation{
    else{c.mixedSeconds=Math.min(30,c.mixedSeconds+dt);if(c.mixedSeconds>=30){c.coffeePrepared=true;this.poisonAction=null;e.notify('Coffee prepared · leave unseen and watch through the office window. Enter as soon as the doctor becomes unresponsive.','clue');}}
   }
   if(this.visitorAllowed()&&e.mission.elapsed>=this.nextVisitor&&!this.visitor&&!c.entered){this.nextVisitor=e.mission.elapsed+90+e.mission.random()*65;this.startVisitor();}
-  if(e.floor===3&&!c.entered){if(!c.enter()){c.fail('The operating team detected an incomplete disguise or missing stolen identity.');e.finish();return;}this.say(BASEMENT_GREETING);}
-  if(c.entered&&e.floor===3&&c.recordings.length<3){if(!c.order&&e.mission.elapsed>=c.nextOrder){const order=c.request();if(order)this.say(`Pass me the ${order.name.toLowerCase()}, please.`);}const a=this.angles.find(a=>dist(a,e.playerPos)<1.45&&!c.recordings.includes(a.id));const patient=this.patient;
+  if(e.floor===3&&!c.entered){if(!c.enter()){c.fail('The operating team detected an incomplete disguise or missing stolen identity.');e.finish();return;}}
+  if(c.entered&&e.floor===3&&!this.greeted&&e.levels[3].doors.some(d=>d.open&&Math.abs(d.angle-d.openAngle)<.08)){this.greeted=true;this.say(BASEMENT_GREETING);}
+  this.escape.update();if(e.mission.result)return;
+  if(c.entered&&this.greeted&&!this.escape.active&&e.floor===3&&c.recordings.length<3){if(!c.order&&e.mission.elapsed>=c.nextOrder){const order=c.request();if(order)this.say(`Pass me the ${order.name.toLowerCase()}, please.`);}const a=this.angles.find(a=>dist(a,e.playerPos)<1.45&&!c.recordings.includes(a.id));const patient=this.patient;
     const forward=new T.Vector3(Math.sin(e.yaw),0,Math.cos(e.yaw)),toward=patient?.pos.clone().sub(e.playerPos).setY(0).normalize();const clear=!!a&&!!toward&&forward.dot(toward)>.25&&e.lineOfSight(e.playerPos,patient.pos,3)&&!e.weaponDrawn&&!e.instrumentView&&(e.blackout<=0||e.flashlight);
     this.recorder.sync(a?.id,c.recording&&clear&&c.correct>c.recordings.length&&!c.recordings.includes(a?.id));
     if(c.record(a?.id,dt,clear)){this.recorder.end(true);e.audio.sound('clue');e.notify(`Video angle secured · ${a.name} (${c.recordings.length}/3)`,'clue');if(e.renderer?.domElement){e.renderer.render(e.scene,e.camera);const image=document.createElement('canvas');image.width=320;image.height=180;image.getContext('2d')?.drawImage(e.renderer.domElement,0,0,320,180);e.mission.photoImages[a.id]=image.toDataURL('image/jpeg',.7);}if(c.recordings.length===3){e.notify('All footage secured. Stop both operating doctors and escape.','clue');}}

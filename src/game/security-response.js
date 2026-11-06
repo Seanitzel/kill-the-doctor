@@ -5,12 +5,12 @@ import * as T from 'three';
 import {weaponModel} from './gear.js';
 import {disposeObjectResources} from './resources.js';
 import {complicityFor} from './security-rules.js';
-const guardAlert=m=>!!(m.policeAlert||m.suspicion>80||m.targetDown&&(!m.covertDeath||m.bodyDiscovered));
+const guardAlert=m=>!(m.china&&!m.policeAlert)&&!!(m.policeAlert||m.suspicion>80||m.targetDown&&(!m.covertDeath||m.bodyDiscovered));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export class SecurityResponse{
  constructor(e){
   this.e=e;this.root=new T.Group();this.root.name='Security and accomplice indicators';e.scene.add(this.root);this.markers=[];this.guns=[];
-  this.stationRoot=new T.Group();this.stationRoot.name='Security folding chair station';e.scene.add(this.stationRoot);this.stationColliders=[];this.health=3+(e.mission.save.upgrades.vitals||0);
+  this.stationRoot=new T.Group();this.stationRoot.name='Security folding chair station';e.scene.add(this.stationRoot);this.stationColliders=[];
   const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;const c=canvas.getContext('2d');c.strokeStyle='#ff4f4f';c.lineWidth=4;c.beginPath?.();c.arc?.(32,32,19,0,Math.PI*2);c.stroke?.();c.beginPath?.();c.arc?.(32,32,8,0,Math.PI*2);c.stroke?.();for(const[x,y,xx,yy]of[[32,4,32,20],[32,44,32,60],[4,32,20,32],[44,32,60,32]]){c.beginPath?.();c.moveTo?.(x,y);c.lineTo?.(xx,yy);c.stroke?.();}
   this.texture=new T.CanvasTexture(canvas);this.material=new T.SpriteMaterial({map:this.texture,transparent:true,depthWrite:false,depthTest:true});
   for(const n of e.npcs){n.complicity||=complicityFor(n);if((n.complicity||n.role==='security')&&n.id!=='target'){const sprite=new T.Sprite(this.material);sprite.scale.set(.42,.42,1);this.root.add(sprite);this.markers.push({n,sprite});}
@@ -20,6 +20,7 @@ export class SecurityResponse{
    const gun=weaponModel('pistol');gun.visible=false;n.visual.root.add(gun);const baton=new T.Mesh(new T.CylinderGeometry(.014,.018,.40,10),new T.MeshStandardMaterial({color:'#111820',roughness:.65}));baton.name='Security inspection baton';baton.visible=false;n.visual.root.add(baton);this.guns.push({n,gun,baton});
   }
  }
+ get health(){return Math.max(0,3-(this.e.playerInjury?.hits||0));}
  setupStation(n){
   const e=this.e;if(e.canStand(-1.05,37.4,.3,0))n.pos.set(-1.05,0,37.4);const seat={x:n.pos.x,z:n.pos.z-.95,rotation:0,yOffset:-.19,security:true},chair=securityChair();chair.position.set(seat.x,0,seat.z);this.stationRoot.add(chair);
   const c=footprint(seat.x,seat.z,.59,.66,1.3,0,'security-chair');e.hospitals[0].colliders.push(c);this.stationColliders.push(c);e.systems.navigation[0]=null;
@@ -62,9 +63,9 @@ export class SecurityResponse{
   for(const{n,gun}of this.guns){if(!n.dead)this.updateSeat(n,dt);const active=!n.dead&&n.floor===e.floor&&guardAlert(e.mission);gun.visible=active;if(!active)continue;
    const d=dist(n.pos,e.playerPos),clear=this.clearShot(n);
    if(d<1.35&&clear&&!this.restraining){this.restraining={n,at:now};n.path=[];e.notify('Security is restraining you!','danger');continue;}
-   if(!clear||d>15){n.guardOccludedAt??=now;if(now-n.guardOccludedAt>1.5)n.guardSeenAt=null;continue;}
-   n.guardOccludedAt=null;n.guardSeenAt??=now;if(d<1.35||now-n.guardSeenAt<1.1||now<(n.guardShotAt||0))continue;
-   n.guardShotAt=now+2.8;e.audio.sound('shot');e.hooks.soundCaption?.('Security fires. Break their sightline behind solid cover.');this.health--;e.notify(`Security hit · ${Math.max(0,this.health)} protection remaining`,'danger');if(this.health<=0){e.mission.finish(false,'Security stopped you. Use walls and furniture as cover while escaping.');e.finish();return;}
+   if(!clear||d>15){n.guardOccludedAt??=now;if(now-n.guardOccludedAt>1.5){n.guardSeenAt=null;n.guardAimPoint=null;}continue;}
+   n.guardOccludedAt=null;if(n.guardSeenAt==null){n.guardSeenAt=now;n.guardAimPoint=e.combat?.lockAim();}if(d<1.35||now-n.guardSeenAt<1.1||now<(n.guardShotAt||0))continue;
+   n.guardShotAt=now+2.8;e.audio.sound('shot');e.hooks.soundCaption?.('Security fires. Break their sightline behind solid cover.');e.combat?.hostileShot(n,n.guardAimPoint);n.guardSeenAt=null;n.guardAimPoint=null;if(e.mission.result)return;
   }
  }
  dispose(){this.stationRoot.removeFromParent();disposeObjectResources(this.stationRoot);for(const c of this.stationColliders){const a=this.e.hospitals[0].colliders,i=a.indexOf(c);if(i>=0)a.splice(i,1);}this.stationColliders=[];for(const{gun,baton}of this.guns){gun.removeFromParent();disposeObjectResources(gun);baton.removeFromParent();disposeObjectResources(baton);}this.root.removeFromParent();this.root.clear();this.texture.dispose();this.material.dispose();this.restraining=null;this.guns=[];this.markers=[];this.e=null;}

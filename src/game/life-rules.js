@@ -84,6 +84,8 @@ export const RECRUIT_LINES = Object.values(RECRUIT_DIALOGUE);
 // Spoken after a panic burst has stopped; the visitor's claims are fictional dialogue.
 export const FOLLOWER_REACTION_LINES=["I knew it. They're coming for me!",'Shut up! Just shut up!'];
 export const DISTRESS_LINES = [
+  "They're after me.", "They're watching my every move.", "She never loved me.", "I'm a god.", "They are plotting against me.", "I can't trust what I'm hearing.", "Something isn't right. I need some air.", 'La la la, la la la...',
+
   ...FOLLOWER_REACTION_LINES,
   "I'm dying.",
   "I'm burning up, I can't breathe.",
@@ -107,6 +109,8 @@ export const WITNESS_LINES = {
   camera:'That camera is not allowed here. I am calling security.',
 };
 export const ALL_DIALOGUE_LINES = [...new Set([
+  "Please have a seat. I'll be back in a few minutes.", 'Please come in.', "Please don't do this. Please let me go!",
+
   ...OFFICE_VISITOR_LINES, ...INFILTRATION_LINES, 'Oh, sorry. Excuse me.', ...ADDITIONAL_DIALOGUE_LINES, ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
   ...Object.values(CLINICAL_CONVERSATIONS).flat(2), ...PATIENT_PAIN_LINES,
   ...SUSPICION_LINES, ...RECRUIT_LINES, ...DISTRESS_LINES, ...ANNOUNCEMENT_LINES, ...Object.values(WITNESS_LINES),

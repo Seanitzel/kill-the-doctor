@@ -218,7 +218,7 @@ export class HospitalAudio {
       const high=this.ctx.createBiquadFilter(),low=this.ctx.createBiquadFilter(),speaker=this.ctx.createBiquadFilter();high.type='highpass';high.frequency.value=430;low.type='lowpass';low.frequency.value=2200;speaker.type='lowpass';speaker.frequency.value=2600;
       source.connect(high);high.connect(low);low.connect(speaker);speaker.connect(volume);filters.push(high,low,speaker);
     }else{
-      panner.panningModel='HRTF';panner.distanceModel='inverse';panner.refDistance=name.startsWith('distress-')?4:name==='sneeze'?1.8:3;panner.maxDistance=25;panner.rolloffFactor=name==='sneeze'?1.15:.9;
+      panner.panningModel='HRTF';panner.distanceModel='inverse';panner.refDistance=name.startsWith('distress-')?6:name==='sneeze'?1.8:3;panner.maxDistance=25;panner.rolloffFactor=name==='sneeze'?1.15:.9;
       panner.positionX.value=position.x;panner.positionY.value=position.y||1;panner.positionZ.value=position.z;
       if(['ambulance-field','car-engine','car-road'].includes(name)){const distanceFilter=this.ctx.createBiquadFilter();distanceFilter.type='lowpass';distanceFilter.frequency.value=6500;source.connect(distanceFilter);distanceFilter.connect(panner);filters.push(distanceFilter);}else source.connect(panner);panner.connect(volume);
     }
@@ -251,7 +251,7 @@ export class HospitalAudio {
     const dx=position.x-this.listenerPosition.x,dz=position.z-this.listenerPosition.z,d=Math.max(1,Math.hypot(dx,dz));const radial=(dx*(velocity?.x||0)+dz*(velocity?.z||0))/d;
     const cutoff=Math.max(1000,6500/(1+d*.045))*(this.outside===false?.55:1);c.filters?.[0]?.frequency.setTargetAtTime(cutoff,this.ctx.currentTime,.25);c.panner.refDistance=reference;c.panner.maxDistance=100;c.panner.rolloffFactor=1.3;c.source.playbackRate.setTargetAtTime(Math.max(.92,Math.min(1.08,343/(343+radial))),this.ctx.currentTime,.15);
   }
-  traffic(cars,outside){if(!this.ctx||!this.enabled)return;for(const [i,car]of cars.entries()){const p=car.root.position,d=Math.hypot(p.x-this.listenerPosition.x,p.z-this.listenerPosition.z),gain=outside?.40*(1-smoothRange(d,28,70))*(1-smoothRange(Math.abs(p.x),34,46)):0,velocity={x:car.speed*car.direction,z:0};this.movingAudio(`car-engine-${i}`,'car-engine',p,velocity,gain,6);this.movingAudio(`car-road-${i}`,'car-road',p,velocity,gain*.65,6);}}
+  traffic(cars,outside){if(!this.ctx||!this.enabled)return;for(const [i,car]of cars.entries()){const p=car.root.position,d=Math.hypot(p.x-this.listenerPosition.x,p.z-this.listenerPosition.z),gain=outside?.22*(1-smoothRange(d,28,70))*(1-smoothRange(Math.abs(p.x),34,46)):0,velocity={x:car.speed*car.direction,z:0};this.movingAudio(`car-engine-${i}`,'car-engine',p,velocity,gain*.48,6);this.movingAudio(`car-road-${i}`,'car-road',p,velocity,gain*.65,6);}}
   siren(active,position,velocity={x:0,z:0}){if(!this.ctx||!this.enabled)return;this.movingAudio('ambulance','ambulance-field',position,velocity,active?(this.listenerFloor===0?(this.outside===false?.20:.70):.025):0,11);}
   ambientSample(key,name,position,gain) {
     if(!this.ownsContext(this.ctx))return;

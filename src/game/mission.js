@@ -17,7 +17,7 @@ export const UPGRADE_INFO = [
   {id:'mask',name:'N95 respirator (owned legacy upgrade)',description:'Complete protection against new gas exposure.',cost: 950,max:1},
   {id:'sniper',name:'Scoped rifle',description:'Unlock an 80 m rifle with a magnified scope. Switch weapons from the action bar.',cost: 500,max:1},
   {id:'magazine',name:'Extended magazines',description:'Adds two pistol rounds and one rifle round per level.',cost: 310,max:3},
-  {id:'vitals',name:'Protective lining',description:'Absorb one additional security hit per level.',cost: 280,max:3},
+  {id:'vitals',name:'Protective lining',description:'Makes incoming security fire less accurate. Three non-lethal wounds are still fatal.',cost: 280,max:3},
   {id:'reload',name:'Quick-change reload',description:'Reload 18% faster per level.',cost: 250,max:3},
   {id:'accuracy',name:'Precision sights',description:'Wider target acquisition and steadier aim per level.',cost: 280,max:3},
   {id:'power',name:'Weapon tuning',description:'Improved shot recovery and guard stopping power.',cost: 310,max:3},
@@ -71,7 +71,7 @@ export function purchase(save, id) {
 export class Mission {
   constructor(save, seed = Date.now(), attempt = save.attempts) {
     this.save = save; this.random = rng(seed); this.seed = seed;
-    this.round = campaignLevel(save);this.country=countryFor(save);this.playMode=save.playMode||'story';this.countryAttempt=save.countryAttempts?.[this.country.index]||0;this.type=assignmentType(save);this.keys=[];this.photos=[];this.photoImages={};this.videoClips={};this.operationDoctors=[];this.patientReleased=false;
+    this.round = campaignLevel(save);this.country=countryFor(save);this.playMode=save.playMode||'story';this.countryAttempt=save.countryAttempts?.[this.country.index]||0;this.selectionType=assignmentType(save);this.explicitInfiltration=this.selectionType==='infiltration';this.type=this.explicitInfiltration?'evidence':this.selectionType;this.keys=[];this.photos=[];this.photoImages={};this.videoClips={};this.operationDoctors=[];this.patientReleased=false;
     this.difficulty = save.settings.difficulty;this.challenge=campaignChallenge(this.round,this.difficulty);
     const doctors=STAFF.filter(s=>s.name.startsWith('Dr.'));const targetIndex=(attempt+Math.floor(this.random()*3))%doctors.length;
     const floor = attempt === 0 ? 0 : Math.floor(this.random() * 3);
@@ -81,8 +81,10 @@ export class Mission {
     this.target=countryPerson(this.target,'doctor',this.country,this.seed,'target',0);
     this.state = 'investigate'; this.clues = []; this.elapsed = 0; this.timer = 0;
     this.eliminatedIds=new Set();this.hiddenAccompliceKills=0;this.accompliceKills=0;this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
-    this.recordsNotice=false;this.locatedRecords=false;this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
+    this.informationBoardFloor=this.round===1&&attempt===0?0:(Math.abs(seed)+this.country.index)%3;this.recordsNotice=false;this.locatedRecords=false;this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
   }
+  get weaponRequired(){return this.type==='standard'||!!this.china;}
+  get operativeRole(){return this.weaponRequired?'assassin':'detective';}
   get photoOnly(){return this.type==='evidence'&&!this.china;}
   clue(type) {
     if (this.clues.some(c => c.type === type) || this.result) return null;
@@ -96,17 +98,23 @@ export class Mission {
     const c = { ...clues[type], type, time: this.elapsed }; this.clues.push(c); return c;
   }
   identify() { if(this.challenge.verifyHandover&&!this.clues.some(c=>c.type==='log'))return false;if (!this.targetDown && !this.result) { this.identified = true; this.state = 'discovered'; } }
+  canDamage(npc){
+    if(this.result||npc.dead||this.eliminatedIds.has(npc.id||npc))return false;
+    if(this.weaponRequired&&['security','police'].includes(npc.role)&&mayHitStaff(this,npc))return true;
+    if(this.china)return this.targetDown?mayHitStaff(this,npc):!!npc.operationDoctor&&this.china.recordings.length===3;
+    if(this.type==='evidence')return false;
+    if(this.type==='rescue')return false;
+    return mayHitStaff(this,npc);
+  }
   eliminate(npc) {
     if (this.result || npc.dead||this.eliminatedIds.has(npc.id||npc)) return false;
     this.shots++;
     if (npc.role === 'patient') { return this.finish(false, 'A patient was harmed. The assignment is void.'); }
+    if(this.weaponRequired&&['security','police'].includes(npc.role)&&mayHitStaff(this,npc)){this.eliminatedIds.add(npc.id||npc);return true;}
     if(this.targetDown&&(this.type!=='evidence'||this.china)&&mayHitStaff(this,npc)){if(!['security','police'].includes(npc.role))this.staffKills++;if(npc.complicity){this.accompliceKills++;if(npc.wasHidden)this.hiddenAccompliceKills++;}this.eliminatedIds.add(npc.id||npc);return true;}
     if(this.china){if(!npc.operationDoctor||this.china.recordings.length<3||this.operationDoctors.includes(npc.id))return false;this.eliminatedIds.add(npc.id||npc);this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;if(this.targetDown)this.beginEscape(30);return true;}
     if(this.type==='evidence')return this.finish(false,'A person was harmed. This was an evidence-only assignment.');
-    if(this.type==='rescue'){
-      if(!npc.id?.startsWith('operation-doctor-')||this.operationDoctors.includes(npc.id))return false;
-      this.eliminatedIds.add(npc.id||npc);this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;this.beginEscape(65);return true;
-    }
+    if(this.type==='rescue')return this.finish(false,'A person was harmed. This detective rescue must remain nonviolent.');
     if(!mayHitStaff(this,npc)){this.suspicion=Math.min(100,this.suspicion+20);return false;}
     if(npc.role==='police'){this.suspicion=100;this.eliminatedIds.add(npc.id||npc);return true;}
     this.eliminatedIds.add(npc.id||npc);this.staffKills++;if(npc.id!=='target'&&npc.complicity)this.accompliceKills++;
@@ -119,7 +127,7 @@ export class Mission {
   beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]*this.challenge.escapeScale+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0)+(securityCount(this.round)-1)*9;}this.suspicion=Math.max(this.suspicion,suspicion);}
   collectKey(id){if(this.result||!['basement','theatre','laboratory'].includes(id)||this.keys.includes(id))return false;this.keys.push(id);return true;}
   photograph(id){if(this.type!=='evidence'||this.result||!['ledger','consent','theatre'].includes(id)||this.photos.includes(id))return false;this.photos.push(id);if(this.photos.length===3)this.beginEscape(0);return true;}
-  releasePatient(){if(this.type!=='rescue'||!this.targetDown||this.patientReleased||this.result)return false;this.patientReleased=true;return true;}
+  releasePatient(){if(this.type!=='rescue'||!this.keys.includes('basement')||!this.keys.includes('theatre')||this.patientReleased||this.result)return false;this.patientReleased=true;this.beginEscape(30);return true;}
   tick(dt) {
     if (this.result) return;
     this.elapsed += dt;
@@ -131,7 +139,7 @@ export class Mission {
   finish(success, reason) {
     if (this.result) return this.result;
     this.state = 'results';
-    const breakdown = success ? this.china?[{label:'Three verified video angles',coins:300},{label:'Stolen identity infiltration',coins:100},{label:'Successful escape',coins:160},{label:'Marked accomplices',coins:this.accompliceBonus()}]:this.type==='evidence'?[{label:'Verified photographs',coins:this.photos.length*100},{label:'Nonviolent escape',coins:160}]:this.type==='rescue'?[{label:'Patient rescued',coins:300},{label:'Operation stopped',coins:160},{label:'Successful escort',coins:100},{label:'Marked accomplices',coins:this.accompliceBonus()}]:[
+    const breakdown = success ? this.china?[{label:'Three verified video angles',coins:300},{label:'Stolen identity infiltration',coins:100},{label:'Successful escape',coins:160},{label:'Marked accomplices',coins:this.accompliceBonus()}]:this.type==='evidence'?[{label:'Verified photographs',coins:this.photos.length*100},{label:'Nonviolent escape',coins:160}]:this.type==='rescue'?[{label:'Patient rescued',coins:300},{label:'Unauthorized procedure interrupted',coins:160},{label:'Successful escort',coins:100},{label:'Marked accomplices',coins:this.accompliceBonus()}]:[
       { label: 'Assigned target', coins: 140 }, { label: 'Successful escape', coins: 100 },
       { label: 'Evidence collected', coins: this.clues.length * 20 },
       { label: 'Marked accomplices', coins: this.accompliceBonus() },

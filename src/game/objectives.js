@@ -45,7 +45,7 @@ export class AssignmentObjectives{
   interactions(){
     if(this.china)return this.china.interactions();
     const m=this.e.mission,items=this.items.filter(i=>i.floor===this.e.floor&&!m.keys.includes(i.id));
-    if(this.patient&&this.e.floor===3&&!m.patientReleased)items.push({type:'release-patient',label:m.targetDown?'Release and escort patient':'Stop both doctors before releasing patient',x:this.releasePoint.x,z:this.releasePoint.z});
+    if(this.patient&&this.e.floor===3&&!m.patientReleased)items.push({type:'release-patient',label:'Release and escort patient',x:this.releasePoint.x,z:this.releasePoint.z});
     if(m.type==='evidence')for(const s of this.photoSites)if(s.floor===this.e.floor&&!m.photos.includes(s.id))items.push({type:'photo-subject',label:`Photograph · ${s.label}`,x:s.x,z:s.z});
     return items;
   }
@@ -60,8 +60,8 @@ export class AssignmentObjectives{
     if(witness){e.mission.finish(false,'A witness saw the key theft and called security.');e.finish();return false;}
     e.mission.collectKey('theatre');e.audio.sound('clue');e.notify('Theatre key lifted quietly','clue');return true;
   }
-  release(){const e=this.e;if(!e.mission.releasePatient()){e.notify('Stop both operating doctors first. The patient is still in danger.');return false;}
-    const n=this.patient;n.lying=false;n.activity=null;n.baselineY=0;n.bedRotation=0;n.hitOffset=null;n.visual.root.rotation.set(0,this.releasePoint.yaw||0,0);n.pos.set(this.releasePoint.x,0,this.releasePoint.z);n.room=null;n.speed=2.4;n.reaction=0;n.path=[];n.nextFollow=0;
+  release(){const e=this.e;if(!e.mission.releasePatient()){e.notify('Find both access keys before releasing the patient.');return false;}
+    e.systems?.startEvacuation();const n=this.patient;n.lying=false;n.activity=null;n.baselineY=0;n.bedRotation=0;n.hitOffset=null;n.visual.root.rotation.set(0,this.releasePoint.yaw||0,0);n.pos.set(this.releasePoint.x,0,this.releasePoint.z);n.room=null;n.speed=2.4;n.reaction=0;n.path=[];n.nextFollow=0;
     e.notify('Patient released · stay close and lead them to the main entrance','clue');return true;
   }
   takePhoto(ray){
@@ -85,6 +85,6 @@ export class AssignmentObjectives{
   }
   patientPresent(){return !!this.patient&&this.patient.floor===0&&!this.patient.dead&&distance(this.patient.pos,this.e.levels[0].exit)<4.8;}
   update(dt=0){const e=this.e;this.china?.update(dt);if(this.cameraProp){this.cameraProp.visible=e.aiming;if(e.aiming&&e.player.hand){e.player.root.updateMatrixWorld(true);e.player.hand.getWorldPosition(this.cameraGrip);e.player.root.worldToLocal(this.cameraGrip);this.cameraProp.position.copy(this.cameraGrip);this.cameraProp.position.z+=.06;}}for(const item of this.items)item.root.visible=item.floor===e.floor&&!e.mission.keys.includes(item.id);for(const root of this.props.children)if(root.userData.floor!==undefined&& !this.items.some(i=>i.root===root))root.visible=root.userData.floor===e.floor;}
-  hud(){const m=this.e.mission;return {type:m.type,photoOnly:m.photoOnly,infiltration:this.china?.hud()||null,label:this.china?this.china.objectiveLabel():specialObjective(m),keySites:this.items.filter(i=>!m.keys.includes(i.id)).map(({id,floor,x,z})=>({id,floor,x,z})),keys:m.keys,photos:m.photos,sites:this.photoSites.map(({id,floor,x,z,label})=>({id,floor,x,z,label})),patientReleased:m.patientReleased,patientFloor:this.patient?.floor,patientDistance:this.patient?Math.round(distance(this.patient.pos,this.e.playerPos)):null};}
+  hud(){const m=this.e.mission;return {type:m.type,unarmed:m.type==='rescue',photoOnly:m.photoOnly,infiltration:this.china?.hud()||null,label:this.china?this.china.objectiveLabel():specialObjective(m),keySites:this.items.filter(i=>!m.keys.includes(i.id)).map(({id,floor,x,z})=>({id,floor,x,z})),keys:m.keys,photos:m.photos,sites:this.photoSites.map(({id,floor,x,z,label})=>({id,floor,x,z,label})),patientReleased:m.patientReleased,patientFloor:this.patient?.floor,patientDistance:this.patient?Math.round(distance(this.patient.pos,this.e.playerPos)):null};}
   dispose(){this.china?.dispose();this.china=null;if(this.cameraProp){this.cameraProp.removeFromParent();disposeObjectResources(this.cameraProp);this.cameraProp=null;this.cameraGrip=null;}this.props.removeFromParent();disposeObjectResources(this.props);this.props.clear();this.items=[];this.photoSites=[];this.patient=this.escort=null;this.e=null;}
 }

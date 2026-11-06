@@ -5,15 +5,15 @@ const distance2=(a,b)=>(a.x-b.x)**2+(a.z-b.z)**2;
 // A finer flow field lets a crowd route around furniture and swung-open door leaves.
 // Fields are shared by all people heading to the same lift, exit or reporting station.
 export class EgressNavigation{
-  constructor(layout,colliders){
+  constructor(layout,colliders,{respectLocked=false}={}){
     this.nodes=new Map();this.fields=new Map();
-    this.bodyObstacles=colliders.filter(c=>blocksBody(c)&&c.type!=='entrance-glass').map(c=>{
+    this.bodyObstacles=colliders.filter(c=>!c.dynamic&&blocksBody(c)&&c.type!=='entrance-glass').map(c=>{
       if(!c.object?.pivot)return obstacleBounds(c);
       const d=c.object,p=d.pivot.position,a=d.openAngle;
-      return footprint(p.x+Math.cos(a)*.86,p.z-Math.sin(a)*.86,1.72,.1,2.6,a,'door');
+      if(respectLocked&&d.locked)return obstacleBounds(c);return footprint(p.x+Math.cos(a)*.86,p.z-Math.sin(a)*.86,1.72,.1,2.6,a,'door');
     });
     this.obstacles=this.bodyObstacles.map(c=>{const radius=['wall','door'].includes(c.type)?STRUCTURE_CLEARANCE+.02:RADIUS;return {minX:c.minX-radius,maxX:c.maxX+radius,minZ:c.minZ-radius,maxZ:c.maxZ+radius,minY:0,maxY:2};});
-    for(let gx=-48;gx<=45;gx++)for(let gz=-44;gz<=67;gz++){
+    for(let gx=layout.expanded?-58:-48;gx<=45;gx++)for(let gz=layout.expanded?-58:-44;gz<=67;gz++){
       const point={x:gx*STEP,z:gz*STEP},cell=tileAt(point.x,point.z);
       if(!layout.cells.has(key(cell.x,cell.z))||!this.clear(point,point))continue;
       this.nodes.set(key(gx,gz),{gx,gz,point,edges:[]});

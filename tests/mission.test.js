@@ -42,9 +42,9 @@ test('Timer expiry fails; exiting before the objective earns nothing', () => {
   m.eliminate({id:'target',role:'nurse'});m.tick(111);assert.equal(m.result.success,false);assert.match(m.result.reason,/Police/);assert.equal(m.result.coins,0);
 });
 test('Upgrades enforce coin cost and level caps, and progress survives reload', () => {
-  const save=defaultSave();assert.equal(purchase(save,'shoes'),false);save.coins=1000;
-  assert.equal(purchase(save,'shoes'),true);assert.equal(save.coins,880);assert.equal(purchase(save,'shoes'),true);assert.equal(save.coins,640);
-  assert.equal(purchase(save,'shoes'),true);assert.equal(save.coins,280);assert.equal(purchase(save,'shoes'),false);
+  const save=defaultSave();assert.equal(purchase(save,'shoes'),false);save.coins=1600;
+  assert.equal(purchase(save,'shoes'),true);assert.equal(save.coins,1330);assert.equal(purchase(save,'shoes'),true);assert.equal(save.coins,940);
+  assert.equal(purchase(save,'shoes'),true);assert.equal(save.coins,430);assert.equal(purchase(save,'shoes'),false);
   assert.equal(purchase(save,'suppressor'),true);assert.equal(save.coins,100);assert.equal(purchase(save,'suppressor'),false);
   const storage=memory();assert.equal(writeSave(storage,save),true);assert.deepEqual(readSave(storage),save);
   const m=new Mission(save,99);m.eliminate({id:'target',role:'doctor'});assert.equal(m.timer,125);

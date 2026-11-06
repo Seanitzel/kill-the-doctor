@@ -5,9 +5,9 @@ import {disposeObjectResources} from './resources.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export const SODA_COST=5;
 export function buySoda(save,inventory){if(save.coins<SODA_COST)return false;save.coins-=SODA_COST;inventory.sodas++;return true;}
-export function sodaFactor(random=Math.random){return random()<3/5?2:.5;}
+export function sodaFactor(random=Math.random){return random()<2/5?2:.5;}
 export class HospitalExtras{
-  constructor(e){this.e=e;this.root=new THREE.Group();this.root.name='international-hospital-extras';e.scene.add(this.root);this.colliders=[];this.sodas=0;this.potion=false;this.lure=null;this.items=[];this.setup();e.systems.navigation=[];}
+  constructor(e){this.e=e;this.root=new THREE.Group();this.root.name='international-hospital-extras';e.scene.add(this.root);this.colliders=[];this.sodaRandom=e.randomSoda||Math.random;this.sodas=0;this.potion=false;this.lure=null;this.items=[];this.setup();e.systems.navigation=[];}
   prop(name,floor,x,y,z){const g=new THREE.Group();g.name=name;g.position.set(x,y,z);g.userData.floor=floor;this.root.add(g);return g;}
   setup(){
     const e=this.e,m=e.mission,c=m.country;if(c){
@@ -20,7 +20,7 @@ export class HospitalExtras{
       b.box(shell,0,1.02,0,1.1,2,.7);b.box(glass,-.12,1.22,.365,.69,1.25,.025);
       for(let row=0;row<4;row++){b.box(trim,-.12,.72+row*.29,.25,.70,.025,.30);for(let col=0;col<4;col++)b.cylinder(cans[col],-.38+col*.17,.82+row*.29,.39,.052,.18,.052);}
       b.box(material('#101d27'),-.1,.34,.37,.70,.40,.04);b.box(trim,.42,1.15,.38,.15,.31,.04);b.finish();
-      const label=sign('MYSTERY SODA','5 COINS · 60% SLOW / 40% FAST',.98,.25,{background:'#19303c',color:'#e2e9dd'});label.position.set(0,1.87,.37);g.add(label);
+      const label=sign('MYSTERY SODA','5 COINS · 40% SLOW / 60% FAST',.98,.25,{background:'#19303c',color:'#e2e9dd'});label.position.set(0,1.87,.37);g.add(label);
       const collider=level.floor===3?{...vendingBounds(),minX:vending.x-.37,maxX:vending.x+.37,minZ:vending.z-.57,maxZ:vending.z+.57}:vendingBounds();e.hospitals[level.floor].colliders.push(collider);this.colliders.push({floor:level.floor,collider});
       const bottle=new THREE.Group();bottle.name='Dispensed Mystery Soda bottle';bottle.visible=false;bottle.position.set(-.1,1.45,.43);g.add(bottle);const bottleGeometry=new THREE.LatheGeometry([[0,-.12],[.05,-.12],[.055,-.10],[.055,.10],[.027,.14],[.027,.20],[0,.20]].map(([x,y])=>new THREE.Vector2(x,y)),12);const colors=[];for(let v=0;v<bottleGeometry.attributes.position.count;v++){const y=bottleGeometry.attributes.position.getY(v),color=new THREE.Color(y>.17?'#353a56':Math.abs(y)<.07?'#d8e4d9':'#89b7b1');colors.push(color.r,color.g,color.b);}bottleGeometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));bottle.add(new THREE.Mesh(bottleGeometry,material('#ffffff',{vertexColors:true,roughness:.28})));
       this.items.push({type:'extra-vending',floor:level.floor,x:vending.x-1.05,z:vending.z,label:'Mystery Soda · buy for 5 coins',bottle});
@@ -54,7 +54,7 @@ export class HospitalExtras{
     if(item.type==='extra-help'){this.lure.phase='responding';this.lure.calledAt=m.elapsed;this.lure.target.activity=null;this.lure.target.path=[];this.lure.target.reaction=0;this.lure.target.wait=0;this.lure.target.speed=2.5;e.routeNPC(this.lure.target,this.lure.doctorGoal);e.notify('Help requested · the doctor is coming out to assist','clue');return true;}return false;
   }
   drink(){const e=this.e,a=e.life?.targetCase?.appointment;if(e.paused||!this.sodas||!a||a.startedAt===null||a.completed||e.mission.targetDown){e.notify('Save your soda until the target’s appointment is underway.');return false;}
-    const factor=sodaFactor(()=>e.mission.random());if(!a.changeRemaining(e.mission.elapsed,factor))return false;this.sodas--;this.drinkUntil=e.mission.elapsed+1.7;
+    const factor=sodaFactor(this.sodaRandom);if(!a.changeRemaining(e.mission.elapsed,factor))return false;this.sodas--;this.drinkUntil=e.mission.elapsed+1.7;
     if(!this.can&&e.player.hand){this.can=new THREE.Group();this.can.name='Player Mystery Soda can';e.player.hand.add(this.can);mesh('cylinder',material('#8f8ab4'),[.036,.12,.036],[0,0,.03],this.can);mesh('cylinder',material('#c1cbd0',{metalness:.7}),[.034,.005,.034],[0,.061,.03],this.can);}
     e.notify(factor===2?'Mystery Soda · bad luck. Remaining appointment time doubled.':'Mystery Soda · lucky break. Remaining appointment time halved.',factor===2?'warning':'clue');e.audio.sound('clue');e.emitHUD();return true;
   }

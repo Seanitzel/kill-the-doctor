@@ -4,12 +4,12 @@ import { makeLayout, TILE, FLOORS } from './game/layout.js';
 const props = defineProps({ floor: { default: 0 }, hud: Object, target: Object, clues: { default: 0 }, assignment:Object, mini: Boolean });
 const roomLines=name=>name.length>12&&name.includes(' ')?name.split(' '):[name];
 const departmentKnown=computed(()=>!!props.clues&&(!props.hud?.covert?.documentRequired||props.hud.covert.documentTaken));
-const layout = computed(() => makeLayout(props.floor,props.hud?.country?.index||0));
+const layout = computed(() => makeLayout(props.floor,props.hud?.country?.index||0,(props.hud?.level||0)>=6));
 const px = computed(() => ((props.hud?.x || 0) / TILE + 11) * 30 + 15);
 const pz = computed(() => ((props.hud?.z || 0) / TILE + 11) * 30 + 15);
 </script>
 <template>
-  <svg :viewBox="floor===3?'180 60 290 370':floor===0?'40 60 590 720':'40 60 590 630'" class="hospital-map" role="img" :aria-label="`Hospital map, ${FLOORS[floor]}. Your position is marked in blue.`">
+  <svg :viewBox="floor===3?'180 60 290 370':floor===0&&hud?.level>=6?'-20 -20 680 800':floor===0?'40 60 590 720':'40 60 590 630'" class="hospital-map" role="img" :aria-label="`Hospital map, ${FLOORS[floor]}. Your position is marked in blue.`">
     <defs><pattern id="map-grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#94adc1" stroke-opacity=".07"/></pattern></defs>
     <rect width="690" height="780" fill="url(#map-grid)"/>
     <rect v-for="c in layout.cells.values()" :key="`${c.x},${c.z}`" :x="c.x*30" :y="c.z*30" width="30" height="30" :fill="c.room === 'hall' ? '#28404f' : '#203542'"/>
@@ -29,10 +29,12 @@ const pz = computed(() => ((props.hud?.z || 0) / TILE + 11) * 30 + 15);
     <g v-for="a in (hud?.antidotes||[]).filter(a=>a.floor===floor)" :key="a.x" :transform="`translate(${(a.x/TILE+11)*30+15},${(a.z/TILE+11)*30+15})`"><circle r="12" :fill="a.available?'#387b5a':'#4b5555'" stroke="#c6eccf" stroke-width="1.5"/><text y="6" text-anchor="middle" fill="#f0fff4" font-size="21" font-family="Arial">+</text><text v-if="!mini" x="18" y="5" fill="#bfe5cb" font-size="10">{{a.available?'ANTIDOTE':'EMPTY'}}</text></g>
     <g v-for="v in (hud?.extras?.vending||[]).filter(v=>v.floor===floor)" :key="`v-${v.floor}`" :transform="`translate(${(v.x/TILE+11)*30+15},${(v.z/TILE+11)*30+15})`"><circle r="12" fill="#56496d"/><text y="4" text-anchor="middle" fill="#f2dfc9" font-size="11">S</text><text v-if="!mini" x="17" y="4" fill="#c3bdd7" font-size="10">SODA</text></g>
     <g v-if="hud?.covert?.room?.floor===floor&&!hud.covert.documentTaken" :transform="`translate(${(hud.covert.room.x/TILE+11)*30+15},${(hud.covert.room.z/TILE+11)*30+15})`"><circle r="12" fill="#785f35"/><text text-anchor="middle" y="4" fill="#f2dfc9" font-size="10">ROTA</text></g>
+    <g v-for="t in (hud?.threats||[]).filter(t=>t.floor===floor)" :key="`threat-${t.id}`" :transform="`translate(${(t.x/TILE+11)*30+15},${(t.z/TILE+11)*30+15})`"><circle :r="t.kind==='hidden'?13:8" fill="#f24e5b" :fill-opacity="t.kind==='hidden'?.23:1" stroke="#ffabb0" stroke-width="2"/><text v-if="t.kind==='hidden'" y="4" text-anchor="middle" fill="#fff" font-size="13">?</text><title>{{t.label}}</title></g>
     <g v-if="hud?.floor === floor" :transform="`translate(${px},${pz})`">
       <circle r="21" fill="#8ccaf0" fill-opacity=".12"/><circle r="8" fill="#b7e6ff" stroke="#122534" stroke-width="2"/>
       <path d="M0 13L-5 6H5z" :transform="`rotate(${-hud.yaw*180/Math.PI})`" fill="#b7e6ff"/>
     </g>
+    <text v-if="hud?.level>=6 && floor<3" x="28" y="270" fill="#b8d4e5" font-size="13">↕ STAIRS</text><text v-if="hud?.level>=6 && floor===0" x="146" y="29" fill="#b8d4e5" font-size="13">↑ REAR EXIT</text>
     <text v-if="floor<3" x="92" y="358" fill="#6b8a9d" font-size="11" transform="rotate(-90 92 358)">WEST WING</text>
     <text v-if="floor<3" x="605" y="290" fill="#6b8a9d" font-size="11" transform="rotate(90 605 290)">EAST WING</text>
   </svg>

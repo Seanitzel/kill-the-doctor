@@ -1,0 +1,88 @@
+.studio-equipment-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  margin: 8px 0;
+}
+.studio-equipment-row .studio-launch {
+  flex: 1;
+  margin: 0 !important;
+}
+.equipment-launch {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #8bbbd2;
+  background: #254758;
+  color: #d9f1fc;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+.equipment-launch small {
+  display: block;
+  font-size: 10px;
+  color: #acccd9;
+  margin-top: 3px;
+}
+.equipment-launch b {
+  font-size: 12px;
+}
+.spit-immobilised,
+.spit-warning {
+  position: absolute;
+  z-index: 42;
+  left: 50%;
+  top: 20%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  max-width: min(620px, 90vw);
+  border: 1px solid #ff8990;
+  border-radius: 8px;
+  background: #782733ed;
+  color: #fff2f1;
+  box-shadow: 0 8px 30px #0005;
+}
+.spit-immobilised strong,
+.spit-immobilised span {
+  display: block;
+}
+.spit-immobilised strong {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.spit-immobilised span {
+  font-size: 12px;
+  margin-top: 5px;
+}
+.spit-immobilised > b {
+  font-size: 25px;
+  min-width: 30px;
+}
+.spit-warning {
+  background: #6b4520ed;
+  border-color: #edb46c;
+  font-size: 13px;
+}
+.spit-immobilised ~ .hud-notices {
+  top: 34%;
+}
+@media (max-height: 520px) {
+  .spit-immobilised,
+  .spit-warning {
+    top: 22%;
+    padding: 8px 12px;
+    max-width: 56vw;
+  }
+  .spit-immobilised span {
+    font-size: 10px;
+  }
+  .equipment-launch {
+    padding: 8px;
+  }
+  .studio-equipment-row .studio-launch span {
+    display: none;
+  }
+}

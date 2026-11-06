@@ -25,7 +25,7 @@ export const key = (x, z) => `${x},${z}`;
 export const edgeKey = (a, b) => [a, b].sort().join('|');
 export const world = (x, z) => ({ x: (x - 11) * TILE, z: (z - 11) * TILE });
 export const tileAt = (x, z) => ({ x: Math.round(x / TILE + 11), z: Math.round(z / TILE + 11) });
-export function makeLayout(floor = 0, siteIndex = 0) {
+export function makeLayout(floor = 0, siteIndex = 0, expanded = false) {
   const cells = new Map();
   const fill = (x, z, w, h, room = 'hall') => {
     for (let i = x; i < x + w; i++) for (let j = z; j < z + h; j++) cells.set(key(i, j), { x: i, z: j, room });
@@ -38,6 +38,7 @@ export function makeLayout(floor = 0, siteIndex = 0) {
   fill(8, 20, 7, 3); // entrance atrium
   if(floor===0)fill(11,23,2,2); // exterior forecourt beyond the real exit doors
   }
+  if(expanded&&floor<3){fill(0,3,2,3);if(floor===0)fill(4,0,2,3);}
   fill(11,2,1,1); // Recessed walk-in lift cabin behind the north corridor.
   const specs=floor===3?[[7,7,7,6]]:[...roomSpecs,[4,20,3,3]];
   const rooms = specs.map(([x, z, w, h], i) => {
@@ -74,7 +75,7 @@ export function makeLayout(floor = 0, siteIndex = 0) {
     }
   }
   const directory=floor===3?{x:-4,z:-21}:{...world(9,20)},schedule=floor===3?{x:-4,z:-18}:{...world(17,11)};
-  return { floor, cells, rooms, doors, doorEdges, walls,
+  return { floor, expanded, stairLinks:[], cells, rooms, doors, doorEdges, walls,exits:floor===0?[{x:0,z:39},...(expanded?[{x:-19.5,z:-32.7}]:[])]:[],
     exit: { ...world(11, floor===0?24:22), floor: 0 },
     elevator: { ...world(11, 3), floor, label: 'Elevator / stairs' },
     directory: { ...directory, floor, label: floor ? `${FLOORS[floor]} directory` : 'Staff directory' },

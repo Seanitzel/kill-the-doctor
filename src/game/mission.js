@@ -1,3 +1,4 @@
+import {normalizeSavedColors} from './saved-colors.js';
 import {securityCount} from './security-rules.js';
 import {evidenceRoom,evidenceLabel} from './campaign-locations.js';
 import {ChinaCase,chinaMission} from './china-rules.js';
@@ -9,19 +10,19 @@ import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,migrateCharacterSav
 import {assignmentType,ASSIGNMENT_TYPES} from './assignment-types.js';
 export const SAVE_KEY = 'ktd-northline-v1';
 export const UPGRADE_INFO = [
-  { id: 'shoes', name: 'Lightweight footwear', description: 'Move 8% faster per level. Quieter steps reduce suspicion.', cost: 120, max: 3 },
-  { id: 'light', name: 'High-output flashlight', description: 'A longer, brighter beam for the emergency corridors.', cost: 90, max: 3 },
-  { id: 'filter', name: 'Recovery filter', description: 'Recover 25% faster from fictional patient status effects.', cost: 100, max: 3 },
-  { id: 'suppressor', name: 'Sound suppressor', description: 'Reduce shot noise and delay the police response by 15 seconds.', cost: 180, max: 1 },
-  {id:'mask',name:'N95 respirator (owned legacy upgrade)',description:'Complete protection against new gas exposure.',cost:800,max:1},
-  {id:'sniper',name:'Scoped rifle',description:'Unlock an 80 m rifle with a magnified scope. Switch weapons from the action bar.',cost:350,max:1},
-  {id:'magazine',name:'Extended magazines',description:'Adds two pistol rounds and one rifle round per level.',cost:160,max:3},
-  {id:'vitals',name:'Protective lining',description:'Absorb one additional security hit per level.',cost:130,max:3},
-  {id:'reload',name:'Quick-change reload',description:'Reload 18% faster per level.',cost:100,max:3},
-  {id:'accuracy',name:'Precision sights',description:'Wider target acquisition and steadier aim per level.',cost:130,max:3},
-  {id:'power',name:'Weapon tuning',description:'Improved shot recovery and guard stopping power.',cost:160,max:3},
-  {id:'regularMask',name:'Regular face mask',description:'70% chance to block each new contamination exposure.',cost:400,max:1},
-  {id:'n95',name:'N95 respirator',description:'Complete protection from new gas exposure while equipped.',cost:800,max:1},
+  { id: 'shoes', name: 'Lightweight footwear', description: 'Move 8% faster per level. Quieter steps reduce suspicion.', cost: 270, max: 3 },
+  { id: 'light', name: 'High-output flashlight', description: 'A longer, brighter beam for the emergency corridors.', cost: 240, max: 3 },
+  { id: 'filter', name: 'Recovery filter', description: 'Recover 25% faster from fictional patient status effects.', cost: 250, max: 3 },
+  { id: 'suppressor', name: 'Sound suppressor', description: 'Reduce shot noise and delay the police response by 15 seconds.', cost: 330, max: 1 },
+  {id:'mask',name:'N95 respirator (owned legacy upgrade)',description:'Complete protection against new gas exposure.',cost: 950,max:1},
+  {id:'sniper',name:'Scoped rifle',description:'Unlock an 80 m rifle with a magnified scope. Switch weapons from the action bar.',cost: 500,max:1},
+  {id:'magazine',name:'Extended magazines',description:'Adds two pistol rounds and one rifle round per level.',cost: 310,max:3},
+  {id:'vitals',name:'Protective lining',description:'Absorb one additional security hit per level.',cost: 280,max:3},
+  {id:'reload',name:'Quick-change reload',description:'Reload 18% faster per level.',cost: 250,max:3},
+  {id:'accuracy',name:'Precision sights',description:'Wider target acquisition and steadier aim per level.',cost: 280,max:3},
+  {id:'power',name:'Weapon tuning',description:'Improved shot recovery and guard stopping power.',cost: 310,max:3},
+  {id:'regularMask',name:'Regular face mask',description:'70% chance to block each new contamination exposure.',cost: 550,max:1},
+  {id:'n95',name:'N95 respirator',description:'Complete protection from new gas exposure while equipped.',cost: 950,max:1},
 ];
 export const STAFF = [
   { name: 'Dr. Elias Voss', role: 'Consultant', gender: 'male', hair: '#3a2921', skin: '#d4a078', accent: '#47758a', glasses: true },
@@ -31,14 +32,14 @@ export const STAFF = [
   { name: 'Dr. Sofia Vale', role: 'Attending', gender: 'female', hair: '#573a2d', skin: '#c58d6c', accent: '#426e79', glasses: true },
   { name: 'Nurse Jonas Beck', role: 'Senior nurse', gender: 'male', hair: '#8b7761', skin: '#dfbba0', accent: '#4a8193', glasses: false },
 ];
-export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],playMode:'story',internationalVersion:2,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(20).fill(0),loadout:{weapon:'pistol',mask:false,maskType:'n95'},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
+export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],savedOutfitColors:[],playMode:'story',internationalVersion:2,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(20).fill(0),loadout:{weapon:'pistol',mask:false,maskType:'n95'},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
 export function readSave(storage) {
   const blank = defaultSave();
   try {
     const data = JSON.parse(storage.getItem(SAVE_KEY));
     if (!data || typeof data !== 'object') return blank;
     for (const k of ['coins', 'completed', 'attempts']) blank[k] = Math.max(0, Math.floor(Number(data[k]) || 0));
-    Object.assign(blank,migrateCharacterSave(data),migrateInternational(data));blank.ownedOutfits=normalizeWardrobe(data.ownedOutfits);
+    Object.assign(blank,migrateCharacterSave(data),migrateInternational(data));blank.ownedOutfits=normalizeWardrobe(data.ownedOutfits);blank.savedOutfitColors=normalizeSavedColors(data.savedOutfitColors);
     for (const u of UPGRADE_INFO) blank.upgrades[u.id] = Math.min(u.max, Math.max(0, Math.floor(Number(data.upgrades?.[u.id]) || 0)));
     blank.loadout={weapon:data.loadout?.weapon==='sniper'&&blank.upgrades.sniper?'sniper':'pistol',mask:!!data.loadout?.mask&&!!(blank.upgrades.mask||blank.upgrades.n95||blank.upgrades.regularMask),maskType:data.loadout?.maskType==='regular'?'regular':'n95'};
     blank.storySeen=Array.isArray(data.storySeen)?data.storySeen.filter(id=>typeof id==='string').slice(-128):[];blank.lastStory=typeof data.lastStory==='string'?data.lastStory:'';
@@ -57,10 +58,11 @@ export function readSave(storage) {
   return blank;
 }
 export function writeSave(storage, save) { try { storage.setItem(SAVE_KEY, JSON.stringify(save)); return true; } catch { return false; } }
+export function upgradePrice(save,id){const info=UPGRADE_INFO.find(u=>u.id===id);return info?(info.cost-150)*((save.upgrades?.[id]||0)+1)+150:Infinity;}
 export function purchase(save, id) {
   const info = UPGRADE_INFO.find(u => u.id === id);
   if (!info || save.upgrades[id] >= info.max) return false;
-  const cost = info.cost * (save.upgrades[id] + 1);
+  const cost = upgradePrice(save,id);
   if (save.coins < cost) return false;
   save.coins -= cost; save.upgrades[id]++;
   if(['mask','n95','regularMask'].includes(id)){save.loadout.mask=true;save.loadout.maskType=id==='regularMask'?'regular':'n95';}if(id==='sniper')save.loadout.weapon='sniper';
@@ -78,7 +80,7 @@ export class Mission {
     if(this.type!=='standard')this.target={...doctors[0],name:this.country.doctor,gender:this.country.gender,id:'operation-doctor-0',floor:3,room:makeLayout(3).rooms[0]};
     this.target=countryPerson(this.target,'doctor',this.country,this.seed,'target',0);
     this.state = 'investigate'; this.clues = []; this.elapsed = 0; this.timer = 0;
-    this.accompliceKills=0;this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
+    this.eliminatedIds=new Set();this.hiddenAccompliceKills=0;this.accompliceKills=0;this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
     this.recordsNotice=false;this.locatedRecords=false;this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
   }
   get photoOnly(){return this.type==='evidence'&&!this.china;}
@@ -95,19 +97,19 @@ export class Mission {
   }
   identify() { if(this.challenge.verifyHandover&&!this.clues.some(c=>c.type==='log'))return false;if (!this.targetDown && !this.result) { this.identified = true; this.state = 'discovered'; } }
   eliminate(npc) {
-    if (this.result || npc.dead) return;
+    if (this.result || npc.dead||this.eliminatedIds.has(npc.id||npc)) return false;
     this.shots++;
     if (npc.role === 'patient') { return this.finish(false, 'A patient was harmed. The assignment is void.'); }
-    if(this.targetDown&&(this.type!=='evidence'||this.china)&&mayHitStaff(this,npc)){if(!['security','police'].includes(npc.role))this.staffKills++;if(npc.complicity)this.accompliceKills++;return true;}
-    if(this.china){if(!npc.operationDoctor||this.china.recordings.length<3||this.operationDoctors.includes(npc.id))return false;this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;if(this.targetDown)this.beginEscape(30);return true;}
+    if(this.targetDown&&(this.type!=='evidence'||this.china)&&mayHitStaff(this,npc)){if(!['security','police'].includes(npc.role))this.staffKills++;if(npc.complicity){this.accompliceKills++;if(npc.wasHidden)this.hiddenAccompliceKills++;}this.eliminatedIds.add(npc.id||npc);return true;}
+    if(this.china){if(!npc.operationDoctor||this.china.recordings.length<3||this.operationDoctors.includes(npc.id))return false;this.eliminatedIds.add(npc.id||npc);this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;if(this.targetDown)this.beginEscape(30);return true;}
     if(this.type==='evidence')return this.finish(false,'A person was harmed. This was an evidence-only assignment.');
     if(this.type==='rescue'){
       if(!npc.id?.startsWith('operation-doctor-')||this.operationDoctors.includes(npc.id))return false;
-      this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;this.beginEscape(65);return true;
+      this.eliminatedIds.add(npc.id||npc);this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;this.beginEscape(65);return true;
     }
     if(!mayHitStaff(this,npc)){this.suspicion=Math.min(100,this.suspicion+20);return false;}
-    if(npc.role==='police'){this.suspicion=100;return true;}
-    this.staffKills++;if(npc.id!=='target'&&npc.complicity)this.accompliceKills++;
+    if(npc.role==='police'){this.suspicion=100;this.eliminatedIds.add(npc.id||npc);return true;}
+    this.eliminatedIds.add(npc.id||npc);this.staffKills++;if(npc.id!=='target'&&npc.complicity)this.accompliceKills++;
     if (npc.id === 'target') {
       this.targetDown = true; this.state = 'escape';
       this.beginEscape(65);
@@ -125,13 +127,14 @@ export class Mission {
     else this.suspicion = Math.max(0, this.suspicion - dt * 1.1);
   }
   escape(patientPresent=false) { if(this.china){if(!this.targetDown||this.china.recordings.length!==3||!this.china.poisoned||!this.china.badge)return;return this.finish(true,'Covert recordings secured. Both operating doctors stopped. You escaped with the evidence.');} if (this.type==='evidence'&&this.photos.length!==3||this.type==='rescue'&&(!this.patientReleased||!patientPresent)||this.type==='standard'&&!this.targetDown)return; if (!this.result) return this.finish(true,this.type==='rescue'?'Patient rescued. You both left the hospital before lockdown.':this.type==='evidence'?'Evidence secured. You escaped with all three photographs and no casualties.':'Assignment complete. You left the hospital before lockdown.'); }
+  accompliceBonus(){return (this.accompliceKills-this.hiddenAccompliceKills)*STAFF_BONUS+this.hiddenAccompliceKills*60;}
   finish(success, reason) {
     if (this.result) return this.result;
     this.state = 'results';
-    const breakdown = success ? this.china?[{label:'Three verified video angles',coins:300},{label:'Stolen identity infiltration',coins:100},{label:'Successful escape',coins:160},{label:'Marked accomplices',coins:this.accompliceKills*STAFF_BONUS}]:this.type==='evidence'?[{label:'Verified photographs',coins:this.photos.length*100},{label:'Nonviolent escape',coins:160}]:this.type==='rescue'?[{label:'Patient rescued',coins:300},{label:'Operation stopped',coins:160},{label:'Successful escort',coins:100},{label:'Marked accomplices',coins:this.accompliceKills*STAFF_BONUS}]:[
+    const breakdown = success ? this.china?[{label:'Three verified video angles',coins:300},{label:'Stolen identity infiltration',coins:100},{label:'Successful escape',coins:160},{label:'Marked accomplices',coins:this.accompliceBonus()}]:this.type==='evidence'?[{label:'Verified photographs',coins:this.photos.length*100},{label:'Nonviolent escape',coins:160}]:this.type==='rescue'?[{label:'Patient rescued',coins:300},{label:'Operation stopped',coins:160},{label:'Successful escort',coins:100},{label:'Marked accomplices',coins:this.accompliceBonus()}]:[
       { label: 'Assigned target', coins: 140 }, { label: 'Successful escape', coins: 100 },
       { label: 'Evidence collected', coins: this.clues.length * 20 },
-      { label: 'Marked accomplices', coins: this.accompliceKills * STAFF_BONUS },
+      { label: 'Marked accomplices', coins: this.accompliceBonus() },
       { label: 'Efficient escape', coins: Math.min(60, Math.floor(this.timer / 3)) },
     ] : [];
     const coins = breakdown.reduce((sum, row) => sum + row.coins, 0);

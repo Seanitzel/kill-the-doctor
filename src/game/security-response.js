@@ -21,18 +21,18 @@ export class SecurityResponse{
   }
  }
  setupStation(n){
-  const e=this.e;if(e.canStand(4,37.4,.3,0))n.pos.set(4,0,37.4);const seat={x:n.pos.x,z:n.pos.z-.95,rotation:0,yOffset:-.19,security:true},chair=securityChair();chair.position.set(seat.x,0,seat.z);this.stationRoot.add(chair);
+  const e=this.e;if(e.canStand(-1.05,37.4,.3,0))n.pos.set(-1.05,0,37.4);const seat={x:n.pos.x,z:n.pos.z-.95,rotation:0,yOffset:-.19,security:true},chair=securityChair();chair.position.set(seat.x,0,seat.z);this.stationRoot.add(chair);
   const c=footprint(seat.x,seat.z,.59,.66,1.3,0,'security-chair');e.hospitals[0].colliders.push(c);this.stationColliders.push(c);e.systems.navigation[0]=null;
   n.guardStanding={x:n.pos.x,z:n.pos.z};n.guardSeat=seat;n.visual.root.rotation.y=0;n.idlePhase='stand';n.nextSeatChange=e.mission.elapsed+12+e.mission.random()*12;
  }
  updateSeat(n,dt){
-  const e=this.e,alert=guardAlert(e.mission);if(!n.guardSeat)return;
-  if(alert){if(n.seated&&!n.guardSeatMotion){n.guardSeatMotion=new SeatMotion(n.guardStanding,n.guardSeat);n.guardSeatMotion.amount=1;}n.guardSeatMotion?.stand();}
+  const e=this.e,alert=guardAlert(e.mission);if(!n.guardSeat)return;const yielding=n.emergencyYieldUntil>e.mission.elapsed;
+  if(alert||yielding){if(n.seated&&!n.guardSeatMotion){n.guardSeatMotion=new SeatMotion(n.guardStanding,n.guardSeat);n.guardSeatMotion.amount=1;}n.guardSeatMotion?.stand();}
   else if(n.outsideGuard&&!n.guardSeatMotion&&e.mission.elapsed>=(n.nextSeatChange||0)){
    if(n.idlePhase==='patrol'){n.idlePhase='return';e.routeNPC(n,n.guardStanding);n.nextSeatChange=e.mission.elapsed+5;}
    else if(n.idlePhase==='return'&&dist(n.pos,n.guardStanding)>.45){e.routeNPC(n,n.guardStanding);n.nextSeatChange=e.mission.elapsed+3;}
    else if(n.seated){n.guardSeatMotion=new SeatMotion(n.guardStanding,n.guardSeat);n.guardSeatMotion.amount=1;n.guardSeatMotion.stand();n.idlePhase='stand';n.nextSeatChange=e.mission.elapsed+14;}
-   else if(n.idlePhase==='stand'&&n.hasSat){n.idlePhase='patrol';n.hasSat=false;n.speed=1.25;const goal={x:n.guardStanding.x-1.1,z:n.guardStanding.z+1.45};e.routeNPC(n,goal);n.nextSeatChange=e.mission.elapsed+8;}
+   else if(n.idlePhase==='stand'&&n.hasSat){n.idlePhase='patrol';n.hasSat=false;n.speed=1.25;const goal={x:n.guardStanding.x+.35,z:n.guardStanding.z+1.45};e.routeNPC(n,goal);n.nextSeatChange=e.mission.elapsed+8;}
    else{n.path=[];n.guardSeatMotion=new SeatMotion(n.guardStanding,n.guardSeat);n.idlePhase='sit';n.hasSat=true;n.nextSeatChange=e.mission.elapsed+22+e.mission.random()*14;}
   }
   if(n.guardSeatMotion){const motion=n.guardSeatMotion,p=motion.update(dt);n.pos.set(p.x,p.y,p.z);n.seatPose=p;n.seated=p.weight>.99;n.baselineY=p.y;n.visual.root.rotation.y=n.guardSeat.rotation;if(motion.done){n.seated=!!motion.target;n.guardSeatMotion=null;if(!n.seated){n.baselineY=0;n.seatPose=null;}}}
@@ -41,6 +41,7 @@ export class SecurityResponse{
  pose(){const e=this.e;for(const{n,gun,baton}of this.guns){if(n.dead||n.floor!==e.floor||n.animationVisible===false)continue;const active=guardAlert(e.mission),checking=!active&&e.mission.elapsed<(n.guardInspectionUntil||0);baton.visible=checking;const holstered=n.visual.model?.getObjectByName('KTD security baton');if(holstered)holstered.visible=!checking;n.visual.setAim?.(false);if(active)n.visual.root.rotation.y=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z);n.visual.poseActivity?.(active?(this.restraining?.n===n?'guard-restrain':'guard-aim'):checking?'guard-aim':n.movementSpeed>.1?'rest':'guard',e.time);if(n.seatPose||n.seated)n.visual.poseSeated?.(n.seatPose?.weight??1,n.seatPose?.lean??0);if((active||checking)&&n.visual.hand){n.visual.root.updateMatrixWorld(true);n.visual.hand.getWorldPosition(this.grip??=new T.Vector3());gun.position.copy(n.visual.root.worldToLocal(this.grip));if(checking){baton.position.copy(gun.position);baton.position.y+=.15;baton.rotation.x=.5;}}}}
  prepare(n){
   const e=this.e;if(n.role!=='security'||n.dead)return false;
+  if(!guardAlert(e.mission)&&n.emergencyYieldUntil>e.mission.elapsed){n.activity=n.guardSeatMotion||n.seated?'rest':null;return true;}
   if(!guardAlert(e.mission)){if(n.outsideGuard){n.activity=null;if(!['patrol','return'].includes(n.idlePhase)){n.path=[];n.activity='guard';n.visual.root.rotation.y=0;}return true;}return n.stationary?(n.path=[],n.activity='guard',true):false;}
   n.evacuating=false;if(n.guardSeat&&(n.seated||n.guardSeatMotion)){n.path=[];return true;}if(n.seated)e.systems.stand(n,e.playerPos);n.activity=null;n.seated=false;n.pos.y=0;n.speed=3.1;
   if(this.restraining?.n===n){n.path=[];return true;}
@@ -56,7 +57,7 @@ export class SecurityResponse{
  }
  update(dt){
   const e=this.e,now=e.mission.elapsed;this.stationRoot.visible=e.floor===0;this.root.visible=!!e.mission.targetDown;
-  for(const{n,sprite}of this.markers){sprite.visible=!n.dead&&!n.evacuated&&!n.accompliceHeld&&n.floor===e.floor;sprite.position.set(n.pos.x,2.18,n.pos.z);}
+  for(const{n,sprite}of this.markers){sprite.visible=!n.dead&&!n.evacuated&&!n.accompliceHeld&&n.floor===e.floor;sprite.position.set(n.pos.x,n.hiding?(n.lying?.60:n.seated?1.4:2.05):2.18,n.pos.z);}
   if(this.restraining){const r=this.restraining;if(r.n.dead||r.n.floor!==e.floor||dist(r.n.pos,e.playerPos)>1.7){this.restraining=null;}else if(now-r.at>=.95){e.mission.finish(false,'Security restrained you before you could escape.');e.finish();return;}}
   for(const{n,gun}of this.guns){if(!n.dead)this.updateSeat(n,dt);const active=!n.dead&&n.floor===e.floor&&guardAlert(e.mission);gun.visible=active;if(!active)continue;
    const d=dist(n.pos,e.playerPos),clear=this.clearShot(n);

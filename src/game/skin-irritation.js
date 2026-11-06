@@ -1,5 +1,6 @@
 import * as T from 'three';
-export function itchStrength(remaining){const age=30-remaining;return T.MathUtils.smoothstep(age,0,1.4)*(1-T.MathUtils.smoothstep(age,27.5,30));}
+export const ITCH_SECONDS=10;
+export function itchStrength(remaining){const age=ITCH_SECONDS-remaining;return T.MathUtils.smoothstep(age,0,1.1)*(1-T.MathUtils.smoothstep(age,8,ITCH_SECONDS));}
 // An alpha-mapped copy of the actual neck triangles: no rigid cylinder, no
 // opaque red band. Skin lighting and tone remain visible through the blush.
 export function neckIrritation(visual){
@@ -11,5 +12,5 @@ export function neckIrritation(visual){
  const size=128,pixels=new Uint8Array(size*size*4);for(let y=0;y<size;y++)for(let x=0;x<size;x++){const u=x/size,v=y/size,patch=(Math.exp(-(((u-.23)/.18)**2+((v-.51)/.29)**2))+.8*Math.exp(-(((u-.72)/.22)**2+((v-.44)/.25)**2))),soft=(.9+.10*Math.sin(x*.8)*Math.sin(y*.7)),i=(y*size+x)*4;pixels[i]=171;pixels[i+1]=68;pixels[i+2]=63;pixels[i+3]=Math.round(Math.min(1,patch)*soft*135);}
  const map=new T.DataTexture(pixels,size,size);map.colorSpace=T.SRGBColorSpace;map.needsUpdate=true;const geometry=skin.geometry.clone();geometry.setAttribute('uv',new T.BufferAttribute(uv,2));geometry.setIndex(selected);
  const material=new T.MeshStandardMaterial({map,transparent:true,opacity:0,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,roughness:.95,side:T.DoubleSide}),mesh=new T.SkinnedMesh(geometry,material);mesh.name='Temporary irritated neck';mesh.position.copy(skin.position);mesh.quaternion.copy(skin.quaternion);mesh.scale.copy(skin.scale);mesh.skeleton=skin.skeleton;mesh.bindMode=skin.bindMode;mesh.bindMatrix.copy(skin.bindMatrix);mesh.bindMatrixInverse.copy(skin.bindMatrixInverse);mesh.frustumCulled=false;mesh.visible=false;skin.parent.add(mesh);let disposed=false;
- return {mesh,update(remaining){if(disposed)return;mesh.visible=remaining>0&&remaining<=30;material.opacity=itchStrength(remaining)*.72;},dispose(){if(disposed)return;disposed=true;mesh.removeFromParent();geometry.dispose();material.dispose();map.dispose();}};
+ return {mesh,update(remaining){if(disposed)return;mesh.visible=remaining>0&&remaining<=ITCH_SECONDS;material.opacity=itchStrength(remaining)*.72;},dispose(){if(disposed)return;disposed=true;mesh.removeFromParent();geometry.dispose();material.dispose();map.dispose();}};
 }

@@ -27,9 +27,11 @@ export function addNightStreet(group,batch,m,site){
  batch.box(pavement,1.5,-.09,42.3,48,.14,8);batch.box(asphalt,1.5,-.13,53,65,.13,14);batch.box(m.steel,1.5,-.005,46.2,48,.14,.20);
  for(let x=-28;x<=30;x+=7)batch.box(line,x,-.055,53,3,.012,.14);
  for(let x=-21;x<=24;x+=3)batch.box(m.steel,x,-.012,42,.025,.01,7.9);
- for(const x of [-1.7,4.7]){
- batch.cylinder(poles,x,2.4,43,.075,4.8,.075);batch.box(poles,x,4.78,43.55,.15,.10,1.2);batch.box(poles,x,4.73,44.1,.58,.14,.82);batch.box(yellow,x,4.65,44.1,.48,.035,.70);
- const light=new T.PointLight('#ffd06c',22,17,2);light.position.set(x,4.4,44.1);light.name='Warm yellow streetlamp';group.add(light);
+ // Poles stand on the pavement edge, outside the ambulance's swept turning lane.
+ for(const x of [-5,10]){const lampZ=38.5;
+ batch.cylinder(poles,x,2.4,lampZ,.075,4.8,.075);batch.box(poles,x,4.78,lampZ+.55,.15,.10,1.2);batch.box(poles,x,4.73,lampZ+1.1,.58,.14,.82);batch.box(yellow,x,4.65,lampZ+1.1,.48,.035,.70);
+ batch.collider?.(x,lampZ,.18,.18,4.8,0,'streetlamp');
+ const light=new T.PointLight('#ffd06c',22,17,2);light.position.set(x,4.4,lampZ+1.1);light.name='Warm yellow streetlamp';group.add(light);
  }
  // Distant unlit facades remain cheap instanced silhouettes.
  for(let i=0;i<8;i++){const x=-25+i*8,height=5+(i%3)*2;batch.box(asphalt,x,height/2,64,6,height,3);for(let j=0;j<3;j++)batch.box(yellow,x-1.5+j*1.3,2.8,62.45,.30,.50,.035);}

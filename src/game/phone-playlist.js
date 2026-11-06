@@ -6,7 +6,7 @@ export const PHONE_TRACKS=Object.freeze([
  Object.freeze({id:'08uSLSoOsRc',title:'Let me in',artist:'VENUS'}),
 ]);
 export const nextPhoneTrack=index=>(Math.max(0,Number.isInteger(index)?index:0)+1)%PHONE_TRACKS.length;
-export const isOutsideHospital=(floor,pos)=>floor===0&&Number.isFinite(pos?.z)&&pos.z>35.9;
+export const isOutsideHospital=(floor,pos)=>floor===0&&Number.isFinite(pos?.z)&&(pos.z>35.9||pos.z< -26);
 export function canTakeBreak(engine){return !!engine.mission&&!engine.mission.result&&!engine.mission.targetDown&&!engine.mission.policeAlert&&engine.mission.state!=='escape'&&!engine.paused;}
 export class PhoneAudio {
  constructor({volume=.5,onChange=()=>{},createAudio=()=>new Audio()}={}){

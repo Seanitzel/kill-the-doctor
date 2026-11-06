@@ -1,7 +1,7 @@
 import {world,key,edgeKey} from './layout.js';
 import {blocksBody} from './collision.js';
 export function makeNavigation(layout,colliders){
-  const furniture=colliders.filter(c=>!c.object&&blocksBody(c)&&c.maxX-c.minX>.4&&c.maxZ-c.minZ>.4);
+  const furniture=colliders.filter(c=>!c.dynamic&&!c.object&&blocksBody(c)&&c.maxX-c.minX>.4&&c.maxZ-c.minZ>.4);
   const nav={...layout,cells:new Map([...layout.cells].filter(([,cell])=>{const p=world(cell.x,cell.z);return !furniture.some(c=>p.x+.26>c.minX&&p.x-.26<c.maxX&&p.z+.26>c.minZ&&p.z-.26<c.maxZ);})),blockedEdges:new Set()};
   for(const cell of nav.cells.values())for(const [dx,dz] of [[1,0],[0,1]]){
     const neighbor=nav.cells.get(key(cell.x+dx,cell.z+dz));if(!neighbor)continue;

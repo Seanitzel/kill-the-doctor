@@ -103,14 +103,38 @@ function surfaceAt(points, back) {
     return (back ? Math.min(...values) : Math.max(...values)) + (back ? -.012 : .012);
   };
 }
-function fitOutfit(model, top, style, accent, skinnedHem=false) {
+function tailoredTorso(model, top, accent) {
+  if (!top?.skeleton) return;
+  model.updateMatrixWorld(true);
+  const hip=bonePoint(model,'Hips'),neck=bonePoint(model,'Neck'),arm=bonePoint(model,'LeftArm');
+  if(!hip||!neck||!arm)return;
+  const width=Math.abs(arm.x)+.012,waist=hip.y-.025,shoulder=arm.y+.025;
+  const rings=[[waist,width*.95,.115],[waist+.13,width*.96,.125],[shoulder-.13,width*1.02,.135],[shoulder,width,.107],[neck.y+.012,.062,.055]];
+  const segments=24,vertices=[],uv=[],indices=[],joints=[],weights=[];
+  const upper=Math.max(0,top.skeleton.bones.findIndex(b=>b.name==='Spine2')),lower=Math.max(0,top.skeleton.bones.findIndex(b=>b.name==='Spine'));
+  for(let row=0;row<rings.length;row++)for(let i=0;i<=segments;i++){
+    const [y,rx,rz]=rings[row],angle=i/segments*Math.PI*2,blend=THREE.MathUtils.clamp((y-waist)/(shoulder-waist),0,1);
+    vertices.push(Math.cos(angle)*rx,y,neck.z+.01+Math.sin(angle)*rz);uv.push(i/segments,row/(rings.length-1));joints.push(upper,lower,0,0);weights.push(blend,1-blend,0,0);
+    if(row&&i){const b=row*(segments+1)+i;indices.push(b,b-1,b-segments-2,b,b-segments-2,b-segments-1);}
+  }
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(joints,4));geometry.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));geometry.setIndex(indices);
+  if(top.userData.appearanceGeometryOwned)top.geometry.dispose();top.geometry=geometry;top.userData.appearanceGeometryOwned=true;
+  const inverse=top.matrixWorld.clone().invert().multiply(model.matrixWorld),position=geometry.attributes.position;
+  for(let i=0;i<position.count;i++){const point=new THREE.Vector3().fromBufferAttribute(position,i).applyMatrix4(inverse).applyMatrix4(inverseSkinMatrix(top,i));position.setXYZ(i,point.x,point.y,point.z);}
+  geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+  for(const key of ['map','normalMap','roughnessMap','metalnessMap','aoMap'])top.material[key]=null;
+  top.material.color.set(accent);top.material.roughness=.91;top.material.side=THREE.DoubleSide;top.material.needsUpdate=true;
+}
+function fitOutfit(model, top, style, accent, skinnedHem=false, bomber=false) {
   const spine = model.getObjectByName('Spine1'), chest = model.getObjectByName('Spine2'), neck = model.getObjectByName('Neck');
   if (!spine || !chest || !neck) return;
+  tailoredTorso(model,top,accent);
   const { points } = coordinates(top, model), box = new THREE.Box3().setFromPoints(points);
   const neckPoint = model.worldToLocal(neck.getWorldPosition(new THREE.Vector3()));
   const waist = box.min.y + .025, shoulder = neckPoint.y - .09;
   const front = surfaceAt(points, false), back = surfaceAt(points, true);
   const suit=style==='suit';
+  if(!suit)fitSuitSleeves(model,top,clothMaterial(accent));
   // Reuse the torso's completed fabric color path. A fresh accent material is
   // noticeably brighter than the existing sRGB recolored canvas on the body.
   const dark=suit&&top.material.map?top.material.clone():clothMaterial(style==='jacket'||suit?accent:'#283d48');
@@ -121,8 +145,8 @@ function fitOutfit(model, top, style, accent, skinnedHem=false) {
     reshape(top, model, p => { if (Math.abs(p.x) < .24) { p.x *= suit?1.015:1.055; p.z = (p.z - .02) * (suit?1.025:1.06) + .02; if (p.y < waist + .11) p.y -= suit?.06:.035; } });
     for (const sign of [-1, 1]) {
       const lapel=suit?[[sign*.081,shoulder+.012],[sign*.037,shoulder-.005],[sign*.019,shoulder-.17],[sign*.065,shoulder-.095]]:[[sign*.105,shoulder+.025],[sign*.04,shoulder+.005],[sign*.012,shoulder-.19],[sign*.095,shoulder-.085]];
-      fittedPanel(model,chest,lapel,front,trim,suit?'KTD suit lapel':'KTD jacket lapel',false,suit?.004:.008);
-      const pocket=suit?[[sign*.072,waist+.11],[sign*.145,waist+.115],[sign*.145,waist+.109],[sign*.072,waist+.104]]:[[sign*.055,waist+.13],[sign*.15,waist+.15],[sign*.15,waist+.06],[sign*.055,waist+.045]];
+      if(!bomber)fittedPanel(model,chest,lapel,front,trim,suit?'KTD suit lapel':'KTD jacket lapel',false,suit?.004:.008);
+      const pocket=bomber?[[sign*.055,waist+.09],[sign*.14,waist+.12],[sign*.14,waist+.105],[sign*.055,waist+.075]]:suit?[[sign*.072,waist+.11],[sign*.145,waist+.115],[sign*.145,waist+.109],[sign*.072,waist+.104]]:[[sign*.055,waist+.13],[sign*.15,waist+.15],[sign*.15,waist+.06],[sign*.055,waist+.045]];
       fittedPanel(model,spine,pocket,front,dark,suit?'KTD suit welt pocket':'KTD jacket pocket',false,suit?.003:.008);
     }
     if(suit){
@@ -215,13 +239,64 @@ function mergePieces(pieces,keepUV=false){
 function spherePiece(center,size,segments=8){const geometry=new THREE.SphereGeometry(1,segments,6);geometry.scale(...size);geometry.translate(...center);return geometry;}
 function tubePiece(points,radius=.008,segments=12,radial=6){return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(point=>new THREE.Vector3(...point))),segments,radius,radial,false);}
 function bonePoint(model,name){const bone=model.getObjectByName(name);return bone?model.worldToLocal(bone.getWorldPosition(new THREE.Vector3())):null;}
-function fitSuitSleeves(model,top,mat){
-  for(const side of ['Left','Right']){
-    const arm=model.getObjectByName(`${side}Arm`),fore=model.getObjectByName(`${side}ForeArm`),hand=model.getObjectByName(`${side}Hand`);if(!arm||!fore||!hand)continue;
-    const a=bonePoint(model,`${side}Arm`),b=bonePoint(model,`${side}ForeArm`),c=bonePoint(model,`${side}Hand`),direction=c.clone().sub(a).normalize();
-    const upper=new THREE.CylinderGeometry(.090,.082,a.distanceTo(b)+.035,9,1,true);upper.rotateZ(Math.PI/2);upper.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(-1,0,0),b.clone().sub(a).normalize()));upper.translate(...a.clone().lerp(b,.5).toArray());attachGeometry(model,arm,upper,mat,'KTD suit upper sleeve');
-    const lower=new THREE.CylinderGeometry(.074,.048,b.distanceTo(c)-.025,9,1,true);lower.rotateZ(Math.PI/2);lower.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(-1,0,0),c.clone().sub(b).normalize()));lower.translate(...b.clone().lerp(c,.46).toArray());attachGeometry(model,fore,lower,mat,'KTD suit lower sleeve');
-    const cuff=new THREE.TorusGeometry(.048,.0035,5,12);cuff.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),direction));cuff.translate(...c.clone().addScaledVector(direction,-.026).toArray());attachGeometry(model,fore,cuff,clothMaterial('#e7e4df'),'KTD suit cuff');
+function trimSourceSleeves(mesh) {
+  if (!mesh?.isSkinnedMesh) return;
+  const source = mesh.geometry, indices = source.index?.array;
+  const joints = source.attributes.skinIndex, weights = source.attributes.skinWeight;
+  if (!indices || !joints || !weights) return;
+  const armVertex = index => {
+    let weight = 0;
+    for (let j = 0; j < 4; j++) {
+      const name = mesh.skeleton.bones[joints.getComponent(index, j)]?.name || '';
+      if (/^(Left|Right)(Arm|ForeArm)$/.test(name)) weight += weights.getComponent(index, j);
+    }
+    return weight > .25;
+  };
+  const keep = [];
+  for (let i = 0; i < indices.length; i += 3) {
+    if (![indices[i], indices[i + 1], indices[i + 2]].some(armVertex)) {
+      keep.push(indices[i], indices[i + 1], indices[i + 2]);
+    }
+  }
+  const geometry = source.clone();
+  geometry.setIndex(keep);
+  geometry.clearGroups();
+  if (mesh.userData.appearanceGeometryOwned) source.dispose();
+  mesh.geometry = geometry;
+  mesh.userData.appearanceGeometryOwned = true;
+}
+function fitSuitSleeves(model, top, mat) {
+  // Replace the source sweater sleeves, rather than drawing a second sleeve
+  // over them. The rounded shoulder closes the replacement at every arm angle.
+  trimSourceSleeves(top);
+  model.traverse(mesh => {
+    if (mesh.material?.name === 'Wolf3D_Body') trimSourceSleeves(mesh);
+  });
+  for (const side of ['Left', 'Right']) {
+    const arm = model.getObjectByName(`${side}Arm`);
+    const fore = model.getObjectByName(`${side}ForeArm`);
+    const hand = model.getObjectByName(`${side}Hand`);
+    if (!arm || !fore || !hand) continue;
+    const a = bonePoint(model, `${side}Arm`), b = bonePoint(model, `${side}ForeArm`);
+    const c = bonePoint(model, `${side}Hand`), direction = c.clone().sub(b).normalize();
+    const profile = [];
+    for (let i = 0; i <= 8; i++) {
+      const angle = i / 8 * Math.PI / 2;
+      profile.push(new THREE.Vector2(.073 * Math.sin(angle), -.073 * Math.cos(angle)));
+    }
+    profile.push(new THREE.Vector2(.065, a.distanceTo(b) + .015));
+    const upper = new THREE.LatheGeometry(profile, 16);
+    upper.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()));
+    upper.translate(...a.toArray());
+    attachGeometry(model, arm, upper, mat, 'KTD suit upper sleeve');
+    const lower = new THREE.CylinderGeometry(.066, .043, b.distanceTo(c) - .025, 16, 1, true);
+    lower.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(c).normalize()));
+    lower.translate(...b.clone().lerp(c, .46).toArray());
+    attachGeometry(model, fore, lower, mat, 'KTD suit lower sleeve');
+    const cuff = new THREE.TorusGeometry(.043, .0035, 5, 12);
+    cuff.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), direction));
+    cuff.translate(...c.clone().addScaledVector(direction, -.026).toArray());
+    attachGeometry(model, fore, cuff, clothMaterial('#e7e4df'), 'KTD suit cuff');
   }
 }
 function securityEquipment(model){
@@ -289,7 +364,7 @@ function skinTattoo(model,source,{center,width,height,minZ,style,name}){
   if(!source?.isSkinnedMesh)return;
   const {points}=coordinates(source,model),uv=new Float32Array(points.length*2),indices=[],sourceIndex=source.geometry.index;
   points.forEach((point,i)=>{uv[i*2]=(point.x-center.x)/width+.5;uv[i*2+1]=.5-(point.y-center.y)/height;});
-  for(let i=0;i<(sourceIndex?.count||points.length);i+=3){const triangle=[0,1,2].map(offset=>sourceIndex?sourceIndex.getX(i+offset):i+offset),p=triangle.map(index=>points[index]),normal=new THREE.Vector3().subVectors(p[1],p[0]).cross(new THREE.Vector3().subVectors(p[2],p[0])).normalize();
+  for(let i=0;i+2<(sourceIndex?sourceIndex.count:points.length);i+=3){const triangle=[0,1,2].map(offset=>sourceIndex?sourceIndex.getX(i+offset):i+offset),p=triangle.map(index=>points[index]),normal=new THREE.Vector3().subVectors(p[1],p[0]).cross(new THREE.Vector3().subVectors(p[2],p[0])).normalize();
     if(normal.z<.15||Math.max(...p.map(v=>v.x))<center.x-width*.65||Math.min(...p.map(v=>v.x))>center.x+width*.65||Math.max(...p.map(v=>v.y))<center.y-height*.65||Math.min(...p.map(v=>v.y))>center.y+height*.65||p.reduce((sum,v)=>sum+v.z,0)/3<minZ)continue;indices.push(...triangle);
   }
   if(!indices.length)return;
@@ -411,7 +486,7 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
   }
   const top=find('Outfit_Top');
   const premium=PREMIUM_OUTFITS.find(o=>o.id===person.outfit);
-  if(role==='civilian'&&premium&&top){for(const mesh of meshes)if(/Outfit_Top|Outfit_Bottom/.test(mesh.material?.name||'')){mesh.material.map=null;mesh.material.color.set(mesh.material.name.includes('Bottom')?person.pants||premium.color:person.accent||premium.color);}fitOutfit(model,top,premium.base,person.accent||premium.color,premium.id==='expedition');premiumDetails(model,top,premium);}
+  if(role==='civilian'&&premium&&top){for(const mesh of meshes)if(/Outfit_Top|Outfit_Bottom/.test(mesh.material?.name||'')){mesh.material.map=null;mesh.material.color.set(mesh.material.name.includes('Bottom')?person.pants||premium.color:person.accent||premium.color);}fitOutfit(model,top,premium.base,person.accent||premium.color,['expedition','velvet','ivory'].includes(premium.id),premium.id==='ivory');premiumDetails(model,top,premium);}
   else if(role==='civilian'&&top && ['jacket','tactical','suit'].includes(person.outfit))fitOutfit(model,top,person.outfit,person.accent || '#526778');
   const hair=find('Hair'), skin=find('Skin');
   if(hair){const style=person.hairstyle||'original',hex=person.hair||'#342b25';if(['cropped','slick','ponytail','ponytail-front','ponytail-side'].includes(style))fitHair(model,hair,skin,style,hex);else if(['afro','braids','straight','curls-short','curls-long'].includes(style))extendedHair(model,hair,skin,style,hex);
@@ -465,7 +540,16 @@ function premiumDetails(model,top,item){
   const {points}=coordinates(top,model),box=new THREE.Box3().setFromPoints(points),front=surfaceAt(points,false),y=bonePoint(model,'Hips').y+.18;
   const trim=clothMaterial(item.trim,{roughness:.6});
   for(const side of [-1,1])for(let i=0;i<(item.id==='nocturne'?3:1);i++){const x=side*.045,by=y+i*.065,g=new THREE.SphereGeometry(.006,8,6);g.scale(1,1,.4);g.translate(x,by,front(x,by)+.01);attachGeometry(model,spine,g,trim,'KTD '+item.id+' tailored button');}
-  if(item.id==='expedition'){
+  if(item.id==='ivory'){
+    const hem=box.min.y;reshape(top,model,p=>{if(p.y<hem+.18)p.y+=.065*(1-THREE.MathUtils.smoothstep(p.y,hem,hem+.18));});
+    const rib=clothMaterial(item.trim);for(let i=0;i<3;i++)fittedPanel(model,spine,[[-.16,y-.11+i*.012],[.16,y-.11+i*.012],[.16,y-.105+i*.012],[-.16,y-.105+i*.012]],front,rib,'KTD ivory bomber ribbed waistband',false,.005);
+    for(const side of[-1,1])fittedPanel(model,chest,[[side*.06,y+.09],[side*.15,y+.12],[side*.15,y+.04],[side*.06,y+.01]],front,trim,'KTD ivory diagonal bomber pocket',false,.005);
+  }else if(item.id==='velvet'){
+    const hem=box.min.y,waist=hem+.22;reshape(top,model,p=>{if(p.y<waist){const t=1-THREE.MathUtils.smoothstep(p.y,hem,waist);p.y-=.26*t;p.x*=1+.50*t;p.z=.01+(p.z-.01)*(1+.85*t);}});top.userData.fittedCoatHem=true;
+    for(const side of[-1,1])fittedPanel(model,spine,[[side*.04,y-.02],[side*.17,y-.02],[side*.17,y+.012],[side*.04,y+.012]],front,trim,'KTD velvet coat belt',false,.008);
+  }else if(item.id==='cobalt'){
+    for(const side of[-1,1]){fittedPanel(model,chest,[[side*.075,y+.13],[side*.145,y+.13],[side*.145,y+.27],[side*.075,y+.27]],front,trim,'KTD cobalt technical shoulder harness',false,.009);}
+  }else if(item.id==='expedition'){
     // Extend the existing skinned fabric, preserving its atlas and bone weights.
     // The former rigid green cylinder was detached from the jacket silhouette.
     const hem=box.min.y,waist=hem+.17;

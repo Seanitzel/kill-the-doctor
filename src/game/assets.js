@@ -1,3 +1,4 @@
+import {PREMIUM_OUTFITS} from './loadout.js';
 import {SmokingPose} from './smoking-pose.js';
 import { assetUrl } from './asset-url.js';
 import {applyAppearance,disposeAppearance,disposeAppearanceCache,NURSE_UNIFORM,staffBadgeTexture} from './appearance.js';
@@ -97,7 +98,8 @@ export function chair(b, m, x, z, rot = 0) {
 }
 export function desk(b, m, x, z, rot = 0) {
   b.collider?.(x,z,2.3,.95,1.45,rot,'desk');
-  b.box(m.white, x, .85, z, 2.3, .09, .9, rot); b.box(m.blue, x, .42, z, 2.1, .78, .8, rot);
+  b.box(m.white, x, .85, z, 2.3, .09, .9, rot); // Open knee space makes the desk usable and permits a physical hiding pose.
+  for(const end of[-1,1])for(const side of[-1,1]){const lx=x+Math.cos(rot)*end*1.04+Math.sin(rot)*side*.32,lz=z-Math.sin(rot)*end*1.04+Math.cos(rot)*side*.32;b.box(m.steel,lx,.43,lz,.055,.8,.055,rot);}
   b.box(m.dark, x, 1.22, z, .62, .4, .07, rot); b.box(m.monitor, x, 1.22, z + .045, .54, .32, .01, rot);
   b.box(m.steel, x, 1, z, .05, .18, .05); b.box(m.dark, x, .92, z + .3, .55, .03, .19, rot);
 }
@@ -218,8 +220,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
         o.material = o.material.clone();if(/Body|Skin|Outfit/.test(o.material.name))o.material.side=THREE.DoubleSide; o.material.roughness = .88; o.material.metalness = 0;
         const name = o.material.name;
         if (person) {
-          if (name.includes('Outfit_Top')) { const color = role === 'nurse' ? NURSE_UNIFORM : role === 'doctor' ? '#d9e4ea' : ['security','police'].includes(role) ? '#344b62' : person.accent || '#718e9c'; o.material.map = recolorCloth(o.material.map,color,assets,clothLeases); o.material.color.set('#ffffff'); }
-          if (name.includes('Outfit_Bottom')) { o.material.map = recolorCloth(o.material.map,role === 'nurse' ? NURSE_UNIFORM : role === 'patient' ? person.pants||'#6b6055' : role==='civilian' ? person.pants||'#455b70' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
+          if (name.includes('Outfit_Top')&&!['nurse','patient','security','police'].includes(role)&&!person.medicalScrubs&&!PREMIUM_OUTFITS.some(o=>o.id===person.outfit)) { const color = role === 'nurse' ? NURSE_UNIFORM : role === 'doctor' ? '#d9e4ea' : ['security','police'].includes(role) ? '#344b62' : person.accent || '#718e9c'; o.material.map = recolorCloth(o.material.map,color,assets,clothLeases); o.material.color.set('#ffffff'); }
+          if (name.includes('Outfit_Bottom')&&!['nurse','patient','security','police'].includes(role)&&!person.medicalScrubs&&!PREMIUM_OUTFITS.some(o=>o.id===person.outfit)) { o.material.map = recolorCloth(o.material.map,role === 'nurse' ? NURSE_UNIFORM : role === 'patient' ? person.pants||'#6b6055' : role==='civilian' ? person.pants||'#455b70' : '#455b70',assets,clothLeases); o.material.color.set('#ffffff'); }
           if (name.includes('Hair')) o.material.color.set(person.hair || '#3b302c');
           if(name.includes('Skin')||name.includes('Body')){o.material.map=recolorCloth(o.material.map,'#ffffff',assets,clothLeases);o.material.color.set(person.skin||'#e0ad87');o.material.emissive.set(person.skin||'#e0ad87');o.material.emissiveIntensity=.035;o.material.metalness=0;o.material.userData.skinAlbedo=true;}
           if (name.includes('Glasses')) o.visible = !!person.glasses;
@@ -243,7 +245,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
   const seatThigh=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2),seatShin=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2);
   const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
   const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Thumb','Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.03:joint===2?.08:.05))});}
-  let smokingPose,eatingPose;const scratchBones=['RightArm','RightForeArm','RightHand','Head','Spine'].map(name=>({bone:activityBones[name],base:new THREE.Quaternion(),target:new THREE.Quaternion()})).filter(b=>b.bone);
+  let smokingPose,eatingPose,drinkingPose;const scratchBones=['RightArm','RightForeArm','RightHand','Head','Spine'].map(name=>({bone:activityBones[name],base:new THREE.Quaternion(),target:new THREE.Quaternion()})).filter(b=>b.bone);
   const wrists=['LeftHand','RightHand'].map(name=>({bone:activityBones[name],bind:activityBones[name]?.quaternion.clone()})).filter(w=>w.bone);
   const orient = (name, child, direction) => {
     const bone=activityBones[name], tip=activityBones[child]; if(!bone || !tip) return;
@@ -268,7 +270,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     orient('RightArm','RightForeArm',elbowTarget.sub(start).toArray());
     orient('RightForeArm','RightHand',target.sub(pointInModel(elbow)).toArray());
   };
-  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, poseSmoking(time){smokingPose ||= new SmokingPose(model,restingFingers);return smokingPose.update(time);}, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt, {running=false}={}) {
+  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, poseDrinking(time){drinkingPose ||= new SmokingPose(model,restingFingers,'drink');return drinkingPose.update(time);}, poseSmoking(time){smokingPose ||= new SmokingPose(model,restingFingers);return smokingPose.update(time);}, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt, {running=false}={}) {
     const next = running&&speed>1.5?'Run':locomotionForSpeed(speed,current);
     if (next !== current && actions[next]) { actions[current]?.fadeOut(.18); actions[next].reset().fadeIn(.18).play(); current = next; }
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.24, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;

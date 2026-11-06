@@ -170,3 +170,11 @@ test('flight recording sources are released on interruption and arrival cues do 
  audio.flightArrival();assert.equal(audio.activeSynth.size,2);for(const record of [...audio.activeSynth])record.source.finish();assert.equal(audio.activeSynth.size,0);
  audio.pause(true);assert.equal(audio.flight(),null);
 });
+
+test('all eight stalled voice loads expire, clear their slots and allow a clean retry',async t=>{
+ const h=harness(t),audio=h.audio();await audio.start();await flush();const available=h.fetchImpl;h.fetchImpl=()=>new Promise(()=>{});
+ const pending=Array.from({length:8},(_,i)=>audio.dialogueBuffer(`stalled-${i}`,audio.ctx).catch(error=>error));assert.equal(audio.dialogueRequests.size,8);assert.equal(audio.dialogueBuffer('ninth',audio.ctx),null);h.runTimers();await Promise.all(pending);assert.equal(audio.dialogueRequests.size,0);assert.equal(audio.dialogueBuffers.size,0);assert.equal(h.timers.size,0);h.fetchImpl=available;assert.ok(await audio.dialogueBuffer('stalled-0',audio.ctx));assert.equal(audio.dialogueRequests.size,0);assert.equal(h.timers.size,0);
+});
+test('a distressed actor sample follows the actor rather than retaining an old world position',async t=>{
+ const h=harness(t),audio=h.audio();await audio.start();await flush();const n={id:'jamie',pos:{x:1,y:0,z:2}},record=audio.distress({gender:'male'},{x:1,y:1.5,z:2,floor:0},.9,n);assert.ok(record);assert.equal(record.panner.refDistance,4);n.pos.x=10;n.pos.z=12;audio.setListener({x:9,y:1.7,z:12},{x:0,y:0,z:1},0);assert.equal(record.panner.positionX.value,10);assert.equal(record.panner.positionY.value,1.5);assert.equal(record.panner.positionZ.value,12);audio.releaseSample(record,true);assert.ok(!audio.activeSamples.has(record));assert.equal(record.source.onended,null);
+});

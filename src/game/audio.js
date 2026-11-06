@@ -181,9 +181,9 @@ export class HospitalAudio {
     if(!this.settings.speech||position.floor!==undefined&&position.floor!==this.listenerFloor)return null;
     return this.playSample(person.gender==='female'?'pain-female':'pain-male',position,Math.min(1,gain));
   }
-  distress(person={},position=this.listenerPosition,gain=.8){
+  distress(person={},position=this.listenerPosition,gain=.8,speaker=null){
     if(!this.settings.speech||position.floor!==undefined&&position.floor!==this.listenerFloor)return null;
-    return this.playSample(person.gender==='female'?'distress-female':'distress-male',position,Math.min(1,gain));
+    if(speaker)for(const record of [...this.activeSamples])if(record.speakerId===speaker.id)this.releaseSample(record,true);return this.sampleNodes(person.gender==='female'?'distress-female':'distress-male',position,Math.min(1,gain),false,null,{speakerId:speaker?.id,follow:speaker?.pos});
   }
   laugh(person={},position=this.listenerPosition,gain=.45,speakerId){
     if(!this.settings.speech||position.floor!==undefined&&position.floor!==this.listenerFloor)return null;
@@ -218,13 +218,13 @@ export class HospitalAudio {
       const high=this.ctx.createBiquadFilter(),low=this.ctx.createBiquadFilter(),speaker=this.ctx.createBiquadFilter();high.type='highpass';high.frequency.value=430;low.type='lowpass';low.frequency.value=2200;speaker.type='lowpass';speaker.frequency.value=2600;
       source.connect(high);high.connect(low);low.connect(speaker);speaker.connect(volume);filters.push(high,low,speaker);
     }else{
-      panner.panningModel='HRTF';panner.distanceModel='inverse';panner.refDistance=name==='sneeze'?1.8:3;panner.maxDistance=25;panner.rolloffFactor=name==='sneeze'?1.15:.9;
+      panner.panningModel='HRTF';panner.distanceModel='inverse';panner.refDistance=name.startsWith('distress-')?4:name==='sneeze'?1.8:3;panner.maxDistance=25;panner.rolloffFactor=name==='sneeze'?1.15:.9;
       panner.positionX.value=position.x;panner.positionY.value=position.y||1;panner.positionZ.value=position.z;
       if(['ambulance-field','car-engine','car-road'].includes(name)){const distanceFilter=this.ctx.createBiquadFilter();distanceFilter.type='lowpass';distanceFilter.frequency.value=6500;source.connect(distanceFilter);distanceFilter.connect(panner);filters.push(distanceFilter);}else source.connect(panner);panner.connect(volume);
     }
     const conversation=name.startsWith('voice-')&&!options.publicAddress;
     volume.gain.value=gain*(conversation&&this.paActive()?.28:1);volume.connect(this.lowpass);source.playbackRate.value=options.rate||1;
-    const record={source,panner,volume,filters,name,speakerId:options.speakerId,publicAddress:!!options.publicAddress,conversation,baseGain:gain,floor:options.publicAddress?undefined:position.floor};this.activeSamples.add(record);if(record.publicAddress)this.duckConversations();
+    const record={source,panner,volume,filters,name,follow:options.follow,speakerId:options.speakerId,publicAddress:!!options.publicAddress,conversation,baseGain:gain,floor:options.publicAddress?undefined:position.floor};this.activeSamples.add(record);if(record.publicAddress)this.duckConversations();
     source.onended=()=>this.releaseSample(record);
     if(this.activeSamples.size>24)this.releaseSample([...this.activeSamples].find(item=>!item.source.loop)||this.activeSamples.values().next().value,true);
     try{source.start(this.ctx.currentTime+(options.startDelay||0),options.offset||0);}catch{this.releaseSample(record,true);return null;}return record;
@@ -274,7 +274,7 @@ export class HospitalAudio {
   }
   setListener(position,direction,floor=0) {if(this.ctx&&floor!==this.listenerFloor)for(const record of this.activeSamples)if(record.floor!==undefined&&record.floor!==floor)record.volume.gain.setTargetAtTime(0,this.ctx.currentTime,.15);this.listenerFloor=floor;
     this.listenerPosition.x=position.x;this.listenerPosition.y=position.y;this.listenerPosition.z=position.z;this.listenerPosition.floor=floor;
-    if(!this.ctx)return;const listener=this.ctx.listener;
+    if(!this.ctx)return;for(const record of this.activeSamples)if(record.follow&&record.panner){record.panner.positionX.value=record.follow.x;record.panner.positionY.value=record.follow.y+1.5;record.panner.positionZ.value=record.follow.z;}const listener=this.ctx.listener;
     if(listener.positionX){listener.positionX.value=position.x;listener.positionY.value=position.y;listener.positionZ.value=position.z;listener.forwardX.value=direction.x;listener.forwardY.value=direction.y;listener.forwardZ.value=direction.z;listener.upX.value=0;listener.upY.value=1;listener.upZ.value=0;}
   }
   speak(text,person={},gain=1,priority=1) {
@@ -301,11 +301,12 @@ export class HospitalAudio {
     if(pending){this.dialogueBuffers.delete(key);this.dialogueBuffers.set(key,pending);return pending;}
     if(this.dialogueRequests.size>=DIALOGUE_MAX_PENDING)return null;
     const controller=new AbortController();this.dialogueRequests.set(key,controller);
-    pending=this.fetchBuffer(assetUrl(`audio/${key.startsWith('countries/')?'':'dialogue/'}${key}.mp3`)+`?v=${AUDIO_REVISION}`,ctx,controller).then(buffer=>{
+    const deadline=setTimeout(()=>controller.abort(),12000);
+    pending=waitFor(this.fetchBuffer(assetUrl(`audio/${key.startsWith('countries/')?'':'dialogue/'}${key}.mp3`)+`?v=${AUDIO_REVISION}`,ctx,controller),{signal:controller.signal,timeout:0}).then(buffer=>{
       if(this.dialogueBuffers.get(key)===pending){
         const size=Math.max(0,(buffer.length||0)*(buffer.numberOfChannels||1)*4);this.dialogueSizes.set(key,size);this.dialogueBytes+=size;this.pruneDialogue();
       }return buffer;
-    }).catch(error=>{if(this.dialogueBuffers.get(key)===pending)this.dropDialogue(key);throw error;}).finally(()=>{if(this.dialogueRequests.get(key)===controller)this.dialogueRequests.delete(key);});
+    }).catch(error=>{if(this.dialogueBuffers.get(key)===pending)this.dropDialogue(key);throw error;}).finally(()=>{clearTimeout(deadline);if(this.dialogueRequests.get(key)===controller)this.dialogueRequests.delete(key);});
     this.dialogueBuffers.set(key,pending);this.pruneDialogue();return pending;
   }
   async dialogue(text,person,gain,urgent=false,position=null,options={}) {

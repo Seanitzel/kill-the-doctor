@@ -22,6 +22,21 @@ test('Green clouds affect only selected patients for 30 or 60 seconds; fixture f
 });
 test('Bundled NPC voice recordings play concurrently and stop when changing floors',async({page})=>{
   await start(page);
-  const result=await page.evaluate(async()=>{const e=window.__ktd.engine;e.settings.volume=.4;e.settings.speech=true;e.audio.setSettings(e.settings);const group=e.life.groups.find(g=>g.kind==='nurses'&&g.floor===0),source=n=>({x:n.pos.x,y:1.4,z:n.pos.z,floor:0});await Promise.all([e.audio.dialogue('Did you finish the handover for the west wing?',group.actors[0].person,.8,false,source(group.actors[0])),e.audio.dialogue('Yes. The evening rounds are all written up.',group.actors[1].person,.8,false,source(group.actors[1]))]);const voices=[...e.audio.activeSamples].filter(s=>s.name.startsWith('voice-'));const active=voices.length,durations=voices.map(v=>v.source.buffer.duration);e.audio.setListener(e.camera.position,e.camera.getWorldDirection(e.playerPos.clone()),1);await new Promise(resolve=>setTimeout(resolve,500));return {active,durations,cached:e.audio.dialogueBuffers.size,muted:voices.every(v=>v.volume.gain.value<.1)};});
+  const result=await page.evaluate(async()=>{
+    const e=window.__ktd.engine;
+    // This checks real decoding/concurrency, independent of GPU render speed.
+    // Warm both recordings first so a fast first take cannot finish while the second loads.
+    e.renderer.setAnimationLoop(null);
+    try{
+      e.settings.volume=.4;e.settings.speech=true;e.audio.setSettings(e.settings);
+      const group=e.life.groups.find(g=>g.kind==='nurses'&&g.floor===0),source=n=>({x:n.pos.x,y:1.4,z:n.pos.z,floor:0});
+      const play=()=>Promise.all([e.audio.dialogue('Did you finish the handover for the west wing?',group.actors[0].person,.8,false,source(group.actors[0])),e.audio.dialogue('Yes. The evening rounds are all written up.',group.actors[1].person,.8,false,source(group.actors[1]))]);
+      await play();e.audio.cancelVoices();await play();
+      const voices=[...e.audio.activeSamples].filter(s=>s.name.startsWith('voice-')),active=voices.length,durations=voices.map(v=>v.source.buffer.duration);
+      e.audio.setListener(e.camera.position,e.camera.getWorldDirection(e.playerPos.clone()),1);
+      await new Promise(resolve=>setTimeout(resolve,500));
+      return {active,durations,cached:e.audio.dialogueBuffers.size,muted:voices.every(v=>v.volume.gain.value<.1)};
+    }finally{e.renderer.setAnimationLoop(e.frame);}
+  });
   expect(result.active).toBeGreaterThanOrEqual(2);expect(result.durations.every(s=>s>1)).toBe(true);expect(result.cached).toBeGreaterThanOrEqual(2);expect(result.muted).toBe(true);
 });

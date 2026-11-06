@@ -23,8 +23,10 @@ The existing Capacitor 8 wrapper is updated and rebuilt against the current game
 
 - 401 unit tests pass, covering mission rules, paths/collisions, actual rigs, resource lifetimes, startup failure/cancellation, bounded caches, save migration and native packaging/version invariants.
 - Browser acceptance covers twenty-two desktop/phone cases, including real loading, WebKit iPhone 17 Pro Max sizes, camera/crosshair rays, firing at three heights, touch input reset, map/journal/lift, maternity/audio, contamination, mission outcomes and campaign progression. Chromium audio output stays muted during these tests.
+- Automated browser acceptance runs on macOS to match the Safari/iOS target more closely. The focused voice test warms both real recordings before checking simultaneous playback, independent of rendering speed. CI jobs have bounded time limits, and Android setup explicitly avoids the retired SDK `tools` package.
 - On an isolated iPhone 17 Pro Max / iOS 26.4 Simulator, the QA build visibly loads the local menu, story, loading progress and game. Manual checks exercise movement, flashlight, map, pause/resume and Home → KTD background return. Returning leaves gameplay paused until explicitly resumed. This test stayed muted.
 - The Android QA APK installs and launches on a dedicated API 36 emulator. Its process remains running. The emulator window is not exposed by this Mac's computer-use interface, so a manual Android UI/touch acceptance pass is not claimed.
 - Normal Android, iOS Simulator, Android Release bundle and unsigned iOS archive builds succeed. Normal bundled assets pass the production identity/no-QA checks.
+- The finished APK, AAB, Simulator ZIP and physical-device archive are also inspected directly: their entry pages, game bundles, character models and walking animation match the current production build byte for byte.
 
 No unlimited-duration leak guarantee, physical-device performance result or store approval is claimed. Production iOS signing and Android upload signing are intentionally owner-controlled.

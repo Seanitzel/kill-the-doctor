@@ -2,7 +2,7 @@ import {seesDrawnWeapon} from './loadout.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export class OperatingTeamEscape{
  constructor(e){this.e=e;this.active=false;}
- panic(){const e=this.e;if(this.active||!e.mission.china||e.floor!==3||e.mission.result)return;this.active=true;this.at=e.mission.elapsed;const lift=e.hospitals[3].lift;this.goal={x:lift.x,z:lift.faceZ-1.25};
+ panic(){const e=this.e;if(this.active||!e.mission.china||e.floor!==3||e.mission.result)return;this.active=true;this.at=e.mission.elapsed;for(const door of e.levels[3].doors)door.locked=false;const lift=e.hospitals[3].lift;this.goal={x:lift.x,z:lift.faceZ-1.25};
   for(const n of e.npcs.filter(n=>n.operationDoctor&&!n.dead&&!n.injury?.dead)){e.systems.stand(n,this.goal);n.operatingFlee=true;n.speed=4.2;n.reporting=null;n.nextOperatingRoute=0;n.voiceVersion=(n.voiceVersion||0)+1;e.life?.speak(n,"Please don't do this. Please let me go!",true);e.audio.gasp?.({x:n.pos.x,y:1.5,z:n.pos.z,floor:3});}
  }
  prepare(n){if(!n.operatingFlee||n.dead)return false;const e=this.e;n.activity=null;n.reporting=null;if(n.escapeLiftAt!=null){n.path=[];return true;}if(e.mission.elapsed>=(n.nextOperatingRoute||0)){const lift=e.hospitals[3].lift;if(!lift.departingDoctor){lift.open=true;lift.closeTimer=2;}e.routeNPC(n,this.goal);n.nextOperatingRoute=e.mission.elapsed+.8;}return true;}

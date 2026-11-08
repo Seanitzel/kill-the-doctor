@@ -1,4 +1,4 @@
-export const APPOINTMENT_MIN_SECONDS=45,APPOINTMENT_MAX_SECONDS=90,TARGET_PRIVACY_GRACE=30;
+export const APPOINTMENT_MIN_SECONDS=45,APPOINTMENT_MAX_SECONDS=90,TARGET_PRIVACY_GRACE=5;
 export class TargetAppointment {
   constructor(random=Math.random){const sample=Math.min(1,Math.max(0,Number(random())||0));this.duration=APPOINTMENT_MIN_SECONDS+Math.min(APPOINTMENT_MAX_SECONDS-APPOINTMENT_MIN_SECONDS,Math.floor(sample*(APPOINTMENT_MAX_SECONDS-APPOINTMENT_MIN_SECONDS+1)));this.startedAt=null;this.endsAt=null;this.completed=false;}
   start(now){if(this.startedAt!==null)return false;this.startedAt=now;this.endsAt=now+this.duration;return true;}

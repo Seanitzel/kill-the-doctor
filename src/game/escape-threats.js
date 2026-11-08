@@ -46,11 +46,11 @@ export function threatKind(index) {
 export class EscapeThreats {
   constructor(e) {
     this.e = e;
-    this.enabled = e.mission.round >= 5 && !e.mission.photoOnly;
+    this.enabled = e.mission.round >= 5 && (e.mission.type==='standard'||!!e.mission.china);
     this.entries = [];
     this.spots = [];
     this.root = new T.Group();
-    this.root.name = "Optional escape threats";
+    this.root.name = "Escape encounters";
     e.scene.add(this.root);
     this.colliders = [];
     if (this.enabled) {
@@ -222,9 +222,9 @@ export class EscapeThreats {
     n.activity = null;
     n.evacuating = true;
     n.evacLane = (this.e.mission.random() - 0.5) * 2;
-    n.evacGoal = n.floor ? { x: 0, z: -24 } : { x: n.evacLane, z: 39 };
+    n.evacGoal = n.floor ? { x: 0, z: -24 } : { x: 0, z: 39 };
     n.evacSpeed = 2.7 + this.e.mission.random();
-    this.e.systems.route(n, n.evacGoal);
+    n.evacPending=true;
   }
   chooseSpot(entry, exclude = null) {
     const e = this.e,
@@ -242,11 +242,12 @@ export class EscapeThreats {
     entry.phase = "seeking";
     entry.nextRoute = 0;
     n.evacuating = false;
+    n.evacPending = false;
     n.activity = null;
     n.hiding = false;
-    n.wasHidden = true;
+    n.wasHidden = true;if(this.e.mission.playMode==='story')this.e.mission.requiredHiddenIds?.add(n.id);
     n.bonusValue = HIDDEN_BONUS;
-    this.e.routeNPC(n, spot.approach);
+    n.path=[];n.cursor=0;n.wait=0;
     return true;
   }
   makeWeapon(entry) {

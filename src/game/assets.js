@@ -245,7 +245,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
   const seatThigh=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2),seatShin=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2);
   const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
   const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Thumb','Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.03:joint===2?.08:.05))});}
-  let smokingPose,eatingPose,drinkingPose;const scratchBones=['RightArm','RightForeArm','RightHand','Head','Spine'].map(name=>({bone:activityBones[name],base:new THREE.Quaternion(),target:new THREE.Quaternion()})).filter(b=>b.bone);
+  let smokingPose,eatingPose,drinkingPose,mixingPose;const scratchBones=['RightArm','RightForeArm','RightHand','Head','Spine'].map(name=>({bone:activityBones[name],base:new THREE.Quaternion(),target:new THREE.Quaternion()})).filter(b=>b.bone);
   const wrists=['LeftHand','RightHand'].map(name=>({bone:activityBones[name],bind:activityBones[name]?.quaternion.clone()})).filter(w=>w.bone);
   const orient = (name, child, direction) => {
     const bone=activityBones[name], tip=activityBones[child]; if(!bone || !tip) return;
@@ -270,7 +270,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     orient('RightArm','RightForeArm',elbowTarget.sub(start).toArray());
     orient('RightForeArm','RightHand',target.sub(pointInModel(elbow)).toArray());
   };
-  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, poseDrinking(time){drinkingPose ||= new SmokingPose(model,restingFingers,'drink');return drinkingPose.update(time);}, poseSmoking(time){smokingPose ||= new SmokingPose(model,restingFingers);return smokingPose.update(time);}, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt, {running=false}={}) {
+  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, poseMixing(target){mixingPose ||= new SmokingPose(model,restingFingers,'drink');return mixingPose.stir(target);}, poseDrinking(time){drinkingPose ||= new SmokingPose(model,restingFingers,'drink');return drinkingPose.update(time);}, poseSmoking(time){smokingPose ||= new SmokingPose(model,restingFingers);return smokingPose.update(time);}, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt, {running=false}={}) {
     const next = running&&speed>1.5?'Run':locomotionForSpeed(speed,current);
     if (next !== current && actions[next]) { actions[current]?.fadeOut(.18); actions[next].reset().fadeIn(.18).play(); current = next; }
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.24, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;

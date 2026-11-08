@@ -95,14 +95,14 @@ test('An adult in every department has an evacuation path to its floor exit',()=
   const e=simulation();
   for(const layout of levels)for(const room of layout.rooms){const n=actor(room.id,layout.floor,room.center.x,room.center.z);n.seated=true;e.npcs.push(n);}
   e.systems.startEvacuation();
-  for(const n of e.npcs){assert.ok(n.path.length>0,n.id);assert.equal(n.activity,null);assert.equal(n.seated,false);assert.equal(n.lying,false);const dest=world(n.path.at(-1).x,n.path.at(-1).z);assert.ok(Math.hypot(dest.x-n.evacGoal.x,dest.z-n.evacGoal.z)<1.2,n.id);}
+  for(let frame=0;frame<e.npcs.length;frame++){e.time+=.05;for(const n of e.npcs)e.systems.prepareNPC(n);}for(const n of e.npcs){assert.ok(n.path.length>0,n.id);assert.equal(n.activity,null);assert.equal(n.seated,false);assert.equal(n.lying,false);const dest=world(n.path.at(-1).x,n.path.at(-1).z);assert.ok(Math.hypot(dest.x-n.evacGoal.x,dest.z-n.evacGoal.z)<1.2,n.id);}
 });
 test('Evacuees physically reach lifts and ground exit without passing through furniture',()=>{
   const e=simulation();e.playerPos.set(6,0,33);
   // One adult per floor exercises real movement, doors, floor transfer and exit removal.
-  e.npcs=[actor('ground',0,0,0),actor('first',1,0,-18),actor('second',2,0,-18)];e.systems.startEvacuation();
+  e.npcs=[actor('ground',0,0,0),actor('first',1,0,-18),actor('second',2,0,-18)];Object.assign(e,{scene:new THREE.Scene(),muzzle:{intensity:0},blackout:0,impairment:0,coughCooldown:999,nextBlackout:Infinity,nextPA:Infinity});e.systems.startEvacuation();
   for(const l of levels)for(const d of l.doors){d.angle=d.openAngle;d.pivot.rotation.y=d.angle;}
-  for(let frame=0;frame<3600&&!e.npcs.every(n=>n.evacuated);frame++){e.mission.elapsed+=1/30;e.time+=1/30;e.updateNPCs(1/30);for(const n of e.npcs)assert.ok(e.canStand(n.pos.x,n.pos.z,.21,n.floor),n.id);}
+  for(let frame=0;frame<3600&&!e.npcs.every(n=>n.evacuated);frame++){e.mission.elapsed+=1/30;e.time+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);for(const n of e.npcs)assert.ok(e.canStand(n.pos.x,n.pos.z,.21,n.floor),n.id);}
   assert.ok(e.npcs.every(n=>n.evacuated),JSON.stringify(e.npcs.map(n=>({id:n.id,floor:n.floor,pos:n.pos.toArray(),cursor:n.cursor,path:n.path.length}))));
 });
 test('The full hospital crowd can evacuate while protected newborns remain in the nursery',()=>{
@@ -111,8 +111,8 @@ test('The full hospital crowd can evacuate while protected newborns remain in th
   for(const l of levels)for(const d of l.doors){d.angle=0;d.pivot.rotation.y=0;}
   Object.assign(e,{muzzle:{intensity:0},blackout:0,impairment:0,coughCooldown:999,nextBlackout:Infinity,nextPA:Infinity,shotCooldown:0});
   const adults=e.npcs.filter(n=>!n.dead&&!n.baby&&n.role!=='security');
-  for(let frame=0;frame<3600&&!adults.every(n=>n.evacuated);frame++){e.mission.elapsed+=1/30;e.time+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);if(frame%30===0)for(const n of adults.filter(n=>!n.evacuated))assert.ok(e.canStand(n.pos.x,n.pos.z,.21,n.floor),`crowd collision: ${n.id}`);}
-  const remaining=adults.filter(n=>!n.evacuated).map(n=>({id:n.id,floor:n.floor,pos:n.pos.toArray(),cursor:n.cursor,path:n.path.length}));
+  for(let frame=0;frame<3600&&!adults.every(n=>n.evacuated);frame++){e.mission.elapsed+=1/30;e.time+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);if(frame%30===0)for(const n of adults.filter(n=>!n.evacuated&&!n.evacPending))assert.ok(e.canStand(n.pos.x,n.pos.z,.21,n.floor),`crowd collision: ${n.id}`);}
+  const remaining=adults.filter(n=>!n.evacuated&&!n.evacPending).map(n=>({id:n.id,floor:n.floor,pos:n.pos.toArray(),cursor:n.cursor,path:n.path.length}));
   assert.ok(adults.every(n=>n.evacuated),JSON.stringify(remaining));assert.ok(e.npcs.filter(n=>n.baby).every(n=>!n.dead&&!n.evacuated));
 });
 function shootingEngine(){

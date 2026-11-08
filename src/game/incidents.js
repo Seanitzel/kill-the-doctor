@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import {mayHitStaff} from './loadout.js';
 import {lateContactRound} from './international.js';
 import {JAMIE_SELF_TALK_LINES} from './dialogue-v25.js';
@@ -26,7 +27,7 @@ export class HospitalIncidents{
   }
   arrive(){
     const e=this.e;if(this.contact||!this.arrivalAt||e.mission.elapsed<this.arrivalAt||e.mission.state==='escape'||e.mission.result)return false;
-    const person=contactIdentity(e.mission.round,e.mission.seed,e.mission.countryAttempt||0),visual=makePlayer(e.assets,person.gender,{...person,outfit:'jacket'},'civilian'),n=e.spawnNPC(person,'patient',0,{x:3,z:30},null,'unexpected-contact',{visual});
+    const entry=e.systems.navigationFor(0).nearest({x:3,z:39}).point;if(e.floor===0&&e.camera?.isCamera){e.camera.updateMatrixWorld();const screen=new THREE.Vector3(entry.x,1.3,entry.z).project(e.camera);if(Math.abs(screen.x)<1.15&&Math.abs(screen.y)<1.15&&screen.z>0&&screen.z<1&&e.lineOfSight(e.playerPos,entry,0))return false;}const person=contactIdentity(e.mission.round,e.mission.seed,e.mission.countryAttempt||0),visual=makePlayer(e.assets,person.gender,{...person,outfit:'jacket'},'civilian'),n=e.spawnNPC(person,'patient',0,entry,null,'unexpected-contact',{visual});
     n.recruit={state:'panicked',nextBurst:e.mission.elapsed,speakAt:e.mission.elapsed+4,shotAt:0,phase:'calm'};n.activity='panic';n.speed=4.3;n.contamination=0;n.name=person.name;n.person={...person,voiceCountry:e.mission.country?.id,voiceRole:'patient',recruit:true};this.contact=n;
     this.privateRoom=e.levels[0].rooms.find(r=>r.kind==='bathroom');return true;
   }

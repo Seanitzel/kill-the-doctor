@@ -34,7 +34,7 @@ test('every adjacent campaign route (and Nigeria to France) pins the correct geo
 });
 
 test('stale stored flight destinations are corrected; completed missions advance once and retries remain in country',()=>{
- const save=defaultSave();for(let i=0;i<20;i++){const mission=new Mission(save,200+i,i);const result=mission.finish(true,'escaped');const route=nextFlight(result,save);if(i<19){save.pendingTravel.to=COUNTRIES[i].id;const recovered=pendingFlight(save);assert.equal(recovered.from.id,COUNTRIES[i].id);assert.equal(recovered.to.id,COUNTRIES[i+1].id);assert.equal(route.to.id,countryFor(save).id);save.pendingTravel=null;const retry=new Mission(save,1000+i,i);retry.finish(false,'caught');assert.equal(pendingFlight(save),null);assert.equal(countryFor(save).id,COUNTRIES[i+1].id);}else assert.equal(route,null);}
+ const save=defaultSave();for(let i=0;i<COUNTRIES.length;i++){const mission=new Mission(save,200+i,i);const result=mission.finish(true,'escaped');const route=nextFlight(result,save);if(i<COUNTRIES.length-1){save.pendingTravel.to=COUNTRIES[i].id;const recovered=pendingFlight(save);assert.equal(recovered.from.id,COUNTRIES[i].id);assert.equal(recovered.to.id,COUNTRIES[i+1].id);assert.equal(route.to.id,countryFor(save).id);save.pendingTravel=null;const retry=new Mission(save,1000+i,i);retry.finish(false,'caught');assert.equal(pendingFlight(save),null);assert.equal(countryFor(save).id,COUNTRIES[i+1].id);}else assert.equal(route,null);}
  save.pendingTravel={from:'not-a-country',to:'france'};assert.equal(pendingFlight(save),null);
 });
 

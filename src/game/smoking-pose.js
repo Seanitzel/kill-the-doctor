@@ -24,6 +24,16 @@ export class SmokingPose{
  }
  point(b,out){return this.model.worldToLocal(b.getWorldPosition(out));}
  orient(bone,tip,direction,roll){const parent=bone.parent.getWorldQuaternion(this.q[0]),model=this.model.getWorldQuaternion(this.q[1]),relative=model.invert().multiply(parent),axis=this.v[14].copy(tip.position).normalize();const target=this.q[2].setFromUnitVectors(axis.applyQuaternion(roll),direction.normalize()).multiply(roll);bone.quaternion.copy(relative.invert().multiply(target));bone.updateWorldMatrix(false,true);}
+ stir(target){
+  if(!this.update(0))return null;
+  const m=this.model,hand=this.hand,start=this.point(this.arm,this.v[0]),grip=this.v[1].copy(target);m.worldToLocal(grip);
+  const orientation=this.q[4].copy(this.low),offset=this.v[2];this.index.getWorldPosition(offset);this.middle.getWorldPosition(this.v[3]);offset.add(this.v[3]).multiplyScalar(.5);hand.worldToLocal(offset);offset.applyQuaternion(orientation);
+  const wrist=this.v[4].copy(grip).sub(offset),delta=this.v[5].copy(wrist).sub(start),a=this.fore.position.length(),b=hand.position.length(),d=T.MathUtils.clamp(delta.length(),Math.abs(a-b)+.001,a+b-.003);delta.normalize();
+  const bend=this.v[6].set(-1,-.45,.25).addScaledVector(delta,-this.v[6].dot(delta)).normalize(),along=(a*a-b*b+d*d)/(2*d),elbow=this.v[7].copy(start).addScaledVector(delta,along).addScaledVector(bend,Math.sqrt(Math.max(0,a*a-along*along)));
+  this.orient(this.arm,this.fore,this.v[8].copy(elbow).sub(start),orientation);this.orient(this.fore,hand,this.v[8].copy(wrist).sub(this.point(this.fore,this.v[9])),orientation);
+  hand.quaternion.copy(hand.parent.getWorldQuaternion(this.q[0]).invert().multiply(m.getWorldQuaternion(this.q[1])).multiply(orientation));hand.updateWorldMatrix(false,true);
+  this.index.getWorldPosition(this.grip);this.middle.getWorldPosition(this.v[10]);this.grip.add(this.v[10]).multiplyScalar(.5);return this.result;
+ }
  update(time){
   if(!this.head||!this.hand||!this.arm||!this.fore||!this.index||!this.middle)return null;
   const lift=this.mode==='drink'?(time<.5?0:time<2?smooth((time-.5)/1.5):time<3?1:1-smooth((time-3)/1.6)):this.mode==='eat'?eatingLift(time):smokingLift(time),m=this.model,hand=this.hand;

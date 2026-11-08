@@ -32,7 +32,7 @@ export const STAFF = [
   { name: 'Dr. Sofia Vale', role: 'Attending', gender: 'female', hair: '#573a2d', skin: '#c58d6c', accent: '#426e79', glasses: true },
   { name: 'Nurse Jonas Beck', role: 'Senior nurse', gender: 'male', hair: '#8b7761', skin: '#dfbba0', accent: '#4a8193', glasses: false },
 ];
-export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],savedOutfitColors:[],playMode:'story',internationalVersion:2,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(20).fill(0),loadout:{weapon:'pistol',mask:false,maskType:'n95'},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
+export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],savedOutfitColors:[],playMode:'story',storyReplayId:null,internationalVersion:3,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(10).fill(0),loadout:{weapon:'pistol',mask:false,maskType:'n95'},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{helpfulGuidance:true,volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
 export function readSave(storage) {
   const blank = defaultSave();
   try {
@@ -47,6 +47,7 @@ export function readSave(storage) {
     // The case and target persist; watching its intro belongs to this page session.
     if(a&&a.round===blank.completed+1&&typeof a.storyId==='string'&&Number.isSafeInteger(a.seed)&&Number.isSafeInteger(a.attempt)&&a.attempt>=0)blank.activeAssignment={round:a.round,storyId:a.storyId,seed:a.seed,attempt:a.attempt,introSeen:false,type:ASSIGNMENT_TYPES.includes(a.type)?a.type:'standard'};
     if (data.settings) {
+      blank.settings.helpfulGuidance=data.settings.helpfulGuidance!==false;
       blank.settings.volume = Math.min(1, Math.max(0, Number(data.settings.volume) || 0));
       blank.settings.speech = data.settings.speech !== false;
       blank.settings.sensitivity = Math.min(2, Math.max(0.3, Number(data.settings.sensitivity) || 1));
@@ -71,7 +72,7 @@ export function purchase(save, id) {
 export class Mission {
   constructor(save, seed = Date.now(), attempt = save.attempts) {
     this.save = save; this.random = rng(seed); this.seed = seed;
-    this.round = campaignLevel(save);this.country=countryFor(save);this.playMode=save.playMode||'story';this.countryAttempt=save.countryAttempts?.[this.country.index]||0;this.selectionType=assignmentType(save);this.explicitInfiltration=this.selectionType==='infiltration';this.type=this.explicitInfiltration?'evidence':this.selectionType;this.keys=[];this.photos=[];this.photoImages={};this.videoClips={};this.operationDoctors=[];this.patientReleased=false;
+    this.round = campaignLevel(save);this.country=countryFor(save);this.playMode=save.playMode||'story';this.countryAttempt=save.countryAttempts?.[this.country.index]||0;this.selectionType=assignmentType(save);this.explicitInfiltration=this.selectionType==='infiltration';this.type=this.explicitInfiltration?'evidence':this.selectionType;this.keys=[];this.photos=[];this.photoImages={};this.videoClips={};this.operationDoctors=[];this.requiredHiddenIds=new Set();this.patientReleased=false;
     this.difficulty = save.settings.difficulty;this.challenge=campaignChallenge(this.round,this.difficulty);
     const doctors=STAFF.filter(s=>s.name.startsWith('Dr.'));const targetIndex=(attempt+Math.floor(this.random()*3))%doctors.length;
     const floor = attempt === 0 ? 0 : Math.floor(this.random() * 3);
@@ -134,7 +135,7 @@ export class Mission {
     if (this.state === 'escape') { this.timer = Math.max(0, this.timer - dt); if (this.timer <= 0) return this.finish(false, 'Police sealed the exits before you escaped.'); }
     else this.suspicion = Math.max(0, this.suspicion - dt * 1.1);
   }
-  escape(patientPresent=false) { if(this.china){if(!this.targetDown||this.china.recordings.length!==3||!this.china.poisoned||!this.china.badge)return;return this.finish(true,'Covert recordings secured. Both operating doctors stopped. You escaped with the evidence.');} if (this.type==='evidence'&&this.photos.length!==3||this.type==='rescue'&&(!this.patientReleased||!patientPresent)||this.type==='standard'&&!this.targetDown)return; if (!this.result) return this.finish(true,this.type==='rescue'?'Patient rescued. You both left the hospital before lockdown.':this.type==='evidence'?'Evidence secured. You escaped with all three photographs and no casualties.':'Assignment complete. You left the hospital before lockdown.'); }
+  escape(patientPresent=false) { if(this.playMode==='story'&&[...(this.requiredHiddenIds||[])].some(id=>!this.eliminatedIds.has(id)))return; if(this.china){if(!this.targetDown||this.china.recordings.length!==3||!this.china.poisoned||!this.china.badge)return;return this.finish(true,'Covert recordings secured. Both operating doctors stopped. You escaped with the evidence.');} if (this.type==='evidence'&&this.photos.length!==3||this.type==='rescue'&&(!this.patientReleased||!patientPresent)||this.type==='standard'&&!this.targetDown)return; if (!this.result) return this.finish(true,this.type==='rescue'?'Patient rescued. You both left the hospital before lockdown.':this.type==='evidence'?'Evidence secured. You escaped with all three photographs and no casualties.':'Assignment complete. You left the hospital before lockdown.'); }
   accompliceBonus(){return (this.accompliceKills-this.hiddenAccompliceKills)*STAFF_BONUS+this.hiddenAccompliceKills*60;}
   finish(success, reason) {
     if (this.result) return this.result;
@@ -147,7 +148,7 @@ export class Mission {
     ] : [];
     const coins = breakdown.reduce((sum, row) => sum + row.coins, 0);
     const balanceBefore=this.save.coins;recordInternationalResult(this.save,this,success);this.save.coins += coins; this.save.attempts++; if (success) this.save.completed++;
-    this.result = { infiltration:!!this.china,recordings:this.china?.recordings.length||0, balanceBefore,balanceAfter:this.save.coins,countryId:this.country.id,playMode:this.playMode,campaignComplete:this.save.campaignCompleted===20,type:this.type,photos:this.photos.length,rescued:this.type==='rescue'&&success,success, reason, coins, breakdown, duration: this.elapsed, targetDown: this.targetDown, escaped: success, staffKills: this.staffKills, clues: this.clues.length };
+    this.result = { infiltration:!!this.china,recordings:this.china?.recordings.length||0, balanceBefore,balanceAfter:this.save.coins,countryId:this.country.id,playMode:this.playMode,campaignComplete:this.save.campaignCompleted===10,type:this.type,photos:this.photos.length,rescued:this.type==='rescue'&&success,success, reason, coins, breakdown, duration: this.elapsed, targetDown: this.targetDown, escaped: success, staffKills: this.staffKills, clues: this.clues.length };
     return this.result;
   }
 }

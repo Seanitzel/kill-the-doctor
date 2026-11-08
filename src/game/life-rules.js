@@ -94,7 +94,12 @@ export const DISTRESS_LINES = [
   'Something is wrong with me.',
   'I need help. Please, help me.',
 ];
+export const SNEEZE_REPLIES=['Oh, sorry. Excuse me.','Oops.','Oh, excuse me.','Sorry about that.','Ugh.'];
 export const ANNOUNCEMENT_LINES = [
+ 'Sarah Collins, please report to imaging.',
+ 'Daniel Morgan, please come to the blood collection desk.',
+ 'Dr. Reed, please report to Emergency.',
+ 'Visitors, please check in at reception before entering the wards.',
   ...PATIENT_PAGE_LINES,
   'Welcome to Nhalewick. Visitor services are located in the main atrium. Please keep all corridors clear.',
   'A power fault has been reported. Emergency lighting is active. Please remain calm.',
@@ -111,7 +116,7 @@ export const WITNESS_LINES = {
 export const ALL_DIALOGUE_LINES = [...new Set([
   "Please have a seat. I'll be back in a few minutes.", 'Please come in.', "Please don't do this. Please let me go!",
 
-  ...OFFICE_VISITOR_LINES, ...INFILTRATION_LINES, 'Oh, sorry. Excuse me.', ...ADDITIONAL_DIALOGUE_LINES, ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
+  ...SNEEZE_REPLIES, 'Excuse me, please wait outside.', 'Excuse me, please wait until we finish with this patient.', 'Oh, I thought the doctor was around.', 'What are you doing?', ...OFFICE_VISITOR_LINES, ...INFILTRATION_LINES, 'Oh, sorry. Excuse me.', ...ADDITIONAL_DIALOGUE_LINES, ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
   ...Object.values(CLINICAL_CONVERSATIONS).flat(2), ...PATIENT_PAIN_LINES,
   ...SUSPICION_LINES, ...RECRUIT_LINES, ...DISTRESS_LINES, ...ANNOUNCEMENT_LINES, ...Object.values(WITNESS_LINES),
 ])];

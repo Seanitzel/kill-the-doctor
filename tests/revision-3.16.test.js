@@ -227,7 +227,7 @@ test("spit has a 1.5-second dodge warning, misses a sidestep and blocks movement
   assert.ok(itchStrength(0.1) < 0.01);
 });
 function threatWorld() {
-  const e = hospitalSim("israel");
+  const e = hospitalSim("russia");
   e.npcs = [];
   e.playerPos.set(0, 0, 30);
   for (let i = 0; i < 5; i++) {

@@ -22,7 +22,7 @@ export function buildLift(layout,m){
   const leaves=[];
   for(const side of [-1,1]){
     box('Lift brushed-steel jamb',m.steel,[.10,2.80,.13],[x+side*1.31,1.40,faceZ+.065]);
-    const leaf=box(side<0?'Lift left sliding door':'Lift right sliding door',m.steel,[1.24,2.63,.045],[x+side*.62,1.345,faceZ+.060]);leaf.userData.side=side;if(side<0){const seam=mesh('box',m.dark,[.008/1.24,1,.12],[.497,0,.53],leaf);seam.name='Lift central separation seam';leaf.userData.seam=seam;}leaf.userData.bodyBounds=footprint(x+side*.62,faceZ+.06,1.24,.07,2.7,0,'lift-door');leaves.push(leaf);
+    const leaf=box(side<0?'Lift left sliding door':'Lift right sliding door',m.steel,[1.24,2.63,.045],[x+side*.62,1.345,faceZ+.060]);leaf.userData.side=side;if(side<0){const seam=mesh('box',m.dark,[.008/1.24,1,.12],[.497,0,.53],leaf);seam.name='Lift central separation seam';leaf.userData.seam=seam;}leaf.userData.bodyBounds=footprint(x+side*.62,faceZ+.06,1.24,.07,2.7,0,'lift-door');leaf.userData.bodyBounds.dynamic=true;leaves.push(leaf);
   }
   box('Lift door header',m.steel,[2.72,.115,.13],[x,2.745,faceZ+.065]);
   group.userData.lift={x,faceZ,leaves,open:false,amount:0,selectionUsed:false,choosing:false};
@@ -243,6 +243,7 @@ export function buildHospital(layout, m, site=null) {
   const liftFace=lift.userData.liftPlacement.faceZ;
   interactables.push({ type: 'elevator', label:'Call lift · enter to choose floor', x: e.x, z: e.z + .9 });
   for(const leaf of lift.userData.lift.leaves)colliders.push(leaf.userData.bodyBounds);for(const side of [-1,1])Object.assign(collider(e.x+side*1.28,liftFace-1.4,.08,2.8),{minY:0,maxY:2.8,type:'lift-wall'});Object.assign(collider(e.x,liftFace-2.78,2.65,.1),{minY:0,maxY:2.8,type:'lift-wall'});
+  Object.assign(collider(e.x,liftFace-1.4,2.65,2.8),{minY:2.72,maxY:2.86,type:'lift-roof'});
   if (layout.floor === 0) {
     for(const side of [-1,1]){
       const guide=placeSign(side<0?'←  EXIT':'EXIT  →','MAIN ENTRANCE',side*24,3.08,23.1,Math.PI,1.9,.5,{background:'#234553'});
@@ -255,7 +256,7 @@ export function buildHospital(layout, m, site=null) {
     for(const x of [-1.5,4.5])mesh('box',m.steel,[.10,2.85,.19],[x,1.425,34.5],entry);
     mesh('box',m.steel,[6.1,.13,.25],[1.5,2.85,34.5],entry);
     const doorGlass=material('#91bbc9',{transparent:true,opacity:.36,roughness:.17,metalness:.15,depthWrite:false,side:THREE.DoubleSide});
-    const leaves=[];for(const side of [-1,1]){const leaf=new THREE.Group();leaf.position.set(1.5+side*1.5,0,34.5);entry.add(leaf);mesh('box',doorGlass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of [-1.5,1.5])mesh('box',m.steel,[.045,2.7,.075],[x,1.4,0],leaf);for(const y of [.07,1.1,2.73])mesh('box',m.steel,[3,.045,.075],[0,y,0],leaf);for(const face of [-1,1]){const decal=sign('←  AUTOMATIC  →','',1.85,.32,{background:'#456275',color:'#ecf6f7'});decal.position.set(0,1.55,face*.045);decal.rotation.y=face<0?Math.PI:0;leaf.add(decal);}leaf.userData.side=side;if(side<0){const seam=mesh('box',m.dark,[.008/1.24,1,.12],[.497,0,.53],leaf);seam.name='Lift central separation seam';leaf.userData.seam=seam;}leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,34.5,3,.06),{minY:0,maxY:2.78,type:'entrance-glass'});leaves.push(leaf);}
+    const leaves=[];for(const side of [-1,1]){const leaf=new THREE.Group();leaf.position.set(1.5+side*1.5,0,34.5);entry.add(leaf);mesh('box',doorGlass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of [-1.5,1.5])mesh('box',m.steel,[.045,2.7,.075],[x,1.4,0],leaf);for(const y of [.07,1.1,2.73])mesh('box',m.steel,[3,.045,.075],[0,y,0],leaf);for(const face of [-1,1]){const decal=sign('←  AUTOMATIC  →','',1.85,.32,{background:'#456275',color:'#ecf6f7'});decal.position.set(0,1.55,face*.045);decal.rotation.y=face<0?Math.PI:0;leaf.add(decal);}leaf.userData.side=side;if(side<0){const seam=mesh('box',m.dark,[.008/1.24,1,.12],[.497,0,.53],leaf);seam.name='Lift central separation seam';leaf.userData.seam=seam;}leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,34.5,3,.06),{minY:0,maxY:2.78,type:'entrance-glass',dynamic:true});leaves.push(leaf);}
     group.userData.entrance={leaves,center:{x:1.5,z:34.5},open:false,amount:0};entrances.push(group.userData.entrance);
     cube(m.dark,1.5,.01,37,5.7,.015,4.8);
     // Triage stays in the entrance atrium, leaving the central exit route free.
@@ -284,7 +285,7 @@ export function buildHospital(layout, m, site=null) {
   addStairwell(group,batch,m,layout);interactables.push(...layout.stairLinks);
   if(layout.expanded&&layout.floor===0){
     const center={x:-19.5,z:-25.5},entry=new THREE.Group();entry.name='Rear automatic exit';group.add(entry);const leaves=[],glass=material('#91bbc9',{transparent:true,opacity:.36,roughness:.17,metalness:.15,depthWrite:false,side:THREE.DoubleSide});
-    for(const side of[-1,1]){const leaf=new THREE.Group();leaf.position.set(center.x+side*1.5,0,center.z);entry.add(leaf);mesh('box',glass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of[-1.5,1.5])mesh('box',m.steel,[.05,2.7,.08],[x,1.4,0],leaf);for(const y of[.08,1.2,2.75])mesh('box',m.steel,[3,.05,.08],[0,y,0],leaf);leaf.userData.side=side;leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,center.z,3,.06),{minY:0,maxY:2.8,type:'entrance-glass'});leaves.push(leaf);}
+    for(const side of[-1,1]){const leaf=new THREE.Group();leaf.position.set(center.x+side*1.5,0,center.z);entry.add(leaf);mesh('box',glass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of[-1.5,1.5])mesh('box',m.steel,[.05,2.7,.08],[x,1.4,0],leaf);for(const y of[.08,1.2,2.75])mesh('box',m.steel,[3,.05,.08],[0,y,0],leaf);leaf.userData.side=side;leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,center.z,3,.06),{minY:0,maxY:2.8,type:'entrance-glass',dynamic:true});leaves.push(leaf);}
     entrances.push({center,leaves,amount:0,open:false});placeSign('REAR ENTRANCE / EXIT','AUTOMATIC DOORS',center.x,3.1,center.z+.05,0,4.5,.55);placeSign('REAR ENTRANCE / EXIT','AUTOMATIC DOORS',center.x,3.1,center.z-.05,Math.PI,4.5,.55);
     cube(m.floor,-19.5,-.09,-32,12,.15,13);cube(m.dark,-19.5,-.13,-40,36,.15,7);for(const x of[-25.5,-13.5]){cube(m.steel,x,2.4,-31,.10,4.8,.10);cube(m.light,x,4.7,-31,.55,.1,.55);const light=new THREE.PointLight('#ffd06c',18,15);light.position.set(x,4.3,-31);group.add(light);}
     for(let floor=1;floor<3;floor++){cube(m.wall,0,floor*3.6+1.8,-25.6,60,3.6,.2);for(let x=-27;x<=27;x+=3){cube(m.steel,x,floor*3.6+1.7,-25.75,2.1,1.9,.05);cube(m.glass,x,floor*3.6+1.7,-25.79,1.95,1.75,.025);}}

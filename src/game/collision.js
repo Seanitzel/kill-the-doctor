@@ -38,3 +38,6 @@ export function cameraFraction(anchor,desired,obstacles,radius=.2){
   for(const c of obstacles){const hit=segmentHit3D(anchor,desired,c,radius);if(hit!==null)result=Math.min(result,Math.max(0,hit-.04/Math.max(length,.01)));}
   return result;
 }
+
+// Exact circle vs oriented door leaf, used while checking the swept arc.
+export function circleOverlapsDoor(x,z,r,door,angle=door.angle){const p=door.pivot.position,c=Math.cos(angle),s=Math.sin(angle),dx=x-p.x,dz=z-p.z,lx=dx*c-dz*s,lz=dx*s+dz*c,nx=Math.max(0,Math.min(1.72,lx)),nz=Math.max(-.04,Math.min(.04,lz));return (lx-nx)**2+(lz-nz)**2<r*r-1e-8;}

@@ -10,7 +10,7 @@ export class CoffeeSip {
     this.rotation = new T.Quaternion();
     this.started = null;
   }
-  update(active, time) {
+  update(active, time, {hold=false}={}) {
     if (!this.cup) return;
     if (!active) {
       this.started = null;
@@ -21,7 +21,7 @@ export class CoffeeSip {
     }
     this.started ??= time;
     const age = time - this.started,
-      pose = this.visual.poseDrinking?.(age);
+      pose = this.visual.poseDrinking?.(hold?Math.min(age,2.5):age);
     if (!pose) return;
     this.visual.root.updateMatrixWorld(true);
     if (this.cup.parent !== this.parent) this.parent.attach(this.cup);
@@ -31,7 +31,7 @@ export class CoffeeSip {
     this.target.z += 0.025;
     const pickup =
       T.MathUtils.smoothstep(age, 0, 0.45) *
-      (1 - T.MathUtils.smoothstep(age, 4.5, 5));
+      (hold?1:(1 - T.MathUtils.smoothstep(age, 4.5, 5)));
     this.cup.position.copy(this.desk).lerp(this.target, pickup);
     this.cup.rotation.set(-pose.lift * 0.28, 0, 0);
   }

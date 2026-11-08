@@ -1,3 +1,4 @@
+import {SNEEZE_REPLIES} from './life-rules.js';
 import {MealProp} from './meal-prop.js';
 import {settleBedPatient} from './body-pose.js';
 import {countryVoice} from './country-voices.js';
@@ -140,7 +141,7 @@ export class HospitalLife {
     if(!actor||!action||this.engine.systems?.evacuating||this.engine.mission.state==='escape')return;const e=this.engine;
     actor.reaction=3.8;actor.wait=5;actor.path=[];actor.cursor=0;
     actor.visual.root.rotation.y=Math.atan2(e.playerPos.x-actor.pos.x,e.playerPos.z-actor.pos.z);
-    this.speak(actor,ROOM_WARNING_LINES[action],true);this.nextAmbient=e.mission.elapsed+9;
+    const currentRoom=e.levels[actor.floor].cells.get(`${Math.round(actor.pos.x/3+11)},${Math.round(actor.pos.z/3+11)}`)?.room;const patient=!!currentRoom&&e.npcs.some(n=>n.role==='patient'&&!n.dead&&!n.baby&&n.floor===actor.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===currentRoom);this.speak(actor,action==='request'?(patient?'Excuse me, please wait until we finish with this patient.':'Excuse me, please wait outside.'):ROOM_WARNING_LINES[action],true);this.nextAmbient=e.mission.elapsed+9;
     this.queue=this.queue.filter(line=>line.actor!==actor);
     if(action==='warning')e.notify('Patient privacy · leave this room before staff call security','warning');
     if(action==='security'){e.mission.finish(false,'The doctor called security after two warnings. The appointment intrusion exposed you.');e.finish();}
@@ -191,7 +192,7 @@ export class HospitalLife {
     const sound=e.mission.random()<.3?'sneeze':'cough';patient.coughing=1.5;patient.nextCough=e.mission.elapsed+120+e.mission.random()*90;
     if(sound==='sneeze'&&!patient.lying)this.sneeze(patient);
     else e.audio.patientWarning?.(sound,{x:patient.pos.x,y:1.5,z:patient.pos.z,floor:patient.floor});
-    e.hooks.soundCaption?.(`A nearby patient ${sound==='sneeze'?'sneezes':'coughs'}. Keep your distance or put on a mask.`);
+    e.hooks.soundCaption?.(`A nearby patient ${sound==='sneeze'?'sneezes':'coughs'}. `);
     this.pendingCoughs.push({patient,ready:e.mission.elapsed+(sound==='sneeze'?1.3:.85)});return true;
   }
   sneeze(patient){
@@ -254,7 +255,7 @@ export class HospitalLife {
       if(n.heldCoffeeCup)n.heldCoffeeCup.visible=n.activity==='drink';
       if(emergency){n.sneezeUntil=0;if(n.tissue)n.tissue.visible=false;}
       if(!emergency&&n.sneezeUntil){
-        if(now<n.sneezeUntil){n.visual.poseActivity?.('sneeze',e.time,{restricted:!!e.nearStructure?.(n.pos,n.floor,.65)});if(now>=n.sneezeApology){n.sneezeApology=Infinity;this.speak(n,'Oh, sorry. Excuse me.');}}
+        if(now<n.sneezeUntil){n.visual.poseActivity?.('sneeze',e.time,{restricted:!!e.nearStructure?.(n.pos,n.floor,.65)});if(now>=n.sneezeApology){n.sneezeApology=Infinity;this.speak(n,SNEEZE_REPLIES[Math.floor(e.mission.random()*SNEEZE_REPLIES.length)]);}}
         else{n.tissue&&(n.tissue.visible=false);n.sneezeUntil=0;}
       }
       if(n.contamination&&n.nextCough<=now&&e.coughCooldown<=0&&now>=(this.nextExposure||0)&&dist(e.playerPos,n.pos)<3.1&&e.lineOfSight(e.playerPos,n.pos))this.beginCough(n);

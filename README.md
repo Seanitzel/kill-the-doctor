@@ -2,7 +2,7 @@
 
 A fictional third-person hospital stealth game built with **Vue 3, Three.js and Web Audio**, packaged for **Android and iOS with Capacitor 8**.
 
-[Play the web edition](https://seanitzel.github.io/kill-the-doctor/) · [Native builds and phone setup](MOBILE.md) · [Latest verification notes](docs/release-3.18.md)
+[Play the web edition](https://seanitzel.github.io/kill-the-doctor/) · [Native builds and phone setup](MOBILE.md) · [Latest verification notes](docs/release-3.19.md)
 
 ## Run
 
@@ -50,9 +50,9 @@ Progress, equipment, settings and up to three custom looks save automatically. O
 - Clinical appointments, staff conversations, pharmacy/cafeteria activity, maternity, emergency arrivals and ambient hospital sound.
 - Investigation, confidential schedules, keys, badges, covert coffee interactions and evidence recordings.
 - Contamination and masks, a ground-floor antidote, advance spit warnings and a ten-second hit restriction, intermittent lights and a directional torch.
-- Security pursuit, evacuation and timed escape. From level five, optional marked accomplices can run, hide, relocate and telegraph different attacks. Security and accomplice map tracking have separate unlock rules.
+- Security pursuit, evacuation and timed escape. From level five, marked accomplices can run, hide, relocate and telegraph different attacks. Hidden offenders are required in armed Story assignments, optional in Freeplay; other marked staff remain optional. Security and accomplice map tracking have separate unlock rules.
 - Character customization, distinct premium outfit designs, coin purchases, weapon upgrades and Mystery Soda's independent 40% double / 60% halve appointment roll.
-- Illustrated stories, globe flight transitions, persistent campaign progression and reward animations.
+- Illustrated stories, globe flight transitions, a ten-country campaign with completed Story replays, persistent progression and reward animations.
 
 The hospitals, characters, cases and compounds are fictional. Asset notices and recording provenance are in `public/credits.txt`, `public/licenses/` and the audio source files. The game has no backend or external API dependency for play.
 

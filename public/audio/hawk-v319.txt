@@ -1,0 +1,2 @@
+KTD throat-clearing warning, v3.19
+Derived from the game's existing cough-warning.mp3 recording: a short excerpt, slowed slightly, band limited and normalized. Source provenance remains the existing cough recording's provenance in the audio credits. No new voice actor, cloned voice or paid generation was used for this cue.

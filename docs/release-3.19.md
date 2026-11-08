@@ -32,8 +32,10 @@ A muted desktop Chromium run with 87 characters measured a target shot at 7.9 ms
 
 ## Verification
 
-- 433 unit checks passed, including two actual routed patient interruptions, physical discovery, near-only actions, hidden locking time, retained instrument requests, both real character rigs at four stirring rotations, migrations, replay stories and sunset continuity.
+- 434 unit checks passed, including two actual routed patient interruptions, physical discovery, near-only actions, hidden locking time, retained instrument requests, both real character rigs at four stirring rotations, migrations, replay stories and sunset continuity.
 - Desktop Chromium and iPhone WebKit browser checks cover the menu baseline, persisted guidance setting, cupboard movement, all-floor cabin camera bounds, visible weather and the measured shot/evacuation path.
 - Android debug APK and iOS Simulator builds succeed at version 3.19.0 (build 3019000). Production native assets pass the QA-bridge exclusion check.
 - Story final panels show the named client contract above their task list; mobile panels scroll without obstructing the entry button.
-- All 30 browser scenarios passed across the full regression run and the corrected clinic resumption check. The clinic fixture now leaves after the first request, so it does not mistakenly assert that no new warning occurs while remaining past the requested five-second threshold.
+- All 31 browser scenarios passed across the full regression run and the corrected clinic resumption check. The clinic fixture now leaves after the first request, so it does not mistakenly assert that no new warning occurs while remaining past the requested five-second threshold.
+
+Completed debriefs no longer render the hidden hospital. A late WebGL context reset preserves the saved result; active assignments retain their explicit graphics recovery screen. This addresses a cloud-run GPU interruption observed after a patient-shot failure had already completed.

@@ -63,7 +63,7 @@ const menuMusic=new MenuMusic(save.settings);const menuSound=ref(false);
 function enableMenuSound(){menuMusic.unlock();if(menuMusic.ctx){menuMusic.ctx.onstatechange=()=>{if(!appDisposed)menuSound.value=menuMusic.ctx?.state==='running';};menuSound.value=menuMusic.ctx.state==='running';}}
 function menuGesture(){if(screen.value==='menu')enableMenuSound();else if(screen.value==='game'&&!overlay.value&&!loading.value&&engine?.audio.ctx?.state==='suspended')engine.audio.pause(false);}
 function menuVisibility(){menuMusic.sync();}
-watch(screen,value=>{menuMusic.setActive(value==='menu');if(engine)engine.presentationOnly=['travel','story','ending','loading','startup-error'].includes(value);});
+watch(screen,value=>{menuMusic.setActive(value==='menu');if(engine)engine.presentationOnly=['travel','story','ending','loading','startup-error','results'].includes(value);});
 const hud = reactive({ state: 'investigate', location: 'Main atrium', floor: 0, x: 3, z: 30, yaw: Math.PI, timer: 0, stamina: 100, suspicion: 0, flashlight: false, blackout: 0, impairment: 0, aiming: false, ammo: 6, reserve: 30, prompt: null, clues: 0 });
 const mission = shallowRef(null), result = ref(null), toast = ref(null), announcement = ref(null), clue = ref(null), badge = ref(null), mapFloor = ref(0), shotFlash = ref(false), transition = ref(false), hit = ref(false), soundCaption = ref(null);
 const assignmentPortrait = ref(null);

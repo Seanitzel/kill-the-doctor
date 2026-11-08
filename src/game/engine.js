@@ -137,7 +137,7 @@ export class GameEngine {
       },
       pointerlockchange: () => this.hooks.lock?.(document.pointerLockElement === this.renderer.domElement),
       visibilitychange: () => this.handleVisibility(),
-      webglcontextlost:e=>{e.preventDefault();this.contextLost=true;this.runtimeFailed=true;const error=new Error('The graphics connection was interrupted. Try lighter graphics after it reconnects, or reload the game.');this.startTask?.cancel(error);this.audio.pause(true);this.hooks.fatal?.(error);},
+      webglcontextlost:e=>{e.preventDefault();this.contextLost=true;this.runtimeFailed=true;const error=new Error('The graphics connection was interrupted. Try lighter graphics after it reconnects, or reload the game.');this.startTask?.cancel(error);this.audio.pause(true);if(!this.mission?.result)this.hooks.fatal?.(error);},
       webglcontextrestored:()=>{this.contextLost=false;},
       mousedown: e => {
         if (this.paused || (this.phoneOpen&&!this.phoneCollapsed) || this.instrumentView || !this.mission || this.mobile) return;

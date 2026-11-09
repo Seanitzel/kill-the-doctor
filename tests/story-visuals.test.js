@@ -45,14 +45,14 @@ test('Both special briefs and both protagonist variants have accurate dedicated 
   for(const [type,brief] of Object.entries(SPECIAL_BRIEFS)){
     assert.equal(specialBriefVisuals(type).length,brief.panels.length);briefIds.push(checkFrames(brief));
   }
-  const male=evidenceEnding({gender:'male'},460),female=evidenceEnding({gender:'female'},460);
+  const male=evidenceEnding({gender:'male'},460,{infiltration:true}),female=evidenceEnding({gender:'female'},460,{infiltration:true});
   assert.equal(male.panels.length,3);assert.match(male.panels[2][1],/460 coins/);
   assert.notEqual(checkFrames(male),checkFrames(female));
   assert.equal(new Set([...briefIds,storyVisual(male,0).artId,storyVisual(female,0).artId]).size,4);
 });
 
 test('Generated image dimensions match their crop metadata and the complete new catalog stays below15MiB',()=>{
-  let total=0;assert.equal(Object.keys(STORY_ART).length,41);
+  let total=0;assert.equal(Object.keys(STORY_ART).length,44);
   for(const art of Object.values(STORY_ART)){
     const bytes=readFileSync(new URL(`../public/stories/${art.file}`,import.meta.url));total+=bytes.length;
     assert.deepEqual(webpSize(bytes),{width:art.width,height:art.height});

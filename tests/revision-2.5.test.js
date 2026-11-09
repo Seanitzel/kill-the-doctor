@@ -44,7 +44,7 @@ test('Patient pages and privacy warnings have finite bundled voice keys',()=>{fo
 test('Evidence reward is awarded once across repeated completion and debrief calls',async()=>{
   const {evidenceEnding}=await import('../src/game/evidence-ending.js');const save=defaultSave(),mission=new Mission(save,123);mission.type='evidence';for(const id of ['ledger','consent','theatre'])mission.photograph(id);
   const result=mission.escape();assert.equal(result.coins,460);for(let i=0;i<10;i++){mission.escape();mission.finish(true,'again');evidenceEnding({gender:i%2?'female':'male'},result.coins);}
-  assert.equal(save.coins,460);assert.equal(save.completed,1);assert.equal(save.attempts,1);const ending=evidenceEnding({gender:'female'},460);assert.equal(ending.panels.length,3);assert.match(ending.panels[1][1],/all three images/);assert.match(ending.panels[2][1],/460 coins/);assert.ok(ending.visuals.every(v=>v.artId==='evidence-ending-female-v25'));
+  assert.equal(save.coins,460);assert.equal(save.completed,1);assert.equal(save.attempts,1);const ending=evidenceEnding({gender:'female'},460);assert.equal(ending.panels.length,1);assert.match(ending.panels[0][1],/photographs/);assert.match(ending.panels[0][1],/arrested/);assert.ok(ending.visuals.every(v=>v.artId==='evidence-arrest-v320'));
 });
 
 test('NPC animation uses actual displacement when blocked or finishing a tiny path segment',()=>{

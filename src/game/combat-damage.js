@@ -35,7 +35,7 @@ export class CombatDamage {
  pose(){
   const e=this.e;if(!e.playerInjury&&!e.npcs.some(n=>n.injury))return;poseInjury(e.player,e.playerInjury,e.time,e.playerSpeed);
   for(const n of e.npcs)if(!n.dead&&n.injury&&n.animationVisible!==false&&n.floor===e.floor)poseInjury(n.visual,n.injury,e.time,n.movementSpeed);
-  const grips=[{n:{visual:e.player},gun:e.weapon},...(e.securityResponse?.guns||[]),...(e.escapeThreats?.entries||[]).filter(a=>a.kind==='gun').map(a=>({n:a.n,gun:a.prop})),...e.npcs.filter(n=>n.recruit?.weapon).map(n=>({n,gun:n.recruit.weapon}))];
+  const grips=[{n:{visual:e.player},gun:e.weapon},...(e.securityResponse?.guns||[]),...(e.objectives?.rescue?.entries||[]).filter(a=>a.prop).map(a=>({n:a.n,gun:a.prop})),...(e.escapeThreats?.entries||[]).filter(a=>a.kind==='gun').map(a=>({n:a.n,gun:a.prop})),...e.npcs.filter(n=>n.recruit?.weapon).map(n=>({n,gun:n.recruit.weapon}))];
   for(const {n,gun}of grips)if(gun?.visible&&n.visual.hand){n.visual.root.updateWorldMatrix(true,true);gun.position.copy(n.visual.root.worldToLocal(n.visual.hand.getWorldPosition(new T.Vector3())));}
  }
  dispose(){for(const mark of [...this.marks])this.release(mark);this.e=null;}

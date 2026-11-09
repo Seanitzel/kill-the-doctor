@@ -1,4 +1,5 @@
 import {PREMIUM_OUTFITS} from './loadout.js';
+import {PhysicalPose} from './physical-pose.js';
 import {SmokingPose} from './smoking-pose.js';
 import { assetUrl } from './asset-url.js';
 import {applyAppearance,disposeAppearance,disposeAppearanceCache,NURSE_UNIFORM,staffBadgeTexture} from './appearance.js';
@@ -245,7 +246,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
   const seatThigh=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2),seatShin=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2);
   const activityBones = {}; model.traverse(b => { if (b.isBone) activityBones[b.name] = b; });
   const restingFingers=[];for(const side of ['Left','Right'])for(const finger of ['Thumb','Index','Middle','Ring','Pinky'])for(let joint=1;joint<=3;joint++){const bone=activityBones[`${side}Hand${finger}${joint}`];if(bone)restingFingers.push({bone,bind:bone.quaternion.clone(),curl:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),(side==='Left'?-1:1)*(joint===1?.03:joint===2?.08:.05))});}
-  let smokingPose,eatingPose,drinkingPose,mixingPose;const scratchBones=['RightArm','RightForeArm','RightHand','Head','Spine'].map(name=>({bone:activityBones[name],base:new THREE.Quaternion(),target:new THREE.Quaternion()})).filter(b=>b.bone);
+  let smokingPose,eatingPose,drinkingPose,mixingPose,physicalPose;const scratchBones=['RightArm','RightForeArm','RightHand','Head','Spine'].map(name=>({bone:activityBones[name],base:new THREE.Quaternion(),target:new THREE.Quaternion()})).filter(b=>b.bone);
   const wrists=['LeftHand','RightHand'].map(name=>({bone:activityBones[name],bind:activityBones[name]?.quaternion.clone()})).filter(w=>w.bone);
   const orient = (name, child, direction) => {
     const bone=activityBones[name], tip=activityBones[child]; if(!bone || !tip) return;
@@ -270,7 +271,8 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     orient('RightArm','RightForeArm',elbowTarget.sub(start).toArray());
     orient('RightForeArm','RightHand',target.sub(pointInModel(elbow)).toArray());
   };
-  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, poseMixing(target){mixingPose ||= new SmokingPose(model,restingFingers,'drink');return mixingPose.stir(target);}, poseDrinking(time){drinkingPose ||= new SmokingPose(model,restingFingers,'drink');return drinkingPose.update(time);}, poseSmoking(time){smokingPose ||= new SmokingPose(model,restingFingers);return smokingPose.update(time);}, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt, {running=false}={}) {
+  return { root, model, mixer, dispose:avatarDisposer(root,{model,mixer,clothLeases}), head: activityBones.Head, poseCover(direction,weight=1){physicalPose ||= new PhysicalPose(model);return physicalPose.cover(direction,weight);}, poseCrouch(weight=1){physicalPose ||= new PhysicalPose(model);return physicalPose.crouch(weight);}, poseScratch(time,blend=1){physicalPose ||= new PhysicalPose(model);return physicalPose.scratch(time,blend);}, mixingReach(target){physicalPose ||= new PhysicalPose(model);physicalPose.leanToDesk();mixingPose ||= new SmokingPose(model,restingFingers,'drink');return mixingPose.measureStir(target);}, poseMixing(target){physicalPose ||= new PhysicalPose(model);physicalPose.leanToDesk();mixingPose ||= new SmokingPose(model,restingFingers,'drink');return mixingPose.stir(target);}, poseDrinking(time){drinkingPose ||= new SmokingPose(model,restingFingers,'drink');return drinkingPose.update(time);}, poseSmoking(time){smokingPose ||= new SmokingPose(model,restingFingers);return smokingPose.update(time);}, setAim(value) { aim = value; }, hand: model.getObjectByName('RightHand'), animate(time, speed, dt, {running=false}={}) {
+    physicalPose?.reset();
     const next = running&&speed>1.5?'Run':locomotionForSpeed(speed,current);
     if (next !== current && actions[next]) { actions[current]?.fadeOut(.18); actions[next].reset().fadeIn(.18).play(); current = next; }
     if (actions[next]) actions[next].timeScale = speed > .15 ? Math.max(.24, speed / (next === 'Run' ? 5.4 : 2.5)) : 1;
@@ -295,7 +297,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
       else if(/mouthSmile/i.test(name))o.morphTargetInfluences[index]=smile;
     }});
     // Keep the safe idle/walk arms when a nearby wall or door leaves no room to gesture.
-    if(restricted&&!['guard','guard-aim','guard-restrain','scratch','restrained'].includes(activity)&&!(activity==='eat'&&seated)){expressions();return;}
+    if(restricted&&!['guard','guard-aim','guard-restrain','scratch','restrained','surrender','dizzy'].includes(activity)&&!(activity==='eat'&&seated)){expressions();return;}
     if(b.Spine) b.Spine.rotation.x += activity==='examine' ? .15 : activity==='labor' ? Math.sin(time*2.6)*.05 : 0;
     if(reaction>0) {
       orient('RightArm','RightForeArm',[.15,-.2,.6]); orient('RightForeArm','RightHand',[.1,.5,.3]);
@@ -360,8 +362,11 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
     } else if(activity==='chat') {
       const gesture=Math.sin(time*1.8)*.12;
       orient('RightArm','RightForeArm',[.15,-.45,.15]); orient('RightForeArm','RightHand',[.04,-.1+gesture,.4]);
+    } else if(activity==='dizzy'){physicalPose ||= new PhysicalPose(model);physicalPose.scratch(time*.25);if(b.Head)b.Head.rotation.z+=.08*Math.sin(time*2);if(b.Spine)b.Spine.rotation.z+=.035*Math.sin(time*2);
     } else if(activity==='scratch'){
-      orient('RightArm','RightForeArm',[-.14,-.10,.17]);reachHead(time,new THREE.Vector3(-.04,-.055,.04));if(b.Head)b.Head.rotation.z+=.08*Math.sin(time*8);if(b.Spine)b.Spine.rotation.z+=Math.sin(time*10)*.015;
+      physicalPose ||= new PhysicalPose(model);physicalPose.scratch(time);if(b.Head)b.Head.rotation.z+=.08*Math.sin(time*8);if(b.Spine)b.Spine.rotation.z+=Math.sin(time*10)*.015;
+    } else if(activity==='magnet-pull'){for(const side of ['Right','Left']){const sign=side==='Right'?-1:1;orient(side+'Arm',side+'ForeArm',[sign*.3,-.12,.4]);orient(side+'ForeArm',side+'Hand',[sign*.05,.22,.4]);}if(b.Spine)b.Spine.rotation.x-=.28;if(b.Head)b.Head.rotation.x-=.15;
+    } else if(activity==='surrender'){for(const side of ['Right','Left']){const sign=side==='Right'?-1:1;orient(side+'Arm',side+'ForeArm',[sign*.45,.28,.05]);orient(side+'ForeArm',side+'Hand',[sign*.02,.55,.08]);}
     } else if(activity==='restrained'){
       for(const side of ['Right','Left']){const sign=side==='Right'?-1:1;orient(side+'Arm',side+'ForeArm',[sign*.14,-.5,-.12]);orient(side+'ForeArm',side+'Hand',[-sign*.12,.05,-.27]);}if(b.Spine)b.Spine.rotation.x+=.25;
     } else if(activity==='guard'||activity==='guard-aim'||activity==='guard-restrain'){

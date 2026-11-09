@@ -134,9 +134,9 @@ test('The scoped rifle can hit across the hospital concourse beyond pistol range
 });
 test('MRI detects a holstered firearm, while an unarmed detective without jewelry is safe',()=>{
   const e=simulation(),room=levels[0].rooms.find(r=>r.kind==='imaging');e.mission.save.appearance.jewelry=true;e.systems.update(.1);assert.equal(e.systems.magnet,null);
-  e.playerPos.set(room.center.x,0,room.center.z);e.mission.save.appearance.jewelry=false;e.mission.type='rescue';e.systems.update(.1);assert.equal(e.systems.magnet,null);
+  e.playerPos.set(room.center.x,0,room.center.z);e.mission.save.appearance.jewelry=false;e.mission.type='evidence';e.systems.update(.1);assert.equal(e.systems.magnet,null);
   e.mission.type='standard';
-  e.mission.save.appearance.jewelry=true;e.systems.update(.1);assert.ok(e.systems.magnet);assert.equal(e.mission.result,null);e.systems.update(1);assert.equal(e.mission.result.success,false);assert.match(e.mission.result.reason,/magnetic scanner/);
+  e.mission.save.appearance.jewelry=true;e.systems.update(.1);assert.ok(e.systems.magnet);assert.equal(e.mission.result,null);e.systems.update(2);assert.equal(e.mission.result.success,false);assert.match(e.mission.result.reason,/Radiology carrying a gun/);
 });
 test('A cough warning is queued before gas can appear and a bought mask blocks infection',()=>{
   const e=simulation(),patient=actor('sick',0,0,0);patient.contamination=30;let warnings=0;e.audio.patientWarning=()=>warnings++;

@@ -26,7 +26,7 @@ test('Evidence assignments require three distinct photographs, no casualties and
   const bad=new Mission(saveFor('evidence'),1);bad.eliminate({id:'guard',role:'security'});assert.equal(bad.result.success,false);assert.equal(bad.result.coins,0);
 });
 test('Detective rescue protects everyone and succeeds only with the released patient nearby',()=>{
-  const m=new Mission(saveFor('rescue'),123);assert.equal(m.weaponRequired,false);assert.equal(m.releasePatient(),false);m.keys=['basement','theatre'];assert.equal(m.escape(true),undefined);assert.equal(m.releasePatient(),true);assert.equal(m.targetDown,false);assert.equal(m.escape(),undefined);assert.equal(m.escape(true).rescued,true);assert.equal(m.save.coins,560);
+  const m=new Mission(saveFor('rescue'),123);assert.equal(m.weaponRequired,true);assert.equal(m.releasePatient(),false);m.keys=['basement','theatre'];m.rescueEncounterReady=true;assert.equal(m.escape(true),undefined);assert.equal(m.releasePatient(),true);assert.equal(m.targetDown,false);assert.equal(m.escape(),undefined);assert.equal(m.escape(true).rescued,true);assert.equal(m.save.coins,560);
   for(const actor of[{id:'rescue-patient',role:'patient'},{id:'operation-doctor-0',role:'doctor'},{id:'guard',role:'security'}]){const bad=new Mission(saveFor('rescue'),1);bad.eliminate(actor);assert.equal(bad.result.success,false);}
 });
 function worldFixture(type='rescue'){
@@ -54,7 +54,7 @@ test('Quiet key theft requires crouching behind a nurse and no seeing witnesses'
   }finally{dispose(e);}
 });
 test('The rescued patient walks around solid operating furniture, uses the lift and follows to the main exit',()=>{
-  const e=worldFixture();try{e.floor=3;e.mission.keys=['basement','theatre'];assert.equal(e.objectives.release(),true);const n=e.objectives.patient;e.playerPos.set(0,0,-20);
+  const e=worldFixture();try{e.floor=3;e.mission.keys=['basement','theatre'];const encounter=e.objectives.rescue;encounter.started=true;for(const a of encounter.entries){a.resists=true;a.n.rescueResisting=true;a.n.dead=true;}for(const door of e.levels[3].doors)door.locked=false;encounter.update(.05);assert.equal(e.objectives.release(),true);const n=e.objectives.patient;e.playerPos.set(0,0,-20);
     function advance(until,max=1800){for(let i=0;i<max&&!until();i++){e.time+=1/30;e.mission.elapsed+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);assert.equal(e.canStand(n.pos.x,n.pos.z,.21,n.floor),true);}}
     advance(()=>Math.hypot(n.pos.x,n.pos.z+20)<2.2);assert.ok(Math.hypot(n.pos.x,n.pos.z+20)<2.2,JSON.stringify(n.pos));e.floor=0;e.playerPos.set(0,0,-20);advance(()=>n.floor===0);assert.equal(n.floor,0);e.playerPos.set(e.levels[0].exit.x,0,e.levels[0].exit.z);advance(()=>e.objectives.patientPresent());assert.equal(e.objectives.patientPresent(),true);assert.equal(e.mission.escape(true).success,true);
   }finally{dispose(e);}
@@ -69,4 +69,4 @@ test('Eligible distressed visitor is absent at mission start and arrives only af
   }finally{dispose(e);}
 });
 
-test('Operating doctors raise the rescue alarm instead of triggering the ordinary pre-target witness failure',()=>{const e=worldFixture();try{const doctor=e.npcs.find(n=>n.operationDoctor);e.systems.witness(doctor);assert.equal(e.mission.state,'escape');assert.equal(e.mission.result,null);assert.equal(doctor.reporting,null);assert.equal(doctor.evacuating,true);assert.equal(doctor.activity,null);assert.equal(e.objectives.patient.lying,true);}finally{dispose(e);}});
+test('Operating rescue doctors trigger the arrest encounter without an alarm or countdown',()=>{const e=worldFixture();try{const doctor=e.npcs.find(n=>n.operationDoctor);e.floor=3;e.systems.witness(doctor);assert.equal(e.mission.result,null);assert.equal(e.mission.timer,0);assert.equal(e.systems.evacuating,false);assert.equal(e.objectives.rescue.started,true);assert.equal(e.objectives.patient.lying,true);}finally{dispose(e);}});

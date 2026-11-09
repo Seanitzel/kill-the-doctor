@@ -39,6 +39,9 @@ export const STORIES=[...REVISED_CASEFILES,...NEW_FICTIONAL_CASEFILES];
 // Dedicated scene mappings are populated after their generated assets pass QA.
 // Legacy fields stay intact for saved profiles and older asset references.
 export const STORY_ART={
+ 'china-transplant-v320':{file:'case-china-transplant-v320.webp',width:1024,height:1536,cuts:[0,384,768,1152,1536]},
+ 'evidence-arrest-v320':{file:'evidence-arrest-ending-v320.webp',width:1672,height:941,cuts:[0,941]},
+ 'rescue-reunion-v320':{file:'rescue-reunion-endings-v320.webp',width:1024,height:1536,cuts:[0,512,1024,1536]},
   'pamela-nigeria-v36':{file:'case-pamela-nigeria-v36.webp',width:887,height:1774,cuts:[0,428,887,1321,1774]},
   'jack-france-v29':{file:'case-jack-france-v29.webp',width:887,height:1774,cuts:[0,468,874,1307,1774]},
   'michael-congo-v29':{file:'case-michael-congo-v29.webp',width:887,height:1774,cuts:[0,443,887,1330,1774]},

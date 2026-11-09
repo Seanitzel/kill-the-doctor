@@ -41,7 +41,7 @@ export function migrateCharacterSave(data){
   const base=legacy||CHARACTERS.find(c=>c.id===id),appearance=normalizeAppearance(data.appearance,base);
   if(legacy){appearance.gender=legacy.gender;if(!appearance.name.trim())appearance.name=legacy.name;}
   const customAppearance=normalizeAppearance(data.customAppearance|| (id==='custom'?appearance:{}),CHARACTERS[2]);
-  return {character:id,unlockedCharacters:CHARACTERS.map(c=>c.id),appearance,customAppearance,customSlots:normalizeCustomSlots(data.customSlots)};
+  return {character:id,unlockedCharacters:CHARACTERS.map(c=>c.id),appearance,customAppearance,customSlots:normalizeCustomSlots(data.customSlots),characterLooks:Object.fromEntries(CHARACTERS.filter(c=>c.id!=='custom').map(c=>[c.id,normalizeAppearance(data.characterLooks?.[c.id]||(id===c.id?appearance:{}),c)])),colorDefaults:Object.fromEntries(['accent','pants','hair','skin','eyes','highlights'].filter(k=>validHex(data.colorDefaults?.[k])).map(k=>[k,data.colorDefaults[k]]))};
 }
 export function normalizeCustomSlots(value){return Array.from({length:3},(_,i)=>value?.[i]&&typeof value[i]==='object'?normalizeAppearance(value[i],CHARACTERS[2]):null);}
 export function saveCustomSlot(save,index){if(!Number.isInteger(index)||index<0||index>2)return false;save.customSlots=normalizeCustomSlots(save.customSlots);save.customSlots[index]=normalizeAppearance(profileFor(save),CHARACTERS[2]);return true;}
@@ -49,7 +49,9 @@ export function loadCustomSlot(save,index){if(!Number.isInteger(index)||index<0|
 export function clearCustomSlot(save,index){if(!Number.isInteger(index)||index<0||index>2)return false;save.customSlots=normalizeCustomSlots(save.customSlots);save.customSlots[index]=null;return true;}
 export function selectHairstyle(save){save.appearance.cap=false;}
 export function profileFor(save){const base=CHARACTERS.find(c=>c.id===save.character)||CHARACTERS[0],appearance=normalizeAppearance(save.appearance,base);if(!ownsOutfit(save,appearance.outfit))appearance.outfit='casual';if(base.id!=='custom')for(const key of Object.keys(FACE_SHAPES))appearance[key]='natural';return {...base,...appearance,gender:base.id==='custom'?appearance.gender:base.gender,name:appearance.name.trim()||base.name,refined:true};}
-export function selectCharacter(save,id){const c=CHARACTERS.find(c=>c.id===id);if(!c)return false;if(save.character==='custom')save.customAppearance=normalizeAppearance(save.appearance,CHARACTERS[2]);save.character=id;save.appearance=id==='custom'?normalizeAppearance(save.customAppearance,CHARACTERS[2]):defaultAppearance(c);save.unlockedCharacters=CHARACTERS.map(c=>c.id);return true;}
+export function rememberCharacter(save){if(save.character==='custom')save.customAppearance=normalizeAppearance(save.appearance,CHARACTERS[2]);else{save.characterLooks||={};save.characterLooks[save.character]=normalizeAppearance(save.appearance,CHARACTERS.find(c=>c.id===save.character));}}
+export function lookFor(save,id){const c=CHARACTERS.find(c=>c.id===id)||CHARACTERS[0];return save.character===id?save.appearance:id==='custom'?save.customAppearance:save.characterLooks?.[id]||{...defaultAppearance(c),...save.colorDefaults};}
+export function selectCharacter(save,id){const c=CHARACTERS.find(c=>c.id===id);if(!c)return false;rememberCharacter(save);const next=lookFor({...save,character:null},id);save.character=id;save.appearance=normalizeAppearance(next,c);save.unlockedCharacters=CHARACTERS.map(c=>c.id);return true;}
 export function unlockCharacter(save,id){return CHARACTERS.some(c=>c.id===id)&&!save.unlockedCharacters?.includes(id)?selectCharacter(save,id):false;}
 export function weaponInfo(save,kind=save.loadout?.weapon||'pistol'){
   const sniper=kind==='sniper'&&save.upgrades?.sniper>0,mag=save.upgrades?.magazine||0;

@@ -30,10 +30,7 @@ export class HospitalExtras{
       const locked=m.type==='standard'&&m.round>=5;if(locked)lockedFloors.push(level.floor);
       for(const door of level.doors.filter(d=>d.room===room.id)){door.open=false;door.angle=0;door.pivot&&(door.pivot.rotation.y=0);door.locked=locked;door.keyId=locked?'laboratory':null;}
     }
-    if(lockedFloors.length){const room=e.levels[0].rooms.find(r=>r.kind==='office'),g=this.prop('Laboratory service key',0,room.center.x-.8,1.16,room.center.z+1.4);
-      const metal=material('#bca568',{metalness:.7,roughness:.35});mesh('cylinder',material('#344e60'),[.20,1.10,.20],[0,-.61,0],g);const ring=new THREE.Mesh(new THREE.TorusGeometry(.07,.013,6,12),metal);ring.rotation.x=Math.PI/2;g.add(ring);mesh('box',metal,[.035,.02,.16],[0,0,.12],g);mesh('box',metal,[.08,.02,.025],[.02,0,.18],g);
-      const tag=sign('LAB / RESEARCH','SERVICE KEY',.65,.22);tag.position.set(0,.23,0);g.add(tag);this.keyProp=g;this.items.push({type:'extra-key',floor:0,x:g.position.x,z:g.position.z,label:'Collect laboratory & research key'});
-    }
+    if(lockedFloors.length){const room=e.levels[0].rooms.find(r=>r.kind==='utility')||e.levels[0].rooms.find(r=>r.kind==='office');e.objectives.keyOffices.add('laboratory','Laboratory & Research service key',room);}
     if(m.type==='standard'&&m.round>=5){const room=e.levels[0].rooms.find(r=>r.kind==='lab'),g=this.prop('Fictional laboratory potion',0,room.center.x+.3,1.15,room.center.z-.6);
       mesh('cylinder',material('#626e81'),[.20,1.10,.20],[0,-.6,0],g);mesh('cylinder',material('#b2a1df',{roughness:.25}),[.055,.20,.055],[0,.07,0],g);mesh('cylinder',material('#d8e4eb'),[.06,.04,.06],[0,.18,0],g);
       const label=sign('KTD / DREAM VIAL','FICTIONAL DIVERSION ITEM',.9,.24);label.position.set(0,.4,0);g.add(label);this.potionProp=g;this.items.push({type:'extra-potion',floor:0,x:g.position.x,z:g.position.z,label:'Take fictional Dream Vial'});

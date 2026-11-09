@@ -9,8 +9,8 @@ function basis(forward,normal){const x=forward.clone().normalize(),z=normal.clon
 export class SmokingPose{
  constructor(model,restingFingers=[],mode='smoke'){this.mode=mode;
   this.model=model;this.head=model.getObjectByName('Head');this.hand=model.getObjectByName('RightHand');this.arm=model.getObjectByName('RightArm');this.fore=model.getObjectByName('RightForeArm');this.hips=model.getObjectByName('Hips');this.index=model.getObjectByName('RightHandIndex2');this.middle=model.getObjectByName('RightHandMiddle2');
-  this.fingers=restingFingers.filter(f=>f.bone.name.startsWith('RightHand'));
-  this.grip=new T.Vector3();this.direction=new T.Vector3();this.result={grip:this.grip,direction:this.direction,lift:0};
+  this.fingers=restingFingers.filter(f=>f.bone.name.startsWith('RightHand'));this.measureBones=[this.arm,this.fore,this.hand,...this.fingers.map(f=>f.bone)].filter(Boolean).map(bone=>({bone,q:new T.Quaternion()}));
+  this.grip=new T.Vector3();this.direction=new T.Vector3();this.result={grip:this.grip,direction:this.direction,lift:0,error:Infinity,reachable:false};this.measurement={error:Infinity,reachable:false};
   this.mouth=new T.Vector3(0,.09,.105);this.palmNormal=new T.Vector3(0,-1,0);this.cigaretteAxis=new T.Vector3();this.localBasis=new T.Quaternion();
   this.v=Array.from({length:15},()=>new T.Vector3());this.q=Array.from({length:5},()=>new T.Quaternion());this.low=new T.Quaternion();this.high=new T.Quaternion();
   if(!this.head||!this.hand||!this.arm||!this.fore||!this.index||!this.middle)return;
@@ -24,15 +24,20 @@ export class SmokingPose{
  }
  point(b,out){return this.model.worldToLocal(b.getWorldPosition(out));}
  orient(bone,tip,direction,roll){const parent=bone.parent.getWorldQuaternion(this.q[0]),model=this.model.getWorldQuaternion(this.q[1]),relative=model.invert().multiply(parent),axis=this.v[14].copy(tip.position).normalize();const target=this.q[2].setFromUnitVectors(axis.applyQuaternion(roll),direction.normalize()).multiply(roll);bone.quaternion.copy(relative.invert().multiply(target));bone.updateWorldMatrix(false,true);}
+ measureStir(target){
+  for(const item of this.measureBones)item.q.copy(item.bone.quaternion);
+  const pose=this.stir(target);this.measurement.error=pose?.error??Infinity;this.measurement.reachable=!!pose?.reachable;
+  for(const item of this.measureBones)item.bone.quaternion.copy(item.q);this.model.updateWorldMatrix(true,true);return this.measurement;
+ }
  stir(target){
   if(!this.update(0))return null;
   const m=this.model,hand=this.hand,start=this.point(this.arm,this.v[0]),grip=this.v[1].copy(target);m.worldToLocal(grip);
   const orientation=this.q[4].copy(this.low),offset=this.v[2];this.index.getWorldPosition(offset);this.middle.getWorldPosition(this.v[3]);offset.add(this.v[3]).multiplyScalar(.5);hand.worldToLocal(offset);offset.applyQuaternion(orientation);
-  const wrist=this.v[4].copy(grip).sub(offset),delta=this.v[5].copy(wrist).sub(start),a=this.fore.position.length(),b=hand.position.length(),d=T.MathUtils.clamp(delta.length(),Math.abs(a-b)+.001,a+b-.003);delta.normalize();
+  const wrist=this.v[4].copy(grip).sub(offset),delta=this.v[5].copy(wrist).sub(start),a=this.fore.position.length(),b=hand.position.length(),d=T.MathUtils.clamp(delta.length(),Math.abs(a-b)+.001,a+b-.003);delta.normalize();wrist.copy(start).addScaledVector(delta,d);
   const bend=this.v[6].set(-1,-.45,.25).addScaledVector(delta,-this.v[6].dot(delta)).normalize(),along=(a*a-b*b+d*d)/(2*d),elbow=this.v[7].copy(start).addScaledVector(delta,along).addScaledVector(bend,Math.sqrt(Math.max(0,a*a-along*along)));
   this.orient(this.arm,this.fore,this.v[8].copy(elbow).sub(start),orientation);this.orient(this.fore,hand,this.v[8].copy(wrist).sub(this.point(this.fore,this.v[9])),orientation);
   hand.quaternion.copy(hand.parent.getWorldQuaternion(this.q[0]).invert().multiply(m.getWorldQuaternion(this.q[1])).multiply(orientation));hand.updateWorldMatrix(false,true);
-  this.index.getWorldPosition(this.grip);this.middle.getWorldPosition(this.v[10]);this.grip.add(this.v[10]).multiplyScalar(.5);return this.result;
+  this.index.getWorldPosition(this.grip);this.middle.getWorldPosition(this.v[10]);this.grip.add(this.v[10]).multiplyScalar(.5);this.result.error=this.grip.distanceTo(target);this.result.reachable=this.result.error<=.02;return this.result;
  }
  update(time){
   if(!this.head||!this.hand||!this.arm||!this.fore||!this.index||!this.middle)return null;

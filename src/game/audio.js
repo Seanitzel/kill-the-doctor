@@ -136,7 +136,8 @@ export class HospitalAudio {
   }
   sound(name,options={}) {
     if(this.disposed||!this.enabled||!this.ctx)return;
-    if(name==='stir'){this.tone(2350,.045,.012,'sine');this.noise(.085,.012,1800);return;}
+    if(name==='stir'){this.noise(.48,.009,460+Math.random()*180);this.tone(1180+Math.random()*100,.035,.003,'sine');return;}
+    if(name==='gas'){this.noise(1.2,.10,1600);return;}
     if(name==='glass-break'){this.noise(.16,.10,5200);this.tone(2600,.08,.035,'triangle');this.delay(()=>this.noise(.12,.04,3200),95);return;}
     if(name==='vending'){this.tone(820,.09,.07,'sine');this.delay(()=>this.noise(.4,.10,210),100);this.delay(()=>this.tone(110,.16,.10,'triangle'),260);return;}
     if(name==='bottle-drop'){this.noise(.065,.13,650);this.tone(180,.1,.10,'triangle');this.delay(()=>this.noise(.04,.06,1000),100);return;}

@@ -22,3 +22,7 @@
 
 .studio-equipment-row .studio-launch{align-items:center;line-height:1;align-self:center;transform:none}
 .studio-equipment-row .studio-launch svg{display:block;flex:none}
+.freeplay-difficulty{display:flex;align-items:center;justify-content:space-between;gap:12px;font:10px var(--mono);margin:8px 0}.freeplay-difficulty select{max-width:65%;background:#17384b;color:#daeaf2;border:1px solid #7097aa;padding:7px}.guidance-milestone{position:fixed;z-index:110;top:15px;left:50%;transform:translateX(-50%);width:min(550px,90vw);padding:15px;background:#17394c;border:1px solid #aacbdb;box-shadow:0 8px 30px #0008;border-radius:6px;font-size:13px}.guidance-milestone p{margin:0 0 10px}.guidance-milestone button{padding:8px 16px;margin-right:8px;border:1px solid #7699ac}
+.desktop-peek{position:absolute;z-index:24;bottom:110px;left:50%;transform:translateX(-50%);padding:12px 20px;background:#17394c;border:1px solid #9dbdce;border-radius:6px;color:#e8f3f9}.peek-control{position:fixed!important;right:calc(env(safe-area-inset-right,0px) + 26px);top:42%;width:60px;height:60px;background:#183a4dcc;border:1px solid #91b5c7;border-radius:14px;z-index:32}.peek-control:disabled{opacity:.35}
+
+.phone-tools .peek-control{position:static!important;inset:auto;width:40px;height:40px;min-width:40px;min-height:40px}.phone-tools .peek-control small{font-size:6px}

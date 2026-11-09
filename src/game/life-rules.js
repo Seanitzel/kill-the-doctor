@@ -113,7 +113,9 @@ export const WITNESS_LINES = {
   weapon:'A weapon! I am calling the police!',
   camera:'That camera is not allowed here. I am calling security.',
 };
+export const REVISION320_LINES=["Raise your hands! You’re under arrest!", "Please, don’t shoot. I surrender.", "You are not taking me anywhere.", "Stay back!", "Dodge the spray quickly!", "Oh, I thought the doctor was around.", "Oh, I thought I was next. Sorry about that.", "What are you doing?", "Excuse me, please wait outside.", "You need to leave now, or I will call security.", "Please come with me. We’re getting you out of here.", "I need to collect a patient file. Please wait outside.", "I need to speak to a colleague. Please wait outside.", "I’m taking a short break. Please wait outside.", "Who’s there?", "Did someone call me?", "My head… something isn’t right."];
 export const ALL_DIALOGUE_LINES = [...new Set([
+ ...REVISION320_LINES, "Is the doctor around?", "What number are you? I thought I was next.",
   "Please have a seat. I'll be back in a few minutes.", 'Please come in.', "Please don't do this. Please let me go!",
 
   ...SNEEZE_REPLIES, 'Excuse me, please wait outside.', 'Excuse me, please wait until we finish with this patient.', 'Oh, I thought the doctor was around.', 'What are you doing?', ...OFFICE_VISITOR_LINES, ...INFILTRATION_LINES, 'Oh, sorry. Excuse me.', ...ADDITIONAL_DIALOGUE_LINES, ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),

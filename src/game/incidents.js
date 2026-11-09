@@ -34,7 +34,7 @@ export class HospitalIncidents{
   hearShot(origin,floor){
     const e=this.e,now=e.mission.elapsed,serial=++this.heardSerial,range=e.mission.save.upgrades.suppressor?15:90;
     for(const n of e.npcs){
-      if(n.dead||n.evacuated||n.baby||(!e.mission.china||floor!==3)&&(n.floor!==floor||distance(n.pos,origin)>range)||n.recruit?.state==='recruited')continue;
+      if(n.dead||n.evacuated||n.baby||(!(e.mission.china||e.mission.type==='rescue')||floor!==3)&&(n.floor!==floor||distance(n.pos,origin)>range)||n.recruit?.state==='recruited')continue;
       const sees=n.floor===floor&&seesDrawnWeapon(n.pos,origin,n.visual.root.rotation.y,e.lineOfSight(n.pos,origin,floor));
       if(!sees){n.noiseConcern={until:now+SHOT_MEMORY_SECONDS,serial,spoken:false};}
     }

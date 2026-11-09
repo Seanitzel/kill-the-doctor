@@ -132,9 +132,9 @@ export class HospitalLife {
     e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos))*(directory?.38:urgent?.75:.52),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor},{countryTake,rate:directory?.94:1,speakerId:actor.id,isCurrent:()=>!this.disposed&&actor.voiceVersion===voiceVersion});
     actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07);
   }
-  privacyWitness(room){
+  privacyWitness(room){if(room&&this.engine.covert?.advanced?.room?.id===room.id&&this.engine.covert.advanced.floor===room?.floor)return null;
     if(this.engine.systems?.evacuating||this.engine.mission.state==='escape'||!room||room.kind==='emergency'||(!CLINICAL_KINDS.includes(room.kind)&&!['office','lab'].includes(room.kind)))return null;
-    const e=this.engine;if(e.covert?.office?.id===room.id&&e.covert.officeFloor===e.floor&&!e.covert.documentTaken)return null;if(e.mission.china&&room.kind==='office')return null;if(this.targetCase?.room.id===room.id&&this.targetCase.appointment.completed)return null;
+    const e=this.engine;if(e.covert?.office?.id===room.id&&e.covert.officeFloor===e.floor&&!e.covert.documentTaken)return null;if(e.objectives?.china?.office.id===room.id||e.objectives?.keyOffices?.entries.some(a=>a.room.id===room.id))return null;if(this.targetCase?.room.id===room.id&&this.targetCase.appointment.completed)return null;
     return e.npcs.filter(n=>n.floor===e.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===room.id&&!n.dead&&!n.evacuated&&!n.reporting&&['doctor','nurse'].includes(n.role)).sort((a,b)=>(a.id==='target'?0:a.role==='nurse'?1:2)-(b.id==='target'?0:b.role==='nurse'?1:2)||dist(e.playerPos,a.pos)-dist(e.playerPos,b.pos))[0]||null;
   }
   privacyResponse(actor,action){

@@ -41,3 +41,4 @@ export function cameraFraction(anchor,desired,obstacles,radius=.2){
 
 // Exact circle vs oriented door leaf, used while checking the swept arc.
 export function circleOverlapsDoor(x,z,r,door,angle=door.angle){const p=door.pivot.position,c=Math.cos(angle),s=Math.sin(angle),dx=x-p.x,dz=z-p.z,lx=dx*c-dz*s,lz=dx*s+dz*c,nx=Math.max(0,Math.min(1.72,lx)),nz=Math.max(-.04,Math.min(.04,lz));return (lx-nx)**2+(lz-nz)**2<r*r-1e-8;}
+export function bodyPenetration(x,z,r,c){if(c.object?.pivot){const d=c.object,p=d.pivot.position,a=d.angle??0,dx=x-p.x,dz=z-p.z;return bodyPenetration(dx*Math.cos(a)-dz*Math.sin(a),dx*Math.sin(a)+dz*Math.cos(a),r,{minX:0,maxX:1.72,minZ:-.05,maxZ:.05});}const nx=Math.max(c.minX,Math.min(c.maxX,x)),nz=Math.max(c.minZ,Math.min(c.maxZ,z)),distance=Math.hypot(x-nx,z-nz);if(distance>0)return Math.max(0,r-distance);return r+Math.min(x-c.minX,c.maxX-x,z-c.minZ,c.maxZ-z);}

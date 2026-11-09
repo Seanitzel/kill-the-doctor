@@ -4,4 +4,4 @@ export function stickVector(dx, dy, radius = 48, deadZone = .12) {
   const strength=(fraction-deadZone)/(1-deadZone),scale=Math.min(radius,length)/(length||1);
   return {forward:-dy/length*strength,strafe:dx/length*strength,x:dx*scale,y:dy*scale};
 }
-export function createTouchInput(){return {forward:0,strafe:0,sprint:false,crouch:false,shot:false};}
+export function createTouchInput(){return {forward:0,strafe:0,sprint:false,crouch:false,peek:false,shot:false};}

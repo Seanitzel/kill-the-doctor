@@ -1,4 +1,4 @@
-export const OFFICE_VISITOR_LINES=['Oh, I thought the doctor was around.','Is the doctor around?','What number are you? I thought I was next.'];
+export const OFFICE_VISITOR_LINES=['Oh, I thought the doctor was around.','Oh, I thought I was next. Sorry about that.'];
 // Fixed captions keep bundled voice keys stable across actors and public-address playback.
 export const PATIENT_PAGE_LINES = [
   'Michael Bennett, please come to Outpatient, room one oh five.',

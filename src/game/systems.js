@@ -6,7 +6,7 @@ import {tileAt,key} from './layout.js';
 import {WITNESS_LINES} from './life-rules.js';
 import {seesDrawnWeapon} from './loadout.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
-export function securityAlert(m){if(m.china&&!m.policeAlert)return false;return m.suspicion>80||m.state==='escape'&&(!m.china||!!m.policeAlert);}
+export function securityAlert(m){if(m.type==='rescue'&&!m.policeAlert)return false;if(m.china&&!m.policeAlert)return false;return m.suspicion>80||m.state==='escape'&&(!m.china||!!m.policeAlert);}
 export class MissionSystems{
   constructor(engine){this.e=engine;this.scan=0;this.magnet=null;this.evacuating=false;this.navigation=[];}
   navigationFor(floor){return this.navigation[floor]||(this.navigation[floor]=new EgressNavigation(this.e.levels[floor],this.e.hospitals[floor].colliders));}
@@ -22,14 +22,14 @@ export class MissionSystems{
     n.visual.root.rotation.set(0,0,0);n.activity=null;n.seated=n.lying=false;n.baselineY=0;n.pos.y=0;n.hitOffset=null;n.reaction=0;n.path=[];n.cursor=0;
   }
   startEvacuation(){
-    if(this.evacuating||this.e.mission.china&&!this.e.mission.policeAlert)return;this.evacuating=true;if(this.e.life){if(this.e.life.queue)this.e.life.queue.length=0;if(this.e.life.dialogues)this.e.life.dialogues.length=0;this.e.life.privacy?.leave();}this.e.audio.cancelVoices?.();this.alarmAt=this.e.mission.elapsed;this.alarmAnnounced=true;this.e.audio.sound('alarm');this.escapePhase=this.e.mission.type==='standard'?'security':'evacuating';this.waitingAccomplices=this.e.npcs.filter(n=>this.e.mission.type==='standard'&&!n.dead&&n.id!=='target'&&!!(n.complicity||complicityFor(n)));for(const n of this.waitingAccomplices){n.complicity||=complicityFor(n);n.accompliceHeld=false;}this.e.notify(this.e.mission.type==='standard'?(this.e.mission.playMode==='story'&&this.e.mission.round>=5?'Stop the hidden offenders before leaving. Defeat security to unlock accomplice tracking; other marked staff are optional.':'Escape is open. Defeat security to unlock optional accomplice tracking.'):'The alarm is active. Stay together and reach the main entrance.','danger');for(const entrance of this.e.hospitals?.[0]?.entrances||[]){entrance.open=true;updateEntrance(entrance,true,2);}this.e.nextBlackout=Math.min(this.e.nextBlackout??Infinity,this.e.mission.elapsed+8+this.e.mission.random()*8);this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
+    if(this.e.mission.type==='rescue'||this.evacuating||this.e.mission.china&&!this.e.mission.policeAlert)return;this.evacuating=true;if(this.e.life){if(this.e.life.queue)this.e.life.queue.length=0;if(this.e.life.dialogues)this.e.life.dialogues.length=0;this.e.life.privacy?.leave();}this.e.audio.cancelVoices?.();this.alarmAt=this.e.mission.elapsed;this.alarmAnnounced=true;this.e.audio.sound('alarm');this.escapePhase=this.e.mission.type==='standard'?'security':'evacuating';this.waitingAccomplices=this.e.npcs.filter(n=>this.e.mission.type==='standard'&&!n.dead&&n.id!=='target'&&!!(n.complicity||complicityFor(n)));for(const n of this.waitingAccomplices){n.complicity||=complicityFor(n);n.accompliceHeld=false;}this.e.notify(this.e.mission.type==='standard'?(this.e.mission.playMode==='story'&&this.e.mission.round>=5?'Stop the hidden offenders before leaving. Defeat security to unlock accomplice tracking; other marked staff are optional.':'Escape is open. Defeat security to unlock optional accomplice tracking.'):'The alarm is active. Stay together and reach the main entrance.','danger');for(const entrance of this.e.hospitals?.[0]?.entrances||[]){entrance.open=true;updateEntrance(entrance,true,2);}this.e.nextBlackout=Math.min(this.e.nextBlackout??Infinity,this.e.mission.elapsed+8+this.e.mission.random()*8);this.e.audio.nextBeep=(this.e.audio.ctx?.currentTime||0)+2.4;
     for(const level of this.e.levels)for(const door of level.doors){door.locked=false;door.open=true;}
     for(const n of this.e.npcs){if(n.dead||n.baby||n.rescuePatient||n.accompliceHeld||['police','security'].includes(n.role)||n===this.e.extras?.lure?.contact&&n.lying||n.emergencyResponder)continue;if(n.recruit?.state==='recruited'){n.reporting=null;n.evacuating=false;n.activity=null;n.path=[];n.recruit.nextRoute=0;continue;}n.sneezeUntil=0;if(n.tissue)n.tissue.visible=false;n.evacLane=((this.e.npcs.indexOf(n)*7)%6)*.48+.15;n.evacGoal=n.floor?{x:0,z:-24}:{x:0,z:39};n.evacPending=true;n.activity=null;n.path=[];n.reporting=null;n.evacuating=true;n.evacSpeed=n.blind?1.25:2.8+this.e.mission.random()*2;n.reaction=.15+this.e.mission.random()*1.4;n.evacHesitateAt=this.e.mission.elapsed+5+this.e.mission.random()*9;}
     const nearby=this.e.npcs.filter(n=>n.floor===this.e.floor&&!n.dead&&!n.baby).slice(0,3);for(const [i,n]of nearby.entries())this.e.audio.evacuationScream?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor},i*.7);
     this.e.hooks.soundCaption?.('People scream. Staff and ambulatory patients rush toward the exits. Security responds immediately. Newborns remain protected.');
   }
   witness(n,reason='weapon'){
-    const e=this.e;if(e.mission.china&&n.operationDoctor){e.objectives?.china?.panicDoctors();return;}if(n.operationDoctor&&e.mission.type==='rescue'){e.mission.beginEscape(65);this.startEvacuation();e.notify('Operating team alerted · stop the procedure and bring the patient out','danger');return;}
+    const e=this.e;if(e.mission.china&&n.operationDoctor){e.objectives?.china?.panicDoctors();return;}if(e.mission.type==='rescue'&&e.floor===3){e.objectives.rescue?.begin();return;}
     const stations=[{x:0,z:-23},{x:18,z:0},{x:-3,z:25.5}].sort((a,b)=>distance(n.pos,a)-distance(n.pos,b));
     const goal=stations[0];this.stand(n,goal);n.reaction=.7;n.reporting={reason,started:e.mission.elapsed,deadline:e.mission.elapsed+(e.mission.challenge?.reportSeconds||8)+Math.min(13,distance(n.pos,goal)/2.5),goal};
     this.route(n,goal);if(reason!=='privacy'){e.audio.gasp({x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});e.audio.dialogue?.(WITNESS_LINES[reason]||WITNESS_LINES.weapon,n.person,.8,true,{x:n.pos.x,y:1.5,z:n.pos.z,floor:n.floor});}
@@ -68,9 +68,9 @@ export class MissionSystems{
     return false;
   }
   update(dt){
-    const e=this.e;if((e.mission.targetDown&&!e.mission.china&&(!e.mission.covertDeath||e.mission.bodyDiscovered)||e.mission.type==='rescue'&&e.mission.state==='escape')&&!this.evacuating)this.startEvacuation();
+    const e=this.e;if((e.mission.targetDown&&!e.mission.china&&(!e.mission.covertDeath||e.mission.bodyDiscovered))&&!this.evacuating)this.startEvacuation();
     this.updateEscape();this.scan-=dt;
-    if((e.mission.state!=='escape'&&!e.mission.targetDown||e.mission.china&&!e.mission.policeAlert)&&e.weaponDrawn&&this.scan<=0){
+    if((e.mission.state!=='escape'&&!e.mission.targetDown||e.mission.china&&!e.mission.policeAlert)&&!(e.mission.type==='rescue'&&e.floor===3)&&e.weaponDrawn&&this.scan<=0){
       this.scan=.18;let reporting=e.npcs.filter(n=>n.reporting&&!n.dead).length;
       for(const n of e.npcs){
         if(reporting>=3||e.mission.state==='escape'&&(!e.mission.china||e.mission.policeAlert))break;if(n.id==='target'||n.dead||n.evacuated||n.baby||n.blind||n.rescuePatient||n.lying||n.reporting||n.recruit?.state==='recruited'||n.floor!==e.floor)continue;
@@ -81,11 +81,11 @@ export class MissionSystems{
     const cell=e.levels[e.floor].cells.get(key(tileAt(e.playerPos.x,e.playerPos.z).x,tileAt(e.playerPos.x,e.playerPos.z).z));
     const room=e.levels[e.floor].rooms.find(r=>r.id===cell?.room);
     if(!this.magnet&&room?.kind==='imaging'&&(e.mission.weaponRequired||e.mission.save.appearance?.necklace||e.mission.save.appearance?.earrings||e.mission.save.appearance?.jewelry)){
-      this.magnet={age:0,from:e.playerPos.clone(),to:new THREE.Vector3(room.center.x,0,room.center.z-1)};e.audio.sound('magnet');
+      this.magnet={age:0,from:e.playerPos.clone(),to:new THREE.Vector3(room.center.x,0,room.center.z-1),weapon:e.mission.weaponRequired};e.audio.sound('magnet');e.audio.evacuationScream?.(e.playerProfile,{x:e.playerPos.x,y:1.5,z:e.playerPos.z,floor:e.floor});
     }
-    if(this.magnet){const m=this.magnet;m.age+=dt;e.playerPos.lerpVectors(m.from,m.to,Math.min(1,m.age/.95));e.player.root.position.copy(e.playerPos);if(m.age>=.95){e.mission.finish(false,'The magnetic scanner pulled you into the machine.');e.finish();}}
+    if(this.magnet){const m=this.magnet;m.age+=dt;const old=e.playerPos.clone(),direction=m.to.clone().sub(e.playerPos).setY(0).normalize(),step=Math.min(e.playerPos.distanceTo(m.to),(.5+m.age*4)*dt);e.move(direction.x*step,direction.z*step);e.player.root.position.copy(e.playerPos);e.player.root.rotation.y=Math.atan2(direction.x,direction.z);e.player.animate?.(e.time,e.playerPos.distanceTo(old)/Math.max(dt,.001),dt);e.player.poseCrouch?.(.25);e.player.poseActivity?.('magnet-pull',e.time);if(m.age>=1.8){e.mission.finish(false,m.weapon?'You entered Radiology carrying a gun. The MRI magnetic field pulled the weapon and you toward the scanner.':'You entered Radiology wearing metal jewellery and were pulled toward the MRI scanner.');e.finish();}}
   }
-  alarmActive(){const m=this.e.mission;return m.state==='escape'&&(m.type==='standard'?this.evacuating&&!!this.alarmAnnounced:!m.china||!!m.policeAlert);}
+  alarmActive(){const m=this.e.mission;if(m.type==='rescue')return false;return m.state==='escape'&&(m.type==='standard'?this.evacuating&&!!this.alarmAnnounced:!m.china||!!m.policeAlert);}
   escapeObjective(){if(!this.evacuating||this.e.mission.type!=='standard')return null;const m=this.e.mission,required=[...(m.requiredHiddenIds||[])].filter(id=>!m.eliminatedIds.has(id)).length;if(required)return `Find and stop ${required} hidden accomplice${required===1?'':'s'} · ${this.escapePhase==='security'?'defeat security to unlock tracking':'room locations marked on map'}`;return this.escapePhase==='security'?'Escape now, or defeat security to unlock optional accomplice tracking':'Required targets clear · escape before lockdown';}
 
   updateEscape(){const e=this.e,m=e.mission;if(!this.evacuating)return;if(this.escapePhase==='security'&&!e.npcs.some(n=>n.role==='security'&&!n.dead&&!n.evacuated)){this.escapePhase='accomplices';e.notify('Security stopped · live red map dots reveal accomplices. Hidden threats show their room only. Escape remains your objective.','clue');}}

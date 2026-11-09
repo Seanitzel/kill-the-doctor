@@ -1,6 +1,7 @@
 import {tileAt,key} from './layout.js';
-import {blocksBody,obstacleBounds,footprint,segmentHit3D,circleOverlaps,STRUCTURE_CLEARANCE} from './collision.js';
+import {blocksBody,obstacleBounds,footprint,segmentHit2D,circleOverlaps,STRUCTURE_CLEARANCE} from './collision.js';
 const STEP=.6,RADIUS=.24;
+export const MAX_EGRESS_FIELDS=8;
 const distance2=(a,b)=>(a.x-b.x)**2+(a.z-b.z)**2;
 // A finer flow field lets a crowd route around furniture and swung-open door leaves.
 // Fields are shared by all people heading to the same lift, exit or reporting station.
@@ -10,7 +11,7 @@ export class EgressNavigation{
     this.bodyObstacles=colliders.filter(c=>!c.dynamic&&blocksBody(c)&&c.type!=='entrance-glass').map(c=>{
       if(!c.object?.pivot)return obstacleBounds(c);
       const d=c.object,p=d.pivot.position,a=d.openAngle;
-      if(respectLocked&&d.locked)return obstacleBounds(c);return footprint(p.x+Math.cos(a)*.86,p.z-Math.sin(a)*.86,1.72,.1,2.6,a,'door');
+      if(respectLocked&&d.locked)return {...obstacleBounds(c)};return footprint(p.x+Math.cos(a)*.86,p.z-Math.sin(a)*.86,1.72,.1,2.6,a,'door');
     });
     this.obstacles=this.bodyObstacles.map(c=>{const radius=['wall','door'].includes(c.type)?STRUCTURE_CLEARANCE+.02:RADIUS;return {minX:c.minX-radius,maxX:c.maxX+radius,minZ:c.minZ-radius,maxZ:c.maxZ+radius,minY:0,maxY:2};});
     for(let gx=layout.expanded?-58:-48;gx<=45;gx++)for(let gz=layout.expanded?-58:-44;gz<=67;gz++){
@@ -23,10 +24,10 @@ export class EgressNavigation{
       if(other&&this.clear(n.point,other.point)){n.edges.push(other);other.edges.push(n);}
     }
   }
-  clear(a,b){const from={x:a.x,y:.5,z:a.z},to={x:b.x,y:.5,z:b.z};return !this.obstacles.some(c=>segmentHit3D(from,to,c)!==null);}
+  clear(a,b){for(let i=0;i<this.obstacles.length;i++)if(segmentHit2D(a,b,this.obstacles[i])!==null)return false;return true;}
   clearDeparture(a,b){
     const length=Math.hypot(b.x-a.x,b.z-a.z),steps=Math.max(1,Math.ceil(length/.1));
-    for(let step=0;step<=steps;step++){const fraction=step/steps,x=a.x+(b.x-a.x)*fraction,z=a.z+(b.z-a.z)*fraction;if(this.bodyObstacles.some(c=>circleOverlaps(x,z,['wall','door'].includes(c.type)?STRUCTURE_CLEARANCE-.001:.219,c)))return false;}
+    for(let step=0;step<=steps;step++){const fraction=step/steps,x=a.x+(b.x-a.x)*fraction,z=a.z+(b.z-a.z)*fraction;for(let i=0;i<this.bodyObstacles.length;i++){const c=this.bodyObstacles[i],radius=c.type==='wall'||c.type==='door'?STRUCTURE_CLEARANCE-.001:.219;if(circleOverlaps(x,z,radius,c))return false;}}
     return true;
   }
   nearest(position,reachable=null,requireClear=false){
@@ -48,9 +49,9 @@ export class EgressNavigation{
     if(!field){
       field=new Map([[end,null]]);const queue=[end];
       for(let i=0;i<queue.length;i++)for(const n of queue[i].edges)if(!field.has(n)){field.set(n,queue[i]);queue.push(n);}
-      this.fields.set(end,field);
+      this.fields.set(end,field);while(this.fields.size>MAX_EGRESS_FIELDS)this.fields.delete(this.fields.keys().next().value);
     }
-    return field;
+    this.fields.delete(end);this.fields.set(end,field);return field;
   }
   // Moving contacts use a bounded, temporary A* search, not a new persistent
   // whole-floor flow field for every moving goal.

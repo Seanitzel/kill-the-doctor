@@ -96,13 +96,13 @@ export class GameEngine {
     this.ensureAssets().catch(()=>{});
     }catch(error){try{this.dispose();}catch{}throw error;}
   }
-  createRenderer(){return new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}
+  createRenderer(){return new THREE.WebGLRenderer({antialias:!this.mobile,powerPreference:this.mobile?'default':'high-performance'});}
   buildFloor(layout){return buildHospital(layout,this.materials);}
   ensureAssets(){
     if(this.assets)return Promise.resolve(this.assets);
     if(this.assetsPromise)return this.assetsPromise;
     const controller=new AbortController();this.assetsController=controller;
-    const pending=loadCharacters({textureLimit:this.mobile&&this.settings.quality!=='high'?512:1024,clothTextureLimit:this.mobile?256:512,signal:controller.signal,onProgress:value=>{this.assetProgress=value;if(!this.disposed){this.hooks.assets?.(value);if(this.startTask)this.hooks.loading?.({...value,progress:value.progress*.35});}}}).then(assets=>{
+    const pending=loadCharacters({textureLimit:this.mobile?512:1024,clothTextureLimit:this.mobile?256:512,signal:controller.signal,onProgress:value=>{this.assetProgress=value;if(!this.disposed){this.hooks.assets?.(value);if(this.startTask)this.hooks.loading?.({...value,progress:value.progress*.35});}}}).then(assets=>{
       if(this.disposed){disposeCharacterAssets(assets,this.renderer);return null;}
       this.assets=assets;this.ready=true;this.error=null;this.hooks.ready?.();return assets;
     }).catch(error=>{if(!this.disposed){this.error=error;this.hooks.error?.(error);}throw error;}).finally(()=>{if(this.assetsPromise===pending)this.assetsPromise=null;if(this.assetsController===controller)this.assetsController=null;});
@@ -492,9 +492,9 @@ export class GameEngine {
   }
   canStand(x,z,radius=.3,floor=this.floor,from=null,actor=null){
     const cell=tileAt(x,z);if(!this.levels[floor].cells.has(key(cell.x,cell.z)))return false;
-    return !this.hospitals[floor].colliders.some(c=>{if(actor&&c.seatOwner===actor.id)return false;const b=obstacleBounds(c),r=(c.object||c.type==='wall')?Math.max(radius,STRUCTURE_CLEARANCE):radius;if(!blocksBody(b))return false;const depth=bodyPenetration(x,z,r,c.object?c:b);if(depth<=.00001)return false;if(from){const previous=bodyPenetration(from.x,from.z,r,c.object?c:b);if(previous>.00001&&depth<previous-.00001)return false;}return true;});
+    const colliders=this.hospitals[floor].colliders;for(let i=0;i<colliders.length;i++){const c=colliders[i];if(actor&&c.seatOwner===actor.id)continue;const b=c.object?c:obstacleBounds(c),r=(c.object||c.type==='wall')?Math.max(radius,STRUCTURE_CLEARANCE):radius;if(!blocksBody(b))continue;const depth=bodyPenetration(x,z,r,b);if(depth<=.00001)continue;if(from){const previous=bodyPenetration(from.x,from.z,r,b);if(previous>.00001&&depth<previous-.00001)continue;}return false;}return true;
   }
-  nearStructure(pos,floor,radius=1.5){return (this.hospitals?.[floor]?.colliders||[]).some(c=>blocksBody(obstacleBounds(c))&&circleOverlaps(pos.x,pos.z,radius,obstacleBounds(c)));}
+  nearStructure(pos,floor,radius=1.5){const list=this.hospitals?.[floor]?.colliders;if(!list)return false;for(let i=0;i<list.length;i++){const b=obstacleBounds(list[i]);if(blocksBody(b)&&circleOverlaps(pos.x,pos.z,radius,b))return true;}return false;}
   canMoveTo(x,z){
     if(!this.canStand(x,z,.3,this.floor,this.playerPos))return false;
     for(const n of this.npcs){

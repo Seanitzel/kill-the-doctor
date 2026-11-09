@@ -1,3 +1,5 @@
+Latest follow-up: [3.21 iPhone Safari memory-pressure fix](release-3.21.md). The historical audit below describes the original baseline; the new phone sign, texture and reflection budgets supersede it.
+
 # Mobile performance and lifecycle audit (2.1.1)
 
 The balanced touch profile uses a 512 px limit on character source maps, 256 px clothing atlases, pixel ratio at most 1, three local lights, and 512 px shadow maps. High quality uses larger maps/resolution. Texture limits are selected when loading the engine. The original music, hospital geometry and character rigs are preserved.

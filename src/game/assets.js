@@ -69,11 +69,13 @@ export function mesh(kind, mat, size, pos, parent) {
   const m = new THREE.Mesh(geometries[kind], mat); m.scale.set(...size); m.position.set(...pos); m.castShadow = true; m.receiveShadow = true; parent?.add(m); return m;
 }
 export function sign(text, subtitle, width = 2.6, height = .65, options = {}) {
-  const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = Math.round(1024 * height / width);
-  const ctx = canvas.getContext('2d'); ctx.fillStyle = options.background || '#21485f'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#b7d5e8'; ctx.fillRect(0, 0, 9, canvas.height);
-  ctx.textBaseline = 'middle'; ctx.fillStyle = options.color || '#eef7fd'; ctx.textAlign=options.center?'center':'left'; ctx.font = `600 ${options.fontSize||(subtitle ? 68 : 85)}px Arial`; ctx.fillText(text, options.center?512:48, subtitle ? canvas.height * .35 : canvas.height / 2, 925);
-  if (subtitle) { ctx.font = `400 ${options.subFontSize||38}px Arial`; ctx.fillStyle = '#afd1e5'; ctx.fillText(subtitle, options.center?512:50, canvas.height * .73, 920); }
+  const coarse=globalThis.window?.matchMedia?.('(pointer:coarse)')?.matches||globalThis.navigator?.maxTouchPoints>0;
+  const scale=coarse?.5:1,logicalHeight=Math.round(1024*height/width),canvas=document.createElement('canvas');canvas.width=1024*scale;canvas.height=Math.round(logicalHeight*scale);
+  // Draw in the original coordinate system so only texture resolution changes.
+  const ctx=canvas.getContext('2d');ctx.scale?.(scale,scale);ctx.fillStyle=options.background||'#21485f';ctx.fillRect(0,0,1024,logicalHeight);
+  ctx.fillStyle='#b7d5e8';ctx.fillRect(0,0,9,logicalHeight);
+  ctx.textBaseline='middle';ctx.fillStyle=options.color||'#eef7fd';ctx.textAlign=options.center?'center':'left';ctx.font=`600 ${options.fontSize||(subtitle?68:85)}px Arial`;ctx.fillText(text,options.center?512:48,subtitle?logicalHeight*.35:logicalHeight/2,925);
+  if(subtitle){ctx.font=`400 ${options.subFontSize||38}px Arial`;ctx.fillStyle='#afd1e5';ctx.fillText(subtitle,options.center?512:50,logicalHeight*.73,920);}
   const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   const mat = new THREE.MeshStandardMaterial({ map: t, roughness: .6, emissiveMap: t, emissive: '#ffffff', emissiveIntensity: .12, side: THREE.FrontSide });
   return new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);

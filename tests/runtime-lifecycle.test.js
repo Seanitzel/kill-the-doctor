@@ -55,7 +55,7 @@ test('Mobile rendering caps high-refresh screens and reduces menu/paused work wi
   try{
     for(const mode of ['mobile','menu','paused']){
       let rendered=0,simulated=0,lastClock=0;
-      const engine=Object.create(GameEngine.prototype);Object.assign(engine,{mobile:true,lastFrameAt:-Infinity,time:0,menuTime:0,hudClock:0,performance:{frames:0,last:0},paused:mode==='paused',mission:mode==='menu'?null:{tick(dt){simulated+=dt;}},touchInput:{},effects:[],camera:new THREE.PerspectiveCamera(),clock:{getDelta(){const delta=(now-lastClock)/1000;lastClock=now;return delta;}},renderer:{render(){rendered++;}},syncViewport(){},updatePlayer(){},updateNPCs(){},updateEnvironment(){},updateCamera(){},updateLights(){},emitHUD(){}});
+      const engine=Object.create(GameEngine.prototype);Object.assign(engine,{mobile:true,lastFrameAt:-Infinity,time:0,menuTime:0,hudClock:0,performance:{frames:0,last:0},paused:mode==='paused',mission:mode==='menu'?null:{tick(dt){simulated+=dt;}},touchInput:{},effects:[],camera:new THREE.PerspectiveCamera(),clock:{getDelta(){const delta=(now-lastClock)/1000;lastClock=now;return delta;}},renderer:{render(){rendered++;}},renderScene(){this.renderer.render();},syncViewport(){},updatePlayer(){},updateNPCs(){},updateEnvironment(){},updateCamera(){},updateLights(){},emitHUD(){}});
       for(let frame=0;frame<=240;frame++){now=frame*1000/120;engine.frame();}
       const expected=mode==='mobile'?121:mode==='menu'?61:31;assert.ok(Math.abs(rendered-expected)<=1,`${mode}: ${rendered} renders`);
       if(mode==='mobile')assert.ok(Math.abs(simulated-2)<.03,`simulation time ${simulated}`);

@@ -1,3 +1,4 @@
+import {PriorityQueue} from './priority-queue.js';
 import {tileAt,key} from './layout.js';
 import {blocksBody,obstacleBounds,footprint,segmentHit2D,circleOverlaps,STRUCTURE_CLEARANCE} from './collision.js';
 const STEP=.6,RADIUS=.24;
@@ -7,7 +8,7 @@ const distance2=(a,b)=>(a.x-b.x)**2+(a.z-b.z)**2;
 // Fields are shared by all people heading to the same lift, exit or reporting station.
 export class EgressNavigation{
   constructor(layout,colliders,{respectLocked=false}={}){
-    this.nodes=new Map();this.fields=new Map();
+    this.nodes=new Map();this.fields=new Map();this.gridBounds={minX:layout.expanded?-58:-48,maxX:45,minZ:layout.expanded?-58:-44,maxZ:67};
     this.bodyObstacles=colliders.filter(c=>!c.dynamic&&blocksBody(c)&&c.type!=='entrance-glass').map(c=>{
       if(!c.object?.pivot)return obstacleBounds(c);
       const d=c.object,p=d.pivot.position,a=d.openAngle;
@@ -36,10 +37,16 @@ export class EgressNavigation{
     // using their actual body clearance instead of becoming permanently stuck.
     const departure=requireClear&&this.obstacles.some(c=>position.x>=c.minX&&position.x<=c.maxX&&position.z>=c.minZ&&position.z<=c.maxZ);
     let best=null,min=Infinity;
-    for(const node of this.nodes.values()){
-      const d=distance2(node.point,position);
-      if(d>=min||reachable&&!reachable.has(node)||requireClear&&!(departure?this.clearDeparture(position,node.point):this.clear(position,node.point)))continue;
-      best=node;min=d;
+    const consider=node=>{if(!node||reachable&&!reachable.has(node))return;const d=distance2(node.point,position);if(d>min||d===min&&best&&(node.gx>best.gx||node.gx===best.gx&&node.gz>=best.gz))return;if(requireClear&&!(departure?this.clearDeparture(position,node.point):this.clear(position,node.point)))return;best=node;min=d;};
+    if(!this.gridBounds){for(const node of this.nodes.values())consider(node);return best;}
+    const cx=Math.round(position.x/STEP),cz=Math.round(position.z/STEP),b=this.gridBounds,max=Math.max(Math.abs(cx-b.minX),Math.abs(cx-b.maxX),Math.abs(cz-b.minZ),Math.abs(cz-b.maxZ));
+    // Invalid/far-outside positions use the finite scan, never enormous rings.
+    if(!Number.isFinite(max)||max>256){for(const node of this.nodes.values())consider(node);return best;}
+    for(let r=0;r<=max;r++){
+      for(let x=cx-r;x<=cx+r;x++){consider(this.nodes.get(key(x,cz-r)));if(r)consider(this.nodes.get(key(x,cz+r)));}
+      for(let z=cz-r+1;z<cz+r;z++){consider(this.nodes.get(key(cx-r,z)));consider(this.nodes.get(key(cx+r,z)));}
+      const outside=Math.min(position.x-(cx-r-1)*STEP,(cx+r+1)*STEP-position.x,position.z-(cz-r-1)*STEP,(cz+r+1)*STEP-position.z);
+      if(best&&outside*outside>min)break;
     }
     return best;
   }
@@ -57,21 +64,19 @@ export class EgressNavigation{
   // whole-floor flow field for every moving goal.
   routeTransient(position,goal){
     const start=this.nearest(position,null,true),end=this.nearest(goal);if(!start||!end)return [];
-    const open=[start],previous=new Map([[start,null]]),cost=new Map([[start,0]]),closed=new Set();
-    const heuristic=n=>Math.abs(n.gx-end.gx)+Math.abs(n.gz-end.gz);
+    const previous=new Map([[start,null]]),cost=new Map([[start,0]]),closed=new Set(),heuristic=n=>Math.abs(n.gx-end.gx)+Math.abs(n.gz-end.gz),open=new PriorityQueue(n=>cost.get(n)+heuristic(n));open.push(start);
     let found=false;
-    while(open.length){
-      let best=0;for(let i=1;i<open.length;i++)if(cost.get(open[i])+heuristic(open[i])<cost.get(open[best])+heuristic(open[best]))best=i;
-      const node=open.splice(best,1)[0];if(node===end){found=true;break;}closed.add(node);
-      for(const next of node.edges){if(closed.has(next))continue;const candidate=cost.get(node)+1;if(candidate<(cost.get(next)??Infinity)){if(!cost.has(next))open.push(next);cost.set(next,candidate);previous.set(next,node);}}
+    while(open.size){
+      const node=open.pop();if(node===end){found=true;break;}closed.add(node);
+      for(const next of node.edges){if(closed.has(next))continue;const candidate=cost.get(node)+1;if(candidate<(cost.get(next)??Infinity)){cost.set(next,candidate);previous.set(next,node);open.push(next);}}
     }
     if(!found)return [];const path=[];for(let node=end;node;node=previous.get(node))path.push({x:node.point.x/3+11,z:node.point.z/3+11});return path.reverse();
   }
   routeAvoiding(position,goal,people){
     const clearPeople=(a,b)=>people.every(p=>{const dx=b.x-a.x,dz=b.z-a.z,len=dx*dx+dz*dz,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.z-a.z)*dz)/Math.max(len,.0001))),before=Math.hypot(a.x-p.x,a.z-p.z),nearest=Math.hypot(a.x+t*dx-p.x,a.z+t*dz-p.z);return nearest>=.51||before<.51&&Math.hypot(b.x-p.x,b.z-p.z)>before&&(a.x-p.x)*dx+(a.z-p.z)*dz>=0;});
     const start=[...this.nodes.values()].sort((a,b)=>distance2(a.point,position)-distance2(b.point,position)).slice(0,80).find(n=>this.clearDeparture(position,n.point)&&clearPeople(position,n.point)),end=this.nearest(goal);if(!start||!end)return [];
-    const open=[start],previous=new Map([[start,null]]),cost=new Map([[start,0]]),closed=new Set(),heuristic=n=>Math.abs(n.gx-end.gx)+Math.abs(n.gz-end.gz);
-    while(open.length){let best=0;for(let i=1;i<open.length;i++)if(cost.get(open[i])+heuristic(open[i])<cost.get(open[best])+heuristic(open[best]))best=i;const node=open.splice(best,1)[0];if(node===end){const path=[];for(let n=end;n;n=previous.get(n))path.push({x:n.point.x/3+11,z:n.point.z/3+11});return path.reverse();}closed.add(node);for(const next of node.edges){if(closed.has(next)||!clearPeople(node.point,next.point))continue;const score=cost.get(node)+1;if(score<(cost.get(next)??Infinity)){if(!cost.has(next))open.push(next);cost.set(next,score);previous.set(next,node);}}}
+    const previous=new Map([[start,null]]),cost=new Map([[start,0]]),closed=new Set(),heuristic=n=>Math.abs(n.gx-end.gx)+Math.abs(n.gz-end.gz),open=new PriorityQueue(n=>cost.get(n)+heuristic(n));open.push(start);
+    while(open.size){const node=open.pop();if(node===end){const path=[];for(let n=end;n;n=previous.get(n))path.push({x:n.point.x/3+11,z:n.point.z/3+11});return path.reverse();}closed.add(node);for(const next of node.edges){if(closed.has(next)||!clearPeople(node.point,next.point))continue;const score=cost.get(node)+1;if(score<(cost.get(next)??Infinity)){cost.set(next,score);previous.set(next,node);open.push(next);}}}
     return [];
   }
   smoothRoute(position,goal){

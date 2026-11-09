@@ -53,11 +53,11 @@ test('Phone help and notifications describe touch buttons and contain no visible
   await page.getByRole('button',{name:'Interact',exact:true}).tap();await expect(page.locator('.toast')).toContainText('Tap the journal icon');
   expect(await page.locator('kbd:visible').count()).toBe(0);
 });
-test('A phone viewport resize releases the active joystick gesture',async({page})=>{
+test('A phone width or orientation change releases the active joystick gesture',async({page})=>{
   await start(page);const stick=await page.getByTestId('touch-move').boundingBox();
   await page.mouse.move(stick.x+stick.width/2,stick.y+stick.height/2);await page.mouse.down();await page.mouse.move(stick.x+stick.width/2,stick.y+stick.height/2-30,{steps:5});
   await page.waitForFunction(()=>window.__ktd.engine.touchInput.forward>0);
-  await page.setViewportSize({width:838,height:330});await page.waitForFunction(()=>window.__ktd.engine.touchInput.forward===0);await page.mouse.up();
+  await page.setViewportSize({width:667,height:330});await page.waitForFunction(()=>window.__ktd.engine.touchInput.forward===0);await page.mouse.up();
 });
 
 test('Entering with a stale tall canvas recovers to the actual visible phone viewport',async({page})=>{

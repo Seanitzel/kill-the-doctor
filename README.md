@@ -2,7 +2,7 @@
 
 A fictional third-person hospital stealth game built with **Vue 3, Three.js and Web Audio**, packaged for **Android and iOS with Capacitor 8**.
 
-[Play the web edition](https://seanitzel.github.io/kill-the-doctor/) · [Native builds and phone setup](MOBILE.md) · [Latest verification notes](docs/release-3.21.md)
+[Play the web edition](https://seanitzel.github.io/kill-the-doctor/) · [Native builds and phone setup](MOBILE.md) · [Latest verification notes](docs/release-3.22.md)
 
 ## Run
 

@@ -2,7 +2,7 @@ import {test,expect,devices} from '@playwright/test';
 const {defaultBrowserType,...iphone}=devices['iPhone 17 Pro Max landscape'];
 test.use({...iphone,browserName:'webkit',launchOptions:{}});
 test('iPhone high-quality session survives beyond three minutes with bounded graphics and audible-path audio muted at output',async({page},testInfo)=>{
- test.setTimeout(300000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ test.setTimeout(420000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{
   localStorage.setItem('ktd-northline-v1',JSON.stringify({internationalVersion:3,settings:{quality:'high',volume:.5,speech:true}}));
   // Exercise normal sample/voice loading, but route every AudioContext through
@@ -14,7 +14,7 @@ test('iPhone high-quality session survives beyond three minutes with bounded gra
   if(window.speechSynthesis)window.speechSynthesis.speak=()=>{};
  });
  await page.goto('/');await page.getByRole('button',{name:'ENTER THE HOSPITAL',exact:false}).click();await page.getByRole('button',{name:'Skip story',exact:true}).click();await page.waitForFunction(()=>window.__ktd?.engine.mission&&!window.__ktd.engine.paused);
- const budget=await page.evaluate(()=>{const e=window.__ktd.engine,sizes=[];for(const scene of [e.assets.male,e.assets.female,...Object.values(e.assets.sources)])scene.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:[o.material])if(m)for(const value of Object.values(m))if(value?.isTexture&&!value.isDataTexture&&value.image?.width)sizes.push(Math.max(value.image.width,value.image.height));});return{mobile:e.mobile,antialias:e.renderer.getContext().getContextAttributes().antialias,maxTexture:Math.max(...sizes)};});expect(budget.mobile).toBe(true);expect(budget.antialias).toBe(false);expect(budget.maxTexture).toBeLessThanOrEqual(512);
+ const budget=await page.evaluate(()=>{const e=window.__ktd.engine,sizes=[];for(const scene of [e.assets.male,e.assets.female,...Object.values(e.assets.sources)])scene.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:[o.material])if(m)for(const value of Object.values(m))if(value?.isTexture&&!value.isDataTexture&&value.image?.width)sizes.push(Math.max(value.image.width,value.image.height));});return{mobile:e.mobile,antialias:e.renderer.getContext().getContextAttributes().antialias,smoothing:!!e.smoothing,maxTexture:Math.max(...sizes)};});expect(budget.mobile).toBe(true);expect(budget.antialias).toBe(false);expect(budget.smoothing).toBe(true);expect(budget.maxTexture).toBeLessThanOrEqual(512);
  // Upload every existing avatar/floor once before measuring a plateau. Merely
  // visiting a hallway leaves unseen characters' buffers unallocated; counting
  // their first later upload as a leak would produce a false positive.
@@ -22,7 +22,7 @@ test('iPhone high-quality session survives beyond three minutes with bounded gra
  const samples=[];
  for(let i=0;i<7;i++){
   await page.evaluate(i=>{const e=window.__ktd.engine;e.setFloor(i%3);e.playerPos.set(0,0,i%2?12:18);e.player.root.position.copy(e.playerPos);e.yaw=Math.PI;e.updateCamera(.1,true);},i);
-  await page.waitForTimeout(30000);
+  await page.waitForTimeout(45000);
   const sample=await page.evaluate(()=>{const e=window.__ktd.engine;return{elapsed:e.mission.elapsed,failed:e.runtimeFailed,contextLost:!!e.contextLost,result:e.mission.result,resources:{...e.renderer.info.memory},npcs:e.npcs.length,fields:e.systems.navigation.filter(Boolean).map(n=>n.fields.size),audio:{active:e.audio.activeSamples.size,voices:e.audio.dialogueBytes,requests:e.audio.dialogueRequests.size},canvas:{width:e.renderer.domElement.width,height:e.renderer.domElement.height}};});samples.push(sample);console.log(`Safari soak ${i+1}/7`,JSON.stringify(sample));
   expect(sample.failed).toBeFalsy();expect(sample.contextLost).toBe(false);expect(sample.result).toBeNull();expect(sample.npcs).toBeLessThan(150);expect(Math.max(...sample.fields)).toBeLessThanOrEqual(8);expect(sample.audio.active).toBeLessThanOrEqual(24);expect(sample.audio.voices).toBeLessThanOrEqual(8*1024*1024);
  }

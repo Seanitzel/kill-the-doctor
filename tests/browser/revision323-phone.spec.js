@@ -1,0 +1,8 @@
+import {test,expect,devices} from '@playwright/test';
+const {defaultBrowserType,...phone}=devices['iPhone 17 Pro Max landscape'];
+async function menu(page){await page.addInitScript(()=>localStorage.setItem('ktd-northline-v1',JSON.stringify({settings:{quality:'high',volume:0,speech:false}})));await page.goto('/');await page.waitForFunction(()=>window.__ktd?.engine.ready);}
+test.use({...phone,browserName:'webkit',launchOptions:{}});
+ test('phone colour indicator is compact and menu labels have matching icon boxes and baselines',async({page})=>{
+  await menu(page);const alignment=await page.locator('.studio-equipment-row').evaluate(e=>[...e.querySelectorAll('button')].map(b=>{const s=b.querySelector('.studio-action-label').getBoundingClientRect(),i=b.querySelector('svg').getBoundingClientRect();return{label:s.height,baseline:s.y+s.height/2,width:i.width,height:i.height};}));expect(alignment[0].label).toBeGreaterThan(0);expect(Math.abs(alignment[0].baseline-alignment[1].baseline)).toBeLessThan(.5);expect(alignment[0].width).toBe(alignment[1].width);expect(alignment[0].height).toBe(alignment[1].height);
+  await page.getByRole('button',{name:'Character studio',exact:true}).tap();const row=page.locator('[data-palette=accent]');await row.locator('summary').tap();const input=await row.locator('input[type=color]').boundingBox();expect(input.width).toBeLessThanOrEqual(40);expect(input.height).toBeLessThanOrEqual(40);expect(Math.abs(input.width-input.height)).toBeLessThan(1);await row.getByRole('button',{name:'Apply Colour',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:'artifacts/revision323/phone-colour-picker.png'});
+ });

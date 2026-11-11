@@ -1,5 +1,5 @@
 import {effectiveDifficulty,recordGuidanceProgress} from './progression.js';
-import {normalizeSavedColors} from './saved-colors.js';
+import {normalizeColorPalettes,normalizeSavedColors} from './saved-colors.js';
 import {securityCount} from './security-rules.js';
 import {evidenceRoom,evidenceLabel} from './campaign-locations.js';
 import {ChinaCase,chinaMission} from './china-rules.js';
@@ -33,14 +33,14 @@ export const STAFF = [
   { name: 'Dr. Sofia Vale', role: 'Attending', gender: 'female', hair: '#573a2d', skin: '#c58d6c', accent: '#426e79', glasses: true },
   { name: 'Nurse Jonas Beck', role: 'Senior nurse', gender: 'male', hair: '#8b7761', skin: '#dfbba0', accent: '#4a8193', glasses: false },
 ];
-export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],savedOutfitColors:[],colorDefaults:{},characterLooks:Object.fromEntries(CHARACTERS.filter(c=>c.id!=='custom').map(c=>[c.id,defaultAppearance(c)])),freeplayCompleted:0,guidanceMilestones:{story:false,freeplay:false},guidanceNoticePending:false,playMode:'story',storyReplayId:null,internationalVersion:3,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(10).fill(0),loadout:{weapon:'pistol',mask:false,maskType:'n95'},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{helpfulGuidance:true,volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
+export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],savedOutfitColors:[],colorPalettes:normalizeColorPalettes({}),colorDefaults:{},characterLooks:Object.fromEntries(CHARACTERS.filter(c=>c.id!=='custom').map(c=>[c.id,defaultAppearance(c)])),freeplayCompleted:0,guidanceMilestones:{story:false,freeplay:false},guidanceNoticePending:false,playMode:'story',storyReplayId:null,internationalVersion:3,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(10).fill(0),loadout:{weapon:'pistol',mask:false,maskType:'n95'},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{helpfulGuidance:true,volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
 export function readSave(storage) {
   const blank = defaultSave();
   try {
     const data = JSON.parse(storage.getItem(SAVE_KEY));
     if (!data || typeof data !== 'object') return blank;
     for (const k of ['coins', 'completed', 'attempts']) blank[k] = Math.max(0, Math.floor(Number(data[k]) || 0));
-    Object.assign(blank,migrateCharacterSave(data),migrateInternational(data));blank.ownedOutfits=normalizeWardrobe(data.ownedOutfits);blank.savedOutfitColors=normalizeSavedColors(data.savedOutfitColors);
+    Object.assign(blank,migrateCharacterSave(data),migrateInternational(data));blank.ownedOutfits=normalizeWardrobe(data.ownedOutfits);blank.savedOutfitColors=normalizeSavedColors(data.savedOutfitColors);blank.colorPalettes=normalizeColorPalettes(data);
     for (const u of UPGRADE_INFO) blank.upgrades[u.id] = Math.min(u.max, Math.max(0, Math.floor(Number(data.upgrades?.[u.id]) || 0)));
     blank.loadout={weapon:data.loadout?.weapon==='sniper'&&blank.upgrades.sniper?'sniper':'pistol',mask:!!data.loadout?.mask&&!!(blank.upgrades.mask||blank.upgrades.n95||blank.upgrades.regularMask),maskType:data.loadout?.maskType==='regular'?'regular':'n95'};
     blank.storySeen=Array.isArray(data.storySeen)?data.storySeen.filter(id=>typeof id==='string').slice(-128):[];blank.lastStory=typeof data.lastStory==='string'?data.lastStory:'';

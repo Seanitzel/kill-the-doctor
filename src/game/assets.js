@@ -1,3 +1,4 @@
+import {filteredFloorGrid} from './floor-grid.js';
 import {PREMIUM_OUTFITS} from './loadout.js';
 import {PhysicalPose} from './physical-pose.js';
 import {SmokingPose} from './smoking-pose.js';
@@ -28,7 +29,7 @@ export function hospitalMaterials() {
   const floorTexture = texture((ctx, s) => {
     ctx.fillStyle = '#a5b2ba'; ctx.fillRect(0, 0, s, s);
     for (let i = 0; i < 14000; i++) { const a = Math.random() * .045; ctx.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '20,40,50'},${a})`; ctx.fillRect(Math.random() * s, Math.random() * s, 2, 2); }
-    for (let i = 0; i <= 4; i++) { ctx.strokeStyle = '#7f909b'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(i * s / 4, 0); ctx.lineTo(i * s / 4, s); ctx.moveTo(0, i * s / 4); ctx.lineTo(s, i * s / 4); ctx.stroke(); }
+
   });
   const ceilingTexture = texture((ctx, s) => {
     ctx.fillStyle = '#adb9c0'; ctx.fillRect(0, 0, s, s);
@@ -36,7 +37,7 @@ export function hospitalMaterials() {
     for (let i = 0; i < 6000; i++) { ctx.fillStyle = 'rgba(60,80,90,.06)'; ctx.fillRect(Math.random() * s, Math.random() * s, 1, 1); }
   });
   return {
-    wall: material('#d6e0e5'), ceiling: material('#dce4e9', { map: ceilingTexture }), floor: material('#dce5e9', { map: floorTexture, roughness: .32, metalness: .12 }),
+    wall: material('#d6e0e5'), ceiling: material('#dce4e9', { map: ceilingTexture }), floor: filteredFloorGrid(material('#dce5e9', { map: floorTexture, roughness: .32, metalness: .12 })),
     blue: material('#355e77'), stripe: material('#52768a'), trim: material('#253e4b'), steel: material('#8b9aa4', { metalness: .72, roughness: .29 }),
     white: material('#edf1f2'), linen: material('#dce5e8', { roughness: .95 }), dark: material('#192e3c'), black: material('#152029'),
     chair: material('#284353'), wood: material('#74838d'), monitor: material('#112f44', { emissive: '#367d9d', emissiveIntensity: .35 }),

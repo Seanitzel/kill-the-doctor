@@ -24,8 +24,8 @@ test('night sky stays hidden indoors, animates outdoors without allocation, and 
  for(let i=0;i<100;i++)updateNightSky(root,true,i);assert.equal(stars.geometry.attributes.position,positions);assert.notEqual(haze.scale.x,scale);updateNightSky(root,false,100);assert.equal(sky.visible,false);root.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
 });
 
-test('Nigerian first two slides use the corrected Black doctor, while the final two and other countries retain their existing art',()=>{
- const save=readSave({getItem(){return null;}});save.completedCountryIds=['france'];save.assignmentType='standard';save.currentAssignment=null;const assignment=prepareAssignment(save);assert.equal(assignment.countryId,'nigeria');assert.equal(storyVisual(assignment.story,0).artId,'pamela-nigeria-v36');assert.equal(storyVisual(assignment.story,1).artId,'pamela-nigeria-v36');for(const i of[2,3])assert.equal(storyVisual(assignment.story,i).artId,'case-pamela-v25');
+test('Nigerian panels use the corrected White patient with the Black doctor',()=>{
+ const save=readSave({getItem(){return null;}});save.completedCountryIds=['france'];save.assignmentType='standard';save.currentAssignment=null;const assignment=prepareAssignment(save);assert.equal(assignment.countryId,'nigeria');assert.equal(storyVisual(assignment.story,0).artId,'pamela-nigeria-v36');assert.equal(storyVisual(assignment.story,1).artId,'pamela-nigeria-v36');for(const i of[2,3])assert.equal(storyVisual(assignment.story,i).artId,'pamela-nigeria-v36');
 });
 
 test('one streaming audio element handles playback, next track, seeking, volume, rejection and teardown without duplicate listeners',async()=>{

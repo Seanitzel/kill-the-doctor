@@ -2,7 +2,7 @@
 // Gameplay uses Pointer Events, so cancel touch defaults without stopping input.
 export function installGameGestureGuard(target,isPlaying){
   function preventZoom(event){
-    if(!isPlaying()||!event.cancelable)return;
+    if(!isPlaying()||!event.cancelable||(target.defaultView?.visualViewport?.scale||1)>1.01)return;
     // Cancelling touchend on buttons suppresses Safari's compatibility click.
     const ui=event.target?.closest?.('button,a,input,select,textarea,[role=button],.phone-music,.modal');
     if(ui&&(event.type==='touchend'||event.type==='touchmove'))return;

@@ -1,3 +1,4 @@
+import {cafeteriaTables} from './cafeteria-layout.js';
 import {SNEEZE_REPLIES} from './life-rules.js';
 import {MealProp} from './meal-prop.js';
 import {settleBedPatient} from './body-pose.js';
@@ -83,7 +84,7 @@ export class HospitalLife {
     const triage=e.hospitals[0].group.userData.triage;if(triage){const p=triage.clerk;this.actor('Triage Nurse','nurse','female',0,null,p.x,p.z,'rest',{yaw:p.yaw});}
     const cafe=e.levels[0].rooms.find(r=>r.kind==='cafe');
     const minX=(cafe.x-11)*3-1.5,minZ=(cafe.z-11)*3-1.5,maxX=(cafe.x+cafe.w-1-11)*3+1.5;
-    [[minX+2,minZ+3],[maxX-2,cafe.center.z],[minX+2,(cafe.z+cafe.h-1-11)*3+1.5-3]].forEach(([x,z],i)=>{
+    cafeteriaTables(cafe).filter((_,i)=>[0,3,4].includes(i)).forEach(({x,z},i)=>{
       const a=this.actor(`Cafeteria diner ${i*2+1}`,i===0?'nurse':'patient',i%2?'male':'female',0,cafe,x,z-1.45,'eat',{seated:true});
       const b=this.actor(`Cafeteria diner ${i*2+2}`,i===2?'doctor':'patient',i%2?'female':'male',0,cafe,x,z+1.45,'eat',{seated:true,yaw:Math.PI});
       this.groups.push({kind:'cafe',floor:0,actors:[a,b],next:2+i*3,conversation:i});

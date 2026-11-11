@@ -4,13 +4,18 @@ import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
 
 // Standard Three pass order: linear HDR scene -> tone mapping/sRGB -> FXAA.
-// Two owned targets provide edge smoothing without mobile multisample buffers.
+// Two owned targets; optional scene samples are explicitly capped at two.
+export function boundedSamples(renderer,type){
+ const gl=renderer.getContext?.();if(!gl?.getInternalformatParameter)return 0;
+ try{const color=gl.getInternalformatParameter(gl.RENDERBUFFER,type===HalfFloatType?gl.RGBA16F:gl.RGBA8,gl.SAMPLES),depth=gl.getInternalformatParameter(gl.RENDERBUFFER,gl.DEPTH_COMPONENT24,gl.SAMPLES);return color.includes(2)&&depth.includes(2)?2:0;}catch{return 0;}
+}
 export class MobileSmoothing {
   constructor(renderer) {
     this.sceneTarget = new WebGLRenderTarget(1, 1, {
       type: renderer.extensions?.has('EXT_color_buffer_float') ? HalfFloatType : UnsignedByteType,
       depthBuffer: true, stencilBuffer: false, samples: 0,
     });
+    this.sampleLimit=boundedSamples(renderer,this.sceneTarget.texture.type);this.sceneTarget.samples=this.sampleLimit;this.sceneTarget.resolveDepthBuffer=false;
     this.colorTarget = new WebGLRenderTarget(1, 1, {depthBuffer: false, stencilBuffer: false, samples: 0});
     this.output = new OutputPass();
     this.fxaa = new ShaderPass(FXAAShader);

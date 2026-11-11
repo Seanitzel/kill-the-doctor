@@ -1,3 +1,4 @@
+import {cafeteriaTables} from './cafeteria-layout.js';
 import {addStairwell} from './stairs.js';
 import {waitingBench} from './waiting-benches.js';
 import {addHangingToiletSign} from './restroom-signage.js';
@@ -208,7 +209,7 @@ export function buildHospital(layout, m, site=null) {
         }
       }
     } else if (room.kind === 'cafe') {
-      for (const z of [minZ + 3, cz, maxZ - 3]) for (const x of [minX + 2, maxX - 2]) {
+      for (const {x,z} of cafeteriaTables(room)) {
         batch.cylinder(m.white, x, .82, z, 1, .065, 1); batch.cylinder(m.steel, x, .42, z, .09, .78, .09); Object.assign(furnitureCollider(x,z,2,2),{maxY:.86,type:'table'});
         chairAt(x,z-1.45,0,room.id);chairAt(x,z+1.45,Math.PI,room.id);
       }

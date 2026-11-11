@@ -1,3 +1,5 @@
+Current rendering and verification limits are in [release 3.23](release-3.23.md). The following is the historical 2.1.1 audit, not the current resolution profile.
+
 Current rendering and pacing: [3.22 clarity and movement correction](release-3.22.md).
 
 Latest follow-up: [3.21 iPhone Safari memory-pressure fix](release-3.21.md). The historical audit below describes the original baseline; the new phone sign, texture and reflection budgets supersede it.

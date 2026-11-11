@@ -75,7 +75,7 @@ export class GameEngine {
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.16;
     this.renderer.domElement.setAttribute('aria-label', this.mobile ? '3D hospital game. Move with the joystick, drag to look, and tap USE to interact.' : '3D hospital game. Use WASD to move, E to interact, F for flashlight, and M for map.'); this.renderer.domElement.tabIndex = 0;
     container.appendChild(this.renderer.domElement);
-    this.materials = hospitalMaterials(); this.levels = FLOORS.map((_,i)=>makeLayout(i)); for(const layout of this.levels){const h=this.buildFloor(layout);this.hospitals.push(h);h.group.visible=layout.floor===0;this.scene.add(h.group);}
+    this.materials = hospitalMaterials();for(const m of Object.values(this.materials))if(m.map)m.map.anisotropy=Math.min(8,(this.renderer.capabilities?.getMaxAnisotropy?.()||1)); this.levels = FLOORS.map((_,i)=>makeLayout(i)); for(const layout of this.levels){const h=this.buildFloor(layout);this.hospitals.push(h);h.group.visible=layout.floor===0;this.scene.add(h.group);}
     this.navLayouts=this.levels.map((layout,floor)=>makeNavigation(layout,this.hospitals[floor].colliders));
     this.ambient = new THREE.HemisphereLight('#dbe9f4', '#3e5264', 1.15); this.scene.add(this.ambient);
     this.localLights = Array.from({ length: this.mobile ? 3 : 6 }, () => { const light = new THREE.PointLight('#cfeaff', 10, 11, 1.5); this.scene.add(light); return light; });
@@ -496,7 +496,7 @@ export class GameEngine {
   }
   canStand(x,z,radius=.3,floor=this.floor,from=null,actor=null){
     const cell=tileAt(x,z);if(!this.levels[floor].cells.has(key(cell.x,cell.z)))return false;
-    const colliders=this.hospitals[floor].colliders;for(let i=0;i<colliders.length;i++){const c=colliders[i];if(actor&&c.seatOwner===actor.id)continue;const b=c.object?c:obstacleBounds(c),r=(c.object||c.type==='wall')?Math.max(radius,STRUCTURE_CLEARANCE):radius;if(!blocksBody(b))continue;const depth=bodyPenetration(x,z,r,b);if(depth<=.00001)continue;if(from){const previous=bodyPenetration(from.x,from.z,r,b);if(previous>.00001&&depth<previous-.00001)continue;}return false;}return true;
+    const colliders=this.hospitals[floor].colliders;for(let i=0;i<colliders.length;i++){const c=colliders[i];if(actor&&c.seatOwner===actor.id)continue;const b=c.object?c:obstacleBounds(c),r=(c.object||c.type==='wall')?Math.max(radius,STRUCTURE_CLEARANCE):radius;if(!blocksBody(b))continue;const depth=bodyPenetration(x,z,r,b);if(depth<=.00001)continue;if(from){const previous=bodyPenetration(from.x,from.z,r,b);if(previous>.00001&&depth<=previous+.000001)continue;}return false;}return true;
   }
   nearStructure(pos,floor,radius=1.5){const list=this.hospitals?.[floor]?.colliders;if(!list)return false;for(let i=0;i<list.length;i++){const b=obstacleBounds(list[i]);if(blocksBody(b)&&circleOverlaps(pos.x,pos.z,radius,b))return true;}return false;}
   canMoveTo(x,z){
@@ -556,11 +556,11 @@ export class GameEngine {
   cameraObstacles(){
     const colliders=this.hospitals[this.floor].colliders;let cache=this.cameraObstacleCache;
     if(!cache||cache.colliders!==colliders||cache.count!==colliders.length){
-      cache={colliders,count:colliders.length,obstacles:colliders.map(obstacleBounds),dynamic:[]};
+      cache={colliders,count:colliders.length,obstacles:colliders.map(c=>c.object?.pivot?{...obstacleBounds(c),object:c.object}:obstacleBounds(c)),dynamic:[]};
       colliders.forEach((collider,index)=>{if(collider.object||collider.dynamic)cache.dynamic.push({collider,index});});
       cache.obstacles.push({minX:-100,maxX:100,minZ:-100,maxZ:100,minY:3.62,maxY:3.8},{minX:-100,maxX:100,minZ:-100,maxZ:100,minY:-.2,maxY:0});this.cameraObstacleCache=cache;
     }
-    for(const {collider,index} of cache.dynamic)cache.obstacles[index]=obstacleBounds(collider);
+    for(const {collider,index} of cache.dynamic){if(collider.object?.pivot)Object.assign(cache.obstacles[index],obstacleBounds(collider));else cache.obstacles[index]=obstacleBounds(collider);}
     return cache.obstacles;
   }
   updateCamera(dt, snap = false) {

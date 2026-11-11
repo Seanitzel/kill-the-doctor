@@ -1,6 +1,8 @@
 import * as T from 'three';
 import {mesh,material} from './assets.js';
 import {disposeObjectResources} from './resources.js';
+// Turn slightly toward the working right hand instead of reaching across it.
+export const mixingYaw=(from,cup)=>Math.atan2(cup.x-from.x,cup.z-from.z)+.25;
 const STIR_SPEED=6,STIR_RADIUS=.025,GRIP_HEIGHT=.15;
 // The cup owns the spoon trajectory. The arm must reach it; never drag the spoon
 // outside the cup to compensate for an anatomically unreachable player pose.

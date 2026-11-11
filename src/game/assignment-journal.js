@@ -4,8 +4,8 @@ export function assignmentJournal(mission){
  if(mission.china)return [
   `Use the hospital notices and schedules to locate ${mission.china.doctorName||'the consultant'}’s office before the 15:00 meeting. Collect a spoon from the cafeteria station.`,
   'Wait outside until the doctor has fully left for a break. Enter unseen and mix the fictional KTD compound into the personal coffee for 30 seconds. USE again or move away to stop; progress is saved.',
-  'Stop mixing before a visiting patient or returning doctor can see you. Leave unseen and watch through the window until the doctor drinks and becomes unresponsive.',
-  'Enter the office, close the doors, collect the nearby office key and lock both doors. Take the ID and basement access pass; the desk drawers are decoys.',
+  'Press USE or walk away to stop mixing yourself, even after the coffee is ready. Stop immediately when a visitor opens the door. Leave unseen and watch through the window until the doctor drinks and becomes unresponsive.',
+  'When the doctor collapses, enter and close the doors within five seconds. Then collect the nearby office key and lock up within a separate five seconds. Take the ID and basement access pass; the desk drawers are decoys.',
   'Change into the doctor’s uniform from the office cupboard. Your covert camera is already packed. Leave and secure the office again before going downstairs.',
   'In the basement, record four seconds from each of the three marked angles. Use the equipment cart to pass the requested instruments. Two incorrect or missed requests expose the disguise.',
   'Secure all three recordings before confronting the operating doctors, then escape through the ground-floor glass entrance.'

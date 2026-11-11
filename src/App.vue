@@ -227,7 +227,7 @@ onBeforeUnmount(() => { appDisposed=true;launchSerial++;portraitSerial++;menuMus
         </div>
       </section>
       <aside class="scene-label"><span class="eyebrow">{{currentCountry.hospital.toUpperCase()}} / MAIN BUILDING</span><span class="scene-title">The night shift.</span><p>Three public floors. A locked basement.<br/>More than one kind of assignment.</p><div class="scene-meta"><span>THREE CONNECTED WINGS</span><span>G + 1 + 2 + B</span></div></aside>
-      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.23.2 <ArrowUpRight :size="12"/></button></footer>
+      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.24.0 <ArrowUpRight :size="12"/></button></footer>
     </template>
     <TravelSequence v-if="screen==='travel' && flight" :from="flight.from" :to="flight.to" :audio="engine.audio" @finish="finishFlight"/>
     <StoryIntro v-if="screen==='story' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" @finish="enterHospital" @back="toMenu" @references="openOverlay('references')"/>
@@ -240,6 +240,7 @@ onBeforeUnmount(() => { appDisposed=true;launchSerial++;portraitSerial++;menuMus
        <div v-if="hud.impairment>0 && !instrumentOpen" class="contamination-card" role="status"><Wind :size="15"/><strong>CONTAMINATION</strong><span>{{Math.ceil(hud.impairment)}}s recovery</span><small>Find the ground-floor antidote (+ on your map).</small></div>
        <InfiltrationHUD :state="hud.assignment.infiltration" :engine="engine" :instruments="instrumentOpen"/>
       </div>
+      <div v-if="hud.assignment?.infiltration?.poisoned&&!hud.assignment.infiltration.sealed&&!overlay" class="china-urgent" role="alert">QUICKLY! ENTER THE OFFICE AND LOCK THE DOOR BEFORE ANYONE SEES!</div>
       <PhoneMusic v-if="phoneOpen && !overlay" :collapsed="phoneCollapsed" @collapse="collapsePhone" :appointment="hud.appointment" :outside="hud.outside" :smoking="hud.smoking" :volume="save.settings.volume" @close="closePhone" @smoke="engine.toggleSmokeBreak()" @playing="phonePlaying"/>
       <button v-if="!phoneOpen && !overlay && hud.state!=='escape' && (hud.appointment || hud.outside) && !mission?.targetDown && !mission?.policeAlert" class="phone-launch" @click="openPhone"><Smartphone :size="17"/> PHONE / MUSIC <small>{{hud.outside?'Outdoor break':'While you wait'}}</small></button>
       <header class="hud-top"><section class="mission-hud"><div class="eyebrow"><span class="live-dot" :class="{alert: hud.state==='escape'}"></span> {{ hud.state === 'escape' ? 'EMERGENCY / ESCAPE' : `${mission?.country?.name.toUpperCase() || 'KTD'} / INFILTRATION` }}</div><div class="objective-row"><span class="objective-number">{{ objectiveNumber }}</span><div><span class="objective">{{ hud.objective }}</span><small>{{ hud.location }} <span> / </span> {{ FLOORS[hud.floor].toUpperCase() }}</small></div></div><div v-if="mission?.type==='standard'" class="evidence-progress"><i v-for="n in 3" :key="n" :class="{active: n <= hud.clues}"></i><span>{{ hud.clues }}/3 CLUES FOUND</span></div></section>
@@ -297,3 +298,7 @@ onBeforeUnmount(() => { appDisposed=true;launchSerial++;portraitSerial++;menuMus
     </div>
   </main>
 </template>
+
+<style>
+.china-urgent{position:absolute;z-index:35;top:17%;left:50%;transform:translateX(-50%);width:min(600px,65vw);padding:14px 20px;text-align:center;background:#591b22ee;border:2px solid #ff6565;color:#fff;font:700 13px/1.5 var(--mono);box-shadow:0 4px 20px #0006;pointer-events:none}@media(max-height:580px){.china-urgent{top:36%;width:48vw;font-size:10px;padding:8px 12px}}
+</style>

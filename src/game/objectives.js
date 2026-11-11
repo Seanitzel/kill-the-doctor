@@ -13,7 +13,7 @@ export const PHOTO_SITES=[{id:'ledger',floor:0,roomKind:'office',label:'Altered 
 export class AssignmentObjectives{
   constructor(e){this.e=e;this.props=new THREE.Group();this.props.name='assignment-evidence-and-keys';e.scene.add(this.props);this.items=[];this.photoSites=[];this.nextRoute=0;this.escort=null;this.escortRouteFloor=null;this.keyOffices=new KeyOffices(e);this.setup();}
   setup(){
-    const e=this.e,m=e.mission;for(const level of e.levels)for(const door of level.doors){door.locked=level.floor===3;door.keyId=level.floor===3?'theatre':null;}
+    const e=this.e,m=e.mission;for(const level of e.levels)for(const door of level.doors){door.locked=level.floor===3;door.keyId=level.floor===3?(m.china?'china-identity':'theatre'):null;}
     if(m.type==='standard')return;
     if(m.photoOnly){this.cameraProp=new THREE.Group();this.cameraProp.name='evidence-camera';e.player.root.add(this.cameraProp);const body=material('#202c34'),glass=material('#5f9cbb',{metalness:.5,roughness:.15});mesh('box',body,[.22,.14,.08],[0,0,0],this.cameraProp);const lens=mesh('cylinder',body,[.057,.11,.057],[0,0,.07],this.cameraProp);lens.rotation.x=Math.PI/2;mesh('sphere',glass,[.05,.05,.012],[0,0,.13],this.cameraProp);mesh('box',glass,[.14,.085,.006],[0,0,-.043],this.cameraProp);this.cameraProp.visible=false;this.cameraGrip=new THREE.Vector3();}
     if(!m.china){

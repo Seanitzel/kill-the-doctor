@@ -6,7 +6,7 @@ const duration=value=>`${Math.floor(Math.max(0,value||0)/60)}:${String(Math.floo
   <div class="hud-notices" :class="{'has-appointment':!phoneOpen && appointment && (appointment.inside || !appointment.complete)}">
     <aside v-if="appointment?.inside && !phoneOpen" class="appointment-warning" role="alert"><strong>LEAVE THE OFFICE TO AVOID RAISING THE DOCTOR’S SUSPICION.</strong><span>Wait until the appointment is over · {{duration(appointment.seconds)}} remaining</span><b>{{appointment.warnings>=2?'Final warning · security will be called if you remain.':'Please wait outside. Staying in the room will trigger a security warning.'}}</b></aside>
     <aside v-else-if="appointment && !appointment.complete && !phoneOpen" class="appointment-wait" role="status"><div>Appointment ends in <b>{{duration(appointment.seconds)}}</b></div><span>Wait outside · Mystery Soda changes this timer.</span></aside>
-    <div v-if="toast && !reports" class="toast" :class="toast.kind" role="status"><span class="toast-line"></span><span>{{toast.text}}</span></div>
+    <div v-if="toast && !reports && toast.kind!=='office-urgent'" class="toast" :class="toast.kind" role="status"><span class="toast-line"></span><span>{{toast.text}}</span></div>
   </div>
 </template>
 <style scoped>

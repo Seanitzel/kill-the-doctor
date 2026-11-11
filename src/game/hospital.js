@@ -277,7 +277,7 @@ export function buildHospital(layout, m, site=null) {
     cube(m.steel, -1.1, .5, z, .7, .85, .8); cube(m.white, -1.1, .98, z, .74, .08, .85); Object.assign(collider(-1.1,z,.75,.9),{maxY:1.04,type:'cart'});
   }
   // A two-seat linked bench beside selected consultation doors, facing the hall.
-  if(layout.floor<3)for(const room of layout.rooms.filter(r=>['clinic','emergency','imaging','cardio','ward','maternity','pediatric','surgery','icu'].includes(r.kind))){
+  if(layout.floor<3)for(const room of layout.rooms.filter(r=>['clinic','emergency','imaging','cardio','ward','maternity','pediatric','surgery','icu'].includes(r.kind)||r.name==='Transplant Ward')){
     const door=layout.doors.find(d=>d.room===room.id&&!d.id.endsWith('-back'));
     const rot=room.z<10?0:Math.PI,z=door.z+(room.z<10?.70:-.70),x=door.x+2.9;
     const probes=[x-.42,x+.42];

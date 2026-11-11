@@ -32,3 +32,5 @@
 .category-saved-colors{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}.category-saved-colors strong{min-width:100px;font-size:11px}
 
 .studio-equipment-row .studio-launch>span.studio-action-label{display:block;font:inherit;line-height:1;color:inherit;margin:0}
+
+.studio-equipment-row .equipment-launch>svg{width:14px;height:14px;min-width:14px;min-height:14px;transform:translateY(-1px)}

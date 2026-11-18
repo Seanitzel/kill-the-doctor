@@ -1,0 +1,4 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {COUNTRIES,storyCountries,setPlayMode,countryFor,migrateInternational,pendingFlight,unlockedCountries,campaignProgress} from '../src/game/international.js';
+test('temporary Story exploration allows all destinations without completing them or unlocking Freeplay',()=>{for(const country of COUNTRIES){const save={internationalVersion:3,playMode:'story',completedCountryIds:[],campaignCompleted:0};assert.equal(storyCountries(save).length,10);assert.ok(setPlayMode(save,'story',country.id));assert.equal(countryFor(save).id,country.id);const restored={...save,...migrateInternational(save)};assert.equal(countryFor(restored).id,country.id);assert.equal(campaignProgress(restored),0);assert.equal(unlockedCountries(restored).length,0);assert.equal(setPlayMode(restored,'freestyle',country.id),false);assert.equal(pendingFlight({...restored,pendingTravel:{from:'france',to:'nigeria'}}),null);}});

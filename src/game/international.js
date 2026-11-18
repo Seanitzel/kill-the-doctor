@@ -30,14 +30,17 @@ export function completedCountries(save){
 export function campaignProgress(save){return completedCountries(save).length;}
 export function campaignLevel(save){return Math.max(1,(countryFor(save)?.index||0)+1);}
 export function countryFor(save){return (save.playMode==='freestyle'||save.storyReplayId)?(COUNTRIES.find(c=>c.id===(save.storyReplayId||save.countryId))||COUNTRIES[0]):COUNTRIES.find(c=>!completedCountries(save).includes(c.id))||COUNTRIES.at(-1);}
+// Temporary exploration access requested by the owner. Set false to restore Story locks.
+export const STORY_EXPLORATION_UNLOCKED=true;
+export function storyCountries(save){return STORY_EXPLORATION_UNLOCKED?COUNTRIES:unlockedCountries(save);}
 export function unlockedCountries(save){return COUNTRIES.filter(c=>completedCountries(save).includes(c.id));}
-export function setPlayMode(save,mode,id){if(!['story','freestyle'].includes(mode))return false;if(mode==='freestyle'&&!unlockedCountries(save).some(c=>c.id===(id||save.countryId)))return false;save.playMode=mode;save.storyReplayId=mode==='story'&&id&&unlockedCountries(save).some(c=>c.id===id)?id:null;if(id)save.countryId=id;save.activeAssignment=null;return true;}
+export function setPlayMode(save,mode,id){if(!['story','freestyle'].includes(mode))return false;if(mode==='freestyle'&&!unlockedCountries(save).some(c=>c.id===(id||save.countryId)))return false;save.playMode=mode;save.storyReplayId=mode==='story'&&id&&storyCountries(save).some(c=>c.id===id)?id:null;if(id)save.countryId=id;save.activeAssignment=null;return true;}
 export function migrateInternational(data){
  const count=Math.min((data.internationalVersion>=3?COUNTRIES:LEGACY_COUNTRIES).length,Math.max(0,Math.floor(Number(data.campaignCompleted??data.completed)||0))),oldOrder=[LEGACY_COUNTRIES[1],LEGACY_COUNTRIES[0],...LEGACY_COUNTRIES.slice(2)];
  const ids=Array.isArray(data.completedCountryIds)?completedCountries(data):((data.internationalVersion||0)>=3?COUNTRIES:(data.internationalVersion||0)>=2?LEGACY_COUNTRIES:oldOrder).slice(0,count).filter(c=>COUNTRIES.some(n=>n.id===c.id)).map(c=>c.id);
  const country=COUNTRIES.find(c=>c.id===data.countryId&&ids.includes(c.id));
  const pending=data.pendingTravel,valid=pending&&COUNTRIES.some(c=>c.id===pending.from)&&COUNTRIES.some(c=>c.id===pending.to)&&pending.from!==pending.to;
- return {internationalVersion:3,completedCountryIds:data.completedCountryIds===null&&count===0?null:ids,campaignCompleted:data.campaignCompleted===null&&count===0?null:ids.length,storyReplayId:COUNTRIES.some(c=>c.id===data.storyReplayId)&&ids.includes(data.storyReplayId)?data.storyReplayId:null,playMode:data.playMode==='freestyle'&&country?'freestyle':'story',countryId:country?.id||COUNTRIES[0].id,pendingTravel:valid?{from:pending.from,to:pending.to}:null,countryAttempts:COUNTRIES.map((country,i)=>{const previous=(data.internationalVersion||0)>=3?COUNTRIES:(data.internationalVersion||0)>=2?LEGACY_COUNTRIES:oldOrder,index=previous.findIndex(c=>c.id===country.id);return index<0?0:Math.max(0,Math.floor(Number(data.countryAttempts?.[index])||0));})};
+ return {internationalVersion:3,completedCountryIds:data.completedCountryIds===null&&count===0?null:ids,campaignCompleted:data.campaignCompleted===null&&count===0?null:ids.length,storyReplayId:COUNTRIES.some(c=>c.id===data.storyReplayId)&&(STORY_EXPLORATION_UNLOCKED||ids.includes(data.storyReplayId))?data.storyReplayId:null,playMode:data.playMode==='freestyle'&&country?'freestyle':'story',countryId:country?.id||COUNTRIES[0].id,pendingTravel:valid?{from:pending.from,to:pending.to}:null,countryAttempts:COUNTRIES.map((country,i)=>{const previous=(data.internationalVersion||0)>=3?COUNTRIES:(data.internationalVersion||0)>=2?LEGACY_COUNTRIES:oldOrder,index=previous.findIndex(c=>c.id===country.id);return index<0?0:Math.max(0,Math.floor(Number(data.countryAttempts?.[index])||0));})};
 }
 export function recordInternationalResult(save,mission,success){
  save.completedCountryIds=completedCountries(save);save.campaignCompleted=save.completedCountryIds.length;save.internationalVersion=3;save.countryAttempts??=Array(COUNTRIES.length).fill(0);save.countryAttempts[mission.country.index]=(save.countryAttempts[mission.country.index]||0)+1;
@@ -57,7 +60,7 @@ export function nextFlight(result,save){
 }
 
 export function pendingFlight(save){
- if(save.playMode!=='story'||!save.pendingTravel||campaignProgress(save)>=COUNTRIES.length)return null;
+ if(save.storyReplayId||save.playMode!=='story'||!save.pendingTravel||campaignProgress(save)>=COUNTRIES.length)return null;
  const from=COUNTRIES.find(c=>c.id===save.pendingTravel.from),to=countryFor(save);
  return from&&completedCountries(save).includes(from.id)&&from.id!==to.id?{from,to}:null;
 }

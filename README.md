@@ -83,3 +83,5 @@ See [MOBILE.md](MOBILE.md) for APKs, iOS Simulator apps, release bundles/archive
 - `android/`, `ios/`, `scripts/build-native.mjs`: native projects and reproducible builds.
 
 `window.__ktd` is a mutable testing bridge available only in development/native-test builds. Production packages omit it. `sources/` in the parent project is synced read-only reference material.
+
+Story exploration access is currently enabled at the owner’s request until they ask to restore locks (`STORY_EXPLORATION_UNLOCKED` in `src/game/international.js`). It permits selecting all Story destinations without adding completion records or granting Freeplay access.

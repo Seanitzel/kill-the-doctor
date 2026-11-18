@@ -1,12 +1,14 @@
 import * as T from "three";
+import {ALL_FLOORS} from "./layout.js";
 import { mesh, sign } from "./assets.js";
 // Explicit physical landings: stairs never bypass the restricted basement gate.
 export const STAIR_UP = { x: -30, z: -17.2 },
   STAIR_DOWN = { x: -33, z: -17.2 };
 export function addStairwell(group, batch, m, layout) {
-  if (!layout.expanded || layout.floor > 2) return;
+  if (!layout.expanded || layout.floor===3) return;
+  const floors=layout.publicFloors||[0,1,2],index=floors.indexOf(layout.floor),up=index<floors.length-1,down=index>0;
   const base = new T.Group();
-  base.name = "Public stairwell connecting three floors";
+  base.name = "Public stairwell connecting public floors";
   group.add(base);
   const flight = (offset) => {
     for (let i = 0; i < 10; i++) {
@@ -46,32 +48,32 @@ export function addStairwell(group, batch, m, layout) {
       rail.rotation.x = x < -31.5 ? -0.423 : 0.423;
     }
   };
-  if (layout.floor < 2) flight(0);
-  if (layout.floor > 0) flight(-3.6);
+  if (up) flight(0);
+  if (down) flight(-3.6);
   const label = sign(
     "STAIRS",
-    `${layout.floor < 2 ? "↑ UP  " : ""}${layout.floor > 0 ? "↓ DOWN" : ""} · PUBLIC FLOORS`,
+    `${up ? "↑ UP  " : ""}${down ? "↓ DOWN" : ""} · PUBLIC FLOORS`,
     2.4,
     0.45,
   );
   label.position.set(-29, 2.5, -16.7);
   label.rotation.y = Math.PI;
   group.add(label);
-  if (layout.floor < 2)
+  if (up)
     layout.stairLinks.push({
       ...STAIR_UP,
       type: "stairs",
-      destination: layout.floor + 1,
+      destination: floors[index+1],
       direction: 1,
-      label: "Walk upstairs · " + (layout.floor + 1),
+      label: "Walk upstairs · " + ALL_FLOORS[floors[index+1]],
     });
-  if (layout.floor > 0)
+  if (down)
     layout.stairLinks.push({
       ...STAIR_DOWN,
       type: "stairs",
-      destination: layout.floor - 1,
+      destination: floors[index-1],
       direction: -1,
-      label: "Walk downstairs · " + (layout.floor - 1),
+      label: "Walk downstairs · " + ALL_FLOORS[floors[index-1]],
     });
 }
 export function beginStairs(e, item) {

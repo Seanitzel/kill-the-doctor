@@ -13342,5 +13342,101 @@
         "sha256": "aed736480b2ad2765e115ec5539f5f543bc4e8bc939d590de62aca3d90daa2fc"
       }
     ]
+  },
+  {
+    "text": "What was that noise?!",
+    "category": "alarmed-gunshot",
+    "gender": "female",
+    "key": "f-4b09eb71",
+    "spokenText": "What was that noise?!",
+    "synthetic": true,
+    "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+    "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+    "variants": [
+      {
+        "file": "f-4b09eb71.mp3",
+        "voice": "northline-female-standard",
+        "voiceId": "northline-female-standard",
+        "voiceRegion": "standard",
+        "accent": "General American (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "A warm adult American woman with a clear midrange feminine voice and a neutral General American accent. Conversational, grounded and confident, with natural connected speech and expressive but restrained intonation. Studio recording, no background sound.",
+        "referenceSha256": "771ddf909ce1e5d60b25f86cd892879f7d94e43d17c4536e6c9dd6535857c90f",
+        "delivery": "alarmed-gunshot",
+        "spokenText": "What was that noise?!",
+        "seed": 328214,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 1.822,
+        "bytes": 19089,
+        "sha256": "26db4252be87a802ce4267435a8662bd05b9e3c088d84ca62311b1295339b322"
+      },
+      {
+        "file": "f-4b09eb71-alt.mp3",
+        "voice": "northline-female-southern",
+        "voiceId": "northline-female-southern",
+        "voiceRegion": "southern",
+        "accent": "Southern American / Texas-inspired (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "An adult American woman from Texas, with a warm lower feminine voice and a mild authentic Southern American accent. A relaxed Texas drawl, friendly and conversational, clear intelligible words with natural connected speech. Not exaggerated. Studio recording, no background sound.",
+        "referenceSha256": "5d63c250593d128f7083b5fe8c4471bbe7a41fedc6932080ee26ca1d5a7bd66b",
+        "delivery": "alarmed-gunshot",
+        "spokenText": "What was that noise?!",
+        "seed": 321764,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 1.822,
+        "bytes": 19089,
+        "sha256": "8ddffd882cfbaf52c55d9c17d6e604c839631850d7ba51e5dbc4179fb2db4c6a"
+      }
+    ]
+  },
+  {
+    "text": "What was that noise?!",
+    "category": "alarmed-gunshot",
+    "gender": "male",
+    "key": "m-4b09eb71",
+    "spokenText": "What was that noise?!",
+    "synthetic": true,
+    "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+    "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+    "variants": [
+      {
+        "file": "m-4b09eb71.mp3",
+        "voice": "northline-male-standard",
+        "voiceId": "northline-male-standard",
+        "voiceRegion": "standard",
+        "accent": "General American (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "An adult American man with a distinct low baritone masculine voice and a neutral General American accent. Relaxed, warm and clear, with conversational pacing and natural connected speech. Studio recording, no background sound.",
+        "referenceSha256": "dd10a5dab402d507231176253491b806343c5a5c82af1c9a74ebf130da7c6913",
+        "delivery": "alarmed-gunshot",
+        "spokenText": "What was that noise?!",
+        "seed": 324365,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 2.142,
+        "bytes": 22449,
+        "sha256": "9605edcd26d755e192bb00b9bdf4bb6913f34768efba86ad653746c78e0f875d"
+      },
+      {
+        "file": "m-4b09eb71-alt.mp3",
+        "voice": "northline-male-southern",
+        "voiceId": "northline-male-southern",
+        "voiceRegion": "southern",
+        "accent": "Southern American / Texas-inspired (designed)",
+        "syntheticDesigned": true,
+        "designDescription": "An adult American man from Texas, with a warm deep masculine baritone voice and a mild authentic Southern American accent. A relaxed Texas drawl, friendly and grounded, clear intelligible words with natural connected speech. Not exaggerated. Studio recording, no background sound.",
+        "referenceSha256": "2e87b5968884e6d713ec7f634f2addf432d6bf4d7579f0f13e5c2b32ab9c0f89",
+        "delivery": "alarmed-gunshot",
+        "spokenText": "What was that noise?!",
+        "seed": 329027,
+        "temperature": 0.65,
+        "speed": 1,
+        "duration": 1.662,
+        "bytes": 17649,
+        "sha256": "8f7d7a29cc24b50b4aafd0d5c91f79add06a84fa58c17cf45c769d04a8c39f26"
+      }
+    ]
   }
 ]

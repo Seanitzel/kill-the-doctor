@@ -1,3 +1,4 @@
+import {shotResponse} from './gunshot-response.js';
 import * as THREE from 'three';
 import {mayHitStaff} from './loadout.js';
 import {lateContactRound} from './international.js';
@@ -32,13 +33,29 @@ export class HospitalIncidents{
     this.privateRoom=e.levels[0].rooms.find(r=>r.kind==='bathroom');return true;
   }
   hearShot(origin,floor){
-    const e=this.e,now=e.mission.elapsed,serial=++this.heardSerial,range=e.mission.save.upgrades.suppressor?15:90;
+    const e=this.e,now=e.mission.elapsed,serial=++this.heardSerial;
     for(const n of e.npcs){
-      if(n.dead||n.evacuated||n.baby||(!(e.mission.china||e.mission.type==='rescue')||floor!==3)&&(n.floor!==floor||distance(n.pos,origin)>range)||n.recruit?.state==='recruited')continue;
-      const sees=n.floor===floor&&seesDrawnWeapon(n.pos,origin,n.visual.root.rotation.y,e.lineOfSight(n.pos,origin,floor));
-      if(!sees){n.noiseConcern={until:now+SHOT_MEMORY_SECONDS,serial,spoken:false};}
+      if(n.dead||n.evacuated||n.baby||n.floor!==floor||n.recruit?.state==='recruited')continue;
+      const response=shotResponse(distance(n.pos,origin),!!e.mission.save.upgrades.suppressor);if(!response)continue;
+      n.noiseConcern={until:now+SHOT_MEMORY_SECONDS,serial,spoken:false,response};
+      if(response==='panic'){
+        n.noiseConcern.spoken=true;e.targetThreat?.panic();
+        n.voiceVersion=(n.voiceVersion||0)+1;e.audio.evacuationScream?.(n.person,{x:n.pos.x,y:1.5,z:n.pos.z,floor},0);
+        if(n.id==='target'){e.targetThreat?.react(n);continue;}
+        if(n.seated&&!n.lying)e.systems?.stand(n,origin);
+        if(!n.lying&&!n.baby&&!['security','police'].includes(n.role)){
+          n.clinicalPatient=null;n.activity=null;n.reaction=0;n.panicUntil=now+8;n.speed=4.2;n.path=[];n.reporting=null;
+          const nav=e.systems.navigationFor(floor),away={x:n.pos.x+(n.pos.x-origin.x)*2,z:n.pos.z+(n.pos.z-origin.z)*2};
+          e.routeNPC(n,nav.nearest(away).point);
+        }
+      }else if(response==='alarm'&&n.floor===e.floor){
+        n.noiseConcern.spoken=true;n.reaction=Math.max(n.reaction||0,1.3);n.worriedUntil=now+8;
+        // One clear local alarm avoids queuing a chorus over the same sound.
+        if(now>=(this.alarmSpokenAt??-Infinity)+1){e.life?.speak(n,'What was that noise?!',true);this.alarmSpokenAt=now;}
+      }
     }
   }
+
   roomAt(position,floor){const cell=tileAt(position.x,position.z),id=this.e.levels[floor].cells.get(key(cell.x,cell.z))?.room;return this.e.levels[floor].rooms.find(r=>r.id===id);}
   privateTogether(n){
     const e=this.e;if(n.floor!==e.floor||distance(n.pos,e.playerPos)>3.2)return false;
@@ -97,7 +114,7 @@ export class HospitalIncidents{
   }
   route(n,goal){
     const nav=this.e.systems.navigationFor(n.floor);n.path=nav.smoothRoute?nav.smoothRoute(n.pos,goal):nav.routeTransient(n.pos,goal);n.cursor=0;n.wait=.7;
-    n.recruit.routeGoal={x:goal.x,z:goal.z};n.recruit.routeAt=this.e.mission.elapsed;n.recruit.nextRoute=this.e.mission.elapsed+.65;
+    n.routeGoal={x:goal.x,z:goal.z};n.progress=null;n.recruit.routeGoal={x:goal.x,z:goal.z};n.recruit.routeAt=this.e.mission.elapsed;n.recruit.nextRoute=this.e.mission.elapsed+.65;
   }
   follow(n){
     const e=this.e,r=n.recruit,now=e.mission.elapsed;this.trackPlayer();
@@ -173,7 +190,7 @@ export class HospitalIncidents{
         n.worriedUntil=concern.until;
         if(!concern.spoken&&now>=this.nextConversation){
           concern.spoken=true;this.nextConversation=now+7;n.reaction=Math.max(n.reaction||0,1.1);
-          e.life?.speak(n,SUSPICION_LINES[(concern.serial+n.id.length)%SUSPICION_LINES.length],true);
+          e.life?.speak(n,concern.response==='alarm'?'What was that noise?!':SUSPICION_LINES[(concern.serial+n.id.length)%SUSPICION_LINES.length],true);
         }
       }
     }

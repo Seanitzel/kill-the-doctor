@@ -9,7 +9,7 @@ async function start(page, character='male') {
 }
 async function position(page, x, z, floor=0) { await page.evaluate(({x,z,floor})=>{const e=window.__ktd.engine;e.setFloor(floor);e.playerPos.set(x,0,z);e.updateCamera(.1,true);e.emitHUD();},{x,z,floor}); }
 async function aimAt(page, id) {
-  await page.evaluate(id=>{const e=window.__ktd.engine,n=e.npcs.find(n=>n.id===id);n.path=[];n.wait=1000;n.pos.set(0,0,18);n.floor=0;e.setFloor(n.floor);e.playerPos.set(n.pos.x,0,n.pos.z+3);e.yaw=Math.PI;e.pitch=-.08;e.aiming=true;e.updateCamera(.1,true);n.visual.root.rotation.y=0;e.camera.lookAt(n.pos.x,1.4,n.pos.z);e.shotCooldown=0;e.pause(false);e.aiming=true;},id);
+  await page.evaluate(id=>{const e=window.__ktd.engine,n=e.npcs.find(n=>n.id===id);n.path=[];n.wait=1000;n.pos.set(0,0,18);n.floor=0;for(const other of e.npcs)if(other!==n){other.pos.set(24,0,30);other.path=[];other.wait=1000;}e.setFloor(n.floor);e.playerPos.set(n.pos.x,0,n.pos.z+3);e.yaw=Math.PI;e.pitch=-.08;e.aiming=true;e.updateCamera(.1,true);n.visual.root.rotation.y=0;e.camera.lookAt(n.pos.x,1.4,n.pos.z);e.shotCooldown=0;e.pause(false);e.aiming=true;},id);
 }
 test.beforeEach(async ({page})=> { await page.addInitScript(()=>{if(!localStorage.getItem('ktd-northline-v1'))localStorage.setItem('ktd-northline-v1', JSON.stringify({settings:{quality:'low',volume:0,speech:false}}));}); });
 test('Both protagonists load; keyboard motion, collisions, and animations work', async ({page})=>{

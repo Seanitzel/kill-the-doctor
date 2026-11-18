@@ -1,6 +1,6 @@
 import {SeatMotion} from './seat-motion.js';
 import {securityChair} from './security-chair.js';
-import {footprint,segmentHit3D,obstacleBounds} from './collision.js';
+import {footprint,segmentHit3D,segmentDoor3D,obstacleBounds} from './collision.js';
 import * as T from 'three';
 import {aimAtRegion} from './hit-regions.js';
 import {weaponModel} from './gear.js';
@@ -39,7 +39,7 @@ export class SecurityResponse{
   }
   if(n.guardSeatMotion){const motion=n.guardSeatMotion,p=motion.update(dt);n.pos.set(p.x,p.y,p.z);n.seatPose=p;n.seated=p.weight>.99;n.baselineY=p.y;n.visual.root.rotation.y=n.guardSeat.rotation;if(motion.done){n.seated=!!motion.target;n.guardSeatMotion=null;if(!n.seated){n.baselineY=0;n.seatPose=null;}}}
  }
- clearShot(n){const e=this.e;if(n.floor!==e.floor)return false;const target=e.cover?.peeking?aimAtRegion(e.player,'head'):{x:e.playerPos.x,y:e.crouched?1.02:1.5,z:e.playerPos.z};return !e.hospitals[n.floor].colliders.some(c=>{const t=segmentHit3D({x:n.pos.x,y:1.5,z:n.pos.z},target,obstacleBounds(c));return t!==null&&t<.98;});}
+ clearShot(n){const e=this.e;if(n.floor!==e.floor)return false;const target=e.cover?.peeking?aimAtRegion(e.player,'head'):{x:e.playerPos.x,y:e.crouched?1.02:1.5,z:e.playerPos.z};return !e.hospitals[n.floor].colliders.some(c=>{const from={x:n.pos.x,y:1.5,z:n.pos.z},t=c.object?.pivot?segmentDoor3D(from,target,c.object):segmentHit3D(from,target,obstacleBounds(c));return t!==null&&t<.98;});}
  pose(){const e=this.e;for(const{n,gun,baton}of this.guns){if(n.dead||n.floor!==e.floor||n.animationVisible===false)continue;const active=guardAlert(e.mission),checking=!active&&e.mission.elapsed<(n.guardInspectionUntil||0);baton.visible=checking;const holstered=n.visual.model?.getObjectByName('KTD security baton');if(holstered)holstered.visible=!checking;n.visual.setAim?.(false);if(active)n.visual.root.rotation.y=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z);n.visual.poseActivity?.(active?(this.restraining?.n===n?'guard-restrain':'guard-aim'):checking?'guard-aim':n.movementSpeed>.1?'rest':'guard',e.time);if(n.seatPose||n.seated)n.visual.poseSeated?.(n.seatPose?.weight??1,n.seatPose?.lean??0);if((active||checking)&&n.visual.hand){n.visual.root.updateMatrixWorld(true);n.visual.hand.getWorldPosition(this.grip??=new T.Vector3());gun.position.copy(n.visual.root.worldToLocal(this.grip));if(checking){baton.position.copy(gun.position);baton.position.y+=.15;baton.rotation.x=.5;}}}}
  prepare(n){
   const e=this.e;if(n.role!=='security'||n.dead)return false;

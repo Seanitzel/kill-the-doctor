@@ -16,14 +16,14 @@ test('A contact appears in exactly three of every ten rounds and keeps the same 
   const identities=Array.from({length:60},(_,i)=>contactIdentity(i+1,37));assert.ok(new Set(identities.map(p=>p.name)).size>=8);assert.equal(new Set(identities.map(p=>p.gender)).size,2);assert.ok(new Set(identities.map(p=>p.skin)).size>=4);
 });
 test('An unseen same-floor gunshot creates 120 seconds of uncertainty, not an identity report',()=>{
-  const e=fixture(),n=person('unseen',0,0,12),otherFloor=person('upstairs',1,0,12);e.npcs=[n,otherFloor];e.mission.elapsed=10;
-  e.incidents.hearShot({x:0,z:0},0);assert.equal(n.noiseConcern.until,130);assert.equal(otherFloor.noiseConcern,undefined);assert.equal(SHOT_MEMORY_SECONDS,120);
+  const e=fixture(),n=person('unseen',0,0,24),otherFloor=person('upstairs',1,0,12);e.npcs=[n,otherFloor];e.mission.elapsed=10;
+  e.incidents.hearShot({x:0,z:0},0);e.playerPos.z=20;assert.equal(n.noiseConcern.until,130);assert.equal(otherFloor.noiseConcern,undefined);assert.equal(SHOT_MEMORY_SECONDS,120);
   let spoken=0;e.life.speak=()=>spoken++;e.mission.elapsed=80;e.incidents.update(.4);assert.equal(n.worriedUntil,130);assert.equal(spoken,1);assert.equal(n.reporting,undefined);assert.equal(e.mission.suspicion,0);
   e.incidents.update(.4);assert.equal(spoken,1);e.mission.elapsed=130;e.incidents.update(.4);assert.equal(n.noiseConcern,null);assert.equal(spoken,1);
 });
-test('Suppressors reduce hearing distance and seen shots do not create confused sound memories',()=>{
-  const e=fixture(),near=person('near',0,0,12),far=person('far',0,0,20),seen=person('seen',0,0,6);seen.visual.root.rotation.y=Math.PI;e.npcs=[near,far,seen];e.mission.save.upgrades.suppressor=1;e.incidents.hearShot({x:0,z:0},0);
-  assert.ok(near.noiseConcern);assert.equal(far.noiseConcern,undefined);assert.equal(seen.noiseConcern,undefined);
+test('Suppressors reduce hearing distance and near shots create alarm rather than distant confusion',()=>{
+  const e=fixture(),near=person('near',0,0,12),far=person('far',0,0,24),seen=person('seen',0,0,6);seen.visual.root.rotation.y=Math.PI;e.npcs=[near,far,seen];e.mission.save.upgrades.suppressor=1;e.incidents.hearShot({x:0,z:0},0);
+  assert.ok(near.noiseConcern);assert.equal(far.noiseConcern,undefined);assert.equal(seen.noiseConcern.response,'alarm');
 });
 test('The contact must be escorted to an empty side room before accepting the offer',()=>{
   const e=fixture(),room=e.levels[0].rooms.find(r=>r.kind==='bathroom'),n=person('contact',0,0,10);n.recruit={state:'panicked'};e.npcs=[n];e.incidents.contact=n;

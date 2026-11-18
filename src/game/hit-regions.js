@@ -6,8 +6,8 @@ export function bodyRegions(visual){
  const capsule=(part,side,from,to,radius,boneName)=>{const a=point(from),b=point(to);if(a&&b)regions.push({part,side,a,b,radius,bone:bones[boneName||from]});};
  const head=point('Head');if(head)regions.push({part:'head',a:head.clone().addScaledVector(up,.06),b:head.clone().addScaledVector(up,.12),radius:.115,bone:bones.Head});
  capsule('neck',null,'Neck','Head',.065,'Neck');
- capsule('chest',null,'Spine2','Neck',.16,'Spine2');
- capsule('hips',null,'Hips','Spine1',.155,'Hips');
+ capsule('chest',null,'Spine1','Neck',.17,'Spine2');
+ capsule('hips',null,'Hips','Spine',.155,'Hips');
  for(const side of ['Left','Right']){
   capsule('arm',side,side+'Arm',side+'ForeArm',.065,side+'Arm');capsule('arm',side,side+'ForeArm',side+'Hand',.06,side+'ForeArm');
   capsule('leg',side,side+'UpLeg',side+'Leg',.095,side+'UpLeg');capsule('leg',side,side+'Leg',side+'Foot',.075,side+'Leg');

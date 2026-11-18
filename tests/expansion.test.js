@@ -50,7 +50,7 @@ test('Weapon changes retain separate magazines; switching while reloading cannot
 });
 test('Only the assigned doctor starts evacuation; staff bonuses bank once after escape',()=>{
   const save=defaultSave(),m=new Mission(save,110);assert.ok(m.target.name.startsWith('Dr.'));
-  assert.equal(m.eliminate({id:'other',role:'nurse'}),false);assert.equal(m.staffKills,0);
+  const wrong=new Mission(defaultSave(),110);wrong.eliminate({id:'other',role:'nurse'});assert.equal(wrong.result.success,false);assert.equal(wrong.staffKills,0);
   m.eliminate({id:'target',role:'doctor'});m.eliminate({id:'extra1',role:'doctor',complicity:'Unauthorized research'});m.eliminate({id:'extra2',role:'nurse',complicity:'Concealed records'});m.eliminate({id:'police',role:'police'});
   assert.equal(m.staffKills,3);assert.equal(save.coins,0);const result=m.escape();
   assert.equal(result.breakdown.find(r=>r.label==='Marked accomplices').coins,STAFF_BONUS*2);const coins=save.coins;m.escape();assert.equal(save.coins,coins);
@@ -118,11 +118,11 @@ test('The full hospital crowd can evacuate while protected newborns remain in th
 function shootingEngine(){
   const e=simulation();Object.assign(e,{scene:new THREE.Scene(),effects:[],paused:false,aiming:true,weaponDrawn:true,ammo:6,reserve:30,shotCooldown:0,reloading:0,weaponKind:'pistol',muzzle:{intensity:0,position:new THREE.Vector3()},say(){},emitHUD(){}});return e;
 }
-test('Actual shooting protects early staff and allows optional marked accomplices before security',()=>{
+test('Actual shooting harms early staff and fails; marked accomplices become valid after the target',()=>{
   const e=shootingEngine(),staff=actor('staff',0,0,18),target=actor('target',0,0,12);target.role='doctor';staff.complicity='Unauthorized research';
   e.playerPos.set(0,0,24);e.npcs=[staff,target];const ray=new THREE.Ray(new THREE.Vector3(0,1.4,24),new THREE.Vector3(0,0,-1));let alarms=0;e.audio.sound=kind=>{if(kind==='alarm')alarms++;};
-  e.shoot({touch:true,aimRay:ray});assert.equal(e.lastShot.hitId,'staff');assert.equal(!!staff.dead,false);assert.equal(e.mission.staffKills,0);
-  staff.pos.x=3;e.shotCooldown=0;e.shoot({touch:true,aimRay:ray});assert.equal(target.dead,true);assert.equal(e.mission.targetDown,true);assert.equal(alarms,1);assert.equal(staff.accompliceHeld,false);e.systems.updateEscape();e.mission.elapsed+=3;e.systems.updateEscape();assert.equal(staff.evacuating,true);
+  e.shoot({touch:true,aimRay:ray});assert.equal(e.lastShot.hitId,'staff');assert.equal(!!staff.dead,true);assert.equal(e.mission.result.success,false);assert.equal(e.mission.staffKills,0);e.mission=new Mission(defaultSave(),110);staff.dead=false;staff.injury=null;staff.visual.root.rotation.set(0,0,0);
+  staff.pos.x=3;e.shotCooldown=0;e.shoot({touch:true,aimRay:ray});assert.equal(target.dead,true);assert.equal(e.mission.targetDown,true);assert.equal(alarms,1);assert.equal(staff.accompliceHeld,true);e.systems.updateEscape();e.mission.elapsed+=3;e.systems.updateEscape();assert.equal(staff.evacuating,true);
   staff.pos.set(0,0,18);e.shotCooldown=0;e.shoot({touch:true,aimRay:ray});assert.equal(staff.dead,true);assert.equal(e.mission.staffKills,2);assert.equal(e.mission.save.coins,0);
   const result=e.mission.escape();assert.equal(result.breakdown.find(r=>r.label==='Marked accomplices').coins,25);
 });

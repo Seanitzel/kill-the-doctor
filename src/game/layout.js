@@ -2,12 +2,18 @@ export const TILE = 3;
 export const SIZE = 23;
 export const FLOORS = ['Ground floor', 'First floor', 'Second floor', 'Basement'];
 export const FLOOR_CODES = ['G','1','2','B'];
-export const FLOOR_THEMES = ['Clinical & diagnostics','Specialist care','Advanced care & research','Restricted operating suite'];
+export const ALL_FLOORS=[...FLOORS,'Third floor','Fourth floor'];
+export const ALL_FLOOR_CODES=[...FLOOR_CODES,'3','4'];
+// Keep the saved basement ID (3) stable; higher public floors use IDs 4 and 5.
+export const publicFloorIds=level=>level>=7?[0,1,2,4,5]:level>=4?[0,1,2,4]:[0,1,2];
+export const missionFloorIds=level=>[...publicFloorIds(level),3].sort((a,b)=>a-b);
+export const floorOrdinal=floor=>floor>3?floor-1:floor;
+export const FLOOR_THEMES = ['Clinical & diagnostics','Specialist care','Advanced care & research','Restricted operating suite','Respiratory & mobility','Renal & diagnostic care'];
 const roomSpecs = [
   [4, 5, 3, 5], [7, 5, 3, 5], [12, 5, 3, 5], [15, 5, 3, 5],
   [4, 12, 3, 6], [7, 12, 3, 6], [12, 12, 3, 6], [15, 12, 3, 6],
 ];
-const departments = [
+export const departments = [
   ['Emergency', 'Triage & treatment', 'emergency'], ['Radiology', 'Imaging & diagnostics', 'imaging'],
   ['Laboratory', 'Specimen processing', 'lab'], ['Pharmacy', 'Dispensing & storage', 'pharmacy'],
   ['Outpatient', 'Consultation rooms', 'clinic'], ['Records', 'Administration & schedules', 'office'],
@@ -20,6 +26,11 @@ const departments = [
   ['Renal Care', 'Kidney & transplant care', 'ward'], ['Endoscopy', 'Digestive diagnostics', 'clinic'],
   ['Rehabilitation', 'Mobility & recovery', 'clinic'], ['Patient Advocacy', 'Rights & language services', 'office'],
   ['Transplant Ward', 'Transplant recovery', 'ward'], ['Isolation Unit', 'Protected patient care', 'icu'],
+];
+const upperDepartments=[
+ [['Respiratory Care','Lung function & recovery','ward'],['Orthopaedics','Bones & mobility','clinic'],['Physiotherapy','Movement & rehabilitation','clinic'],['Day Ward','Short-stay recovery','ward'],['Rheumatology','Joint care','clinic'],['Therapy Office','Patient care planning','office'],['Staff Lounge','Staff & visitor lounge','cafe'],['Equipment Store','Clinical equipment','utility']],
+ [['Dialysis','Renal treatment','ward'],['Diagnostics','Diagnostic testing','lab'],['Diabetes Clinic','Diabetes care','clinic'],['Recovery Ward','Post-treatment recovery','ward'],['Ultrasound','Diagnostic imaging','imaging'],['Care Coordination','Care planning','office'],['Nutrition Clinic','Dietary consultation','clinic'],['Medical Supplies','Clinical stores','utility']],
+
 ];
 export const key = (x, z) => `${x},${z}`;
 export const edgeKey = (a, b) => [a, b].sort().join('|');
@@ -38,13 +49,13 @@ export function makeLayout(floor = 0, siteIndex = 0, expanded = false) {
   fill(8, 20, 7, 3); // entrance atrium
   if(floor===0)fill(11,23,2,2); // exterior forecourt beyond the real exit doors
   }
-  if(expanded&&floor<3){fill(0,3,2,3);if(floor===0)fill(4,0,2,3);}
+  if(expanded&&floor!==3){fill(0,3,2,3);if(floor===0)fill(4,0,2,3);}
   fill(11,2,1,1); // Recessed walk-in lift cabin behind the north corridor.
   const specs=floor===3?[[7,7,7,6]]:[...roomSpecs,[4,20,3,3]];
   const rooms = specs.map(([x, z, w, h], i) => {
-    let [name, subtitle, kind] = floor===3?['Restricted theatre','Authorized personnel only','rescue-theater']:i===8?['Bathroom','Toilets & washbasins','bathroom']:departments[floor * 8 + ((i + Math.max(0,Math.floor(siteIndex))*(floor+1)) % 8)];
+    let [name, subtitle, kind] = floor===3?['Restricted theatre','Authorized personnel only','rescue-theater']:i===8?['Bathroom','Toilets & washbasins','bathroom']:(floor>3?upperDepartments[floor-4]:departments.slice(floor*8,floor*8+8))[((i + Math.max(0,Math.floor(siteIndex))*(floor+1)) % 8)];
     if(floor===2&&siteIndex===2&&name==='Transplant Ward'){kind='office';subtitle='Transplant consultant · Dr. Liu Wen';}
-    const room = { id: `f${floor}-r${i}`, index: i, x, z, w, h, name, subtitle, kind, floor, number: kind==='bathroom'?null:floor===3?'B01':`${floor + 1}${String(i + 1).padStart(2, '0')}`, wing: i < 2 || (i >= 4 && i < 6) ? 'West' : 'East' };
+    const room = { id: `f${floor}-r${i}`, index: i, x, z, w, h, name, subtitle, kind, floor, number: kind==='bathroom'?null:floor===3?'B01':`${floorOrdinal(floor) + 1}${String(i + 1).padStart(2, '0')}`, wing: i < 2 || (i >= 4 && i < 6) ? 'West' : 'East' };
     room.center = world(x + (w - 1) / 2, z + (h - 1) / 2);
     fill(x, z, w, h, room.id);
     return room;
@@ -79,7 +90,7 @@ export function makeLayout(floor = 0, siteIndex = 0, expanded = false) {
   return { floor, expanded, stairLinks:[], cells, rooms, doors, doorEdges, walls,exits:floor===0?[{x:0,z:39},...(expanded?[{x:-19.5,z:-32.7}]:[])]:[],
     exit: { ...world(11, floor===0?24:22), floor: 0 },
     elevator: { ...world(11, 3), floor, label: 'Elevator / stairs' },
-    directory: { ...directory, floor, label: floor ? `${FLOORS[floor]} directory` : 'Staff directory' },
+    directory: { ...directory, floor, label: floor ? `${ALL_FLOORS[floor]} directory` : 'Staff directory' },
     schedule: { ...schedule, floor, label: 'Staff schedule' },
   };
 }

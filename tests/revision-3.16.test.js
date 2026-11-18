@@ -226,7 +226,7 @@ test("spit has a 1.5-second dodge warning, misses a sidestep and blocks movement
   assert.ok(itchStrength(8) > 0.9);
   assert.ok(itchStrength(0.1) < 0.01);
 });
-function threatWorld() {
+function threatWorld(guardsDefeated=true) {
   const e = hospitalSim("russia");
   e.npcs = [];
   e.playerPos.set(0, 0, 30);
@@ -253,14 +253,15 @@ function threatWorld() {
   e.escapeThreats = threats;
   e.mission.targetDown = true;
   e.mission.beginEscape();
+  if(guardsDefeated)g.dead=true;
   threats.update(0);
   return { e, threats, g };
 }
 test("security tracks live first; accomplices unlock only after all guards are defeated, with room-only hidden dots", () => {
-  const { e, threats, g } = threatWorld();
+  const { e, threats, g } = threatWorld(false);
   try {
     assert.ok(threats.enabled);
-    assert.equal(threats.entries.length, 5);
+    assert.equal(threats.entries.length, 0);
     let dots = threats.tracking();
     assert.deepEqual(
       dots.map((d) => d.id),
@@ -269,6 +270,8 @@ test("security tracks live first; accomplices unlock only after all guards are d
     g.pos.x = 3;
     assert.equal(threats.tracking()[0].x, 3);
     g.dead = true;
+    threats.update(0);
+    assert.equal(threats.entries.length,5);
     dots = threats.tracking();
     assert.equal(dots.length, 5);
     const a = threats.entries.find((a) => a.phase === "seeking");
@@ -410,7 +413,7 @@ test("level-six layouts have a rear exit and real stairs on every public floor; 
     for (let f = 0; f < 3; f++) {
       assert.ok(
         e.hospitals[f].group.getObjectByName(
-          "Public stairwell connecting three floors",
+          "Public stairwell connecting public floors",
         ),
       );
       assert.ok(e.levels[f].stairLinks.length);

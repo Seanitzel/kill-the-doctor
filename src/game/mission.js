@@ -6,7 +6,7 @@ import {ChinaCase,chinaMission} from './china-rules.js';
 import {countryPerson,coffeeLevel} from './population.js';
 import {countryFor,campaignLevel,migrateInternational,recordInternationalResult} from './international.js';
 import {campaignChallenge} from './campaign.js';
-import { rng, makeLayout, FLOORS } from './layout.js';
+import { rng, makeLayout, ALL_FLOORS as FLOORS, publicFloorIds } from './layout.js';
 import {CHARACTERS,STAFF_BONUS,mayHitStaff,defaultAppearance,migrateCharacterSave,normalizeWardrobe,rememberCharacter} from './loadout.js';
 import {assignmentType,ASSIGNMENT_TYPES} from './assignment-types.js';
 export const SAVE_KEY = 'ktd-northline-v1';
@@ -78,14 +78,14 @@ export class Mission {
     this.round = campaignLevel(save);this.country=countryFor(save);this.playMode=save.playMode||'story';this.countryAttempt=save.countryAttempts?.[this.country.index]||0;this.selectionType=assignmentType(save);this.explicitInfiltration=this.selectionType==='infiltration';this.type=this.explicitInfiltration?'evidence':this.selectionType;this.keys=[];this.photos=[];this.photoImages={};this.videoClips={};this.operationDoctors=[];this.requiredHiddenIds=new Set();this.patientReleased=false;
     this.difficulty = effectiveDifficulty(save);this.challenge=campaignChallenge(this.round,this.difficulty);
     const doctors=STAFF.filter(s=>s.name.startsWith('Dr.'));const targetIndex=(attempt+Math.floor(this.random()*3))%doctors.length;
-    const floor = attempt === 0 ? 0 : Math.floor(this.random() * 3);
+    const floors=publicFloorIds(this.round),floor = attempt === 0 ? 0 : floors[Math.floor(this.random()*floors.length)];
     const availableRooms = makeLayout(floor,this.country.index).rooms.filter(r => !(coffeeLevel(this.round)?!['clinic'].includes(r.kind):['cafe', 'office', 'utility', 'morgue', 'bathroom'].includes(r.kind)));
     this.target = { ...doctors[targetIndex],name:this.country.doctor,gender:this.country.gender, id: 'target', floor, room: availableRooms[Math.floor(this.random() * availableRooms.length)] };
     if(this.type!=='standard')this.target={...doctors[0],name:this.country.doctor,gender:this.country.gender,id:'operation-doctor-0',floor:3,room:makeLayout(3).rooms[0]};
     this.target=countryPerson(this.target,'doctor',this.country,this.seed,'target',0);
     this.state = 'investigate'; this.clues = []; this.elapsed = 0; this.timer = 0;
     this.eliminatedIds=new Set();this.hiddenAccompliceKills=0;this.accompliceKills=0;this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
-    this.informationBoardFloor=this.round===1&&attempt===0?0:(Math.abs(seed)+this.country.index)%3;this.recordsNotice=false;this.locatedRecords=false;this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
+    this.informationBoardFloor=this.round===1&&attempt===0?0:floors[(Math.abs(seed)+this.country.index)%floors.length];this.recordsNotice=false;this.locatedRecords=false;this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
   }
   get weaponRequired(){return this.type==='standard'||this.type==='rescue'||!!this.china;}
   get operativeRole(){return this.type==='rescue'||this.photoOnly?'detective':'assassin';}
@@ -119,7 +119,7 @@ export class Mission {
     if(this.china){if(!npc.operationDoctor||this.china.recordings.length<3||this.operationDoctors.includes(npc.id))return false;this.eliminatedIds.add(npc.id||npc);this.operationDoctors.push(npc.id);this.staffKills++;this.targetDown=this.operationDoctors.length===2;if(this.targetDown)this.beginEscape(30);return true;}
     if(this.type==='evidence')return this.finish(false,'A person was harmed. This was an evidence-only assignment.');
     if(this.type==='rescue'){if(!npc.operationDoctor||!npc.rescueResisting||npc.rescueSurrendered)return this.finish(false,'A protected person or surrendered doctor was harmed during the rescue.');this.eliminatedIds.add(npc.id);this.operationDoctors.push(npc.id);return true;}
-    if(!mayHitStaff(this,npc)){this.suspicion=Math.min(100,this.suspicion+20);return false;}
+    if(!mayHitStaff(this,npc))return this.finish(false,'A person outside the authorized assignment was harmed.');
     if(npc.role==='police'){this.suspicion=100;this.eliminatedIds.add(npc.id||npc);return true;}
     this.eliminatedIds.add(npc.id||npc);this.staffKills++;if(npc.id!=='target'&&npc.complicity)this.accompliceKills++;
     if (npc.id === 'target') {

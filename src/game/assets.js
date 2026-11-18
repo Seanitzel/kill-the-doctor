@@ -74,11 +74,12 @@ export function sign(text, subtitle, width = 2.6, height = .65, options = {}) {
   // Draw in the original coordinate system so only texture resolution changes.
   const ctx=canvas.getContext('2d');ctx.scale?.(scale,scale);ctx.fillStyle=options.background||'#21485f';ctx.fillRect(0,0,1024,logicalHeight);
   ctx.fillStyle='#b7d5e8';ctx.fillRect(0,0,9,logicalHeight);
-  ctx.textBaseline='middle';ctx.fillStyle=options.color||'#eef7fd';ctx.textAlign=options.center?'center':'left';ctx.font=`600 ${options.fontSize||(subtitle?68:85)}px Arial`;ctx.fillText(text,options.center?512:48,subtitle?logicalHeight*.35:logicalHeight/2,925);
-  if(subtitle){ctx.font=`400 ${options.subFontSize||38}px Arial`;ctx.fillStyle='#afd1e5';ctx.fillText(subtitle,options.center?512:50,logicalHeight*.73,920);}
+  ctx.textBaseline='middle';ctx.fillStyle=options.color||'#eef7fd';ctx.textAlign=options.center?'center':'left';ctx.font=`600 ${options.fontSize||(subtitle?68:85)}px Arial`;ctx.fillText(text,options.center?512:48,options.native?logicalHeight*.24:subtitle?logicalHeight*.35:logicalHeight/2,925);
+  if(options.native){ctx.save?.();ctx.direction=options.rtl?'rtl':'ltr';ctx.textAlign=options.rtl?'right':options.center?'center':'left';ctx.font=`500 ${options.nativeFontSize||59}px Arial`;ctx.fillText(options.native,options.rtl?975:options.center?512:48,logicalHeight*(options.nativeBelowSubtitle?.86:.57),925);ctx.restore?.();}
+  if(subtitle){ctx.font=`400 ${options.subFontSize||(options.native?27:38)}px Arial`;ctx.fillStyle='#afd1e5';ctx.fillText(subtitle,options.center?512:50,logicalHeight*(options.nativeBelowSubtitle?.57:options.native?.86:.73),920);}
   const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   const mat = new THREE.MeshStandardMaterial({ map: t, roughness: .6, emissiveMap: t, emissive: '#ffffff', emissiveIntensity: .12, side: THREE.FrontSide });
-  return new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);
+  const panel=new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);panel.userData.signText={text,subtitle,width,height,options};return panel;
 }
 export function bed(b,m,x,z,rot=0,patient=false) {
   b.collider?.(x,z,1.3,2.35,1.25,rot,'bed');

@@ -1,3 +1,4 @@
+import {addInteriorDetails,localizeSigns} from './hospital-interiors.js';
 import {cafeteriaTables} from './cafeteria-layout.js';
 import {addStairwell} from './stairs.js';
 import {waitingBench} from './waiting-benches.js';
@@ -7,7 +8,7 @@ import {chairFits} from './furniture-placement.js';
 import {addSiteDetails,addNightStreet} from './site-details.js';
 import {footprint} from './collision.js';
 import * as THREE from 'three';
-import { world, TILE, FLOORS, FLOOR_CODES } from './layout.js';
+import { world, TILE, ALL_FLOORS as FLOORS, ALL_FLOOR_CODES as FLOOR_CODES } from './layout.js';
 import { Batcher, mesh, sign, bed, chair, desk, monitor, material } from './assets.js';
 import {addBathroom,addOperatingSet} from './accessibility-props.js';
 export function liftWallPlacement(layout){
@@ -29,7 +30,7 @@ export function buildLift(layout,m){
   group.userData.lift={x,faceZ,leaves,open:false,amount:0,selectionUsed:false,choosing:false};
   box('Lift threshold',m.steel,[2.72,.035,.19],[x,.025,faceZ+.085]);
   box('Lift overhead sign backing',m.dark,[3.30,.50,.025],[x,3.08,faceZ-.015]);
-  const header=sign('↑  LIFT / STAIRS  ↓',layout.floor===3?'B  RESTRICTED     G  MAIN HOSPITAL':'G  CLINICAL     1  SPECIALISTS     2  ADVANCED',3.3,.5);
+  const header=sign('↑  LIFT / STAIRS  ↓',layout.floor===3?'B  RESTRICTED     G  MAIN HOSPITAL':(layout.publicFloors?.length>3?layout.publicFloors.map(f=>`${FLOOR_CODES[f]} ${FLOORS[f]}`).join('   '):'G  CLINICAL     1  SPECIALISTS     2  ADVANCED'),3.3,.5);
   header.name='Lift floor directory';header.position.set(x,3.08,faceZ);group.add(header);
   box('Lift call panel',m.dark,[.24,.42,.035],[x+1.55,1.28,faceZ+.018]);
   box('Lift call button',m.steel,[.075,.075,.018],[x+1.55,1.24,faceZ+.043]);
@@ -37,9 +38,10 @@ export function buildLift(layout,m){
   const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);const wallNumber=sign(FLOOR_CODES[layout.floor],'FLOOR',.65,.92,{background:'#203b4a',color:'#e1edf0',center:true,fontSize:740,subFontSize:110});wallNumber.name='Large floor number left of elevator';wallNumber.position.set(x-1.92,1.72,faceZ+.03);group.add(wallNumber);
   return group;
 }
-export function buildHospital(layout, m, site=null) {
+export function buildHospital(layout, m, site=null, interior=null) {
   const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [], bathrooms = [], operatingSets = [], workstations = [], entrances=[];
   const cube = (...args) => batch.box(...args);
+  if(interior)group.userData.interiorProfile=interior;
   const joinedWalls=new JoinedWalls(),seatRequests=[],seats=[];let waitingMaterials;
   const chairAt=(x,z,rotation=0,room=null)=>seatRequests.push({x,z,rotation,room});
   const collider = (x, z, w, d, object = null) => { const c = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, object }; colliders.push(c); return c; };
@@ -64,12 +66,12 @@ export function buildHospital(layout, m, site=null) {
     const horizontal = axis === 'x', sx = horizontal ? length : .18, sz = horizontal ? .18 : length;
     const wallCube = (...args)=>joinedWalls.box(...args);
     if (window) {
-      wallCube(m.wall, x, .56, z, sx, 1.12, sz); wallCube(m.wall, x, 3.13, z, sx, 1.04, sz);
+      wallCube(m.lowerWall||m.wall, x, .56, z, sx, 1.12, sz); wallCube(m.wall, x, 3.13, z, sx, 1.04, sz);
       wallCube(m.glass, x, 1.87, z, sx, 1.46, sz);
       wallCube(m.steel, x, 1.14, z, horizontal ? length : .21, .035, horizontal ? .21 : length);
       wallCube(m.steel, x, 2.62, z, horizontal ? length : .21, .035, horizontal ? .21 : length);
       wallCube(m.steel, x, 1.87, z, horizontal ? .04 : .2, 1.5, horizontal ? .2 : .04);
-    } else wallCube(m.wall, x, 1.82, z, sx, 3.64, sz);
+    } else if(m.lowerWall){const lower=interior?.lowerHeight||1.12;wallCube(m.lowerWall,x,lower/2,z,sx,lower,sz);wallCube(m.wall,x,(lower+3.64)/2,z,sx,3.64-lower,sz);}else wallCube(m.wall, x, 1.82, z, sx, 3.64, sz);
     wallCube(m.trim, x, .08, z, horizontal ? length : .22, .16, horizontal ? .22 : length);
     wallCube(m.stripe, x, 1.03, z, horizontal ? length : .22, .13, horizontal ? .22 : length);
     wallCube(m.steel, x, .94, z, horizontal ? length : .26, .045, horizontal ? .26 : length);
@@ -263,7 +265,7 @@ export function buildHospital(layout, m, site=null) {
     // Triage stays in the entrance atrium, leaving the central exit route free.
     cube(m.white,5.25,.54,31.2,1.9,1.08,.72);cube(m.blue,5.25,.64,31.57,1.8,.42,.025);Object.assign(collider(5.25,31.2,2,.8),{maxY:1.12,type:'triage-desk'});
     const triage=placeSign('TRIAGE','INITIAL ASSESSMENT',5.25,1.38,31.6,0,1.65,.4);triage.name='Main entrance triage sign';group.userData.triage={clerk:{x:5.25,z:30.15,yaw:0},desk:{x:5.25,z:31.2}};interactables.push({type:'triage',label:'Main triage · initial assessment',x:5.25,z:32.15});
-    addNightStreet(group,batch,m,site);
+    addNightStreet(group,batch,m,site,layout);
     interactables.push({ type: 'exit', label: 'Leave the hospital', x: layout.exit.x, z: layout.exit.z });
   } else if(layout.floor!==3)placeSign('PATIENT SERVICES', `${FLOORS[layout.floor].toUpperCase()} / NHALEWICK`, 3, 2.9, 33.25, Math.PI, 3.8, .68);
   for (const p of (layout.floor===3?[]:[[-1.5,0],[-1.5,18],[-21,0],[21,0],[-1.5,-18]])) {
@@ -277,11 +279,11 @@ export function buildHospital(layout, m, site=null) {
     cube(m.steel, -1.1, .5, z, .7, .85, .8); cube(m.white, -1.1, .98, z, .74, .08, .85); Object.assign(collider(-1.1,z,.75,.9),{maxY:1.04,type:'cart'});
   }
   // A two-seat linked bench beside selected consultation doors, facing the hall.
-  if(layout.floor<3)for(const room of layout.rooms.filter(r=>['clinic','emergency','imaging','cardio','ward','maternity','pediatric','surgery','icu'].includes(r.kind)||r.name==='Transplant Ward')){
+  if(layout.floor!==3)for(const room of layout.rooms.filter(r=>['clinic','emergency','imaging','cardio','ward','maternity','pediatric','surgery','icu'].includes(r.kind)||r.name==='Transplant Ward')){
     const door=layout.doors.find(d=>d.room===room.id&&!d.id.endsWith('-back'));
     const rot=room.z<10?0:Math.PI,z=door.z+(room.z<10?.70:-.70),x=door.x+2.9;
     const probes=[x-.42,x+.42];
-    if(probes.every(px=>chairFits(px,z,rot,layout,colliders))){waitingMaterials||={...m,steel:material('#b5c2cb',{metalness:.55,roughness:.35}),chair:material('#3c7494',{roughness:.86})};const row=waitingBench(batch,waitingMaterials,x,z,rot,2);seats.push(...row.map(seat=>({...seat,room:null,department:room.id})));}
+    if(probes.every(px=>chairFits(px,z,rot,layout,colliders))){waitingMaterials||={...m,steel:material(interior?.metal||'#b5c2cb',{metalness:.55,roughness:.35}),chair:material(interior?.chair||'#3c7494',{roughness:.86})};const row=waitingBench(batch,waitingMaterials,x,z,rot,2);seats.push(...row.map(seat=>({...seat,room:null,department:room.id})));}
   }
   addStairwell(group,batch,m,layout);interactables.push(...layout.stairLinks);
   if(layout.expanded&&layout.floor===0){
@@ -289,11 +291,12 @@ export function buildHospital(layout, m, site=null) {
     for(const side of[-1,1]){const leaf=new THREE.Group();leaf.position.set(center.x+side*1.5,0,center.z);entry.add(leaf);mesh('box',glass,[3,2.7,.06],[0,1.4,0],leaf);for(const x of[-1.5,1.5])mesh('box',m.steel,[.05,2.7,.08],[x,1.4,0],leaf);for(const y of[.08,1.2,2.75])mesh('box',m.steel,[3,.05,.08],[0,y,0],leaf);leaf.userData.side=side;leaf.userData.bodyBounds=Object.assign(collider(leaf.position.x,center.z,3,.06),{minY:0,maxY:2.8,type:'entrance-glass',dynamic:true});leaves.push(leaf);}
     entrances.push({center,leaves,amount:0,open:false});placeSign('REAR ENTRANCE / EXIT','AUTOMATIC DOORS',center.x,3.1,center.z+.05,0,4.5,.55);placeSign('REAR ENTRANCE / EXIT','AUTOMATIC DOORS',center.x,3.1,center.z-.05,Math.PI,4.5,.55);
     cube(m.floor,-19.5,-.09,-32,12,.15,13);cube(m.dark,-19.5,-.13,-40,36,.15,7);for(const x of[-25.5,-13.5]){cube(m.steel,x,2.4,-31,.10,4.8,.10);cube(m.light,x,4.7,-31,.55,.1,.55);const light=new THREE.PointLight('#ffd06c',18,15);light.position.set(x,4.3,-31);group.add(light);}
-    for(let floor=1;floor<3;floor++){cube(m.wall,0,floor*3.6+1.8,-25.6,60,3.6,.2);for(let x=-27;x<=27;x+=3){cube(m.steel,x,floor*3.6+1.7,-25.75,2.1,1.9,.05);cube(m.glass,x,floor*3.6+1.7,-25.79,1.95,1.75,.025);}}
+    for(let floor=1;floor<(layout.publicFloors?.length||3);floor++){cube(m.wall,0,floor*3.6+1.8,-25.6,60,3.6,.2);for(let x=-27;x<=27;x+=3){cube(m.steel,x,floor*3.6+1.7,-25.75,2.1,1.9,.05);cube(m.glass,x,floor*3.6+1.7,-25.79,1.95,1.75,.025);}}
     interactables.push({type:'exit',label:'Leave through the rear exit',x:-19.5,z:-32.7});placeSign('← REAR EXIT','GROUND FLOOR',-15,2.85,-22.6,Math.PI,2.7,.5);
   }
   addSiteDetails(group,batch,m,layout,site);
   for(const seat of seatRequests)if(chairFits(seat.x,seat.z,seat.rotation,layout,colliders)){chair(batch,m,seat.x,seat.z,seat.rotation);seats.push(seat);}
+  addInteriorDetails(group,batch,m,layout,interior);localizeSigns(group,interior);
   const statics = [...batch.finish(),...joinedWalls.finish(group)];
   return { seats,lift:lift.userData.lift,workstations,entrances, group, colliders, interactables, fixtures, wallMeshes, statics, pharmacy:pharmacies[0]||null, pharmacies,bathrooms,operatingSets,
     disposeProps(){for(const props of [...bathrooms,...operatingSets])props.dispose();} };

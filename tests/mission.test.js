@@ -22,9 +22,9 @@ test('Clues reveal evidence progressively and cannot be collected twice', () => 
   assert.ok(m.clue('schedule').text.includes(m.target.room.number));
   assert.ok(m.clue('log').text.includes(m.target.name)); assert.equal(m.clues.length,3);
 });
-test('Staff cannot be eliminated before the assigned doctor', () => {
-  const m = new Mission(defaultSave(), 101); assert.equal(m.eliminate({id:'other',role:'doctor'}),false);
-  assert.equal(m.staffKills,0); assert.equal(m.targetDown,false); assert.equal(m.state,'investigate');
+test('Shooting staff before the assigned doctor fails the mission', () => {
+  const m = new Mission(defaultSave(), 101); m.eliminate({id:'other',role:'doctor'});assert.equal(m.result.success,false);
+  assert.equal(m.staffKills,0); assert.equal(m.targetDown,false); assert.equal(m.state,'results');
 });
 test('A patient hit ends the mission immediately with no reward', () => {
   const save=defaultSave();const m=new Mission(save,102);m.eliminate({id:'patient',role:'patient'});

@@ -65,6 +65,7 @@ export const PATIENT_PAIN_LINES = [
   'Please, can you call the nurse? The pain is getting worse.',
   'I feel sick. I need a moment.',
 ];
+export const GUNSHOT_ALARM='What was that noise?!';
 export const SUSPICION_LINES = [
   'Did you hear that?',
   'That was weird.',
@@ -120,7 +121,7 @@ export const ALL_DIALOGUE_LINES = [...new Set([
 
   ...SNEEZE_REPLIES, 'Excuse me, please wait outside.', 'Excuse me, please wait until we finish with this patient.', 'Oh, I thought the doctor was around.', 'What are you doing?', ...OFFICE_VISITOR_LINES, ...INFILTRATION_LINES, 'Oh, sorry. Excuse me.', ...ADDITIONAL_DIALOGUE_LINES, ...Object.values(CONVERSATIONS).flat(2), ...Object.values(ENTRY_REACTIONS).flat(),
   ...Object.values(CLINICAL_CONVERSATIONS).flat(2), ...PATIENT_PAIN_LINES,
-  ...SUSPICION_LINES, ...RECRUIT_LINES, ...DISTRESS_LINES, ...ANNOUNCEMENT_LINES, ...Object.values(WITNESS_LINES),
+  GUNSHOT_ALARM, ...SUSPICION_LINES, ...RECRUIT_LINES, ...DISTRESS_LINES, ...ANNOUNCEMENT_LINES, ...Object.values(WITNESS_LINES),
 ])];
 export function dialogueKey(text, gender='male') {
   let hash=2166136261;for(let i=0;i<text.length;i++)hash=Math.imul(hash^text.charCodeAt(i),16777619)>>>0;

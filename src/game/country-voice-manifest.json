@@ -3607,6 +3607,32 @@
       "sha256": "b1c2206c56b8075619aecf864c4188f5b4b577bcf8fdca44200e49d3766d1207",
       "bytes": 23169,
       "duration": 2.222
+    },
+    "english/female/f-4b09eb71": {
+      "text": "What was that noise?!",
+      "gender": "female",
+      "language": "en",
+      "voice": "northline-female-standard",
+      "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+      "generatedLocally": true,
+      "sourceKey": "f-4b09eb71",
+      "referenceSha256": "771ddf909ce1e5d60b25f86cd892879f7d94e43d17c4536e6c9dd6535857c90f",
+      "sha256": "26db4252be87a802ce4267435a8662bd05b9e3c088d84ca62311b1295339b322",
+      "bytes": 19089,
+      "duration": 1.822
+    },
+    "english/male/m-4b09eb71": {
+      "text": "What was that noise?!",
+      "gender": "male",
+      "language": "en",
+      "voice": "northline-male-standard",
+      "engine": "Qwen3-TTS 1.7B / MLX Audio 0.5.9",
+      "generatedLocally": true,
+      "sourceKey": "m-4b09eb71",
+      "referenceSha256": "dd10a5dab402d507231176253491b806343c5a5c82af1c9a74ebf130da7c6913",
+      "sha256": "9605edcd26d755e192bb00b9bdf4bb6913f34768efba86ad653746c78e0f875d",
+      "bytes": 22449,
+      "duration": 2.142
     }
   },
   "mode": "english-shared"

@@ -40,7 +40,8 @@ export class HospitalLife {
   setup(){for(const _ of this.setupBatches()){} }
   *setupBatches() {
     const e=this.engine;
-    for(const floor of e.levels.map((_,i)=>i).filter(f=>f<3)) {
+    for(const floor of e.levels.map((_,i)=>i).filter(f=>f!==3)) {
+      if(floor<3){
       const nurseA=this.actor(floor?'Nurse Nora Ellis':'Nurse Iris Lowe','nurse','female',floor,null,-2.8,11.2,'chat',{yaw:0});
       const nurseB=this.actor(floor?'Nurse Samir Rao':'Nurse Felix Shaw','nurse','male',floor,null,-2.8,12.9,'chat',{yaw:Math.PI});
       this.groups.push({kind:'nurses',floor,actors:[nurseA,nurseB],next:4,conversation:floor});
@@ -50,7 +51,8 @@ export class HospitalLife {
       this.groups.push({kind:'patients',floor,actors:[patientA,patientB],next:6,conversation:floor});
       const seat=e.hospitals[floor].seats.find(s=>s.waiting);if(seat)this.actor('Consultation waiting patient','patient',floor%2?'male':'female',floor,null,seat.x,seat.z,'rest',{seated:true,yaw:seat.rotation});
       yield floor;
-      for(const room of e.levels[floor].rooms.filter(r=>CLINICAL_KINDS.includes(r.kind))) {
+      }else{const seat=e.hospitals[floor].seats.find(s=>s.waiting);if(seat)this.actor('Specialist waiting patient','patient',floor%2?'male':'female',floor,null,seat.x,seat.z,'rest',{seated:true,yaw:seat.rotation});}
+      for(const room of e.levels[floor].rooms.filter(r=>CLINICAL_KINDS.includes(r.kind)).filter((r,i)=>floor<3||i<2||r.id===e.mission.target.room.id)) {
         const minX=(room.x-11)*3-1.5,maxX=(room.x+room.w-1-11)*3+1.5,minZ=(room.z-11)*3-1.5;
         const clinic=room.kind==='clinic',rotation=clinic?0:Math.PI/2;
         const bedX=clinic?maxX-1.9:minX+1.55,bedZ=clinic?room.center.z:minZ+3;
@@ -130,7 +132,7 @@ export class HospitalLife {
     this.history.push({speaker:actor.name,text,time:e.mission.elapsed});if(this.history.length>30)this.history.shift();
     const voiceVersion=actor.voiceVersion=(actor.voiceVersion||0)+1;
     const directory=/expecting visitors|staff directory|visitor|welcome/i.test(text);
-    e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos))*(directory?.38:urgent?.75:.52),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor},{countryTake,rate:directory?.94:1,speakerId:actor.id,isCurrent:()=>!this.disposed&&actor.voiceVersion===voiceVersion});
+    e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos))*(directory?.38:urgent?.75:.52),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor},{countryTake,rate:text==='What was that noise?!'?1.08:directory?.94:1,speakerId:actor.id,isCurrent:()=>!this.disposed&&actor.voiceVersion===voiceVersion});
     actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07);
   }
   privacyWitness(room){if(room&&this.engine.covert?.advanced?.room?.id===room.id&&this.engine.covert.advanced.floor===room?.floor)return null;
@@ -155,6 +157,7 @@ export class HospitalLife {
     const e=this.engine,item=this.targetCase;if(!item||e.mission.targetDown||item.doctor.targetFlee||item.doctor.dead||e.mission.state==='escape')return;
     const appointment=item.appointment,now=e.mission.elapsed;
     if(room?.id===item.room.id&&e.floor===item.room.floor)appointment.start(now);
+    if(this.privacy.active===`${item.room.floor}:${item.room.id}`)return;
     if(!appointment.update(now))return;
     item.completed=true;item.doctor.activity='rest';item.doctor.clinicalPatient=null;item.doctor.reaction=0;item.doctor.path=[];item.cable.visible=item.disc.visible=false;
     this.privacy.release(`${item.room.floor}:${item.room.id}`);
@@ -265,14 +268,15 @@ export class HospitalLife {
     for(const item of this.cases) {
       if(item.completed||emergency||!item.patient.lying||item.patient.dead||item.doctor.targetFlee){item.cable.visible=item.disc.visible=false;continue;}
       const diversion=e.extras?.lure,helping=diversion&&!diversion.recovered&&(item.doctor===diversion.responder||item.doctor===diversion.target&&diversion.phase!=='collapsed');
-      const local=item.room.floor===e.floor,alive=!item.doctor.dead&&!item.doctor.evacuating&&!helping;item.cable.visible=item.disc.visible=local&&alive&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;
+      const examining=item.doctor.activity==='examine'&&item.doctor.clinicalPatient===item.patient&&item.doctor.floor===item.room.floor&&dist(item.doctor.pos,item.patient.pos)<=2.5;
+      const local=item.room.floor===e.floor,alive=!item.doctor.dead&&!item.doctor.evacuating&&!helping;item.cable.visible=item.disc.visible=local&&alive&&examining&&dist(e.playerPos,item.doctor.pos)<22&&!item.doctor.reaction;
       const d=dist(e.playerPos,item.patient.pos),source={x:item.patient.pos.x,y:1.15,z:item.patient.pos.z,floor:item.room.floor};
       if(local&&d<20&&now>=item.nextMachine&&now>=this.nextMachine){
         const gain=activityVolume(d,true,e.lineOfSight(e.playerPos,item.patient.pos))*.30;
         const kind=['icu','emergency'].includes(item.room.kind)?(Math.floor(now/20)%3===0?'ventilator':'monitor'):'blood-pressure';
         e.audio.hospitalMachine?.(kind,source,gain);item.nextMachine=now+(kind==='blood-pressure'?33:5.5);this.nextMachine=now+2.8;
       }
-      if(!emergency&&alive&&local&&d<15&&now>=item.nextCare&&now>=this.nextClinical&&now>=this.nextAmbient&&!item.doctor.reaction){
+      if(!emergency&&alive&&examining&&local&&d<15&&now>=item.nextCare&&now>=this.nextClinical&&now>=this.nextAmbient&&!item.doctor.reaction){
         const kind=item.room.kind==='clinic'?'temperature':item.room.kind==='cardio'?'heart':'bloodPressure',pairs=CLINICAL_CONVERSATIONS[kind],pair=pairs[Math.floor(e.mission.random()*pairs.length)];
         this.speak(item.doctor,pair[0]);this.queue.push({actor:item.patient,text:pair[1],time:now+Math.max(4.2,pair[0].length*.07)+.5});
         item.nextCare=now+37+e.mission.random()*18;this.nextClinical=now+17;this.nextAmbient=now+12;

@@ -48,6 +48,7 @@ export class EscapeThreats {
     this.e = e;
     this.enabled = e.mission.round >= 5 && (e.mission.type==='standard'||!!e.mission.china);
     this.entries = [];
+    this.reservedRequired=null;
     this.spots = [];
     this.root = new T.Group();
     this.root.name = "Escape encounters";
@@ -191,8 +192,16 @@ export class EscapeThreats {
     this.spots.push(spot);
     return spot;
   }
+  reserve(actors){
+    if(!this.enabled||this.e.mission.playMode!=='story'||this.started)return;
+    this.reservedRequired=new Set();const available=new Map();
+    for(const spot of this.spots)available.set(spot.floor,(available.get(spot.floor)||0)+1);
+    // Register the existing mandatory offenders before the security phase.
+    // They stay in place; hiding/fleeing begins only after the guards are down.
+    for(const[i,n]of actors.entries())if(i%3!==0&&!n.operationDoctor&&(available.get(n.floor)||0)>0){this.reservedRequired.add(n.id);this.e.mission.requiredHiddenIds.add(n.id);available.set(n.floor,available.get(n.floor)-1);}
+  }
   start(actors) {
-    if (this.started) return;
+    if (this.started||this.e.mission.type==='standard'&&this.e.npcs.some(n=>n.role==='security'&&!n.dead&&!n.evacuated)) return;
     this.started = true;
     const e = this.e;
     for (const [i, n] of actors.entries()) {
@@ -206,7 +215,7 @@ export class EscapeThreats {
       n.escapeThreat = entry;
       this.entries.push(entry);
       this.makeWeapon(entry);
-      if (i % 3 !== 0 && !n.operationDoctor && this.chooseSpot(entry)) continue;
+      if ((this.reservedRequired?this.reservedRequired.has(n.id):i % 3 !== 0) && !n.operationDoctor && this.chooseSpot(entry)) continue;
       this.run(n);
     }
   }
@@ -571,7 +580,7 @@ export class EscapeThreats {
   }
   tracking() {
     const e = this.e;
-    if (!e.mission.targetDown) return [];
+    if (!e.mission.targetDown&&!e.mission.policeAlert&&e.mission.suspicion<=80) return [];
     const guards = e.npcs.filter(
       (n) => n.role === "security" && !n.dead && !n.evacuated,
     );

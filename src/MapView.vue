@@ -1,10 +1,12 @@
 <script setup>
 import { computed } from 'vue';
-import { makeLayout, TILE, FLOORS } from './game/layout.js';
+import { makeLayout, TILE, ALL_FLOORS as FLOORS } from './game/layout.js';
 const props = defineProps({ floor: { default: 0 }, hud: Object, target: Object, clues: { default: 0 }, assignment:Object, mini: Boolean });
 const roomLines=name=>name.length>12&&name.includes(' ')?name.split(' '):[name];
 const departmentKnown=computed(()=>!!props.clues&&(!props.hud?.covert?.documentRequired||props.hud.covert.documentTaken));
-const layout = computed(() => makeLayout(props.floor,props.hud?.country?.index||0,(props.hud?.level||0)>=6));
+let mapCache;
+// Player/guard updates reuse the static floor plan instead of rebuilding it.
+const layout = computed(() => {const floor=props.floor,site=props.hud?.country?.index||0,expanded=(props.hud?.level||0)>=6,signature=`${floor}:${site}:${expanded}`;if(mapCache?.signature!==signature)mapCache={signature,layout:makeLayout(floor,site,expanded)};return mapCache.layout;});
 const px = computed(() => ((props.hud?.x || 0) / TILE + 11) * 30 + 15);
 const pz = computed(() => ((props.hud?.z || 0) / TILE + 11) * 30 + 15);
 </script>
@@ -20,9 +22,9 @@ const pz = computed(() => ((props.hud?.z || 0) / TILE + 11) * 30 + 15);
     </g>
     <path v-for="d in layout.doors" :key="d.id" :d="`M${(d.x/TILE+11)*30+7},${(d.z/TILE+11)*30+15}h16`" stroke="#a2c1d4" stroke-width="4"/>
     <text x="346" y="110" text-anchor="middle" fill="#b8d4e5" font-size="14">↕ LIFT / STAIRS</text>
-    <text v-if="floor<3" x="352" :y="floor===0?718:678" text-anchor="middle" fill="#96d1d4" font-size="14">{{ floor ? 'PATIENT SERVICES' : '↓ MAIN ENTRANCE / EXIT' }}</text>
-    <circle :cx="(layout.directory.x/TILE+11)*30+15" :cy="(layout.directory.z/TILE+11)*30+15" r="7" fill="#dfc78c"/><text v-if="!mini && floor<3" x="237" y="638" fill="#bda97b" font-size="10">DIRECTORY</text>
-    <circle v-if="floor<3" cx="525" cy="345" r="7" fill="#dfc78c"/>
+    <text v-if="floor!==3" x="352" :y="floor===0?718:678" text-anchor="middle" fill="#96d1d4" font-size="14">{{ floor ? 'PATIENT SERVICES' : '↓ MAIN ENTRANCE / EXIT' }}</text>
+    <circle :cx="(layout.directory.x/TILE+11)*30+15" :cy="(layout.directory.z/TILE+11)*30+15" r="7" fill="#dfc78c"/><text v-if="!mini && floor!==3" x="237" y="638" fill="#bda97b" font-size="10">DIRECTORY</text>
+    <circle v-if="floor!==3" cx="525" cy="345" r="7" fill="#dfc78c"/>
     <g v-if="assignment && assignment.type!=='standard' && !assignment.infiltration" fill="#e6c788" font-family="monospace" font-size="18" text-anchor="middle"><g v-for="k in (assignment.keySites||[]).filter(k=>k.floor===floor)" :key="k.id" :transform="`translate(${(k.x/TILE+11)*30+15},${(k.z/TILE+11)*30+15})`"><circle r="13" fill="#785f35"/><text y="6">K</text></g><g v-for="s in assignment?.sites.filter(s=>s.floor===floor && !assignment.photos.includes(s.id))||[]" :key="s.id" :transform="`translate(${(s.x/TILE+11)*30+15},${(s.z/TILE+11)*30+15})`"><circle r="13" fill="#285c6b"/><text y="6">C</text></g></g>
 
     <g v-if="floor===3 && assignment?.infiltration" fill="#acd5df" font-size="12" text-anchor="middle"><g v-for="(a,i) in assignment.infiltration.angles.filter(a=>!assignment.infiltration.recordings.includes(a.id))" :key="a.id" :transform="`translate(${(a.x/TILE+11)*30+15},${(a.z/TILE+11)*30+15})`"><circle r="12" fill="#285c6b"/><text y="4">{{i+1}}</text></g></g>
@@ -34,8 +36,8 @@ const pz = computed(() => ((props.hud?.z || 0) / TILE + 11) * 30 + 15);
       <circle r="21" fill="#8ccaf0" fill-opacity=".12"/><circle r="8" fill="#b7e6ff" stroke="#122534" stroke-width="2"/>
       <path d="M0 13L-5 6H5z" :transform="`rotate(${-hud.yaw*180/Math.PI})`" fill="#b7e6ff"/>
     </g>
-    <text v-if="hud?.level>=6 && floor<3" x="28" y="270" fill="#b8d4e5" font-size="13">↕ STAIRS</text><text v-if="hud?.level>=6 && floor===0" x="146" y="29" fill="#b8d4e5" font-size="13">↑ REAR EXIT</text>
-    <text v-if="floor<3" x="92" y="358" fill="#6b8a9d" font-size="11" transform="rotate(-90 92 358)">WEST WING</text>
-    <text v-if="floor<3" x="605" y="290" fill="#6b8a9d" font-size="11" transform="rotate(90 605 290)">EAST WING</text>
+    <text v-if="hud?.level>=6 && floor!==3" x="28" y="270" fill="#b8d4e5" font-size="13">↕ STAIRS</text><text v-if="hud?.level>=6 && floor===0" x="146" y="29" fill="#b8d4e5" font-size="13">↑ REAR EXIT</text>
+    <text v-if="floor!==3" x="92" y="358" fill="#6b8a9d" font-size="11" transform="rotate(-90 92 358)">WEST WING</text>
+    <text v-if="floor!==3" x="605" y="290" fill="#6b8a9d" font-size="11" transform="rotate(90 605 290)">EAST WING</text>
   </svg>
 </template>

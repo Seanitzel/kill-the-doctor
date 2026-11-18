@@ -2,7 +2,7 @@ import * as T from 'three';
 import {applyInjury,injuryLabel} from './injury.js';
 import {bodyHit,aimAtRegion} from './hit-regions.js';
 import {poseInjury} from './injury-pose.js';
-import {segmentHit3D,obstacleBounds} from './collision.js';
+import {segmentHit3D,segmentDoor3D,obstacleBounds} from './collision.js';
 export class CombatDamage {
  constructor(e){this.e=e;this.marks=new Set();e.playerInjury=null;}
  damage(actor,hit,player=false){
@@ -25,7 +25,7 @@ export class CombatDamage {
   const origin=actor.visual.hand?.getWorldPosition(new T.Vector3())||actor.pos.clone().setY(1.4),target=(aim||this.lockAim()).clone();
   const spread=.035+(e.mission.save.upgrades.vitals||0)*.065;target.x+=(e.mission.random()-.5)*spread*2;target.y+=(e.mission.random()-.5)*spread*2;
   const ray=new T.Ray(origin,target.sub(origin).normalize()),hit=bodyHit(e.player,ray,35),end=hit?.point||ray.at(20,new T.Vector3());
-  let blocked=false;for(const c of e.hospitals[e.floor].colliders){const t=segmentHit3D(origin,end,obstacleBounds(c));if(t!==null&&t<.99){end.copy(origin).lerp(end,t);blocked=true;break;}}
+  let blocked=false;for(const c of e.hospitals[e.floor].colliders){const t=c.object?.pivot?segmentDoor3D(origin,end,c.object):segmentHit3D(origin,end,obstacleBounds(c));if(t!==null&&t<.99){end.copy(origin).lerp(end,t);blocked=true;break;}}
   const tracer=new T.Line(new T.BufferGeometry().setFromPoints([origin,end]),new T.LineBasicMaterial({color:'#f2ba93',transparent:true,opacity:.7}));e.scene.add(tracer);e.effects.push({mesh:tracer,life:.10});
   if(!hit||blocked){e.hooks.soundCaption?.('Shot missed. Keep moving and use solid cover.');return null;}
   const state=this.damage({pos:e.playerPos}, {...hit,normal:ray.direction.clone().negate()},true);

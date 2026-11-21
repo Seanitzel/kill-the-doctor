@@ -3,8 +3,8 @@ const {defaultBrowserType,...iphone}=devices['iPhone 17 Pro Max landscape'];
 test.use({...iphone,browserName:'webkit',launchOptions:{}});
 test('iPhone high-quality session survives beyond three minutes with bounded graphics and audible-path audio muted at output',async({page},testInfo)=>{
  test.setTimeout(420000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.addInitScript(()=>{
-  localStorage.setItem('ktd-northline-v1',JSON.stringify({internationalVersion:3,settings:{quality:'high',volume:.5,speech:true}}));
+ await page.addInitScript(country=>{
+  localStorage.setItem('ktd-northline-v1',JSON.stringify({internationalVersion:3,playMode:'story',storyReplayId:country,settings:{quality:'high',volume:.5,speech:true}}));
   // Exercise normal sample/voice loading, but route every AudioContext through
   // a silent final bus. Nothing from the local test reaches the user's speakers.
   const destinations=new WeakMap(),connect=AudioNode.prototype.connect,Original=window.AudioContext||window.webkitAudioContext;
@@ -12,7 +12,7 @@ test('iPhone high-quality session survives beyond three minutes with bounded gra
   class MutedContext extends Original{constructor(...args){super(...args);const silent=this.createGain();silent.gain.value=0;connect.call(silent,this.destination);destinations.set(this.destination,silent);}}
   window.AudioContext=window.webkitAudioContext=MutedContext;
   if(window.speechSynthesis)window.speechSynthesis.speak=()=>{};
- });
+ },process.env.KTD_SOAK_COUNTRY||'france');
  await page.goto('/');await page.getByRole('button',{name:'ENTER THE HOSPITAL',exact:false}).click();await page.getByRole('button',{name:'Skip story',exact:true}).click();await page.waitForFunction(()=>window.__ktd?.engine.mission&&!window.__ktd.engine.paused);
  const budget=await page.evaluate(()=>{const e=window.__ktd.engine,sizes=[];for(const scene of [e.assets.male,e.assets.female,...Object.values(e.assets.sources)])scene.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:[o.material])if(m)for(const value of Object.values(m))if(value?.isTexture&&!value.isDataTexture&&value.image?.width)sizes.push(Math.max(value.image.width,value.image.height));});return{mobile:e.mobile,antialias:e.renderer.getContext().getContextAttributes().antialias,smoothing:!!e.smoothing,maxTexture:Math.max(...sizes)};});expect(budget.mobile).toBe(true);expect(budget.antialias).toBe(false);expect(budget.smoothing).toBe(true);expect(budget.maxTexture).toBeLessThanOrEqual(512);
  // Upload every existing avatar/floor once before measuring a plateau. Merely

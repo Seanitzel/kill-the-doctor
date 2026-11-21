@@ -25,7 +25,16 @@ export function finishTexture(profile,ceiling=false){
   // Keep four divisions per existing 3m floor module: dimensions never change.
   const grout=ceiling?profile.ceilingGrout||'#a7aaa6':profile.grout,width=ceiling?2:profile.groutWidth||1.2;
   if(ceiling)for(let x=0;x<4;x++)for(let y=0;y<4;y++){c.fillStyle=`rgba(255,255,255,${.025+random()*.07})`;c.fillRect(x*128+2,y*128+2,124,124);}
-  if(profile.grainy&&!ceiling)for(let i=0;i<22000;i++){c.fillStyle=`rgba(${i%2?'235,239,238':'41,49,48'},${.05+random()*.12})`;c.fillRect(random()*SIZE,random()*SIZE,.6+random()*1.5,.6+random()*1.5);}
+  if(profile.grainy&&!ceiling&&c.createImageData){
+   // Continuous mineral grain and irregular aggregate avoid square stamp
+   // artifacts. Several scales remain legible at ordinary walking distance.
+   const image=c.createImageData(SIZE,SIZE),data=image.data,base=Number.parseInt(profile.floor.slice(1,3),16);
+   for(let y=0;y<SIZE;y++)for(let x=0;x<SIZE;x++){
+    const fine=(hash(x,y)-.5)*40,grain=(noise(x*.68,y*.68)-.5)*54,cloud=(noise(x*.14,y*.14)-.5)*22,chip=noise(x*.36+37,y*.36+19),value=base+fine+grain+cloud+(chip>.72?28:chip<.28?-25:0),i=(x+y*SIZE)*4;
+    data[i]=data[i+1]=data[i+2]=value;data[i+3]=255;
+   }
+   c.putImageData(image,0,0);
+  }
   c.fillStyle=grout;for(let i=0;i<=4;i++){c.fillRect(i*128-width/2,0,width,SIZE);c.fillRect(0,i*128-width/2,SIZE,width);}
  }
  for(let i=0;i<(profile.worn?3300:500);i++){c.fillStyle=`rgba(66,53,35,${profile.worn?.035:.012})`;c.fillRect(random()*SIZE,random()*SIZE,profile.worn?2.8:1.5,1);}

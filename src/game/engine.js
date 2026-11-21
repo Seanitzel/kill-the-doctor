@@ -1,3 +1,4 @@
+import {storyVoiceMode} from './story-voice-policy.js';
 import {CrowdIndex} from './crowd-index.js';
 import {createInterior,localizeSigns} from './hospital-interiors.js';
 import {mixingYaw} from './office-mixing.js';
@@ -231,7 +232,7 @@ export class GameEngine {
     for(const floor of this.countryBatches(country))await task.stage('Preparing hospital floors',.39+floor*.015,`${FLOORS[floor]} · ${country.name}`);
   }
   *countryBatches(country){
-    if(this.audio&&country)this.audio.countryId=country.id;const level=this.mission?.round||1,expanded=level>=6,signature=`${country?.id}:${this.mission?.playMode||'freestyle'}:${missionFloorIds(level).length}:${expanded}:${!!this.mission?.terror}:${this.mission?.mode||''}`;if(!country||this.siteId===country.id&&this.siteSignature===signature)return;
+    if(this.audio&&country){this.audio.countryId=country.id;this.audio.voicePlayMode=storyVoiceMode(this.mission);}const level=this.mission?.round||1,expanded=level>=6,signature=`${country?.id}:${this.mission?.playMode||'freestyle'}:${missionFloorIds(level).length}:${expanded}:${!!this.mission?.terror}:${this.mission?.mode||''}`;if(!country||this.siteId===country.id&&this.siteSignature===signature)return;
     for(const hospital of this.hospitals)disposeHospital(hospital,this.materials);
     this.interiorStyle?.dispose();this.defaultMaterials??=this.materials;this.materials=this.defaultMaterials;this.interiorStyle=null;this.hospitals=[];this.siteId=null;this.siteSignature=null;this.levels=missionFloorIds(level).map(i=>makeLayout(i,country.index,expanded));for(const l of this.levels)l.publicFloors=publicFloorIds(level);
     const palette=country.id==='china'?{accent:'#3a6985',wall:'#e6e4df'}:{accent:country.accent,wall:'#d6e0e5'};
@@ -265,6 +266,7 @@ export class GameEngine {
   }
   spawnNPC(person, role, floor, pos, room, id, options = {}) {
       if(!person.castCountry&&this.mission?.country)person=countryPerson(person,role,this.mission.country,this.mission.seed,id,this.npcs.length);
+      person={...person,voicePlayMode:storyVoiceMode(this.mission),voiceOrdinal:this.npcs.length};
       const visual = options.visual || makePlayer(this.assets, person.gender || 'male', person, role);
       // Finish the initial idle fade before an avatar can appear in a doorway.
       visual.animate?.(0,0,.35);
@@ -694,7 +696,8 @@ export class GameEngine {
   spawnPolice() {
     const candidates=[{x:-24,z:42},{x:24,z:42},{x:-21,z:39},{x:21,z:39}],entry=candidates.find(p=>this.canStand(p.x,p.z,.25,0)&&(this.floor!==0||!this.lineOfSight(this.playerPos,p,0)));if(!entry)return false;
     const visual=makePlayer(this.assets,'male',{skin:'#c89a78',hair:'#232b30'},'police');visual.root.position.set(entry.x,0,entry.z);this.scene.add(visual.root);
-    this.npcs.push({id:'police',role:'police',name:'Police response',floor:0,pos:visual.root.position,visual,path:[],cursor:0,wait:0,dead:false,speed:2.6});visual.root.visible=this.floor===0;this.policeSpawned=true;this.say('Police response team entering the west wing. All exits will be secured shortly.','SECURITY RESPONSE');return true;
+    const person={gender:'male',voiceRole:'police',voiceCountry:this.mission?.country?.id,voicePlayMode:storyVoiceMode(this.mission),voiceOrdinal:this.npcs.length};
+    this.npcs.push({id:'police',role:'police',person,name:'Police response',floor:0,pos:visual.root.position,visual,path:[],cursor:0,wait:0,dead:false,speed:2.6});visual.root.visible=this.floor===0;this.policeSpawned=true;this.say('Police response team entering the west wing. All exits will be secured shortly.','SECURITY RESPONSE');return true;
   }
 
   requestDoor(d,open){d.open=open;d.manualClosed=!open;this.audio.sound('door');}

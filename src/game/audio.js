@@ -316,8 +316,8 @@ export class HospitalAudio {
     if(this.disposed||!this.enabled||!this.settings.speech||!this.settings.volume)return;
     if(options.isCurrent&&!options.isCurrent())return;
     if(options.speakerId)for(const record of [...this.activeSamples])if(record.speakerId===options.speakerId)this.releaseSample(record,true);
-    const take=options.countryTake||countryVoice(text,person);if(take)person={...person,voiceLanguage:take.language};const ctx=this.ctx,baseKey=dialogueKey(text,person.gender),epoch=this.voiceEpoch;
-    if(!this.ownsContext(ctx)){if(!options.publicAddress)this.speak(take?.spokenText||text,person,gain,urgent?4:1);return;}
+    const take=options.countryTake||countryVoice(text,person);if(take?.pending)return;if(take)person={...person,voiceLanguage:take.language};const ctx=this.ctx,baseKey=dialogueKey(text,person.gender),epoch=this.voiceEpoch;
+    if(!this.ownsContext(ctx)){if(!options.publicAddress&&!take?.strict)this.speak(take?.spokenText||text,person,gain,urgent?4:1);return;}
     const key=take?.key||baseKey+(dialogueRegion(person)==='southern'?'-alt':'');
     try {
       const pending=this.dialogueBuffer(key,ctx);if(!pending)return;const buffer=await pending;
@@ -325,13 +325,13 @@ export class HospitalAudio {
       if(options.publicAddress&&options.announcementSerial!==this.announcementSerial)return;
       if(options.publicAddress){this.paChimeBuffer||=announcementChimeBuffer(ctx);this.sampleNodes('pa-chime',position||this.listenerPosition,.65,false,this.paChimeBuffer,{publicAddress:true});}
       return this.sampleNodes(`voice-${key}`,position||{x:0,y:1,z:0},gain*.9,false,buffer,{...options,startDelay:options.publicAddress?.78:0});
-    }catch(error){if(!options.publicAddress&&(!options.isCurrent||options.isCurrent())&&error?.name!=='AbortError'&&this.voiceIsCurrent(epoch,ctx,position))this.speak(take?.spokenText||text,person,gain,urgent?4:1);}
+    }catch(error){if(!options.publicAddress&&!take?.strict&&(!options.isCurrent||options.isCurrent())&&error?.name!=='AbortError'&&this.voiceIsCurrent(epoch,ctx,position))this.speak(take?.spokenText||text,person,gain,urgent?4:1);}
   }
   announce(text) {
     if(this.disposed||!ANNOUNCEMENT_LINES.includes(text))return;
     const announcementSerial=this.announcementSerial=(this.announcementSerial||0)+1;
     for(const record of [...this.activeSamples])if(record.publicAddress)this.releaseSample(record,true);
-    return this.dialogue(text,{gender:'female',voiceRegion:'standard',voiceCountry:this.countryId,voiceRole:'staff'},text.includes('staff directory')?.46:.8,true,this.listenerPosition,{publicAddress:true,announcementSerial,rate:text.includes('staff directory')?.95:1});
+    return this.dialogue(text,{gender:'female',voiceRegion:'standard',voiceCountry:this.countryId,voiceRole:'staff',voicePlayMode:this.voicePlayMode,voiceOrdinal:0},text.includes('staff directory')?.46:.8,true,this.listenerPosition,{publicAddress:true,announcementSerial,rate:text.includes('staff directory')?.95:1});
   }
   update(dt, proximity, emergency, impairment, moving, running,footfalls=null) {
     if (!this.ctx || !this.enabled || this.disposed) return;

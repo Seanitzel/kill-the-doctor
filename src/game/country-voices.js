@@ -1,3 +1,4 @@
+import {storyVoice} from './story-voices.js';
 import manifest from './country-voice-manifest.json' with {type:'json'};
 import {dialogueKey,CONVERSATIONS,PATIENT_PAIN_LINES,CLINICAL_CONVERSATIONS} from './life-rules.js';
 import {countryPatientLine} from './country-dialogue.js';
@@ -14,4 +15,4 @@ export function resolveCountryVoice(bank,text,person={}){
  if(country)keys.push({key:`${country}/${gender}/${baseKey}`,caption:text});keys.push({key:`english/${gender}/${baseKey}`,caption:text});
  for(const candidate of keys){const entry=bank.entries[candidate.key];if(!entry||englishOnly&&entry.language!=='en')continue;return{key:`countries/${candidate.key}`,caption:candidate.caption,spokenText:entry.text,language:entry.language};}return null;
 }
-export function countryVoice(text,person={}){return resolveCountryVoice(manifest,text,person);}
+export function countryVoice(text,person={}){return storyVoice(text,person)||resolveCountryVoice(manifest,text,person);}

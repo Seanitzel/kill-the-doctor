@@ -11,10 +11,17 @@ const entry=html.match(/src="\/?(assets\/index-[^"]+\.js)"/)?.[1];
 assert.ok(entry,'Production entry must use the local root');
 const code=fs.readFileSync(path.join(root,entry),'utf8');
 assert.doesNotMatch(code,/window\.__ktd\s*=[^=]/,'Mutable QA bridge must not ship');
+const storyBank=JSON.parse(fs.readFileSync('src/game/story-voice-manifest.json','utf8'));
+const storyFiles=Object.entries(storyBank.entries).map(([key,take])=>{
+ const file=`audio/countries/story/${key}.mp3`;
+ assert.equal(digest(path.join(root,file)),take.sha256,`Production voice integrity: ${key}`);
+ return {file,sha256:take.sha256};
+});
 for(const platform of ['android/app/src/main/assets/public','ios/App/App/public']){
  for(const file of ['index.html',entry,'models/adrian.glb','models/alex.glb','models/walk.fbx']){
   assert.equal(digest(path.join(platform,file)),digest(path.join(root,file)),`${platform}: stale ${file}`);
  }
+ for(const {file,sha256}of storyFiles)assert.equal(digest(path.join(platform,file)),sha256,`${platform}: stale voice ${file}`);
  const nativeConfig=JSON.parse(fs.readFileSync(platform.replace(/public$/,'capacitor.config.json'),'utf8'));
  assert.equal(nativeConfig.server?.url,undefined);
  assert.notEqual(nativeConfig.ios?.webContentsDebuggingEnabled,true);

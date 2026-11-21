@@ -124,16 +124,17 @@ export class HospitalLife {
     }
     this.laborSource={x:mother.pos.x,y:1.2,z:mother.pos.z,floor};
   }
+  speechSeconds(actor,text){return Math.max(4.2,text.length*.07,(countryVoice(text,actor.person)?.duration||0)/.9);}
   speak(actor,text,urgent=false) {
     const e=this.engine;if(actor.dead||actor.floor!==e.floor)return;
     const distance=dist(e.playerPos,actor.pos);if(distance>18)return;const countryTake=countryVoice(text,actor.person);text=countryTake?.caption||text;
     this.dialogues=this.dialogues.filter(d=>d.actor!==actor&&d.until>e.mission.elapsed);
-    this.dialogues.push({actor,text,until:e.mission.elapsed+Math.max(4.5,text.length*.07)});
+    this.dialogues.push({actor,text,until:e.mission.elapsed+Math.max(4.5,text.length*.07,(countryTake?.duration||0)/.9+.3)});
     this.history.push({speaker:actor.name,text,time:e.mission.elapsed});if(this.history.length>30)this.history.shift();
     const voiceVersion=actor.voiceVersion=(actor.voiceVersion||0)+1;
     const directory=/expecting visitors|staff directory|visitor|welcome/i.test(text);
     e.audio.dialogue(text,actor.person,activityVolume(distance,true,e.lineOfSight(e.playerPos,actor.pos))*(directory?.38:urgent?.75:.52),urgent,{x:actor.pos.x,y:actor.pos.y+1.45,z:actor.pos.z,floor:actor.floor},{countryTake,rate:text==='What was that noise?!'?1.08:directory?.94:1,speakerId:actor.id,isCurrent:()=>!this.disposed&&actor.voiceVersion===voiceVersion});
-    actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07);
+    actor.speakingUntil=e.mission.elapsed+Math.max(4,text.length*.07,(countryTake?.duration||0)/.9+.3);
   }
   privacyWitness(room){if(room&&this.engine.covert?.advanced?.room?.id===room.id&&this.engine.covert.advanced.floor===room?.floor)return null;
     if(this.engine.systems?.evacuating||this.engine.mission.state==='escape'||!room||room.kind==='emergency'||(!CLINICAL_KINDS.includes(room.kind)&&!['office','lab'].includes(room.kind)))return null;
@@ -278,12 +279,12 @@ export class HospitalLife {
       }
       if(!emergency&&alive&&examining&&local&&d<15&&now>=item.nextCare&&now>=this.nextClinical&&now>=this.nextAmbient&&!item.doctor.reaction){
         const kind=item.room.kind==='clinic'?'temperature':item.room.kind==='cardio'?'heart':'bloodPressure',pairs=CLINICAL_CONVERSATIONS[kind],pair=pairs[Math.floor(e.mission.random()*pairs.length)];
-        this.speak(item.doctor,pair[0]);this.queue.push({actor:item.patient,text:pair[1],time:now+Math.max(4.2,pair[0].length*.07)+.5});
-        item.nextCare=now+37+e.mission.random()*18;this.nextClinical=now+17;this.nextAmbient=now+12;
+        this.speak(item.doctor,pair[0]);this.queue.push({actor:item.patient,text:pair[1],time:now+this.speechSeconds(item.doctor,pair[0])+.5});
+        item.nextCare=now+37+e.mission.random()*18;this.nextClinical=now+17;this.nextAmbient=now+Math.max(12,((countryVoice(pair[0],item.doctor.person)?.duration||0)+(countryVoice(pair[1],item.patient.person)?.duration||0))/.9+1.5);
       }
       if(!emergency&&local&&!item.patient.dead&&d<12&&now>=this.nextPain&&now>=this.nextAmbient){
         e.audio.patientPain?.(item.patient.person,source,activityVolume(d,true,true)*.38);
-        this.speak(item.patient,PATIENT_PAIN_LINES[Math.floor(e.mission.random()*PATIENT_PAIN_LINES.length)]);this.nextPain=now+28+e.mission.random()*17;this.nextAmbient=now+9;
+        this.speak(item.patient,PATIENT_PAIN_LINES[Math.floor(e.mission.random()*PATIENT_PAIN_LINES.length)]);this.nextPain=now+28+e.mission.random()*17;this.nextAmbient=Math.max(now+9,item.patient.speakingUntil+.5);
       }
       if(!item.cable.visible||now<item.nextCable)continue;item.nextCable=now+.25;
       if(!item.doctor.reaction) item.doctor.visual.root.rotation.y=Math.atan2(item.patient.pos.x-item.doctor.pos.x,item.patient.pos.z-item.doctor.pos.z);
@@ -295,7 +296,7 @@ export class HospitalLife {
       const near=this.groups.filter(g=>g.floor===e.floor&&g.next<=now&&g.actors.every(n=>!n.dead&&!n.officeVisitor)&&dist(e.playerPos,g.actors[0].pos)<11).sort((a,b)=>dist(e.playerPos,a.actors[0].pos)-dist(e.playerPos,b.actors[0].pos));
       if(near.length) {
         const group=near[0],lines=CONVERSATIONS[group.kind][group.conversation++%CONVERSATIONS[group.kind].length];this.speak(group.actors[0],lines[0]);
-        this.queue.push({actor:group.actors[1],text:lines[1],time:now+Math.max(4.2,lines[0].length*.07)+.4});group.next=now+14+e.mission.random()*10;this.nextAmbient=now+Math.max(14,(lines[0].length+lines[1].length)*.07+2);
+        this.queue.push({actor:group.actors[1],text:lines[1],time:now+this.speechSeconds(group.actors[0],lines[0])+.4});group.next=now+14+e.mission.random()*10;this.nextAmbient=now+Math.max(14,(lines[0].length+lines[1].length)*.07+2,((countryVoice(lines[0],group.actors[0].person)?.duration||0)+(countryVoice(lines[1],group.actors[1].person)?.duration||0))/.9+2);
       }
     }
     for(let i=this.queue.length-1;i>=0;i--)if(this.queue[i].time<=now){const line=this.queue.splice(i,1)[0];if(!emergency&&!line.actor.officeVisitor)this.speak(line.actor,line.text);}

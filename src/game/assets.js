@@ -11,7 +11,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 const geometries = {
-  box: new THREE.BoxGeometry(1, 1, 1), sphere: new THREE.SphereGeometry(1, 16, 12),
+  plane: new THREE.PlaneGeometry(1,1), box: new THREE.BoxGeometry(1, 1, 1), sphere: new THREE.SphereGeometry(1, 16, 12),
   cylinder: new THREE.CylinderGeometry(1, 1, 1, 12), capsule: new THREE.CapsuleGeometry(.5, 1, 5, 12),
 };
 Object.values(geometries).forEach(geometry=>{geometry.userData.sharedPrimitive=true;});
@@ -52,6 +52,12 @@ export class Batcher {
     if (!bucket) { bucket = { geometry: geometries[kind], material: mat, matrices: [] }; this.buckets.set(id, bucket); }
     const o = new THREE.Object3D(); o.position.set(x, y, z); o.scale.set(sx, sy, sz); o.rotation.set(0, ry, rz); o.updateMatrix(); bucket.matrices.push(o.matrix);
     return { bucket, index: bucket.matrices.length - 1 };
+  }
+  // Bake static decoration transforms into the existing per-material instances.
+  addObject(root) {
+    root.updateWorldMatrix(true,true);const inverse=this.group.matrixWorld.clone().invert(),parts=[];
+    root.traverse(object=>{if(!object.isMesh)return;const kind=Object.keys(geometries).find(k=>geometries[k]===object.geometry);if(!kind)return;const id=`${kind}-${object.material.uuid}`;let bucket=this.buckets.get(id);if(!bucket){bucket={geometry:object.geometry,material:object.material,matrices:[]};this.buckets.set(id,bucket);}bucket.matrices.push(inverse.clone().multiply(object.matrixWorld));parts.push(object);});
+    root.userData.batchedParts=parts.length;for(const object of parts)object.removeFromParent();
   }
   box(...args) { return this.add('box', ...args); }
   cylinder(...args) { this.add('cylinder', ...args); }

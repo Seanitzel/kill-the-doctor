@@ -17,11 +17,12 @@ const storyFiles=Object.entries(storyBank.entries).map(([key,take])=>{
  assert.equal(digest(path.join(root,file)),take.sha256,`Production voice integrity: ${key}`);
  return {file,sha256:take.sha256};
 });
+const interiorFiles=fs.readdirSync('public/images/interiors').filter(name=>name.endsWith('.jpg')).map(name=>{const file=`images/interiors/${name}`,sha256=digest(path.join('public',file));assert.equal(digest(path.join(root,file)),sha256,`Production interior integrity: ${name}`);return {file,sha256};});
 for(const platform of ['android/app/src/main/assets/public','ios/App/App/public']){
  for(const file of ['index.html',entry,'models/adrian.glb','models/alex.glb','models/walk.fbx']){
   assert.equal(digest(path.join(platform,file)),digest(path.join(root,file)),`${platform}: stale ${file}`);
  }
- for(const {file,sha256}of storyFiles)assert.equal(digest(path.join(platform,file)),sha256,`${platform}: stale voice ${file}`);
+ for(const {file,sha256}of [...storyFiles,...interiorFiles])assert.equal(digest(path.join(platform,file)),sha256,`${platform}: stale voice ${file}`);
  const nativeConfig=JSON.parse(fs.readFileSync(platform.replace(/public$/,'capacitor.config.json'),'utf8'));
  assert.equal(nativeConfig.server?.url,undefined);
  assert.notEqual(nativeConfig.ios?.webContentsDebuggingEnabled,true);

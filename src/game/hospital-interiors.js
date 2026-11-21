@@ -1,44 +1,34 @@
 import * as T from 'three';
+import {finishTexture} from './interior-surfaces.js';
+import {interiorArt,addCountryDecor} from './interior-decor.js';
 import {sign,mesh} from './assets.js';
 import {nativeSign} from './hospital-signs.js';
 import {tileAt,key} from './layout.js';
 export const INTERIORS=Object.freeze({
  france:{wall:'#eeeae2',lower:'#e2dfd5',floor:'#c4c7c2',grout:'#acb0ab',accent:'#526c73',chair:'#c9a773',metal:'#adb7b7',wood:'#bca17a',ceiling:'slats',style:'French timber and daylight'},
- nigeria:{lowerHeight:1.65,wall:'#d9b096',lower:'#7b9877',floor:'#a29b88',grout:'#817d6c',accent:'#486957',chair:'#696e59',metal:'#8a897c',wood:'#796950',worn:true,style:'Nigerian peach and green wards'},
- china:{wall:'#eef1ef',lower:'#e0e8e8',floor:'#d6deda',grout:'#c1cdca',accent:'#2877b3',chair:'#a6c5ce',metal:'#c3d1d6',wood:'#c2cbd0',technology:true,style:'Chinese clinical robotics'},
- india:{wall:'#d7c4aa',lower:'#986949',floor:'#a8a395',grout:'#8a897b',accent:'#786449',chair:'#81765e',metal:'#9c9b8b',wood:'#775138',worn:true,ornament:'lotus',style:'Indian brown and framed craft'},
- russia:{wall:'#e9eeec',lower:'#d5e0e3',floor:'#3677ad',grout:'#2e6191',accent:'#426d96',chair:'#5285a6',metal:'#b6c8d2',wood:'#bec8cf',style:'Russian blue clinical tiles'},
- venezuela:{wall:'#e9dec7',lower:'#d4c6ad',floor:'#a6aba9',grout:'#898f8d',accent:'#657b75',chair:'#7b9186',metal:'#9ca7a4',wood:'#b9aa92',style:'Venezuelan cream and grey'},
+ nigeria:{ceilingColor:'#dbdedb',ceilingGrout:'#b7bcb9',lowerHeight:1.65,wall:'#d9b096',lower:'#7b9877',floor:'#a29b88',grout:'#817d6c',accent:'#486957',chair:'#696e59',metal:'#8a897c',wood:'#796950',worn:true,style:'Nigerian peach and green wards'},
+ china:{flooring:'marble',groutWidth:3.8,glassHalls:true,wall:'#eef1ef',lower:'#e0e8e8',floor:'#d6deda',grout:'#c1cdca',accent:'#2877b3',chair:'#a6c5ce',metal:'#c3d1d6',wood:'#c2cbd0',technology:true,style:'Chinese clinical robotics'},
+ india:{ceilingColor:'#a58d6d',ceilingGrout:'#82725c',wall:'#d7c4aa',lower:'#986949',floor:'#a8a395',grout:'#8a897b',accent:'#786449',chair:'#81765e',metal:'#9c9b8b',wood:'#775138',worn:true,ornament:'lotus',style:'Indian brown and framed craft'},
+ russia:{ceilingColor:'#b9cbd3',ceilingGrout:'#9baeb8',wall:'#e9eeec',lower:'#d5e0e3',floor:'#3677ad',grout:'#2e6191',accent:'#426d96',chair:'#5285a6',metal:'#b6c8d2',wood:'#bec8cf',style:'Russian blue clinical tiles'},
+ venezuela:{grainy:true,ceilingColor:'#c4c8c5',ceilingGrout:'#a0a6a3',wall:'#e9dec7',lower:'#d4c6ad',floor:'#a6aba9',grout:'#898f8d',accent:'#657b75',chair:'#7b9186',metal:'#9ca7a4',wood:'#b9aa92',style:'Venezuelan cream and grey'},
  america:{wall:'#e6e0d4',lower:'#d6cebb',floor:'#bf9562',grout:'#937044',accent:'#657c83',chair:'#537188',metal:'#afb8b8',wood:'#a77b4d',flooring:'wood',style:'American warm wood care'},
- egypt:{wall:'#e8e1d4',lower:'#d5c8b3',floor:'#e3dfd7',grout:'#bfb5a2',accent:'#8a7652',chair:'#686c70',metal:'#bba16a',wood:'#a88b5e',flooring:'marble',ornament:'geometry',style:'Egyptian marble and gold'},
- somalia:{lowerHeight:2.0,wall:'#e7ddbf',lower:'#c5ab46',floor:'#b9ab89',grout:'#9b8f71',accent:'#8d824c',chair:'#8c896c',metal:'#9b9784',wood:'#8c7956',worn:true,style:'Somali yellow and cream wards'},
+ egypt:{ceilingColor:'#d2ac4d',ceilingGrout:'#8e6a23',floral:true,wall:'#e8e1d4',lower:'#d5c8b3',floor:'#14191b',grout:'#74603e',accent:'#8a7652',chair:'#686c70',metal:'#bba16a',wood:'#a88b5e',flooring:'black-gold-marble',ornament:'geometry',style:'Egyptian marble and gold'},
+ somalia:{ceilingColor:'#987c5b',ceilingGrout:'#735f48',lowerHeight:2.0,wall:'#e7ddbf',lower:'#c5ab46',floor:'#b9ab89',grout:'#9b8f71',accent:'#8d824c',chair:'#8c896c',metal:'#9b9784',wood:'#8c7956',worn:true,style:'Somali yellow and cream wards'},
 });
 export function interiorFor(mission){return mission?.playMode==='story'&&!mission.terror&&mission.mode!=='terror'?INTERIORS[mission.country?.id]||null:null;}
-function finishTexture(profile,ceiling=false){
- const canvas=document.createElement('canvas');canvas.width=canvas.height=512;const c=canvas.getContext('2d'),size=512;
- c.fillStyle=ceiling?'#d2b58c':profile.floor;c.fillRect(0,0,size,size);
- let seed=193;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
- if(ceiling||profile.flooring==='wood'){
-  const rows=ceiling?24:10;c.strokeStyle=ceiling?'#8c7253':profile.grout;
-  for(let i=0;i<rows;i++){const y=i*size/rows;c.fillStyle=`rgba(80,49,20,${.035+random()*.06})`;c.fillRect(0,y,size,size/rows-1);c.fillStyle=c.strokeStyle;c.fillRect(0,y,size,ceiling?3:1.3);if(!ceiling)c.fillRect((i%3)*size/3,y,1,size/rows);for(let grain=0;grain<5;grain++){c.fillStyle='rgba(70,43,20,.06)';c.fillRect(random()*100,y+random()*size/rows,200+random()*200,.6);}}
- }else{
-  // Four divisions per module preserve the established tile dimensions.
-  c.fillStyle=profile.grout;for(let i=0;i<=4;i++){c.fillRect(i*128,0,1.2,512);c.fillRect(0,i*128,512,1.2);}
-  if(profile.flooring==='marble'&&c.beginPath){for(let i=0;i<17;i++){c.beginPath();c.strokeStyle=`rgba(125,119,109,${.08+random()*.09})`;c.lineWidth=.5+random()*1.8;c.moveTo(random()*size,0);for(let y=0;y<=size;y+=40)c.lineTo((i*39+Math.sin(y/110+i)*45)%512,y);c.stroke();}}
- }
- for(let i=0;i<(profile.worn?3300:500);i++){c.fillStyle=`rgba(66,53,35,${profile.worn?.035:.012})`;c.fillRect(random()*size,random()*size,profile.worn?2.8:1.5,1);}
- const map=new T.CanvasTexture(canvas);map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;return map;
-}
 // Own only clones and newly created maps; the default pool survives mode switches.
 export function createInterior(base,mission){
  const profile=interiorFor(mission);if(!profile)return null;
  const materials=Object.fromEntries(Object.entries(base).map(([key,value])=>[key,value.clone()])),maps=[];
  materials.wall.color.set(profile.wall);materials.stripe.color.set(profile.accent);materials.blue.color.set(profile.accent);materials.trim.color.set(profile.accent).multiplyScalar(.48);materials.chair.color.set(profile.chair);materials.steel.color.set(profile.metal);materials.wood.color.set(profile.wood);materials.linen.color.set(profile.worn?'#c9c3a6':'#e4e9e5');
+ if(profile.glassHalls){materials.hallGlass=new T.MeshStandardMaterial({color:'#badbe2',transparent:true,opacity:.23,roughness:.2,metalness:.08,depthWrite:false});materials.hallFrost=new T.MeshStandardMaterial({color:'#d9e7e8',transparent:true,opacity:.74,roughness:.85,depthWrite:false});}
  materials.lowerWall=materials.wall.clone();materials.lowerWall.color.set(profile.lower);
- const map=finishTexture(profile);maps.push(map);materials.floor.map=map;materials.floor.color.set('#ffffff');materials.floor.roughness=profile.worn?.84:profile.flooring==='marble'?.28:.46;materials.floor.metalness=0;
- if(profile.ceiling){const ceiling=finishTexture(profile,true);maps.push(ceiling);materials.ceiling.map=ceiling;materials.ceiling.color.set('#ffffff');}
+ const map=finishTexture(profile);maps.push(map);materials.floor.map=map;materials.floor.color.set('#ffffff');materials.floor.roughness=profile.worn||profile.grainy?.84:profile.flooring?.includes('marble')?.28:.46;materials.floor.metalness=0;if(profile.grainy){materials.floor.bumpMap=map;materials.floor.bumpScale=.003;}
+ if(profile.ceiling||profile.ceilingColor){const ceiling=finishTexture(profile,true);maps.push(ceiling);materials.ceiling.map=ceiling;materials.ceiling.color.set('#ffffff');}
+ if(profile.country==='egypt'||mission.country.id==='egypt'){materials.ceiling.metalness=.38;materials.ceiling.roughness=.3;materials.ceiling.emissive.set('#78561c');materials.ceiling.emissiveIntensity=.13;}
+ const art=interiorArt(materials,mission.country.id,maps);
  materials.light.emissive.set(mission.country.id==='egypt'?'#ffe3b5':profile.worn?'#f4e7ce':'#d5e9f4');
- let disposed=false;return{profile:{...profile,country:mission.country.id},materials,dispose(){if(disposed)return;disposed=true;for(const map of maps)map.dispose();for(const value of Object.values(materials))value.dispose();}};
+ let disposed=false;return{loadArt:art.load,profile:{...profile,country:mission.country.id},materials,dispose(){if(disposed)return;disposed=true;art.dispose();for(const map of maps)map.dispose();for(const value of Object.values(materials))value.dispose();}};
 }
 export function localizeSigns(root,profile){
  if(!profile)return;const signs=[];root.traverse(o=>{if(o.userData.signText&&!o.userData.localizedCountry)signs.push(o);});
@@ -47,8 +37,8 @@ export function localizeSigns(root,profile){
  original.material.map?.dispose();original.material.dispose();original.material=replacement.material;replacement.geometry.dispose();original.userData.localizedCountry=profile.country;original.userData.native=native;
  }
 }
-export function addInteriorDetails(group,batch,m,layout,profile){
- if(!profile||layout.floor===3)return;group.userData.interiorProfile=profile;
+export function addInteriorDetails(group,batch,m,layout,profile,options={}){
+ if(!profile||layout.floor===3)return;group.userData.interiorProfile=profile;addCountryDecor(group,batch,m,layout,profile,options);
  // Accents sit on existing wall faces above reach; no door, route or collider moves.
  if(profile.ornament){const walls=layout.walls.filter(w=>{if(w.axis!=='x'||w.door||w.exterior||Math.round(w.x+w.z)%4===0)return false;return[-1,1].some(side=>{const p=tileAt(w.x,w.z+side*.3);return layout.cells.get(key(p.x,p.z))?.room==='hall';});});for(const wall of walls.filter((_,i)=>i%Math.max(1,Math.floor(walls.length/4))===0).slice(0,4)){
   const side=[-1,1].find(side=>{const p=tileAt(wall.x,wall.z+side*.3);return layout.cells.get(key(p.x,p.z))?.room==='hall';});

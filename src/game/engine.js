@@ -230,6 +230,7 @@ export class GameEngine {
   }
   async prepareCountryForStart(country,task){
     for(const floor of this.countryBatches(country))await task.stage('Preparing hospital floors',.39+floor*.015,`${FLOORS[floor]} · ${country.name}`);
+    if(this.interiorStyle?.loadArt)await task.wait(this.interiorStyle.loadArt(task.signal),{timeout:18000,message:'Hospital artwork could not load. Please retry.'});
   }
   *countryBatches(country){
     if(this.audio&&country){this.audio.countryId=country.id;this.audio.voicePlayMode=storyVoiceMode(this.mission);}const level=this.mission?.round||1,expanded=level>=6,signature=`${country?.id}:${this.mission?.playMode||'freestyle'}:${missionFloorIds(level).length}:${expanded}:${!!this.mission?.terror}:${this.mission?.mode||''}`;if(!country||this.siteId===country.id&&this.siteSignature===signature)return;
@@ -238,7 +239,7 @@ export class GameEngine {
     const palette=country.id==='china'?{accent:'#3a6985',wall:'#e6e4df'}:{accent:country.accent,wall:'#d6e0e5'};
     this.materials.stripe.color.set(palette.accent);this.materials.blue.color.set(palette.accent).multiplyScalar(.72);this.materials.trim.color.set(palette.accent).multiplyScalar(.39);this.materials.wall.color.set(palette.wall).lerp(new THREE.Color(palette.accent),.045+(country.index%4)*.012);
     this.interiorStyle=createInterior(this.materials,this.mission);if(this.interiorStyle)this.materials=this.interiorStyle.materials;
-    for(const layout of this.levels){const h=buildHospital(layout,this.materials,country,this.interiorStyle?.profile);this.hospitals.push(h);this.scene.add(h.group);yield layout.floor;}
+    for(const layout of this.levels){const h=buildHospital(layout,this.materials,country,this.interiorStyle?.profile,{story:this.mission?.playMode==='story'&&!this.mission.terror&&this.mission.mode!=='terror'});this.hospitals.push(h);this.scene.add(h.group);yield layout.floor;}
     this.navLayouts=this.levels.map((l,i)=>makeNavigation(l,this.hospitals[i].colliders));this.siteId=country.id;this.siteExpanded=expanded;this.siteSignature=signature;this.cameraObstacleCache=null;this.nearestFixtures=[];this.renderer.renderLists.dispose();
   }
   prepareCountry(country){for(const _ of this.countryBatches(country)){} }

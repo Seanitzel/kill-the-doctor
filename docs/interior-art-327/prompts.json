@@ -1,0 +1,18 @@
+[
+  {
+    "file": "nigeria-market",
+    "prompt": "Use case: illustration-story. Asset type: original framed painting texture for a Nigerian hospital corridor in a 3D game. Create a polished, culturally grounded landscape-format acrylic painting depicting two adult Yoruba Nigerian women in everyday contemporary patterned wrappers, blouses and headwraps walking home from a southwest Nigerian produce market, one balancing a woven basket of vegetables on her head, the other holding a basket at her side. Warm ochre earth, indigo adire cloth, muted leafy green, brick red, everyday modest architecture and shade trees. Dignified natural people, authentic ordinary life, no exotic stereotypes, no safari motifs. Visible subtle painted brushwork. Straight-on flat canvas art filling the entire image edge to edge, no picture frame, no wall or room, no captions, no text, no watermark. Landscape aspect ratio 4:3. Original composition, do not imitate a particular artist."
+  },
+  {
+    "file": "nigeria-pottery",
+    "prompt": "Use case: illustration-story. Asset type: original framed painting texture for a Nigerian hospital corridor in a 3D game. Landscape-format acrylic painting of everyday craft in southwest Nigeria: two adult Yoruba Nigerian women in indigo patterned wrappers and simple blouses working together in a shaded courtyard, one shaping a clay pot and the other arranging finished terracotta pots and woven produce baskets. A small pile of vegetables and a low stool, warm plaster house, calm green foliage. Dignified realistic anatomy, natural modest clothing and headwraps, indigo, warm terracotta, muted sage and cream palette. Rich subtle painted brushwork, clear composition readable on a small game wall. Straight-on flat painting filling image edge to edge, no frame, no room around painting, no text or watermark. Aspect ratio 4:3, original art, not a named artist's style."
+  },
+  {
+    "file": "egypt-floral",
+    "prompt": "Use case: stylized-concept. Asset type: flat decorative wall finish texture for a luxurious hospital in a 3D game. Create a refined ivory plaster floral bas-relief panel, elegant large white magnolia-like flowers and long curved stems with slender leaves, restrained champagne gold highlights in the petal centres and thin contour details. Creamy white background, white sculpted petals, gentle natural shadows showing shallow relief, subtle fine plaster grain. Front-on orthographic flat wall texture, evenly lit, NO surrounding room, furniture, mirrors, frame, text, logos or watermark. White flowers and flowing stems spread across the panel with breathing room. Inspired by elegant cream floral wall relief, keep the overall wall white rather than gold. Landscape 4:3 composition for a repeating wall panel."
+  },
+  {
+    "file": "egypt-marble",
+    "prompt": "Use case: photorealistic-natural. Asset type: seamless polished marble material texture, square, top-down orthographic surface filling entire image for a luxurious Egyptian hospital floor in a 3D game. Deep charcoal black marble with rich natural amber-gold and champagne-gold mineral ribbons swirling and flowing organically through the stone. Broad irregular gold wisps and soft blended dark amber clouds, delicate fine branching gold veins, varied vein widths, realistic geological depth and subtle stone grain. Mostly black surface, about twenty percent gold mineral areas, natural asymmetrical composition. Flat even diffuse lighting with no cast shadows, no reflected lamps, no objects, no room, no perspective, no grout lines, no text or watermark. Edges should tile naturally. Avoid neon outlines, simple contour lines, repeating geometric shapes or separate gold blocks. A believable elegant black-and-gold marble slab."
+  }
+]

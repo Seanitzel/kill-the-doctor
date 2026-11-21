@@ -1,6 +1,7 @@
 import * as T from 'three';
+import {addStoryCelestials,updateStoryCelestials} from './celestial-sky.js';
 // Deterministic, small geometry: no per-star objects, textures, lights or timers.
-export function addNightSky(group){
+export function addNightSky(group,{story=false,country=null}={}){
  const sky=new T.Group();sky.name='Starry night';sky.visible=false;group.add(sky);
  const positions=[],colors=[];let seed=34671;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
  for(let i=0;i<400;i++){const angle=random()*Math.PI*2,y=.06+random()*.92,r=Math.sqrt(1-y*y);positions.push(Math.cos(angle)*r*65,y*65,40+Math.sin(angle)*r*65);const light=.5+random()*.5;colors.push(light*.87,light*.93,light);}
@@ -9,10 +10,10 @@ export function addNightSky(group){
  const moon=new T.Mesh(new T.SphereGeometry(1.1,16,12),new T.MeshBasicMaterial({color:'#dbe6f0',fog:false}));moon.name='Moon';moon.position.set(23,26,1);sky.add(moon);
  const haze=new T.Mesh(new T.SphereGeometry(1.7,16,12),new T.MeshBasicMaterial({color:'#b4cde8',fog:false,transparent:true,opacity:.045,depthWrite:false}));haze.position.copy(moon.position);sky.add(haze);
  const drift=new T.Mesh(new T.SphereGeometry(62,24,16),new T.ShaderMaterial({side:T.BackSide,transparent:true,depthWrite:false,uniforms:{time:{value:0}},vertexShader:'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'varying vec3 p;uniform float time;void main(){vec3 n=normalize(p);float a=atan(n.z,n.x);float h=n.y;float t=time*.10;float bend=sin(a*2.+t)*.065+sin(a*5.-t*.7)*.035;float band=.23+bend+sin(a+t*.4)*.07;float curtain=exp(-pow((h-band)/.085,2.))+exp(-pow((h-band-.12)/.065,2.))*.45;float folds=.60+.40*sin(a*21.+sin(a*4.+t*.7)*2.8+t);float fade=smoothstep(.035,.15,h)*(1.-smoothstep(.65,.8,h));float hue=.5+.5*sin(time*.045+a+h*2.);vec3 green=vec3(.16,.85,.48);vec3 blue=vec3(.16,.40,.98);vec3 purple=vec3(.60,.23,.91);vec3 col=mix(green,blue,smoothstep(.0,.53,hue));col=mix(col,purple,smoothstep(.48,.94,hue));col=mix(col,vec3(.95,.35,.65),smoothstep(.84,1.,hue)*.28);gl_FragColor=vec4(col,clamp(curtain*folds*.54*fade,0.,.56));}'}));drift.name='Smoke break shifting sky patterns';drift.position.z=40;drift.visible=false;sky.add(drift);
- const streak=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3()]),new T.LineBasicMaterial({color:'#d2e0e9',transparent:true,opacity:0,depthWrite:false,fog:false}));streak.name='Occasional shooting star';streak.visible=false;sky.add(streak);const starHead=new T.Mesh(new T.SphereGeometry(.072,8,6),new T.MeshBasicMaterial({color:'#e5f0ff',transparent:true,opacity:0,depthWrite:false,fog:false}));starHead.name='Shooting star bright head';streak.add(starHead);starHead.visible=false;group.userData.nightSky={root:sky,stars,haze,drift,streak,starHead,starStart:new T.Vector3(),starEnd:new T.Vector3()};return sky;
+ const streak=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3()]),new T.LineBasicMaterial({color:'#d2e0e9',transparent:true,opacity:0,depthWrite:false,fog:false}));streak.name='Occasional shooting star';streak.visible=false;sky.add(streak);const starHead=new T.Mesh(new T.SphereGeometry(.072,8,6),new T.MeshBasicMaterial({color:'#e5f0ff',transparent:true,opacity:0,depthWrite:false,fog:false}));starHead.name='Shooting star bright head';streak.add(starHead);starHead.visible=false;const celestials=story?addStoryCelestials(sky,moon,haze,country):null;group.userData.nightSky={root:sky,stars,haze,moon,celestials,story,drift,streak,starHead,starStart:new T.Vector3(),starEnd:new T.Vector3()};return sky;
 }
 export function updateNightSky(group,outside,time,smoking=false,view=null){
- const sky=group?.userData.nightSky;if(!sky)return;sky.root.visible=outside;
+ const sky=group?.userData.nightSky;if(!sky)return;sky.root.visible=sky.story&&view?view.floor===0:outside;
  const active=outside&&smoking;sky.drift.visible=active;sky.drift.material.uniforms.time.value=time;
  if(active&&!sky.smoking){sky.sessionStart=time;sky.nextStar=time+8;sky.starAt=null;sky.starCount=0;}
  sky.smoking=active;sky.streak.visible=false;sky.starHead.visible=false;
@@ -20,5 +21,6 @@ export function updateNightSky(group,outside,time,smoking=false,view=null){
   if(time>=sky.nextStar){sky.starAt=sky.nextStar;sky.starCount++;sky.nextStar=time+14+(sky.starCount*7%13);const yaw=view?.yaw||0,p=view?.playerPos||{x:0,z:40},side=-12+(sky.starCount*9%20),dx=Math.sin(yaw),dz=Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);sky.starStart.set(p.x+dx*50+rx*side,14+sky.starCount%3,p.z+dz*50+rz*side);sky.starEnd.copy(sky.starStart).add(new T.Vector3(rx*19,-6,rz*19));}
   if(sky.starAt!==null){const age=time-sky.starAt;if(age<1.7){const t=age/1.7,positions=sky.streak.geometry.attributes.position,head=sky.starHead.position.copy(sky.starStart).lerp(sky.starEnd,t),tail=Math.max(0,t-.12);positions.setXYZ(0,head.x,head.y,head.z);positions.setXYZ(1,T.MathUtils.lerp(sky.starStart.x,sky.starEnd.x,tail),T.MathUtils.lerp(sky.starStart.y,sky.starEnd.y,tail),T.MathUtils.lerp(sky.starStart.z,sky.starEnd.z,tail));positions.needsUpdate=true;sky.streak.geometry.computeBoundingSphere();sky.streak.material.opacity=Math.sin(t*Math.PI)*.95;sky.starHead.material.opacity=sky.streak.material.opacity;sky.starHead.visible=sky.streak.visible=true;}}
  }else sky.starAt=null;
- if(outside){const night=1-(group.userData.evening?.sunset||0);sky.stars.material.opacity=(.78+Math.sin(time*.8)*.07)*night;sky.haze.scale.setScalar(1+Math.sin(time*.24)*.04);}
+ const age=group.userData.evening?.age??Math.max(0,time-(group.userData.evening?.began||0));updateStoryCelestials(sky,age,view?.camera);
+ if(sky.root.visible){const night=1-(group.userData.evening?.sunset||0);sky.stars.material.opacity=(.78+Math.sin(time*.8)*.07)*night;sky.haze.scale.setScalar(1+Math.sin(time*.24)*.04);}
 }

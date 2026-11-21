@@ -18,9 +18,10 @@ export function addSiteDetails(group,batch,m,layout,site){
  for(const d of layout.doors.filter(d=>!d.id.endsWith('back'))){batch.box(accent,d.x,2.64,d.z,2.05,.06,.29);if(variant===1||variant===4)for(const side of [-1,1])batch.box(warm,d.x+side*1.04,1.34,d.z,.055,2.6,.23);}
 }
 export function addNightStreet(group,batch,m,site,layout={}){
- addNightSky(group);addEveningWeather(group,site?.id);
+ const story=!!group.userData.storyInterior;
+ addNightSky(group,{story,country:site?.id});addEveningWeather(group,site?.id,{story});
  const floorCount=layout.publicFloors?.length||3;group.userData.exteriorFloors=floorCount;const facade=material('#617887'),window=material('#243d4e',{roughness:.25,metalness:.35}),lit=material('#c7c2a2',{emissive:'#c9b277',emissiveIntensity:.38});batch.box(material('#111e27'),0,-.25,40,220,.15,200);
- const story=!!group.userData.storyInterior,profile=group.userData.interiorProfile;
+ const profile=group.userData.interiorProfile;
  // The old shell sat BEHIND interior wall rails and omitted the door lintel.
  // Put its outer skin beyond the interior envelope; keep the same 6m portal.
  const frontZ=story?34.76:34.25,depth=story?.24:.22;

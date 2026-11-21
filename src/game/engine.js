@@ -21,7 +21,7 @@ import {announcementCaption} from './announcement-caption.js';
 import {securityCount,complicityFor} from './security-rules.js';
 import {beginBodyFall,updateBodyFall} from './body-pose.js';
 import {EmergencyArrivals} from './emergency-arrivals.js';
-import {updateEveningWeather,eveningColor} from './evening-weather.js';
+import {updateEveningWeather,eveningColor,storySkyColor} from './evening-weather.js';
 import{trimMirrorMemory}from'./mirrors.js';
 import {disguiseProps} from './infiltration-props.js';
 import {WaitBreak} from './wait-break.js';
@@ -212,8 +212,10 @@ export class GameEngine {
     this.escapeThreats=new EscapeThreats(this);this.combat=new CombatDamage(this);this.securityResponse=new SecurityResponse(this);this.targetThreat=new TargetThreat(this);this.playerSeated=null;this.seatMotion=null;this.cover?.dispose();this.cover=new CoverSystem(this);this.patientDetails=new PatientDetails(this);this.systems.prepare();this.playerGear.update(mission.save);this.player.root.visible=true;
     this.camera.position.set(.6,2.4,33.5);this.updateCamera(.1,true);this.updateLights();
     for(const n of this.npcs)n.visual.root.visible=n.floor===0&&distance(n.pos,this.playerPos)<34;
+    this.updateExterior();
     await task.stage('Preparing graphics',.90,'Getting the entrance, lights and characters ready');
     const warmup=new THREE.Scene();this.scene.updateMatrixWorld(true);this.scene.traverseVisible(object=>{if(object.isMesh||object.isPoints||object.isLine||object.isSprite)warmup.add(object.clone(false));});
+    const moon=this.hospitals[0].group.userData.nightSky?.celestials?.moon;if(moon&&!moon.visible){const preview=moon.clone(false);preview.visible=true;warmup.add(preview);}
     const compileTarget=this.renderer.getRenderTarget();try{if(this.smoothing)this.renderer.setRenderTarget(this.smoothing.sceneTarget);await compileForStart(this.renderer,warmup,this.camera,task,this.scene);}finally{this.renderer.setRenderTarget(compileTarget);warmup.clear();}
     await task.stage('Opening the hospital',.98,'Drawing your first frame');
     this.renderScene();task.check();
@@ -711,11 +713,19 @@ export class GameEngine {
     }
     return true;
   }
+  updateExterior(){
+    const outside=isOutsideHospital(this.floor,this.playerPos),ground=this.hospitals?.[0]?.group,weather=ground?.userData.evening,story=!!weather?.story;
+    updateEveningWeather(ground,outside,this.time,this.audio,{visible:story?this.floor===0:outside,age:story?this.mission.elapsed:null});updateNightSky(ground,outside,this.time,!!this.smoking,this);
+    const age=weather?.age??Math.max(0,this.time-(weather?.began||0));
+    if(story)storySkyColor(this.mission.country.id,age,this.scene.background);
+    else{this.scene.background?.set?.(outside?'#070f20':'#182c3b');if(outside&&['india','venezuela','egypt'].includes(this.mission.country.id))eveningColor(this.mission.country.id,age,this.scene.background);}
+    if(this.scene.fog&&this.scene.background?.isColor)this.scene.fog.color.copy(this.scene.background);
+  }
   updateEnvironment(dt) {
     for(const rotor of this.hospitals[this.floor]?.group.userData.fanRotors||[])rotor.rotation.y=this.time*1.4;
     if(this.mission.elapsed>=(this.nextMirrorTrim||0)){trimMirrorMemory(this.hospitals,this.floor,this.playerPos);this.nextMirrorTrim=this.mission.elapsed+1;}
     if(this.phoneOpen&&!canTakeBreak(this)){this.setPhoneOpen(false);this.hooks.closePhone?.();}
-    const outside=isOutsideHospital(this.floor,this.playerPos);updateEveningWeather(this.hospitals?.[0]?.group,outside,this.time,this.audio);updateNightSky(this.hospitals?.[0]?.group,outside,this.time,!!this.smoking,this);const weather=this.hospitals?.[0]?.group.userData.evening,sunset=outside&&['india','venezuela','egypt'].includes(this.mission.country.id);this.scene.background?.set?.(outside?'#070f20':'#182c3b');if(sunset)eveningColor(this.mission.country.id,Math.max(0,this.time-(weather?.began||0)),this.scene.background);if(this.scene.fog&&this.scene.background?.isColor)this.scene.fog.color.copy(this.scene.background);
+    this.updateExterior();
     for(const [floor,hospital] of (this.hospitals||[]).entries()){const lift=hospital.lift;if(!lift)continue;const current=floor===this.floor,player=current?this.playerPos:{x:999,z:999},inside=lift.departingDoctor?false:liftAutoClose(lift,dt,player,this.npcs,floor);if(current&&!inside&&this.playerPos.z>lift.faceZ+.5)lift.choosing=false;setLiftOpening(lift,THREE.MathUtils.damp(lift.amount,lift.open?1:0,5,dt));if(current&&inside&&lift.amount>.85&&!lift.choosing&&!lift.selectionUsed){lift.choosing=true;this.hooks.lift?.(floor);}}
 
     for(const entrance of this.hospitals?.[0]?.entrances||[]){

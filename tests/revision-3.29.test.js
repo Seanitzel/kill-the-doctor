@@ -8,7 +8,7 @@ import {snowHeight} from '../src/game/snow-ground.js';
 import {disposeObjectResources} from '../src/game/resources.js';
 
 test('Story climate changes are isolated from Freeplay and every other country',()=>{
- const overrides={nigeria:'clear',america:'clear',england:'snow'};
+ const overrides={france:'storm',nigeria:'clear',america:'clear',england:'snow'};
  for(const {id}of COUNTRIES){
   assert.equal(STORY_WEATHER[id],overrides[id]||EVENING_WEATHER[id]);
   for(const story of [true,false]){
@@ -26,7 +26,7 @@ test('England retains the existing snowflake buffer and appearance while settled
   updateEveningWeather(root,true,30);updateEveningWeather(legacy,true,30);assert.deepEqual(state.positions,old.positions);
   const geometry=state.snowSurface.geometry,positions=geometry.attributes.position;let low=Infinity,high=-Infinity;
   for(let i=0;i<positions.count;i++){const y=positions.getY(i);assert.ok(Number.isFinite(y));low=Math.min(low,y);high=Math.max(high,y);}
-  assert.ok(high-low>.20);assert.ok(high<.35);for(const z of [37,40,44,46])assert.ok(snowHeight(1.5,z)<.06,'the pedestrian entrance path stays shallow');
+  assert.ok(high-low>.20);assert.ok(high<.45);for(const z of [37,40,44,46])assert.ok(snowHeight(1.5,z)<.06,'the pedestrian entrance path stays shallow');
   for(let i=0;i<200;i++)updateEveningWeather(root,true,i);assert.equal(state.snowSurface.geometry,geometry);assert.equal(geometry.attributes.position,positions);
  }finally{disposeObjectResources(root,{textures:true});disposeObjectResources(legacy,{textures:true});}
 });

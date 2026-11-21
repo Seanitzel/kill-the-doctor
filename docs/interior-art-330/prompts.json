@@ -1,0 +1,126 @@
+{
+  "mode": "built-in image_gen",
+  "intent": "generate",
+  "assets": [
+    {
+      "file": "nigeria-family-courtyard",
+      "size": 512,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A warm family portrait scene in a southwest Nigerian courtyard: two parents, a grandmother and two children spending time together beneath a shade tree, dignified natural smiles, everyday patterned clothing, Black Nigerian family. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-garden",
+      "size": 512,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A different Black Nigerian multigenerational family in a lush home garden: grandfather, mother, father and three siblings together on a low veranda, one woman wearing a simple gele head tie and blouse, relaxed believable interactions. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-meal",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian family sharing a simple meal around a courtyard table, parents and two teenagers passing bowls and talking naturally. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-lagoon",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian father, mother and two children visiting the shore of a calm Lagos lagoon, small wooden fishing boats in the distance. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-school",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian mother and father accompanying their two children along a tree-lined neighbourhood lane on the way to school, gentle morning light. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-gardening",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian grandmother teaching her adult daughter and young grandson to grow vegetables in a home garden, woven baskets nearby. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-stories",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian grandfather telling a story to three children while their mother listens on a shaded veranda, warm intimate everyday life. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-market",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian family selecting vegetables together at an outdoor market, two parents and a child holding a small woven basket. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-preparing",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian family getting ready for a neighbourhood gathering, mother tying a gele headwrap, father in a long embroidered shirt and cap, children helping with folded cloth. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-siblings-reading",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: Three Black Nigerian siblings reading books with their father in a bright modest home courtyard, green foliage and cream plaster walls. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-walk",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian multigenerational family taking an evening walk along a leafy village lane, a grandmother holding a granddaughter's hand. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-garden-watering",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian father and young daughter watering flowering plants while a mother and son collect garden herbs, peaceful domestic scene. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-grandparents-tea",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: Two Black Nigerian grandparents talking over tea with an adult daughter and a small child on a shady veranda, patterned cloth and carved wooden stools. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-tailoring-family",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian woman at a sewing machine making clothing while her partner and two children choose folded fabrics beside her, friendly family workshop. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-harvesting",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian family harvesting vegetables beside low red-brown village houses, adults carrying baskets and children helping with small bunches of greens. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-stall",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian family arranging bread and fruit at a small neighbourhood stall, parents and two teenagers working together. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-canoe",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian mother, father and two older children beside a wooden canoe at a calm riverbank, relaxed conversation, green trees reflected in water. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-homecoming",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian grandmother greeting her daughter, son-in-law and grandchildren at the entrance to a warm ochre courtyard home. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-craft",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian grandfather teaching a granddaughter and an adult son to weave shallow domestic trays, three different stages of craft visible. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "nigeria-family-porch",
+      "size": 384,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A Black Nigerian family chatting on a porch after a busy day, two parents and two young adult children, warm evening light and a flowering tree. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to southwest Nigeria. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "india-family-courtyard",
+      "size": 512,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: An Indian multigenerational family in a shaded courtyard: grandmother and mother in elegant everyday saris, father in a simple kurta and trousers, children together beneath a flowering tree, warm earth tones. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to India. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "india-handloom",
+      "size": 512,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: An Indian woman weaving cloth on a hand loom in a bright airy workshop, another adult helping with folded colourful textiles, dignified everyday activity. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to India. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "india-river-town",
+      "size": 512,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: A peaceful Indian riverside town with low traditional buildings, a family walking beside the river, flowering trees and small boats, warm brown and cream palette. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to India. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    },
+    {
+      "file": "india-flower-stall",
+      "size": 512,
+      "prompt": "Use case: illustration-story. Asset type: one original horizontal hospital wall painting, full-bleed image content only. Subject: An Indian woman in a sari and a man in a kurta arranging marigolds and white flowers at a modest street flower stall, friendly everyday atmosphere. Style: naturalistic oil and gouache fine-art painting, warm gentle brushwork, believable anatomy, culturally respectful and specific to India. Horizontal 4:3 balanced composition that reads clearly as a small framed painting in a 3D hospital. Varied earthy ochre, indigo, greens and warm cream with natural lighting. No frame, no border, no captions, no signature, no watermark. One painting, no collage or grid. No sacred or ceremonial artifacts, no exaggerated costume, no safari imagery."
+    }
+  ]
+}

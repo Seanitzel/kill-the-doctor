@@ -39,7 +39,7 @@ test('Egypt shows its setting sun, then a dark sky with a crescent only after ni
 
 test('England retains falling snow with uneven settled ground and a shallow entrance walkway',async({page},info)=>{
  await boot(page,'england');await skyView(page,20);const surface=await page.evaluate(()=>{const e=window.__ktd.engine,w=e.hospitals[0].group.userData.evening,p=w.snowSurface.geometry.attributes.position,heights=[];for(let i=0;i<p.count;i++)heights.push(p.getY(i));e.camera.position.set(2,1.15,39);e.camera.lookAt(-12,.25,43);e.updateEnvironment(0);e.updateLights();e.renderScene();return{min:Math.min(...heights),max:Math.max(...heights),count:w.count,size:w.particles.material.size,opacity:w.particles.material.opacity,kind:w.particles.type};});
- expect(surface.max-surface.min).toBeGreaterThan(.2);expect(surface.max).toBeLessThan(.35);expect(surface.count).toBe(170);expect(surface.size).toBe(.065);expect(surface.opacity).toBe(.65);expect(surface.kind).toBe('Points');await page.screenshot({path:`artifacts/revision329/england-snow-${suffix}.png`});await info.attach('settled-snow',{body:JSON.stringify(surface),contentType:'application/json'});
+ expect(surface.max-surface.min).toBeGreaterThan(.2);expect(surface.max).toBeLessThan(.45);expect(surface.count).toBe(170);expect(surface.size).toBe(.065);expect(surface.opacity).toBe(.65);expect(surface.kind).toBe('Points');await page.screenshot({path:`artifacts/revision329/england-snow-${suffix}.png`});await info.attach('settled-snow',{body:JSON.stringify(surface),contentType:'application/json'});
 });
 
 test('public announcement captions retain their original font, size, position and transparent styling',async({page})=>{

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {createInterior} from '../src/game/hospital-interiors.js';
-import {NIGERIAN_PAINTINGS,nigerianGalleryPlan} from '../src/game/interior-decor.js';
+import {NIGERIAN_PAINTINGS,NIGERIAN_FAMILY_ART,nigerianGalleryPlan} from '../src/game/interior-decor.js';
 import {wallHasWindow,WINDOW_HEAD} from '../src/game/wall-surfaces.js';
 import {makeLayout} from '../src/game/layout.js';
 import {buildHospital} from '../src/game/hospital.js';
@@ -25,23 +25,23 @@ test('Nigerian artwork appears only on the two outermost corridor walls, alterna
   const a=hospital('nigeria',floor);
   try{
    const displays=a.h.group.userData.nigerianGallery;
-   assert.equal(displays.length,8);
+   assert.equal(displays.length,20);
    for(const hallway of ['west-end','east-end']){
     const row=displays.filter(p=>p.hallway===hallway).sort((a,b)=>a.z-b.z);
-    assert.deepEqual(row.map(p=>p.kind),['painting','artifact','painting','artifact']);
+    assert.deepEqual(row.map(p=>p.kind),Array.from({length:10},(_,i)=>i%2?'artifact':'painting'));
     assert.equal(new Set(row.map(p=>p.x)).size,1);
     assert.ok(row.every(p=>hallway==='west-end'?p.x<-28:p.x>25));
    }
    const plan=nigerianGalleryPlan(a.layout);
    assert.ok(plan.every(p=>p.face.wall.exterior&&p.face.wall.axis==='z'));
    paintings.push(...displays.filter(p=>p.kind==='painting').map(p=>p.artwork));
-   assert.equal(a.h.group.children.filter(o=>o.name==='Nigerian daily-life painting').length,4);
+   assert.equal(a.h.group.children.filter(o=>o.name==='Nigerian daily-life painting').length,10);
    assert.equal(a.h.colliders.filter(c=>c.type==='decorative-vase').length,0);
   }finally{a.dispose();}
  }
- assert.equal(paintings.length,12);
- assert.equal(new Set(paintings).size,12);
- assert.deepEqual(new Set(paintings),new Set(NIGERIAN_PAINTINGS.map(p=>p[1])));
+ assert.equal(paintings.length,30);
+ assert.equal(new Set(paintings).size,30);
+ assert.deepEqual(new Set(paintings),new Set([...NIGERIAN_PAINTINGS,...NIGERIAN_FAMILY_ART.slice(2)].map(p=>p[1])));
  assert.deepEqual(nigerianGalleryPlan(makeLayout(3,1)),[]);
 });
 

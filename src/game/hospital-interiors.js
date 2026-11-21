@@ -8,10 +8,10 @@ export const INTERIORS=Object.freeze({
  france:{wall:'#eeeae2',lower:'#e2dfd5',floor:'#c4c7c2',grout:'#acb0ab',accent:'#526c73',chair:'#c9a773',metal:'#adb7b7',wood:'#bca17a',ceiling:'slats',style:'French timber and daylight'},
  nigeria:{ceilingColor:'#dbdedb',ceilingGrout:'#b7bcb9',lowerHeight:1.65,wall:'#d9b096',lower:'#7b9877',floor:'#a29b88',grout:'#817d6c',accent:'#486957',chair:'#696e59',metal:'#8a897c',wood:'#796950',worn:true,style:'Nigerian peach and green wards'},
  china:{flooring:'marble',groutWidth:3.8,glassHalls:true,wall:'#eef1ef',lower:'#e0e8e8',floor:'#d6deda',grout:'#c1cdca',accent:'#2877b3',chair:'#a6c5ce',metal:'#c3d1d6',wood:'#c2cbd0',technology:true,style:'Chinese clinical robotics'},
- india:{ceilingColor:'#a58d6d',ceilingGrout:'#82725c',wall:'#d7c4aa',lower:'#986949',floor:'#a8a395',grout:'#8a897b',accent:'#786449',chair:'#81765e',metal:'#9c9b8b',wood:'#775138',worn:true,ornament:'lotus',style:'Indian brown and framed craft'},
+ india:{wall:'#d7c4aa',lower:'#986949',floor:'#a8a395',grout:'#8a897b',accent:'#786449',chair:'#81765e',metal:'#9c9b8b',wood:'#775138',worn:true,ornament:'lotus',style:'Indian brown and framed craft'},
  russia:{ceilingColor:'#b9cbd3',ceilingGrout:'#9baeb8',wall:'#e9eeec',lower:'#d5e0e3',floor:'#3677ad',grout:'#2e6191',accent:'#426d96',chair:'#5285a6',metal:'#b6c8d2',wood:'#bec8cf',style:'Russian blue clinical tiles'},
  venezuela:{grainy:true,ceilingColor:'#929292',ceilingGrout:'#717171',wall:'#e9dec7',lower:'#d4c6ad',floor:'#797979',grout:'#585858',accent:'#657b75',chair:'#7b9186',metal:'#9ca7a4',wood:'#b9aa92',style:'Venezuelan cream and grey'},
- america:{wall:'#e6e0d4',lower:'#d6cebb',floor:'#bf9562',grout:'#937044',accent:'#657c83',chair:'#537188',metal:'#afb8b8',wood:'#a77b4d',flooring:'wood',style:'American warm wood care'},
+ america:{glassEnds:true,wall:'#e6e0d4',lower:'#d6cebb',floor:'#bf9562',grout:'#937044',accent:'#657c83',chair:'#537188',metal:'#afb8b8',wood:'#a77b4d',flooring:'wood',style:'American warm wood care'},
  egypt:{ceilingColor:'#d2ac4d',ceilingGrout:'#8e6a23',floral:true,wall:'#e8e1d4',lower:'#d5c8b3',floor:'#14191b',grout:'#74603e',accent:'#8a7652',chair:'#686c70',metal:'#bba16a',wood:'#a88b5e',flooring:'black-gold-marble',ornament:'geometry',style:'Egyptian marble and gold'},
  somalia:{ceilingColor:'#987c5b',ceilingGrout:'#735f48',lowerHeight:2.0,wall:'#e7ddbf',lower:'#c5ab46',floor:'#b9ab89',grout:'#9b8f71',accent:'#8d824c',chair:'#8c896c',metal:'#9b9784',wood:'#8c7956',worn:true,style:'Somali yellow and cream wards'},
 });
@@ -21,7 +21,7 @@ export function createInterior(base,mission){
  const profile=interiorFor(mission);if(!profile)return null;
  const materials=Object.fromEntries(Object.entries(base).map(([key,value])=>[key,value.clone()])),maps=[];
  materials.wall.color.set(profile.wall);materials.stripe.color.set(profile.accent);materials.blue.color.set(profile.accent);materials.trim.color.set(profile.accent).multiplyScalar(.48);materials.chair.color.set(profile.chair);materials.steel.color.set(profile.metal);materials.wood.color.set(profile.wood);materials.linen.color.set(profile.worn?'#c9c3a6':'#e4e9e5');
- if(profile.glassHalls){materials.hallGlass=new T.MeshStandardMaterial({color:'#badbe2',transparent:true,opacity:.23,roughness:.2,metalness:.08,depthWrite:false});materials.hallFrost=new T.MeshStandardMaterial({color:'#d9e7e8',transparent:true,opacity:.74,roughness:.85,depthWrite:false});}
+ if(profile.glassHalls||profile.glassEnds){materials.hallGlass=new T.MeshStandardMaterial({color:'#badbe2',transparent:true,opacity:.23,roughness:.2,metalness:.08,depthWrite:false});materials.hallFrost=new T.MeshStandardMaterial({color:'#d9e7e8',transparent:true,opacity:.74,roughness:.85,depthWrite:false});}
  materials.lowerWall=materials.wall.clone();materials.lowerWall.color.set(profile.lower);
  const map=finishTexture(profile);maps.push(map);materials.floor.map=map;materials.floor.color.set('#ffffff');materials.floor.roughness=profile.worn||profile.grainy?.84:profile.flooring?.includes('marble')?.28:.46;materials.floor.metalness=0;if(profile.grainy){materials.floor.bumpMap=map;materials.floor.bumpScale=.012;}
  if(profile.ceiling||profile.ceilingColor){const ceiling=finishTexture(profile,true);maps.push(ceiling);materials.ceiling.map=ceiling;materials.ceiling.color.set('#ffffff');}
@@ -46,7 +46,7 @@ export function addInteriorDetails(group,batch,m,layout,profile,options={}){
   mesh('box',m.wood,[1.25,.94,.035],[0,0,0],ornament);mesh('box',m.linen,[1.12,.81,.045],[0,0,.025],ornament);
   for(let i=0;i<8;i++){const angle=i*Math.PI/4,shape=mesh(profile.ornament==='lotus'?'sphere':'box',m.steel,profile.ornament==='lotus'?[.085,.20,.012]:[.23,.23,.015],[Math.sin(angle)*.22,Math.cos(angle)*.22,.06],ornament);shape.rotation.z=-angle+(profile.ornament==='geometry'?Math.PI/4:0);}
  }}
- if(profile.worn&&profile.country!=='india'){group.userData.fanRotors=[];for(const z of[0,27]){const fan=new T.Group();fan.name='Hospital ceiling fan';fan.position.set(0,3.35,z);group.add(fan);mesh('cylinder',m.steel,[.035,.24,.035],[0,.13,0],fan);const rotor=new T.Group();fan.add(rotor);mesh('sphere',m.steel,[.13,.065,.13],[0,0,0],rotor);for(let i=0;i<3;i++){const blade=mesh('box',m.linen,[.18,.025,.85],[Math.sin(i*Math.PI*2/3)*.43,0,Math.cos(i*Math.PI*2/3)*.43],rotor);blade.rotation.y=i*Math.PI*2/3;}group.userData.fanRotors.push(rotor);}}
+ if(profile.worn){group.userData.fanRotors=[];for(const z of[0,27]){const fan=new T.Group();fan.name='Hospital ceiling fan';fan.position.set(0,3.35,z);group.add(fan);mesh('cylinder',m.steel,[.035,.24,.035],[0,.13,0],fan);const rotor=new T.Group();fan.add(rotor);mesh('sphere',m.steel,[.13,.065,.13],[0,0,0],rotor);for(let i=0;i<3;i++){const blade=mesh('box',m.linen,[.18,.025,.85],[Math.sin(i*Math.PI*2/3)*.43,0,Math.cos(i*Math.PI*2/3)*.43],rotor);blade.rotation.y=i*Math.PI*2/3;}group.userData.fanRotors.push(rotor);}}
  if(profile.technology){
   // A compact delivery robot charges beneath the existing reception counter.
   const robot=new T.Group();robot.name='Autonomous hospital delivery robot · charging';robot.position.set(-4.5,0,26.8);group.add(robot);

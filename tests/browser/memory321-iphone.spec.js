@@ -1,5 +1,5 @@
 import {test,expect,devices} from '@playwright/test';
-const {defaultBrowserType,...iphone}=devices['iPhone 17 Pro Max landscape'];
+const {defaultBrowserType,...iphone}=devices[process.env.KTD_SOAK_DEVICE||'iPhone 17 Pro Max landscape'];
 test.use({...iphone,browserName:'webkit',launchOptions:{}});
 test('iPhone high-quality session survives beyond three minutes with bounded graphics and audible-path audio muted at output',async({page},testInfo)=>{
  test.setTimeout(420000);const errors=[];page.on('pageerror',e=>errors.push(e.message));

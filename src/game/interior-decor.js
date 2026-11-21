@@ -1,10 +1,13 @@
 import * as T from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {mesh} from './assets.js';
 import {assetUrl} from './asset-url.js';
 import {tileAt,key,floorOrdinal} from './layout.js';
 import {floralWallBand} from './wall-surfaces.js';
 export const NIGERIAN_PAINTINGS=[['artMarket','nigeria-market'],['artPottery','nigeria-pottery'],['artWeaving','nigeria-weaving'],['artBaskets','nigeria-baskets'],['artGarden','nigeria-garden'],['artLagoon','nigeria-lagoon'],['artTailor','nigeria-tailor'],['artCourtyard','nigeria-courtyard'],['artProduce','nigeria-produce'],['artTextiles','nigeria-textiles'],['artHarvest','nigeria-harvest'],['artCooking','nigeria-cooking']];
-const ART={nigeria:NIGERIAN_PAINTINGS,egypt:[['floral','egypt-floral'],['floorMarble','egypt-marble']]};
+export const NIGERIAN_FAMILY_ART=[["artFamily0", "nigeria-family-courtyard"], ["artFamily1", "nigeria-family-garden"], ["artFamily2", "nigeria-family-meal"], ["artFamily3", "nigeria-family-lagoon"], ["artFamily4", "nigeria-family-school"], ["artFamily5", "nigeria-family-gardening"], ["artFamily6", "nigeria-family-stories"], ["artFamily7", "nigeria-family-market"], ["artFamily8", "nigeria-family-preparing"], ["artFamily9", "nigeria-siblings-reading"], ["artFamily10", "nigeria-family-walk"], ["artFamily11", "nigeria-garden-watering"], ["artFamily12", "nigeria-grandparents-tea"], ["artFamily13", "nigeria-tailoring-family"], ["artFamily14", "nigeria-family-harvesting"], ["artFamily15", "nigeria-family-stall"], ["artFamily16", "nigeria-family-canoe"], ["artFamily17", "nigeria-family-homecoming"], ["artFamily18", "nigeria-family-craft"], ["artFamily19", "nigeria-family-porch"]];
+export const INDIAN_PAINTINGS=[["artIndia0", "india-family-courtyard"], ["artIndia1", "india-handloom"], ["artIndia2", "india-river-town"], ["artIndia3", "india-flower-stall"]];
+const ART={nigeria:[...NIGERIAN_PAINTINGS,...NIGERIAN_FAMILY_ART],india:INDIAN_PAINTINGS,egypt:[['floral','egypt-floral'],['floorMarble','egypt-marble']]};
 async function decodeArt(blob){
  if(typeof createImageBitmap==='function')return createImageBitmap(blob,{imageOrientation:'flipY'});
  const url=URL.createObjectURL(blob),image=document.createElement('img');try{image.src=url;await image.decode();image.close=()=>image.removeAttribute('src');return image;}finally{URL.revokeObjectURL(url);}
@@ -12,7 +15,7 @@ async function decodeArt(blob){
 // Each original painting has one owned map, shared by the floor assemblies.
 export function interiorArt(materials,country,maps){
  let controller,disposed=false,loaded=false,pending=null;const images=new Set(),jobs=[];
- for(const [name,file]of ART[country]||[]){const floor=name==='floorMarble',map=floor?materials.floor.map:new T.Texture();map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;if(!floor){maps.push(map);materials[name]=new T.MeshStandardMaterial({color:'#ffffff',map,roughness:.85,emissive:'#ffffff',emissiveMap:map,emissiveIntensity:name==='floral'?.035:.13});}jobs.push({map,file,floor});}
+ for(const [name,file]of ART[country]||[]){const floor=name==='floorMarble',map=floor?materials.floor.map:new T.Texture();map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;if(!floor){maps.push(map);materials[name]=new T.MeshStandardMaterial({color:'#ffffff',map,roughness:.85,...(name==='floral'?{emissive:'#ffffff',emissiveMap:map,emissiveIntensity:.035}:{})});}jobs.push({map,file,floor});}
  if(materials.floral){const band=floralWallBand({axis:'x',x:0,z:0}),map=materials.floral.map.clone();map.repeat.y=band.height/2.32;map.offset.y=(band.bottom-1.24)/2.32;maps.push(map);materials.floralHeader=materials.floral.clone();materials.floralHeader.map=materials.floralHeader.emissiveMap=map;}
  return {load(signal){
   if(disposed)return Promise.reject(Error('Interior retired'));if(loaded||!jobs.length)return Promise.resolve();if(pending)return pending;
@@ -32,10 +35,9 @@ export function nigerianGalleryPlan(layout){
  const result=[],floor=floorOrdinal(layout.floor);
  for(const [side,x]of [left,right].entries()){
   const bays=faces.filter(f=>f.wall.x===x);
-  for(const [slot,z]of [-18,-6,6,18].entries()){
+  for(const [slot,z]of [-18,-15,-12,-6,0,3,6,9,12,18].entries()){
    const face=bays.find(f=>f.wall.z===z);if(!face)continue;
-   const painting=slot%2===0?NIGERIAN_PAINTINGS[floor*4+side*2+slot/2]:null;
-   if(slot%2===0&&!painting)continue;
+   const newSlot=[-12,0,12].indexOf(z),painting=slot%2?null:newSlot>=0?NIGERIAN_FAMILY_ART[2+floor*6+side*3+newSlot]:NIGERIAN_PAINTINGS[floor*4+side*2+(z===6?1:0)];
    result.push({face,hallway:side===0?'west-end':'east-end',kind:painting?'painting':'artifact',painting,artifact:['textile','trays','spoons'][(floor+side+slot)%3]});
   }
  }
@@ -66,13 +68,25 @@ export function addCountryDecor(group,batch,m,layout,profile,{colliders=[]}={}){
  const faces=hallWallFaces(layout);
  if(profile.country==='nigeria'){
   m.artIndigo||=new T.MeshStandardMaterial({color:'#263d62',roughness:.95});
-  // Curated galleries occupy only the two far side corridors. Each painting
+  // Curated galleries occupy the two far side corridors, with a separate
+  // pair of family pictures at the marked entrance walls. Each painting
   // appears once in the entire hospital, with a domestic artifact between it
-  // and the next painting; the central and cross corridors stay undecorated.
+  // and the next painting.
   group.userData.nigerianGallery=[];
+  if(layout.floor===0)for(const [i,face]of entranceFaces(layout).entries()){const painting=NIGERIAN_FAMILY_ART[i],root=panel(group,m,face,1.6,1.2,'Nigerian entrance family painting',m[painting[0]]);root.userData.artwork=painting[1];batch.addObject(root);}
   for(const item of nigerianGalleryPlan(layout)){
    const root=item.kind==='painting'?panel(group,m,item.face,1.6,1.2,'Nigerian daily-life painting',m[item.painting[0]]):wallArtifact(group,m,item.face,item.artifact);
    const info={hallway:item.hallway,kind:item.kind,artwork:item.painting?.[1]||null,artifact:item.kind==='artifact'?item.artifact:null,x:item.face.x,z:item.face.z};root.userData.gallery=info;group.userData.nigerianGallery.push(info);batch.addObject(root);
+  }
+ }
+ if(profile.country==='india'){
+  group.userData.indianArt=[];
+  if(layout.floor===0)for(const [i,face]of entranceFaces(layout).entries()){
+   const root=i===0?silverElephant(group,m,face):panel(group,m,face,1.6,1.2,'Indian entrance family painting',m.artIndia0);batch.addObject(root);group.userData.indianArt.push({kind:i===0?'silver-elephant':'painting',x:face.x,z:face.z});
+  }
+  // Framed scenes of family life and craft, on solid wall bays above handrails.
+  for(const [i,face]of faces.filter(f=>!f.wall.exterior&&f.wall.axis==='z'&&Math.round(f.wall.x+f.wall.z)%4!==0).filter((_,i)=>i%8===0).slice(0,3).entries()){
+   batch.addObject(panel(group,m,face,1.6,1.2,'Indian framed daily-life painting',m[INDIAN_PAINTINGS[i+1][0]]));
   }
  }
  if(profile.country==='egypt'){
@@ -82,4 +96,24 @@ export function addCountryDecor(group,batch,m,layout,profile,{colliders=[]}={}){
   const candidates=[...(layout.floor===0?[{x:3.7,z:31.2,triage:true}]:[]),{x:-5.2,z:29.5},{x:7.8,z:27},{x:7.8,z:-21},{x:-5.1,z:-21},...faces.map(f=>({x:f.x+(f.wall.axis==='z'?f.side*.2:0),z:f.z+(f.wall.axis==='x'?f.side*.2:0)}))],placed=[];
   for(const p of candidates){if(placed.some(q=>Math.hypot(p.x-q.x,p.z-q.z)<8)||!vaseFits(p,layout,colliders))continue;vase(group,batch,m,p);placed.push(p);if(placed.length===4)break;}group.userData.flowerVases=placed;
  }
+}
+
+export function entranceFaces(layout){return [-6,3].map(x=>hallWallFaces(layout).find(f=>f.wall.axis==='x'&&f.wall.x===x&&f.wall.z===19.5&&f.side===1)).filter(Boolean);}
+function silverElephant(group,m,face){
+ m.elephantSilver||=new T.MeshStandardMaterial({color:'#c4cdd2',metalness:.72,roughness:.19});
+ const root=new T.Group();root.name='Shiny silver elephant wall sculpture';root.position.set(face.x,2.45,face.z);root.rotation.y=face.rotation;group.add(root);
+ mesh('box',m.wood,[1.64,1.24,.045],[0,0,0],root);mesh('box',m.linen,[1.5,1.1,.04],[0,0,.035],root);
+ const sculpture=new T.Group();root.add(sculpture);
+ const silver=(kind,size,pos)=>mesh(kind,m.elephantSilver,size,pos,sculpture);
+ silver('sphere',[.43,.27,.10],[-.1,.06,.17]);silver('sphere',[.22,.23,.11],[.35,.12,.19]);silver('sphere',[.20,.24,.055],[.18,.13,.29]);
+ for(const x of[-.38,-.20,.12,.27])silver('cylinder',[.062,.33,.065],[x,-.26,.17]);
+ const trunk=new T.CatmullRomCurve3([new T.Vector3(.49,.10,.21),new T.Vector3(.54,-.09,.22),new T.Vector3(.58,-.28,.23),new T.Vector3(.68,-.24,.23)]);
+ sculpture.add(new T.Mesh(new T.TubeGeometry(trunk,20,.048,8,false),m.elephantSilver));
+ const tail=new T.CatmullRomCurve3([new T.Vector3(-.48,.1,.16),new T.Vector3(-.58,-.03,.17),new T.Vector3(-.59,-.18,.18)]);sculpture.add(new T.Mesh(new T.TubeGeometry(tail,10,.016,6,false),m.elephantSilver));
+ const tusk=new T.Mesh(new T.ConeGeometry(.028,.19,12),m.elephantSilver);tusk.position.set(.47,-.02,.31);tusk.rotation.z=-.6;sculpture.add(tusk);
+ mesh('sphere',m.dark,[.014,.014,.01],[.44,.19,.31],root);
+ // Merge the sculpture once. Shared primitive geometries stay in the pool;
+ // only temporary tube geometries and transformed clones are owned here.
+ sculpture.updateMatrixWorld(true);const parts=[];for(const part of [...sculpture.children]){part.updateMatrix();const copy=part.geometry.clone();const geometry=copy.index?copy.toNonIndexed():copy;if(geometry!==copy)copy.dispose();parts.push(geometry.applyMatrix4(part.matrix));if(!part.geometry.userData.sharedPrimitive)part.geometry.dispose();part.removeFromParent();}
+ const merged=mergeGeometries(parts,false);parts.forEach(p=>p.dispose());sculpture.add(new T.Mesh(merged,m.elephantSilver));return root;
 }

@@ -1,3 +1,4 @@
+import {applyCulturalAttire} from './cultural-attire.js';
 import {COUNTRIES} from './international.js';
 import {PREMIUM_OUTFITS} from './loadout.js';
 import * as THREE from 'three';
@@ -496,6 +497,7 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
   if(role==='civilian'||['security','police'].includes(role))accessories(model,['security','police'].includes(role)?{cap:true,hairstyle:'cropped'}:person,skin,find('Glasses'),meshes);
   if(['security','police'].includes(role)){fitSuitSleeves(model,top,clothMaterial('#253a50'));securityEquipment(model);for(const m of meshes)if(/Outfit_Top|Outfit_Bottom|Outfit_Footwear/.test(m.material?.name||'')){m.material.map=null;m.material.color.set(m.material.name.includes('Footwear')?'#10151b':m.material.name.includes('Bottom')?'#17212b':'#253a50');m.material.needsUpdate=true;}const chest=model.getObjectByName('Spine2');if(chest){const neck=bonePoint(model,'Neck'),g=new THREE.BoxGeometry(.10,.07,.012);g.translate(.11,neck.y-.17,.14);attachGeometry(model,chest,g,clothMaterial('#bcc4b3'),'KTD security shield');}}
   else if(role!=='civilian'&&person.glasses)fittedGlasses(model,skin,meshes.filter(mesh=>mesh.material?.name.includes('Wolf3D_Eye')));
+  if(role==='patient')applyCulturalAttire(model,person,{bonePoint,attachGeometry,clothMaterial,inverseSkinMatrix,coordinates});
 }
 
 export function disposeAppearance(model) {

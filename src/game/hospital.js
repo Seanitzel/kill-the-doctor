@@ -7,7 +7,7 @@ import {JoinedWalls} from './joined-walls.js';
 import {chairFits} from './furniture-placement.js';
 import {addSiteDetails,addNightStreet} from './site-details.js';
 import {footprint} from './collision.js';
-import {wallHasWindow,WINDOW_SILL,WINDOW_HEAD,WINDOW_HEADER_HEIGHT} from './wall-surfaces.js';
+import {farHallGlass,wallHasWindow,WINDOW_SILL,WINDOW_HEAD,WINDOW_HEADER_HEIGHT} from './wall-surfaces.js';
 import * as THREE from 'three';
 import { world, tileAt, key, TILE, ALL_FLOORS as FLOORS, ALL_FLOOR_CODES as FLOOR_CODES } from './layout.js';
 import { Batcher, mesh, sign, bed, chair, desk, monitor, material } from './assets.js';
@@ -86,7 +86,7 @@ export function buildHospital(layout, m, site=null, interior=null, {story=!!inte
   }
   for (const w of layout.walls) {
     if(layout.floor===0&&w.exterior&&(w.z>34.5||layout.expanded&&w.z<-25.5))continue; // Open view from the forecourt to the night street.
-    if (!w.door) { const hall=!w.exterior&&[-1,1].some(side=>{const p=tileAt(w.x+(w.axis==='z'?side*.3:0),w.z+(w.axis==='x'?side*.3:0));return layout.cells.get(key(p.x,p.z))?.room==='hall';});wallSection(w.x,w.z,w.axis,TILE,wallHasWindow(w),!!interior?.glassHalls&&hall);continue; }
+    if (!w.door) { const hall=!w.exterior&&[-1,1].some(side=>{const p=tileAt(w.x+(w.axis==='z'?side*.3:0),w.z+(w.axis==='x'?side*.3:0));return layout.cells.get(key(p.x,p.z))?.room==='hall';});wallSection(w.x,w.z,w.axis,TILE,wallHasWindow(w),!!interior?.glassHalls&&hall||!!interior?.glassEnds&&farHallGlass(layout,w));continue; }
     const door = w.door;
     const width = 1.8, remainder = (TILE - width) / 2;
     wallSection(w.x - (width + remainder) / 2, w.z, 'x', remainder);

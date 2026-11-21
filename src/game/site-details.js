@@ -1,3 +1,4 @@
+import {farHallGlass} from './wall-surfaces.js';
 import {world,TILE,tileAt,key} from './layout.js';
 import {addEveningWeather} from './evening-weather.js';
 import {addNightSky} from './night-sky.js';
@@ -32,10 +33,11 @@ export function addNightStreet(group,batch,m,site,layout={}){
  if(story)batch.box(top,1.5,3.32,frontZ,6,.96,depth);
  for(let floor=1;floor<floorCount;floor++){const y=floor*3.6;batch.box(facade,(left+right)/2,y+1.8,frontZ,right-left,3.6,depth);batch.box(m.steel,(left+right)/2,y,frontZ+.25,right-left,.16,.48);for(let x=Math.ceil((left+3)/3)*3;x<=right-3;x+=3){batch.box(m.steel,x,y+1.65,frontZ+.17,2.1,1.85,.08);batch.box((x+floor*3)%9===0?lit:window,x,y+1.65,frontZ+.23,1.95,1.7,.025);batch.box(m.steel,x,y+1.65,frontZ+.26,.05,1.75,.03);}}
  batch.box(m.steel,(left+right)/2,floorCount*3.6+.15,frontZ,right-left+1,.3,1.1);
- for(const x of [left,right])batch.box(facade,x,floorCount*1.8,2,.25,floorCount*3.6,story?65.6:64);
+ if(!profile?.glassEnds)for(const x of [left,right])batch.box(facade,x,floorCount*1.8,2,.25,floorCount*3.6,story?65.6:64);
+ else for(const x of [left,right]){batch.box(facade,x,floorCount*3.6-.18,2,.25,.36,65.6);batch.box(facade,x,.12,2,.25,.24,65.6);}
  if(story){
   const inside=(x,z)=>{const p=tileAt(x,z),cell=layout.cells.get(key(p.x,p.z));return !!cell&&cell.z<23&&!(layout.expanded&&cell.z<3&&cell.x<10);};
-  let sections=0;for(const wall of layout.walls.filter(w=>w.exterior&&w.z<0)){const horizontal=wall.axis==='x';for(const side of[-1,1]){const dx=horizontal?0:side*.3,dz=horizontal?side*.3:0;if(inside(wall.x+dx,wall.z+dz)||!inside(wall.x-dx,wall.z-dz))continue;const x=wall.x+dx*.7,z=wall.z+dz*.7,w=horizontal?TILE:.18,d=horizontal?.18:TILE;batch.box(lower,x,split/2,z,w,split,d);batch.box(top,x,(split+3.8)/2,z,w,3.8-split,d);sections++;}}
+  let sections=0;for(const wall of layout.walls.filter(w=>w.exterior&&(profile?.glassEnds?w.z<=34.5:w.z<0))){if(profile?.glassEnds&&farHallGlass(layout,wall))continue;const horizontal=wall.axis==='x';for(const side of[-1,1]){const dx=horizontal?0:side*.3,dz=horizontal?side*.3:0;if(inside(wall.x+dx,wall.z+dz)||!inside(wall.x-dx,wall.z-dz))continue;const x=wall.x+dx*.7,z=wall.z+dz*.7,w=horizontal?TILE:.18,d=horizontal?.18:TILE;batch.box(lower,x,split/2,z,w,split,d);batch.box(top,x,(split+3.8)/2,z,w,3.8-split,d);sections++;}}
   group.userData.exteriorReturnSections=sections;
  }
  if(story)group.userData.entranceFinish={country:site?.id,sharedBlue,wall:top.color.getHexString(),lower:lower.color.getHexString(),frontZ,lintelBottom:2.84,left,right};

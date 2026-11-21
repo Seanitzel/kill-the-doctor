@@ -1,3 +1,4 @@
+import {culturalAttire} from './cultural-attire.js';
 import {storyVoiceMode} from './story-voice-policy.js';
 import {CrowdIndex} from './crowd-index.js';
 import {createInterior,localizeSigns} from './hospital-interiors.js';
@@ -269,7 +270,7 @@ export class GameEngine {
   }
   spawnNPC(person, role, floor, pos, room, id, options = {}) {
       if(!person.castCountry&&this.mission?.country)person=countryPerson(person,role,this.mission.country,this.mission.seed,id,this.npcs.length);
-      person={...person,voicePlayMode:storyVoiceMode(this.mission),voiceOrdinal:this.npcs.length};
+      person={...person,culturalAttire:culturalAttire(this.mission,person,role,id,options),voicePlayMode:storyVoiceMode(this.mission),voiceOrdinal:this.npcs.length};
       const visual = options.visual || makePlayer(this.assets, person.gender || 'male', person, role);
       // Finish the initial idle fade before an avatar can appear in a doorway.
       visual.animate?.(0,0,.35);

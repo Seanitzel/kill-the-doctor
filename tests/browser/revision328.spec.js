@@ -39,7 +39,7 @@ test.describe(device,()=>{
   await page.screenshot({path:`artifacts/revision328/egypt-windows-${device}.png`});await info.attach('solid-wall-bands',{body:JSON.stringify(report),contentType:'application/json'});
  });
 
- test('Nigeria uses twelve distinct pictures only in the two end hallways, with artifacts between pictures',async({page},info)=>{
+ test('Nigeria uses thirty distinct gallery pictures and two entrance family pictures, with artifacts between gallery pictures',async({page},info)=>{
   await boot(page,'nigeria');
   const report=await page.evaluate(()=>{
    const e=window.__ktd.engine;const galleries=e.hospitals.filter(h=>h.group.userData.nigerianGallery).map(h=>({floor:h.layout?.floor,displays:h.group.userData.nigerianGallery}));
@@ -47,8 +47,8 @@ test.describe(device,()=>{
    const p=galleries[0].displays.find(p=>p.hallway==='west-end'&&p.kind==='painting');e.playerPos.set(-25,0,-24);e.player.root.position.copy(e.playerPos);e.player.root.visible=false;e.camera.position.set(-23.3,2.1,-25);e.camera.lookAt(-28.3,2.3,-4);e.updateLights();e.renderScene();
    return{galleries,art,failed:!!e.runtimeFailed,lost:!!e.contextLost};
   });
-  const paintings=report.galleries.flatMap(g=>g.displays).filter(p=>p.kind==='painting');expect(paintings).toHaveLength(12);expect(new Set(paintings.map(p=>p.artwork)).size).toBe(12);expect(report.art).toHaveLength(12);expect(report.art.every(p=>p.width===512)).toBe(true);expect(report.failed||report.lost).toBe(false);
-  for(const g of report.galleries)for(const hallway of ['west-end','east-end']){const row=g.displays.filter(p=>p.hallway===hallway);expect(row.map(p=>p.kind)).toEqual(['painting','artifact','painting','artifact']);expect(row.every(p=>hallway==='west-end'?p.x<-28:p.x>25)).toBe(true);}
+  const paintings=report.galleries.flatMap(g=>g.displays).filter(p=>p.kind==='painting');expect(paintings).toHaveLength(30);expect(new Set(paintings.map(p=>p.artwork)).size).toBe(30);expect(report.art).toHaveLength(32);expect(report.art.every(p=>[384,512].includes(p.width))).toBe(true);expect(report.failed||report.lost).toBe(false);
+  for(const g of report.galleries)for(const hallway of ['west-end','east-end']){const row=g.displays.filter(p=>p.hallway===hallway);expect(row.map(p=>p.kind)).toEqual(Array.from({length:10},(_,i)=>i%2?'artifact':'painting'));expect(row.every(p=>hallway==='west-end'?p.x<-28:p.x>25)).toBe(true);}
   await page.screenshot({path:`artifacts/revision328/nigeria-west-${device}.png`});
   await page.evaluate(()=>{const e=window.__ktd.engine;e.playerPos.set(23,0,-24);e.camera.position.set(20.3,2.1,-25);e.camera.lookAt(25.3,2.3,-4);e.updateLights();e.renderScene();});await page.screenshot({path:`artifacts/revision328/nigeria-east-${device}.png`});
   await info.attach('curated-end-galleries',{body:JSON.stringify(report),contentType:'application/json'});

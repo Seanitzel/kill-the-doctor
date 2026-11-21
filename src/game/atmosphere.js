@@ -116,9 +116,10 @@ export class HospitalLife {
       for(const dz of [-.48,.48]) this.propBox(nursery,'#a5c5d4',[.62,.3,.035],[bx,.94,bz+dz]);
       for(const dx of [-.23,.23]) for(const dz of [-.36,.36]) this.propBox(nursery,'#8195a4',[.035,.67,.035],[bx+dx,.36,bz+dz]);
       const visual={root:new THREE.Group(),animate(time){this.head.position.y=1.04+Math.sin(time*5)*.004;}};
-      visual.head=this.propSphere(visual.root,'#d9af94',[.087,.075,.095],[0,1.04,-.25]);
+      const skin=e.mission?.playMode==='story'&&e.mission.country?.id==='nigeria'?['#62402b','#754b33'][i]:'#d9af94';
+      visual.head=this.propSphere(visual.root,skin,[.087,.075,.095],[0,1.04,-.25]);
       this.propSphere(visual.root,'#dce9ef',[.155,.085,.26],[0,.99,.055]);this.propSphere(visual.root,'#a1c1d1',[.155,.078,.22],[0,1.015,.08]);
-      const baby=e.spawnNPC({name:`Newborn ${i+1}`,gender:'female'},'patient',floor,{x:bx,z:bz},room,`newborn-${i}`,{fixed:true,visual});
+      const baby=e.spawnNPC({name:`Newborn ${i+1}`,gender:'female',skin},'patient',floor,{x:bx,z:bz},room,`newborn-${i}`,{fixed:true,visual});
       baby.activity='newborn';baby.baby=true;baby.hitOffset=new THREE.Vector3(0,1.0,0);baby.hitRadius=.3;baby.contamination=0;baby.nextCough=Infinity;
       this.newbornSource= {x:bx,y:1,z:bz,floor};
     }

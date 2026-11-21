@@ -27,7 +27,16 @@ export function addStoryCelestials(sky,moon,haze,country){
  if(!['america','egypt'].includes(country))return null;
  moon.geometry.dispose();moon.material.dispose();moon.geometry=new T.SphereGeometry(.48,48,32);moon.material=moonMaterial(country==='egypt');moon.name=country==='egypt'?'Nighttime crescent moon':'Full moon with lunar surface detail';moon.position.set(-15,20,94);haze.visible=false;
  if(country==='america')return {moon};
- const sun=new T.Mesh(new T.SphereGeometry(.62,32,20),new T.MeshBasicMaterial({color:'#ffdbab',fog:false,toneMapped:false,transparent:true}));sun.name='Setting sun';sun.position.set(3,15,104);sky.add(sun);
+ // A soft solar limb and broad atmospheric glow share one small billboard.
+ // No bloom render targets or opaque sphere silhouette on mobile GPUs.
+ const sun=new T.Mesh(new T.PlaneGeometry(5,5),new T.ShaderMaterial({transparent:true,depthWrite:false,toneMapped:false,uniforms:{colour:{value:new T.Color('#ffdbab')},visibility:{value:1}},vertexShader:`
+ varying vec2 solarUv;void main(){solarUv=uv;vec4 center=modelViewMatrix*vec4(0.,0.,0.,1.);center.xy+=position.xy;gl_Position=projectionMatrix*center;}
+ `,fragmentShader:`
+ varying vec2 solarUv;uniform vec3 colour;uniform float visibility;
+ void main(){float r=length(solarUv-.5)*2.;float core=1.-smoothstep(.18,.29,r);float glow=exp(-r*r*7.)*.22*(1.-smoothstep(.65,1.,r));float alpha=(core*.88+glow)*visibility;gl_FragColor=vec4(colour,alpha);
+ #include <colorspace_fragment>
+ }
+ `}));sun.name='Setting sun';sun.position.set(3,15,104);sky.add(sun);
  const atmosphere=new T.Mesh(new T.SphereGeometry(64,32,20),new T.ShaderMaterial({side:T.BackSide,depthWrite:false,uniforms:{horizon:{value:new T.Color()},zenith:{value:new T.Color()}},vertexShader:'varying vec3 direction;void main(){direction=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position.z=gl_Position.w;}',fragmentShader:`
   varying vec3 direction;uniform vec3 horizon;uniform vec3 zenith;
   void main(){float elevation=normalize(direction).y;gl_FragColor=vec4(mix(horizon,zenith,smoothstep(0.,.72,elevation)),1.);
@@ -43,7 +52,7 @@ export function updateStoryCelestials(state,age,camera){
  const bodies=state.celestials;if(!bodies)return;
  if(!bodies.sun){bodies.moon.visible=true;return;}
  const dark=T.MathUtils.smoothstep(age,60,150),setting=T.MathUtils.smoothstep(age,0,115),night=age>=150;
- bodies.sun.position.y=15-19*setting;bodies.sun.visible=!night&&bodies.sun.position.y>-.62;bodies.sun.material.color.set('#ffdbab').lerp(EMBER,setting);bodies.sun.material.opacity=1-T.MathUtils.smoothstep(setting,.83,1);
+ bodies.sun.position.y=15-19*setting;bodies.sun.visible=!night&&bodies.sun.position.y>-.62;bodies.sun.material.uniforms.colour.value.set('#ffdbab').lerp(EMBER,setting);bodies.sun.material.uniforms.visibility.value=1-T.MathUtils.smoothstep(setting,.83,1);
  bodies.moon.visible=night;bodies.moon.material.uniforms.visibility.value=T.MathUtils.smoothstep(age,150,162);
  const uniforms=bodies.atmosphere.material.uniforms;uniforms.horizon.value.copy(GOLD).lerp(RED,T.MathUtils.smoothstep(age,0,60)).lerp(NIGHT,dark);uniforms.zenith.value.copy(BLUE).lerp(NIGHT,dark);
  if(camera)bodies.atmosphere.position.copy(camera.position);

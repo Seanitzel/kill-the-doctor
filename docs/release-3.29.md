@@ -10,7 +10,7 @@
 
 ## Underlying doorway repair
 
-The previous update path selected one background colour indoors and another outdoors, hid the sky/precipitation at the entrance threshold, and enabled sunset illumination only outside. Story mode now computes sky colour, fog, sunset light and celestial state from the same country/time state on both sides of the doorway. Exterior particles remain physically outside, so walls and ceilings conceal them normally. Weather/traffic audio and smoking interactions still follow the player's actual location.
+The previous update path selected one background colour indoors and another outdoors, hid the sky/precipitation at the entrance threshold, and enabled sunset illumination only outside. Story mode now computes sky colour, fog, sunset light and celestial state from the same country/time state on both sides of the doorway. Exterior particles remain physically outside, so walls and ceilings conceal them normally. Weather/traffic audio and smoking interactions still follow the player's actual location. Retiring the exterior also clears its sunset light from the menu.
 
 The country weather overrides apply only to International Story Mode. Other countries retain their existing weather profiles. Freeplay/Terror retain their previous weather and rendering path. Existing hospital interiors, tile dimensions, galleries, doors and mission mechanics remain intact. All Story countries remain unlocked for exploration.
 

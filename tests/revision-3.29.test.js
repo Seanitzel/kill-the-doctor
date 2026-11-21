@@ -39,6 +39,7 @@ test('Story sky, precipitation and sunset illumination stay visible from indoors
    for(const outside of [false,false,true,true,false]){updateEveningWeather(group,outside,45,null,{visible:true});updateNightSky(group,outside,45,false,view);colours.push(storySkyColor(id,25).getHex());lights.push(weather.sun.intensity);assert.equal(sky.root.visible,true);assert.equal(weather.particles.visible,weather.count>0);}
    assert.equal(new Set(colours).size,1);assert.equal(new Set(lights).size,1);
    view.floor=1;updateNightSky(group,false,45,false,view);assert.equal(sky.root.visible,false);
+   updateEveningWeather(group,false,45,null,{visible:false});assert.equal(weather.sun.intensity,0,'retiring the exterior clears sunset lighting from the menu');
   }finally{disposeObjectResources(group,{textures:true});}
  }
  assert.equal(storySkyColor('nigeria',0).getHexString(),'071e31');assert.equal(storySkyColor('nigeria',300).getHexString(),'071e31');

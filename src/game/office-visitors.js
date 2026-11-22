@@ -21,10 +21,14 @@ export class OfficeVisitors{
  begin(now){if(this.started!==null)return;this.started=now;for(const v of this.entries){v.due=now+(v.index?18:12);const route=this.e.systems.navigationFor(v.n.floor).smoothRoute(v.waiting,v.goal);let last=v.waiting,length=0;for(const cell of route){const p={x:(cell.x-11)*3,z:(cell.z-11)*3};length+=distance(last,p);last=p;}v.leaveAt=v.due-length/v.n.speed-1.8;}}
  beginWalk(v,phase,goal){v.phase=phase;v.n.activity=null;v.n.path=[];this.e.routeNPC(v.n,goal);}
  canEnter(n){return !this.office.case.poisoned||n.role!=='patient'||this.discoveryAt!==null&&!!this.office.seal.failed&&this.entries.some(v=>v.n===n&&v.phase==='discovering');}
- canUseDoor(n,door){return n.floor!==this.office.officeFloor||!this.office.doors.includes(door)||this.office.roomOf(n.pos)===this.office.office.id||this.canEnter(n);}
+ canUseDoor(n,door){return n.floor!==this.office.officeFloor||!this.office.doors.includes(door)||this.canEnter(n)||door.open&&this.office.roomOf(n.pos)===this.office.office.id;}
+ // Standing up and route look-ahead are not door interactions. Walk within
+ // arm's reach first; already-open doors still use the normal traffic queue.
+ canReachDoor(n,door){if(n.role!=='patient'||n.floor!==this.office.officeFloor||!this.office.doors.includes(door))return true;const v=this.entries.find(v=>v.n===n);return !n.seated&&!v?.motion&&distance(n.pos,door)<=1.35;}
  canMoveTo(n,x,z){return n.floor!==this.office.officeFloor||this.office.roomOf({x,z})!==this.office.office.id||this.office.roomOf(n.pos)===this.office.office.id||this.canEnter(n);}
- beforeOpen(n,door){if(!this.canUseDoor(n,door))return false;const v=this.entries.find(v=>v.n===n);if(!v||door!==v.door)return;
-  if(v.phase==='entering'&&v.openedAt==null){v.openedAt=this.e.mission.elapsed;if(this.office.poisonAction)this.e.notify('A visiting patient is opening the door — stop mixing before they enter!','danger');}
+ beforeOpen(n,door){if(!this.canUseDoor(n,door)||!door.open&&!this.canReachDoor(n,door))return false;const v=this.entries.find(v=>v.n===n);if(!v||door!==v.door)return;
+  if(v.phase==='discovering'&&this.office.seal.failed){door.locked=false;door.manualClosed=false;}
+  if(v.phase==='entering'&&v.openedAt==null&&!door.locked&&!(door.manualClosed&&this.e.floor===n.floor&&distance(this.e.playerPos,door)<2.45)){v.openedAt=this.e.mission.elapsed;if(this.office.poisonAction)this.e.notify('A visiting patient is opening the door — stop mixing before they enter!','danger');}
  }
  observing(){return this.entries.find(v=>!v.n.dead&&!v.n.evacuated&&['entering','waiting','restaging'].includes(v.phase)&&this.office.roomOf(v.n.pos)===this.office.office.id)?.n||null;}
  prepare(n){const v=this.entries.find(v=>v.n===n);if(!v)return false;const e=this.e,o=this.office,now=e.mission.elapsed;if(n.dead||n.evacuating||n.reporting)return false;
@@ -40,7 +44,7 @@ export class OfficeVisitors{
   return true;
  }
  collapse(now){this.discoveryAt=null;for(const v of this.entries){v.openedAt=null;v.visited=true;if(v.phase==='ready')continue;if(v.phase==='sitting'){continue;}if(v.motion&&v.motion.target===0){v.nextPhase='restaging';continue;}v.motion=null;this.beginWalk(v,'restaging',v.waiting);} }
- discover(){if(this.discoveryAt!==null||!this.office.seal.failed)return;this.discoveryAt=this.e.mission.elapsed;const v=this.entries.filter(v=>!v.n.dead&&!v.n.evacuated).sort((a,b)=>distance(a.n.pos,a.goal)-distance(b.n.pos,b.goal))[0];if(!v)return;v.door.locked=false;v.door.manualClosed=false;
+ discover(){if(this.discoveryAt!==null||!this.office.seal.failed)return;this.discoveryAt=this.e.mission.elapsed;const v=this.entries.filter(v=>!v.n.dead&&!v.n.evacuated).sort((a,b)=>distance(a.n.pos,a.goal)-distance(b.n.pos,b.goal))[0];if(!v)return;
   if(v.n.seated||v.motion?.target===1){v.phase='standing';v.nextPhase='discovering';v.motionAt=this.e.mission.elapsed;v.motion=new SeatMotion(v.standing||v.waiting,v.seat);v.motion.amount=1;v.motion.stand();v.n.seated=false;}
   else{v.motion=null;this.beginWalk(v,'discovering',v.goal);}
  }

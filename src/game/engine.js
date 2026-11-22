@@ -638,9 +638,10 @@ export class GameEngine {
   waitForDoor(n,dt){
     const door=this.doorOnRoute(n);if(!door||distance(n.pos,door)>2.6)return false;
     if(this.objectives?.china?.patients?.canUseDoor(n,door)===false)return true;
+    if(!door.open&&this.objectives?.china?.patients?.canReachDoor(n,door)===false)return false;
+    if(this.objectives?.china?.patients?.beforeOpen(n,door)===false)return true;
     if(door.locked){if(['doctor','nurse'].includes(n.role)&&n.room?.id===door.room)door.locked=false;else{n.path=[];n.wait=1.5;return true;}}
     if(!door.open&&door.manualClosed&&this.floor===n.floor&&distance(this.playerPos,door)<2.45)return true;
-    if(this.objectives?.china?.patients?.beforeOpen(n,door)===false)return true;
     if(!door.open)this.audio.sound('door');door.open=true;if(Math.abs(door.angle-door.openAngle)<=.025)return n.evacuating?false:queueAtDoor(this,n,door);
     // Wait beyond the swing rather than repeatedly walking into a closed leaf.
     const pivot=door.pivot.position,dx=n.pos.x-pivot.x,dz=n.pos.z-pivot.z,length=Math.hypot(dx,dz);

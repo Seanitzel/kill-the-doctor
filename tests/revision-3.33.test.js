@@ -34,7 +34,7 @@ test('closing near the first deadline grants a fresh full five seconds; only the
   for(const n of [o.patients.entries[0].n,o.patients.entries[1].n,outsider])for(const door of o.doors){atDoor(e,o,n,door,false);assert.equal(o.patients.beforeOpen(n,door),false);}
  }
  e.mission.elapsed=109.5;o.updateSeal();assert.equal(o.seal.failed,'lock');assert.equal(o.patients.discoveryAt,109.5);assert.equal(e.mission.result,null);
- const v=o.patients.entries.find(v=>v.phase==='discovering'||v.nextPhase==='discovering');assert.ok(v);assert.notEqual(o.patients.beforeOpen(v.n,v.door),false);assert.equal(o.patients.beforeOpen(outsider,d),false);
+ const v=o.patients.entries.find(v=>v.phase==='discovering'||v.nextPhase==='discovering');assert.ok(v);assert.equal(o.patients.canUseDoor(v.n,v.door),true);assert.equal(o.patients.beforeOpen(outsider,d),false);
 }));
 
 test('a missed close or lock deadline fails only after the selected patient physically crosses into the office',()=>{

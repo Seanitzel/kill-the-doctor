@@ -10,9 +10,9 @@ const emit=defineEmits(['map','journal','pause']);
 const knob=ref({x:0,y:0}),sprint=ref(false),crouch=ref(false),looking=ref(false);
 watch(()=>props.hud.sprintEnabled,value=>{if(value!==undefined)sprint.value=value;});
 const torchGesture=new TorchGesture(),adjustingTorch=ref(false);
-function lightStart(event){event.preventDefault();event.stopPropagation();if(torchGesture.start(event.pointerId,event.clientY,props.hud.flashlightBrightness||1))event.currentTarget.setPointerCapture(event.pointerId);}
+function lightStart(event){event.preventDefault();event.stopPropagation();if(torchGesture.start(event.pointerId,event.clientY,props.hud.flashlightBrightness||1)){event.currentTarget.setPointerCapture(event.pointerId);action('light');}}
 function lightMove(event){const value=torchGesture.move(event.pointerId,event.clientY);if(value===null)return;event.preventDefault();adjustingTorch.value=true;props.engine.setTorchBrightness(value,false);}
-function lightEnd(event){const dragged=torchGesture.end(event.pointerId);if(dragged===null)return;adjustingTorch.value=false;if(event.type==='pointerup'){if(dragged)props.engine.commitTorchBrightness();else action('light');}else if(dragged)props.engine.commitTorchBrightness();}
+function lightEnd(event){const dragged=torchGesture.end(event.pointerId);if(dragged===null)return;adjustingTorch.value=false;if(dragged)props.engine.commitTorchBrightness();}
 function lightKey(event){if(event.key==='ArrowUp'||event.key==='ArrowDown'){event.preventDefault();props.engine.setTorchBrightness((props.hud.flashlightBrightness||1)+(event.key==='ArrowUp'?.1:-.1));}}
 let firePointer=null,lastFire=null,moveOrigin=null;const moveGesture=new MoveGesture((f,s)=>props.engine?.setTouchMove(f,s));
 const lookGesture=new LookGesture({look:(x,y)=>props.engine.lookTouch(x,y),zoom:ratio=>props.engine.zoomTouch(ratio)});

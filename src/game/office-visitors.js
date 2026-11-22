@@ -1,7 +1,6 @@
 import {SeatMotion} from './seat-motion.js';
 import {OFFICE_VISITOR_LINES} from './dialogue-v25.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
-const ENTER_REACTION=.35;
 // Existing waiting seats and existing patients belong to the hospital. This
 // controller only reserves them for one visit and never creates extra chairs.
 export class OfficeVisitors{
@@ -13,7 +12,7 @@ export class OfficeVisitors{
    if(seat)reserved.add(seat);
    const waiting=nav.nearest(seat?{x:seat.x+Math.sin(seat.rotation)*.95,z:seat.z+Math.cos(seat.rotation)*.95}:{x:door.x+2.5,z:door.z-side*2.7}).point;
    const eligible=n=>n.role==='patient'&&n.floor===o.officeFloor&&!n.dead&&!n.lying&&!n.baby&&!n.blind&&!n.recruit&&!n.rescuePatient&&!n.appointmentDeparture&&!used.has(n);
-   let n=e.npcs.filter(eligible).sort((a,b)=>distance(a.pos,seat||waiting)-distance(b.pos,seat||waiting))[0];
+   let n=e.npcs.filter(eligible).sort((a,b)=>Number(a.person?.gender!==(index?'male':'female'))-Number(b.person?.gender!==(index?'male':'female'))||distance(a.pos,seat||waiting)-distance(b.pos,seat||waiting))[0];
    if(!n)n=e.spawnNPC({name:index?'Rowan Chen':'Maya Carter',gender:index?'male':'female',skin:index?'#c49776':'#92664d',hair:'#272323',accent:'#748c98'},'patient',o.officeFloor,waiting,null,`office-waiting-${index}`,{fixed:true});used.add(n);
    const saved={speed:n.speed,activity:n.activity,seated:n.seated,baselineY:n.baselineY,fixed:n.fixed};e.systems.stand(n,waiting);n.officeVisitor=true;n.speed=2.1;n.activity=null;e.routeNPC(n,waiting);
    this.entries.push({n,door,index,goal,waiting,seat:seat?{...seat,yOffset:-.35}:null,saved,phase:'staging'});
@@ -23,9 +22,9 @@ export class OfficeVisitors{
  beginWalk(v,phase,goal){v.phase=phase;v.n.activity=null;v.n.path=[];this.e.routeNPC(v.n,goal);}
  beforeOpen(n,door){const v=this.entries.find(v=>v.n===n);if(!v||door!==v.door)return;
   if(this.office.case.poisoned&&v.phase!=='discovering'&&this.office.roomOf(n.pos)!==this.office.office.id)return false;
-  if(v.phase==='entering'&&v.openedAt==null){v.openedAt=this.e.mission.elapsed;if(this.office.poisonAction)this.e.notify('A visiting patient is entering — stop mixing now!','danger');}
+  if(v.phase==='entering'&&v.openedAt==null){v.openedAt=this.e.mission.elapsed;if(this.office.poisonAction)this.e.notify('A visiting patient is opening the door — stop mixing before they enter!','danger');}
  }
- observing(){const now=this.e.mission.elapsed;return this.entries.find(v=>v.openedAt!=null&&!v.visited&&['entering','waiting'].includes(v.phase)&&now-v.openedAt>=ENTER_REACTION)?.n||null;}
+ observing(){return this.entries.find(v=>!v.n.dead&&!v.n.evacuated&&['entering','waiting','restaging'].includes(v.phase)&&this.office.roomOf(v.n.pos)===this.office.office.id)?.n||null;}
  prepare(n){const v=this.entries.find(v=>v.n===n);if(!v)return false;const e=this.e,o=this.office,now=e.mission.elapsed;if(n.dead||n.evacuating||n.reporting)return false;
   if(['staging','restaging'].includes(v.phase)&&distance(n.pos,v.waiting)<.4){v.standing={x:n.pos.x,z:n.pos.z};v.motionAt=now;n.activity='rest';n.path=[];if(v.seat){v.phase='sitting';v.motion=new SeatMotion(v.standing,v.seat);}else v.phase='ready';}
   if(v.phase==='ready'&&this.started!==null&&!o.case.poisoned&&!v.visited&&now>=v.leaveAt&&(v.index===0||this.entries[0].visited&&this.entries[0].phase==='ready')){v.nextPhase='entering';if(v.seat){v.phase='standing';v.motionAt=now;v.motion=new SeatMotion(v.standing||v.waiting,v.seat);v.motion.amount=1;v.motion.stand();n.seated=false;}else this.beginWalk(v,'entering',v.goal);}

@@ -5,7 +5,7 @@ export const RECORDING_ANGLES=Object.freeze([{id:'consent',name:'Consent and tre
 export const chinaMission=m=>!!(m?.explicitInfiltration||m?.type==='evidence'&&m.country?.id==='china'&&m.playMode!=='freestyle');
 // Mission logic is independent of rendering, wall-clock timers and UI overlays.
 export class ChinaCase{
- constructor(m){this.m=m;this.doctorName=m.country?.id==='china'?'Dr. Liu Wen':m.country?.doctor||'Dr. Liu Wen';this.poisoned=false;this.sealed=false;this.badge=false;this.disguised=false;this.camera=true;this.basementKeys=false;this.coffeePrepared=false;this.mixedSeconds=0;this.lightsOff=false;this.entered=false;this.recordings=[];this.progress=0;this.recording=false;this.mistakes=0;this.correct=0;this.order=null;this.nextOrder=0;this.verificationAt=null;}
+ constructor(m){this.m=m;this.doctorName=m.country?.id==='china'?'Dr. Liu Wen':m.country?.doctor||'Dr. Liu Wen';this.privacyRemoteFound=false;this.glassPrivacy=false;this.poisoned=false;this.sealed=false;this.badge=false;this.disguised=false;this.camera=true;this.basementKeys=false;this.coffeePrepared=false;this.mixedSeconds=0;this.lightsOff=false;this.entered=false;this.recordings=[];this.progress=0;this.recording=false;this.mistakes=0;this.correct=0;this.order=null;this.nextOrder=0;this.verificationAt=null;}
  fail(reason){if(!this.m.result)this.m.finish(false,reason);return false;}
  poison(witness){if(this.poisoned||this.m.result)return false;if(witness)return this.fail('A witness saw you poisoning the third doctor. Your cover was exposed.');this.poisoned=true;return true;}
  takeBadge(){if(!this.poisoned||!this.sealed||this.badge)return false;this.badge=true;return true;}

@@ -59,7 +59,8 @@ import {HospitalVisitors} from './visitors.js';
 import {HospitalIncidents} from './incidents.js';
 import { advanceSprint } from './movement.js';
 import {disposeObjectResources} from './resources.js';
-import {StartTask,compileForStart,canceledStart} from './startup.js';
+import {prepareGameplayGraphics} from './gameplay-graphics.js';
+import {StartTask,canceledStart} from './startup.js';
 const UP = new THREE.Vector3(0, 1, 0), DOWN=new THREE.Vector3(0,-1,0);
 const clamp = THREE.MathUtils.clamp;
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -86,7 +87,7 @@ export class GameEngine {
     this.localLights = Array.from({ length: this.mobile ? 3 : 6 }, () => { const light = new THREE.PointLight('#cfeaff', 10, 11, 1.5); this.scene.add(light); return light; });
     this.overhead = new THREE.SpotLight('#dcefff', 18, 14, Math.PI / 3, .7, 1.8); this.overhead.castShadow = true; this.overhead.shadow.mapSize.set(1024, 1024); this.overhead.shadow.bias = -.0002; this.overhead.shadow.normalBias = .035; this.scene.add(this.overhead); this.scene.add(this.overhead.target);
     this.rim = new THREE.PointLight('#98bed7', 3, 9, 1.8); this.scene.add(this.rim);
-    this.flash = new THREE.SpotLight('#d9eeff', 50, 24, Math.PI / 7, .55, 1.5); this.flash.castShadow = true; this.flash.shadow.mapSize.set(1024, 1024); this.flash.shadow.bias = -.0004; this.flash.shadow.normalBias = .045; this.scene.add(this.flash); this.scene.add(this.flash.target); this.flash.visible = false;
+    this.flash = new THREE.SpotLight('#d9eeff', 50, 24, Math.PI / 7, .55, 1.5); this.flash.castShadow = true; this.flash.shadow.mapSize.set(1024, 1024); this.flash.shadow.bias = -.0004; this.flash.shadow.normalBias = .045; this.scene.add(this.flash); this.scene.add(this.flash.target); this.flash.visible=true;this.flash.intensity=0;this.flash.shadow.autoUpdate=false;this.flash.shadow.needsUpdate=true;
     this.beam = new THREE.Mesh(new THREE.ConeGeometry(1.6, 10, 24, 1, true), new THREE.MeshBasicMaterial({color:'#bfdcff',transparent:true,opacity:.025,depthWrite:false,side:THREE.DoubleSide})); this.scene.add(this.beam); this.beam.visible=false;
     const emergencyMat = material('#a94242', { emissive: '#d73232', emissiveIntensity: 2 });
     this.beacon = mesh('sphere', emergencyMat, [.12, .12, .12], [0, 3.3, 0], this.scene); this.beacon.visible = false;
@@ -215,9 +216,7 @@ export class GameEngine {
     for(const n of this.npcs)n.visual.root.visible=n.floor===0&&distance(n.pos,this.playerPos)<34;
     this.updateExterior();
     await task.stage('Preparing graphics',.90,'Getting the entrance, lights and characters ready');
-    const warmup=new THREE.Scene();this.scene.updateMatrixWorld(true);this.scene.traverseVisible(object=>{if(object.isMesh||object.isPoints||object.isLine||object.isSprite)warmup.add(object.clone(false));});
-    const moon=this.hospitals[0].group.userData.nightSky?.celestials?.moon;if(moon&&!moon.visible){const preview=moon.clone(false);preview.visible=true;warmup.add(preview);}
-    const compileTarget=this.renderer.getRenderTarget();try{if(this.smoothing)this.renderer.setRenderTarget(this.smoothing.sceneTarget);await compileForStart(this.renderer,warmup,this.camera,task,this.scene);}finally{this.renderer.setRenderTarget(compileTarget);warmup.clear();}
+    await prepareGameplayGraphics(this,task);
     await task.stage('Opening the hospital',.98,'Drawing your first frame');
     this.renderScene();task.check();
     this.paused=document.hidden||pauseRevision!==this.pauseRevision;this.clock.getDelta();this.lastFrameAt=-Infinity;
@@ -307,8 +306,16 @@ export class GameEngine {
   toggleHide(){if(this.mission&&!this.paused){this.cover||=new CoverSystem(this);this.cover.toggle();}}
   setPeek(value){this.touchInput.peek=!!value;}
 
-  toggleFlash() { this.flashlight = !this.flashlight;this.flash.visible=this.flashlight;this.flash.shadow.needsUpdate=true; this.audio.tone(450, .04, .035); this.emitHUD(); }
-  setTorchBrightness(value,persist=true){if(!Number.isFinite(value))return false;this.settings.flashlightBrightness=Math.min(2.5,Math.max(.5,value));this.flashlight=true;if(persist)this.commitTorchBrightness();return true;}
+  syncFlashlight(){
+    // Keep the light/shadow slots stable: toggling intensity is immediate and
+    // does not invalidate every hospital material's GPU program.
+    if(!this.flash)return;
+    this.flash.visible=true;this.flash.intensity=this.flashlight?(45+(this.mission?.save?.upgrades?.light||0)*20)*clamp(this.settings?.flashlightBrightness??1,.5,2.5):0;
+    this.flash.distance=24+(this.mission?.save?.upgrades?.light||0)*5;this.flash.shadow.needsUpdate=this.flashlight||!this.flash.shadow.map;
+    if(this.beam)this.beam.visible=this.flashlight&&this.blackout>0;
+  }
+  toggleFlash() { this.flashlight = !this.flashlight;this.syncFlashlight(); this.audio.tone(450, .04, .035); this.emitHUD(); }
+  setTorchBrightness(value,persist=true){if(!Number.isFinite(value))return false;this.settings.flashlightBrightness=Math.min(2.5,Math.max(.5,value));this.flashlight=true;this.syncFlashlight();if(this.flash)this.emitHUD();if(persist)this.commitTorchBrightness();return true;}
   commitTorchBrightness(){this.emitHUD();this.hooks.persist?.();}
   triggerBlackout(duration = 10) {
     const tactical=this.mission.type==='standard'&&this.mission.state==='escape'&&(this.npcs.some(n=>n.role==='security'&&!n.dead)||this.npcs.some(n=>n.wasHidden&&!n.dead));this.blackout = duration+(tactical?10:0); this.mission.blackoutCount++; this.audio.sound('blackout');
@@ -494,8 +501,10 @@ export class GameEngine {
     target.dead=true;beginBodyFall(target,this);target.reporting=null;this.emitHUD();return true;
   }
   lineOfSight(a, b,floor=this.floor) {
+    if(this.objectives?.china?.glassPrivacy?.blocksSight(a,b,floor))return false;
     const dx = b.x - a.x, dz = b.z - a.z;
     for (const c of this.hospitals[floor].colliders) {
+      if(c.sightGlass)continue;
       const bounds=obstacleBounds(c);
       if((bounds.minY??0)>1.7)continue;
       const tiny=bounds.maxX-bounds.minX<.4||bounds.maxZ-bounds.minZ<.4;
@@ -693,6 +702,7 @@ export class GameEngine {
       if (local && n.role === 'security' && d < 5 && this.keys.has('ShiftLeft') && mission.state !== 'escape') mission.suspicion = Math.min(100, mission.suspicion + dt * (this.mission.save.upgrades.shoes ? 2 : 4));
       if (n.role==='police' && local && d < .85 && this.lineOfSight(n.pos, this.playerPos)) this.captureTime += dt;
     }
+    this.objectives?.china?.afterNPCMovement?.();if(mission.result)return;
     this.securityResponse?.update(dt);this.targetThreat?.update(dt);
     this.captureTime = Math.max(0, this.captureTime - dt * .3);
     if (this.captureTime > 1.1) { this.mission.finish(false, 'Security intercepted you before you reached safety.'); this.finish(); }
@@ -764,8 +774,7 @@ export class GameEngine {
       light.color.set(emergency && i % 3 === 0 ? '#ef7373' : '#d5edff');
     });
     this.overhead.position.copy(near[0] || lightAnchor); this.overhead.target.position.copy(lightAnchor); this.overhead.target.position.y = 0; this.overhead.intensity = dark||privateOffice?.case.lightsOff&&this.floor===0&&privateOffice.roomOf(lightAnchor)===privateOffice.office.id ? 0 : 18*(this.life?.flicker?.fixture.distanceTo(this.overhead.position)<.5?flicker:1);
-    this.flash.visible = this.flashlight; this.flash.intensity = (45 + (this.mission?.save.upgrades.light || 0) * 20)*THREE.MathUtils.clamp(this.settings.flashlightBrightness??1,.5,2.5); this.flash.distance = 24 + (this.mission?.save.upgrades.light || 0) * 5;
-    this.beam.visible = this.flashlight && dark;
+    this.syncFlashlight();
     const beamDirection=this.lightDirection.copy(this.flash.target.position).sub(this.flash.position).normalize(); this.beam.position.copy(this.flash.position).addScaledVector(beamDirection,5);this.beam.quaternion.setFromUnitVectors(DOWN,beamDirection);
     this.beacon.visible = emergency; this.beacon.position.set(this.playerPos.x,this.playerPos.y+3.35,this.playerPos.z+6);
   }

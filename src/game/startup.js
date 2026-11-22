@@ -31,11 +31,13 @@ export class StartTask{
 // readiness check with our own bounded, abortable poll. Keep the adapter here
 // because currentProgram is renderer-internal and must be checked on upgrades.
 export async function compileForStart(renderer,scene,camera,task,targetScene=scene){
-  task.check();const materials=renderer.compile(scene,camera,targetScene),started=performance.now();
-  while(materials.size){
+  task.check();const materials=renderer.compile(scene,camera,targetScene),programs=new Set(renderer.info?.programs||[]),started=performance.now();
+  // Shared materials may have earlier instanced, skinned and ordinary variants.
+  while(materials.size||programs.size){
     task.check();
     if(renderer.getContext?.().isContextLost())throw new Error('Graphics were interrupted. Reload the game or try lighter graphics.');
     for(const material of materials){const program=renderer.properties.get(material).currentProgram;if(!program||program.isReady())materials.delete(material);}
-    if(materials.size){if(performance.now()-started>15000)throw new Error('Graphics preparation took too long. Try lighter graphics.');await yieldToBrowser(task.signal);}
+    for(const program of programs)if(!program.isReady||program.isReady())programs.delete(program);
+    if(materials.size||programs.size){if(performance.now()-started>15000)throw new Error('Graphics preparation took too long. Try lighter graphics.');await yieldToBrowser(task.signal);}
   }
 }

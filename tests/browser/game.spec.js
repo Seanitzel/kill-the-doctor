@@ -32,8 +32,8 @@ test('Clues, journal, map, and lift are usable and pause correctly', async({page
   const time=await page.evaluate(()=>window.__ktd.mission.elapsed);await page.waitForTimeout(150);expect(await page.evaluate(()=>window.__ktd.mission.elapsed)).toBe(time);
   await page.screenshot({path:'artifacts/map.png'});await page.keyboard.press('m');
   expect(await page.evaluate(()=>!window.__ktd.engine.paused)).toBe(true);
-  await page.evaluate(()=>{const e=window.__ktd.engine,l=e.hospitals[0].lift;l.open=true;e.playerPos.set(l.x,0,l.faceZ-1.4);e.updateEnvironment(2);});await page.getByRole('button',{name:'1 First floor Specialist care'}).click();expect(await page.evaluate(()=>window.__ktd.engine.floor)).toBe(1);
-  await page.evaluate(()=>{const e=window.__ktd.engine,l=e.hospitals[1].lift;e.playerPos.set(l.x,0,l.faceZ+2);e.updateEnvironment(4);l.open=true;e.playerPos.set(l.x,0,l.faceZ-1.4);e.updateEnvironment(2);e.updateEnvironment(.1);});await page.getByRole('button',{name:'G Ground floor Clinical & diagnostics'}).click();expect(await page.evaluate(()=>window.__ktd.engine.floor)).toBe(0);
+  await page.evaluate(()=>{const e=window.__ktd.engine,l=e.hospitals[0].lift;l.open=true;e.playerPos.set(l.x,0,l.faceZ-1.4);e.updateEnvironment(2);});await page.getByRole('button',{name:'1 First floor Specialist care'}).click();await expect.poll(()=>page.evaluate(()=>window.__ktd.engine.floor),{timeout:1500}).toBe(1);
+  await page.evaluate(()=>{const e=window.__ktd.engine,l=e.hospitals[1].lift;e.playerPos.set(l.x,0,l.faceZ+2);e.updateEnvironment(4);l.open=true;e.playerPos.set(l.x,0,l.faceZ-1.4);e.updateEnvironment(2);e.updateEnvironment(.1);});await page.getByRole('button',{name:'G Ground floor Clinical & diagnostics'}).click();await expect.poll(()=>page.evaluate(()=>window.__ktd.engine.floor),{timeout:1500}).toBe(0);
 });
 test('Doors change collision state; blackouts, flashlight, and coughing recover',async({page})=>{
   await start(page);

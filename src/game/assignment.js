@@ -17,8 +17,11 @@ function situatedStory(story,country,type,freeplay=false){
   // The original case names the client before their detective contract.
   result.panels[result.panels.length-1]=type==='rescue'?['Someone is still inside',`${client} receives a message from a ward assistant: another patient has been moved downstairs despite refusing treatment. The hospital will not let the family see them. ${client} has hired you, a detective, to follow the access trail, confront the operating team, arrest those who surrender, stop any doctor who attacks, and bring the patient out safely.`]:['A record they cannot erase',`${client} kept copies of the original records, but the hospital disputes their account. A complaint without corroboration has gone nowhere. ${client} has hired you, a detective, to photograph the altered ledger, consent file and basement procedure, then return with evidence that can be verified. No casualties.`];
  }
+ const glassPrivacy=country.id==='china'&&infiltration&&!freeplay;
+ if(glassPrivacy)result.panels[result.panels.length-1][1]+=' During his break, find the glass privacy remote inside his office cupboard and use it to conceal the office from the hallway while you can still see out.';
  if(['evidence','rescue','infiltration'].includes(type))result.assignmentSteps=infiltration?[
  'Use hospital notices to locate the consultant’s office. Collect a spoon at the cafeteria coffee station.',
+ ...(glassPrivacy?['Search the office cupboard for the remote, then dim the glass before preparing the coffee. Restore clear glass before leaving to watch the doctor return.']:[]),
  'Prepare the coffee unseen. After he collapses, enter and close the door, then collect the nearby key and lock it.',
  'Take the ID, pass and uniform. Record three basement angles, stop the operating doctors, and escape.'
  ]:type==='rescue'?['Trace the access keys through hospital notices and search the monitored offices during an absence.','Confront the operating doctors. Stop those who resist; protect those who surrender.','Release the patient and escort them, with any cuffed doctor, to the main entrance.']:['Investigate hospital notices and staff schedules to trace the access passes.','Photograph the altered ledger, consent file and basement operation.','Return to the entrance with all three images. Do not harm anyone.'];

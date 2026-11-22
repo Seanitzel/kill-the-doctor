@@ -81,7 +81,7 @@ export function buildHospital(layout, m, site=null, interior=null, {story=!!inte
     wallCube(m.trim, x, .08, z, horizontal ? length : .22, .16, horizontal ? .22 : length);
     wallCube(m.stripe, x, 1.03, z, horizontal ? length : .22, .13, horizontal ? .22 : length);
     wallCube(m.steel, x, .94, z, horizontal ? length : .26, .045, horizontal ? .26 : length);
-    Object.assign(collider(x,z,sx+.03,sz+.03),{minY:0,maxY:3.6,type:'wall'});
+    Object.assign(collider(x,z,sx+.03,sz+.03),{minY:0,maxY:3.6,type:'wall',...(glass&&interior?.country==='china'?{sightGlass:true}:{})});
     const wall = new THREE.Mesh(new THREE.BoxGeometry(sx, 3.6, sz), new THREE.MeshBasicMaterial({ visible: false })); wall.position.set(x, 1.8, z); wall.updateMatrixWorld(); wallMeshes.push(wall);
   }
   for (const w of layout.walls) {

@@ -1,3 +1,18 @@
+import {tileAt,key} from './layout.js';
+
+// Privacy follows the character's body at the real open doorway, rather than
+// retaining an intrusion until the centre of its floor cell changes.
+export function privacyRoomAt(layout,pos,radius=.3){
+ const cell=tileAt(pos.x,pos.z),id=layout.cells.get(key(cell.x,cell.z))?.room,room=layout.rooms.find(r=>r.id===id);
+ if(!room)return null;
+ for(const d of layout.doors){
+  if(d.room!==id||Math.abs(d.angle??(d.open?Math.PI/2:0))<.2)continue;
+  const inward=Math.sign(room.center.z-d.z);
+  if(Math.abs(pos.x-d.x)<=.86-radius&&(pos.z-d.z)*inward<=radius)return null;
+ }
+ return room;
+}
+
 // Escalation follows continuous occupancy. Leaving cancels the grace period.
 export class RoomPrivacy{
  constructor(){this.rooms=new Map();this.active=null;}

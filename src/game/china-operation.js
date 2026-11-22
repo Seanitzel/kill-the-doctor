@@ -5,7 +5,7 @@ import {OfficeSeal} from './office-seal.js';
 import {coffeeStation} from './coffee-station.js';
 import {OfficeVisitors} from './office-visitors.js';
 import {OfficeMixing,mixingYaw} from './office-mixing.js';
-import {RoomPrivacy} from './room-privacy.js';
+import {RoomPrivacy,privacyRoomAt} from './room-privacy.js';
 import {OperatingTeamEscape} from './operating-team-escape.js';
 import {CoffeeSip} from './coffee-sip.js';
 import {BASEMENT_GREETING} from './infiltration-dialogue.js';
@@ -168,9 +168,9 @@ export class ChinaOperation{
  collapseDoctor(now){const e=this.e,c=this.case,n=this.doctor;c.poison(false);n.dead=true;beginBodyFall(n,e);this.dropCup();n.reporting=null;this.phase='unresponsive';this.unresponsiveAt=now;this.seal.collapse(now);this.patients.collapse(now);this.caughtAt=null;this.poisonAction=null;this.enteredAfterFall=e.floor===this.officeFloor&&this.roomOf(e.playerPos)===this.office.id;e.notify('QUICKLY! ENTER THE OFFICE AND LOCK THE DOOR BEFORE ANYONE SEES!','office-urgent');}
  updateDoctor(dt){const e=this.e,c=this.case,n=this.doctor,now=e.mission.elapsed;if(n.dead)return;
   if(this.officeClear())this.awaySince??=now;else this.awaySince=null;
-  const inside=e.floor===this.officeFloor&&this.roomOf(e.playerPos)===this.office.id&&this.roomOf(n.pos)===this.office.id;
+  const inside=e.floor===this.officeFloor&&privacyRoomAt(e.levels[this.officeFloor],e.playerPos)?.id===this.office.id&&this.roomOf(n.pos)===this.office.id;
   if(inside){if(this.poisonAction){this.caughtAt??=now;return;}const id=this.office.id,action=this.officePrivacy.active===id?this.officePrivacy.update(id,now):this.officePrivacy.enter(id,now);
-   if(action){e.life?.speak(n,action==='request'?'Excuse me, please wait outside.':action==='warning'?'Excuse me, I said please wait outside.':"I’m calling security.",true);if(action==='security'){e.audio.sound('alarm');c.fail('The doctor called security after you ignored both warnings.');e.finish();return;}}
+   if(action){const line=action==='request'?'Excuse me, please wait outside.':action==='warning'?'Excuse me, I said please wait outside.':"I’m calling security.";e.life?.speak(n,line,true);if(action!=='security')e.notify(line,'warning');if(action==='security'){e.audio.sound('alarm');c.fail('The doctor called security after you ignored both warnings.');e.finish();return;}}
    n.activity='rest';n.path=[];n.visual.root.rotation.y=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z);if(this.phase==='drinking')this.drinkUntil+=dt;this.breakAt+=dt;return;
   }else this.officePrivacy.leave();
 

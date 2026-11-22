@@ -5,7 +5,7 @@ import {settleBedPatient} from './body-pose.js';
 import {countryVoice} from './country-voices.js';
 import {fitPregnancy} from './appearance.js';
 import {TargetAppointment,TARGET_PRIVACY_GRACE} from './appointments.js';
-import {RoomPrivacy} from './room-privacy.js';
+import {RoomPrivacy,privacyRoomAt} from './room-privacy.js';
 import {ROOM_WARNING_LINES} from './dialogue-v25.js';
 import {addInfusion} from './care-props.js';
 import {createCableGeometry,updateCableGeometry} from './dynamic-cable.js';
@@ -19,7 +19,7 @@ export class HospitalLife {
   constructor(engine,{deferSetup=false}={}) {
     this.meals=[];this.infusions=[];this.nextSneeze=12;this.nextClinical=9;this.nextMachine=2;this.nextPain=18;this.listenerDirection=new THREE.Vector3();this.engine=engine;this.groups=[];this.cases=[];this.dialogues=[];this.queue=[];this.clouds=[];this.history=[];this.addedColliders=[];this.pendingCoughs=[];
     this.props=new THREE.Group();this.props.name='hospital-life-props';engine.scene.add(this.props);
-    this.lastRoom=null;this.roomReactions=new Map();this.privacy=new RoomPrivacy();this.nextAmbient=0;this.nextMaternity=0;
+    this.lastRoom=null;this.roomReactions=new Map();this.privacy=new RoomPrivacy();this.privacyActor=null;this.nextAmbient=0;this.nextMaternity=0;
     this.nextFlicker=45+engine.mission.random()*35;this.flicker=null;
     this.flickerCover=new THREE.Mesh(new THREE.BoxGeometry(1.235,.015,.565),new THREE.MeshBasicMaterial({color:'#172733'}));this.flickerCover.visible=false;this.props.add(this.flickerCover);
     if(!deferSetup)this.setup();
@@ -128,6 +128,7 @@ export class HospitalLife {
   speechSeconds(actor,text){return Math.max(4.2,text.length*.07,(countryVoice(text,actor.person)?.duration||0)/.9);}
   speak(actor,text,urgent=false) {
     const e=this.engine;if(actor.dead||actor.floor!==e.floor)return;
+    if(!urgent&&this.privacy.active&&actor===this.privacyActor)return;
     const distance=dist(e.playerPos,actor.pos);if(distance>18)return;const countryTake=countryVoice(text,actor.person);text=countryTake?.caption||text;
     this.dialogues=this.dialogues.filter(d=>d.actor!==actor&&d.until>e.mission.elapsed);
     this.dialogues.push({actor,text,until:e.mission.elapsed+Math.max(4.5,text.length*.07,(countryTake?.duration||0)/.9+.3)});
@@ -146,14 +147,16 @@ export class HospitalLife {
     if(!actor||!action||this.engine.systems?.evacuating||this.engine.mission.state==='escape')return;const e=this.engine;
     actor.reaction=3.8;actor.wait=5;actor.path=[];actor.cursor=0;
     actor.visual.root.rotation.y=Math.atan2(e.playerPos.x-actor.pos.x,e.playerPos.z-actor.pos.z);
-    const currentRoom=e.levels[actor.floor].cells.get(`${Math.round(actor.pos.x/3+11)},${Math.round(actor.pos.z/3+11)}`)?.room;const patient=!!currentRoom&&e.npcs.some(n=>n.role==='patient'&&!n.dead&&!n.baby&&n.floor===actor.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===currentRoom);this.speak(actor,action==='request'?(patient?'Excuse me, please wait until we finish with this patient.':'Excuse me, please wait outside.'):ROOM_WARNING_LINES[action],true);this.nextAmbient=e.mission.elapsed+9;
+    const currentRoom=e.levels[actor.floor].cells.get(`${Math.round(actor.pos.x/3+11)},${Math.round(actor.pos.z/3+11)}`)?.room;const patient=!!currentRoom&&e.npcs.some(n=>n.role==='patient'&&!n.dead&&!n.baby&&n.floor===actor.floor&&e.levels[n.floor].cells.get(`${Math.round(n.pos.x/3+11)},${Math.round(n.pos.z/3+11)}`)?.room===currentRoom),line=action==='request'?(patient?'Excuse me, please wait until we finish with this patient.':'Excuse me, please wait outside.'):ROOM_WARNING_LINES[action];this.speak(actor,line,true);this.nextAmbient=e.mission.elapsed+9;
     this.queue=this.queue.filter(line=>line.actor!==actor);
-    if(action==='warning')e.notify('Patient privacy · leave this room before staff call security','warning');
+    if(action==='request'||action==='warning')e.notify(line,'warning');
     if(action==='security'){e.mission.finish(false,'The doctor called security after two warnings. The appointment intrusion exposed you.');e.finish();}
   }
   reactToEntry(room){
-    const actor=this.privacyWitness(room);if(!actor){this.privacy.leave();return;}
-    this.privacyResponse(actor,this.privacy.enter(`${this.engine.floor}:${room.id}`,this.engine.mission.elapsed,room.id===this.engine.mission.target?.room.id?{warningDelay:TARGET_PRIVACY_GRACE,reportDelay:TARGET_PRIVACY_GRACE*2}:{}));
+    const e=this.engine,actor=this.privacyWitness(room);if(!actor||actor.floor!==e.floor||dist(e.playerPos,actor.pos)>18){this.privacy.leave();this.privacyActor=null;return;}
+    if(actor!==this.privacyActor)this.privacy.leave();this.privacyActor=actor;
+    const id=`${e.floor}:${room.id}`,action=this.privacy.active===id?this.privacy.update(id,e.mission.elapsed):this.privacy.enter(id,e.mission.elapsed,room.id===e.mission.target?.room.id?{warningDelay:TARGET_PRIVACY_GRACE,reportDelay:TARGET_PRIVACY_GRACE*2}:{});
+    this.privacyResponse(actor,action);
   }
   updateAppointment(room){
     const e=this.engine,item=this.targetCase;if(!item||e.mission.targetDown||item.doctor.targetFlee||item.doctor.dead||e.mission.state==='escape')return;
@@ -169,6 +172,7 @@ export class HospitalLife {
   }
   prepareNPC(n){
     if(n.reporting||n.evacuating)return false;
+    if(this.privacy.active&&n===this.privacyActor){n.path=[];n.reaction=Math.max(n.reaction||0,1);n.visual.root.rotation.y=Math.atan2(this.engine.playerPos.x-n.pos.x,this.engine.playerPos.z-n.pos.z);return true;}
     const item=this.targetCase;
     if(item&&n===item.doctor&&!item.completed&&!n.dead){n.activity='examine';n.path=[];return true;}
     if(!n.appointmentDeparture)return false;
@@ -243,12 +247,12 @@ export class HospitalLife {
   }
   update(dt) {
     const e=this.engine,now=e.mission.elapsed,emergency=e.mission.state==='escape'&&(!e.mission.china||e.mission.policeAlert)||!!e.systems?.evacuating;
-    if(emergency){this.queue.length=0;this.dialogues.length=0;this.privacy.leave();}
+    if(emergency){this.queue.length=0;this.dialogues.length=0;this.privacy.leave();this.privacyActor=null;}
     const cell=e.levels[e.floor].cells.get(`${Math.round(e.playerPos.x/3+11)},${Math.round(e.playerPos.z/3+11)}`),room=e.levels[e.floor].rooms.find(r=>r.id===cell?.room);
     const roomKey=room?.id||`hall-${e.floor}`;
     if(!emergency)this.updateAppointment(room);
-    if(roomKey!==this.lastRoom){this.lastRoom=roomKey;if(!emergency)this.reactToEntry(room);else this.privacy.leave();}
-    if(!emergency&&room)this.privacyResponse(this.privacyWitness(room),this.privacy.update(`${e.floor}:${room.id}`,now));
+    this.lastRoom=roomKey;
+    if(!emergency)this.reactToEntry(privacyRoomAt(e.levels[e.floor],e.playerPos));
     for(const n of e.npcs) {
       if(n.meal&&(n.activity!=='eat'||emergency||n.movementSpeed>.15))n.meal.update(null);
       if(n.dead||n.evacuated||n.targetFlee||n.operatingFlee||n.floor!==e.floor||dist(e.playerPos,n.pos)>30)continue;
@@ -320,6 +324,6 @@ export class HospitalLife {
     for(const {floor,obstacle} of this.addedColliders){const list=this.engine.hospitals[floor].colliders,index=list.indexOf(obstacle);if(index>=0)list.splice(index,1);}
     this.engine.audio.stopAmbient();for(const infusion of this.infusions)infusion.dispose();this.infusions.length=0;this.engine.scene.remove(this.props);
     this.props.traverse(o=>{if(o.userData.lifeOwned||o===this.flickerCover||o.isPoints){o.geometry?.dispose();o.material?.dispose();}});
-    this.clouds.forEach(c=>c.texture.dispose());this.props.clear();for(const list of [this.clouds,this.groups,this.cases,this.queue,this.dialogues,this.history,this.pendingCoughs,this.addedColliders])list.length=0;this.roomReactions.clear();this.privacy.dispose();this.targetCase=null;
+    this.clouds.forEach(c=>c.texture.dispose());this.props.clear();for(const list of [this.clouds,this.groups,this.cases,this.queue,this.dialogues,this.history,this.pendingCoughs,this.addedColliders])list.length=0;this.roomReactions.clear();this.privacy.dispose();this.privacyActor=null;this.targetCase=null;
   }
 }

@@ -71,7 +71,7 @@ function menuVisibility(){menuMusic.sync();}
 watch(screen,value=>{menuMusic.setActive(value==='menu');if(engine)engine.presentationOnly=['travel','story','ending','loading','startup-error','results'].includes(value);});
 const hud = reactive({ state: 'investigate', location: 'Main atrium', floor: 0, x: 3, z: 30, yaw: Math.PI, timer: 0, stamina: 100, suspicion: 0, flashlight: false, blackout: 0, impairment: 0, aiming: false, ammo: 6, reserve: 30, prompt: null, clues: 0 });
 const selectedLiftFloor=ref(null);let liftSelectionFrame=null;
-const mission = shallowRef(null), result = ref(null), toast = ref(null), announcement = ref(null), clue = ref(null), badge = ref(null), mapFloor = ref(0), shotFlash = ref(false), transition = ref(false), hit = ref(false), soundCaption = ref(null);
+const mission = shallowRef(null), result = ref(null), toast = ref(null), announcement = ref(null), clue = ref(null), badge = ref(null), mapFloor = ref(0), shotFlash = ref(false), hit = ref(false), soundCaption = ref(null);
 const assignmentPortrait = ref(null);
 const characterPortraits = reactive({ male: null, female: null,custom:null });
 const contactDialog=ref(null);
@@ -138,7 +138,7 @@ async function enterHospital(){
   if(loading.value||appDisposed)return;if(!engine){startupFailure(new Error('Graphics could not initialize. Please reload the game.'));return;}
   const serial=++launchSerial,currentEngine=engine;
   loading.value=true;screen.value='loading';overlay.value=null;error.value=null;Object.assign(preparation,{label:'Preparing your assignment',progress:0,detail:'Your assignment will open automatically.'});
-  feedbackTimers.clear();portraitSerial++;shotFlash.value=false;hit.value=false;transition.value=false;soundCaption.value=null;
+  feedbackTimers.clear();portraitSerial++;shotFlash.value=false;hit.value=false;soundCaption.value=null;
   currentEngine.storyMusic=false;currentEngine.audio.start().catch(()=>{});
   try{
     // Paint the busy state before constructing anything expensive.
@@ -160,7 +160,7 @@ async function enterHospital(){
 function finishEnding(){const route=nextFlight(result.value,save);if(route){beginFlight(route);return;}showResults();}
 function showResults(){engine.storyMusic=false;screen.value='results';if(result.value?.coins)engine.audio.start();else engine.audio.pause(true);}
 function missionResult(value){automaticFlight.value=false;nativeFeedback(value.success?'success':'warning');result.value=value;overlay.value=null;persist();if(value.success&&['evidence','rescue'].includes(value.type)){const profile=engine.playerProfile||profileFor(save);engine.stop();activeStory.value=value.type==='rescue'?rescueEnding(profile,value.coins,{variant:mission.value.seed%3}):evidenceEnding(profile,value.coins,{infiltration:value.infiltration});screen.value='ending';engine.storyMusic=true;engine.audio.start();}else{screen.value='results';if(value.coins)engine.audio.start();}}
-function toMenu() { cancelLiftSelection();launchSerial++;portraitSerial++;loading.value=false;error.value=null;mission.value=null;result.value=null;assignmentPortrait.value=null;automaticFlight.value=false;feedbackTimers.clear();shotFlash.value=false;hit.value=false;transition.value=false;soundCaption.value=null;if(engine)engine.storyMusic=false;engine?.stop(); screen.value = 'menu'; overlay.value = null; announcement.value = null; toast.value = null;persist();syncCharacterPortraits(); }
+function toMenu() { cancelLiftSelection();launchSerial++;portraitSerial++;loading.value=false;error.value=null;mission.value=null;result.value=null;assignmentPortrait.value=null;automaticFlight.value=false;feedbackTimers.clear();shotFlash.value=false;hit.value=false;soundCaption.value=null;if(engine)engine.storyMusic=false;engine?.stop(); screen.value = 'menu'; overlay.value = null; announcement.value = null; toast.value = null;persist();syncCharacterPortraits(); }
 function buy(id) { if (purchase(save, id)) { persist();engine?.refreshLoadout(); engine?.audio.sound('clue'); } }
 function settingsChanged() { menuMusic.sync();persist(); engine?.applySettings(save.settings); }
 function toggleSound() { save.settings.volume = save.settings.volume ? 0 : .5; settingsChanged(); }
@@ -192,7 +192,6 @@ onMounted(() => {
       badge: value => { badge.value = value; openOverlay('badge'); },
       shot: () => { nativeFeedback('shot');shotFlash.value = true; feedbackTimers.after('shot',95,()=>shotFlash.value=false); },
       hit: () => { hit.value = true; feedbackTimers.after('hit',260,()=>hit.value=false); },
-      transition: () => { transition.value = true; feedbackTimers.after('transition',450,()=>transition.value=false); },
       result:missionResult,
     });
     // Dev-only inspection enables browser acceptance tests without changing the shipped UI.
@@ -212,7 +211,6 @@ onBeforeUnmount(() => { cancelLiftSelection();appDisposed=true;launchSerial++;po
     <div v-if="isTouch" class="rotate-phone"><Smartphone :size="44"/><h2>Turn your device.</h2><p>KTD plays in landscape. Rotate your device for the full game and touch controls.</p></div>
     <div ref="viewport" class="viewport" :class="{ 'shot': shotFlash, 'smoke-drift': hud.smoking && hud.outside }"></div>
     <div class="vignette" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
-    <div v-if="transition" class="floor-transition"></div>
     <template v-if="screen === 'menu'">
       <header class="menu-header"><a class="brand" href="#" @click.prevent="toMenu"><span class="brand-mark"><Plus :size="25" :stroke-width="1.3"/></span><span>{{currentCountry.hospital.toUpperCase()}}<small>MEDICAL CENTER</small></span></a><span class="menu-audio-button"><Headphones :size="14"/>{{menuSound?'MENU MUSIC ON':'MUSIC STARTS ON FIRST TAP'}}</span><div class="header-status"><span class="live-dot"></span> ALL SYSTEMS OPERATIONAL <span class="header-time">02:14 AM</span></div></header>
       <section class="menu-content">
@@ -234,7 +232,7 @@ onBeforeUnmount(() => { cancelLiftSelection();appDisposed=true;launchSerial++;po
         </div>
       </section>
       <aside class="scene-label"><span class="eyebrow">{{currentCountry.hospital.toUpperCase()}} / MAIN BUILDING</span><span class="scene-title">The night shift.</span><p>Three public floors. A locked basement.<br/>More than one kind of assignment.</p><div class="scene-meta"><span>THREE CONNECTED WINGS</span><span>G + 1 + 2 + B</span></div></aside>
-      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.31.0 <ArrowUpRight :size="12"/></button></footer>
+      <footer class="menu-footer"><span><Headphones :size="13"/> HEADPHONES RECOMMENDED</span><span class="menu-version">{{ready?'READY TO ENTER':assetStatus.toUpperCase()}} <span class="live-dot" :class="{loading: !ready}"></span></span><button @click="openOverlay('credits')">BUILD 03.32.0 <ArrowUpRight :size="12"/></button></footer>
     </template>
     <TravelSequence v-if="screen==='travel' && flight" :from="flight.from" :to="flight.to" :audio="engine.audio" @finish="finishFlight"/>
     <StoryIntro v-if="screen==='story' && activeStory" :key="activeStory.id" :story="activeStory" :paused="!!overlay" @finish="enterHospital" @back="toMenu" @references="openOverlay('references')"/>

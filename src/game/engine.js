@@ -356,7 +356,7 @@ export class GameEngine {
     });
   }
   interact() {
-    if(this.paused)return;const china=this.objectives?.china;if(china?.poisonAction){china.interact({type:'china-poison'});this.emitHUD();return;}
+    if(this.paused)return;const china=this.objectives?.china;if(china?.poisonAction||china?.mixingApproach){china.interact({type:'china-poison'});this.emitHUD();return;}
     const i = this.nearestInteractable(); if (!i) return;
     if(i.type==='stairs'){beginStairs(this,i);return;}
     if(i.type==='threat-search'){this.escapeThreats?.interact(i);return;}
@@ -548,7 +548,7 @@ export class GameEngine {
     if (this.keys.has('ArrowLeft')) this.yaw += dt * 1.9; if (this.keys.has('ArrowRight')) this.yaw -= dt * 1.9;
     const f = ((this.phoneOpen&&!this.phoneCollapsed)||this.instrumentView)?0:this.touchInput.forward + Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) - Number(this.keys.has('KeyS') || this.keys.has('ArrowDown'));
     const strafe = ((this.phoneOpen&&!this.phoneCollapsed)||this.instrumentView)?0:this.touchInput.strafe + Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA'));
-    const moving = f !== 0 || strafe !== 0;if(moving&&this.objectives?.china?.poisonAction)this.objectives.china.interact({type:'china-poison'});this.cover?.update(dt,moving); this.crouched = this.keys.has('KeyC')&&!this.keys.has('ShiftLeft')&&!this.keys.has('ShiftRight') || this.touchInput.crouch || this.touchInput.hide;
+    const moving = f !== 0 || strafe !== 0,office=this.objectives?.china;if(moving&&(office?.poisonAction||office?.mixingApproach))office.interact({type:'china-poison'});const coffeeBusy=!!(office?.poisonAction||office?.mixingApproach);this.cover?.update(dt,moving); this.crouched = !coffeeBusy&&(this.keys.has('KeyC')&&!this.keys.has('ShiftLeft')&&!this.keys.has('ShiftRight') || this.touchInput.crouch || this.touchInput.hide);
     const sprint=advanceSprint(this,{dt,moving,allowed:!this.crouched&&!this.aiming,requested:this.keys.has('ShiftLeft')||this.keys.has('ShiftRight')||this.touchInput.sprint});
     const {running}=sprint;Object.assign(this,sprint);
 
@@ -558,13 +558,13 @@ export class GameEngine {
     const speed = (running ? 5.5 : this.crouched ? 1.3 : this.aiming ? 1.85 : 3.35) * modifier * (this.impairment > 0 ? .53 : 1) * injurySpeed(this.playerInjury);
     const amount = Math.max(1,Math.hypot(f, strafe));
     const old = this.playerPos.clone();
-    this.move((Math.sin(this.yaw) * f - Math.cos(this.yaw) * strafe) * speed * dt / amount, (Math.cos(this.yaw) * f + Math.sin(this.yaw) * strafe) * speed * dt / amount);
+    if(office?.mixingApproach&&!moving)office.moveToMixingPosition(dt);else this.move((Math.sin(this.yaw) * f - Math.cos(this.yaw) * strafe) * speed * dt / amount, (Math.cos(this.yaw) * f + Math.sin(this.yaw) * strafe) * speed * dt / amount);
     const actual = this.playerPos.distanceTo(old) / dt;this.playerSpeed=actual;
     this.player.root.position.copy(this.playerPos); this.player.root.position.y=this.playerPos.y;
-    const coffeeOffice=this.objectives?.china||this.covert?.advanced,mixing=coffeeOffice?.poisonAction||coffeeOffice?.action,cup=coffeeOffice?.cupPoint||coffeeOffice?.cup?.position;const desiredYaw = this.cover?.active?.normal&&!this.cover.peeking?Math.atan2(this.cover.active.normal.x,this.cover.active.normal.z):mixing?mixingYaw(this.playerPos,cup):this.aiming || !moving ? this.yaw : Math.atan2(Math.sin(this.yaw) * f - Math.cos(this.yaw) * strafe, Math.cos(this.yaw) * f + Math.sin(this.yaw) * strafe);
+    const coffeeOffice=this.objectives?.china||this.covert?.advanced,mixing=coffeeOffice?.poisonAction||coffeeOffice?.action,cup=coffeeOffice?.cupPoint||coffeeOffice?.cup?.position;const desiredYaw = this.cover?.active?.normal&&!this.cover.peeking?Math.atan2(this.cover.active.normal.x,this.cover.active.normal.z):mixing?mixingYaw(this.playerPos,cup):office?.mixingApproach?Math.atan2(office.mixingApproach.x-old.x,office.mixingApproach.z-old.z):this.aiming || !moving ? this.yaw : Math.atan2(Math.sin(this.yaw) * f - Math.cos(this.yaw) * strafe, Math.cos(this.yaw) * f + Math.sin(this.yaw) * strafe);
     this.player.root.rotation.y += Math.atan2(Math.sin(desiredYaw - this.player.root.rotation.y), Math.cos(desiredYaw - this.player.root.rotation.y)) * Math.min(1, dt * 12);
     const weaponReady = this.mission.weaponRequired&&(this.weaponDrawn || this.aiming || this.shotCooldown > 0);
-    this.player.setAim?.(this.aiming||this.shotCooldown>0); const motion=this.player.animate(this.time, actual, dt,{running});this.crouchWeight=THREE.MathUtils.damp(this.crouchWeight||0,this.crouched?1:0,14,dt);if(this.crouchWeight>.001)this.player.poseCrouch?.(this.crouchWeight);this.cover?.pose();this.waitBreak?.update(!!this.phoneOpen&&(!this.phoneCollapsed||this.smoking),!!this.smoking,this.time); this.weapon.visible = weaponReady;
+    this.player.setAim?.(this.aiming||this.shotCooldown>0); const motion=this.player.animate(this.time, actual, dt,{running});this.crouchWeight=coffeeBusy?0:THREE.MathUtils.damp(this.crouchWeight||0,this.crouched?1:0,14,dt);if(this.crouchWeight>.001)this.player.poseCrouch?.(this.crouchWeight);this.cover?.pose();this.waitBreak?.update(!!this.phoneOpen&&(!this.phoneCollapsed||this.smoking),!!this.smoking,this.time); this.weapon.visible = weaponReady;
     if (weaponReady && this.player.hand) { this.player.root.updateMatrixWorld(true); const grip = this.player.hand.getWorldPosition(new THREE.Vector3()); this.player.root.worldToLocal(grip); this.weapon.position.copy(grip).add(new THREE.Vector3(0,0,.04)); }
     this.playerGear?.update(this.mission.china?.disguised?{...this.mission.save,loadout:{...this.mission.save.loadout,mask:false}}:this.mission.save);if(this.objectives?.china?.handoverUntil>this.mission.elapsed)this.player.poseActivity?.('examine',this.time);
     this.visited.add(`${this.floor}:${key(tileAt(this.playerPos.x, this.playerPos.z).x, tileAt(this.playerPos.x, this.playerPos.z).z)}`);

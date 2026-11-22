@@ -20,17 +20,19 @@ export class OfficeVisitors{
  }
  begin(now){if(this.started!==null)return;this.started=now;for(const v of this.entries){v.due=now+(v.index?18:12);const route=this.e.systems.navigationFor(v.n.floor).smoothRoute(v.waiting,v.goal);let last=v.waiting,length=0;for(const cell of route){const p={x:(cell.x-11)*3,z:(cell.z-11)*3};length+=distance(last,p);last=p;}v.leaveAt=v.due-length/v.n.speed-1.8;}}
  beginWalk(v,phase,goal){v.phase=phase;v.n.activity=null;v.n.path=[];this.e.routeNPC(v.n,goal);}
- beforeOpen(n,door){const v=this.entries.find(v=>v.n===n);if(!v||door!==v.door)return;
-  if(this.office.case.poisoned&&v.phase!=='discovering'&&this.office.roomOf(n.pos)!==this.office.office.id)return false;
+ canEnter(n){return !this.office.case.poisoned||n.role!=='patient'||this.discoveryAt!==null&&!!this.office.seal.failed&&this.entries.some(v=>v.n===n&&v.phase==='discovering');}
+ canUseDoor(n,door){return n.floor!==this.office.officeFloor||!this.office.doors.includes(door)||this.office.roomOf(n.pos)===this.office.office.id||this.canEnter(n);}
+ canMoveTo(n,x,z){return n.floor!==this.office.officeFloor||this.office.roomOf({x,z})!==this.office.office.id||this.office.roomOf(n.pos)===this.office.office.id||this.canEnter(n);}
+ beforeOpen(n,door){if(!this.canUseDoor(n,door))return false;const v=this.entries.find(v=>v.n===n);if(!v||door!==v.door)return;
   if(v.phase==='entering'&&v.openedAt==null){v.openedAt=this.e.mission.elapsed;if(this.office.poisonAction)this.e.notify('A visiting patient is opening the door — stop mixing before they enter!','danger');}
  }
  observing(){return this.entries.find(v=>!v.n.dead&&!v.n.evacuated&&['entering','waiting','restaging'].includes(v.phase)&&this.office.roomOf(v.n.pos)===this.office.office.id)?.n||null;}
  prepare(n){const v=this.entries.find(v=>v.n===n);if(!v)return false;const e=this.e,o=this.office,now=e.mission.elapsed;if(n.dead||n.evacuating||n.reporting)return false;
   if(['staging','restaging'].includes(v.phase)&&distance(n.pos,v.waiting)<.4){v.standing={x:n.pos.x,z:n.pos.z};v.motionAt=now;n.activity='rest';n.path=[];if(v.seat){v.phase='sitting';v.motion=new SeatMotion(v.standing,v.seat);}else v.phase='ready';}
   if(v.phase==='ready'&&this.started!==null&&!o.case.poisoned&&!v.visited&&now>=v.leaveAt&&(v.index===0||this.entries[0].visited&&this.entries[0].phase==='ready')){v.nextPhase='entering';if(v.seat){v.phase='standing';v.motionAt=now;v.motion=new SeatMotion(v.standing||v.waiting,v.seat);v.motion.amount=1;v.motion.stand();n.seated=false;}else this.beginWalk(v,'entering',v.goal);}
-  if(['entering','discovering'].includes(v.phase)&&distance(n.pos,v.goal)<.45){n.activity='rest';n.path=[];
-   if(v.phase==='discovering'){v.phase='discovered';o.discoveryVisible=true;e.audio.gasp?.({x:n.pos.x,y:1.5,z:n.pos.z,floor:o.officeFloor});o.discoverDoctor();}
-   else{v.phase='waiting';v.enteredAt=now;v.until=now+.8;n.visual.root.rotation.y=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z);e.life?.speak(n,OFFICE_VISITOR_LINES[v.index%OFFICE_VISITOR_LINES.length],true);}
+  if(v.phase==='discovering'&&this.checkDiscovery())return true;
+  if(v.phase==='entering'&&distance(n.pos,v.goal)<.45){n.activity='rest';n.path=[];
+   v.phase='waiting';v.enteredAt=now;v.until=now+.8;n.visual.root.rotation.y=Math.atan2(e.playerPos.x-n.pos.x,e.playerPos.z-n.pos.z);e.life?.speak(n,OFFICE_VISITOR_LINES[v.index%OFFICE_VISITOR_LINES.length],true);
   }
   if(v.phase==='waiting'&&now>=v.until){v.visited=true;this.beginWalk(v,'restaging',v.waiting);}
   if(['staging','restaging','entering','discovering'].includes(v.phase)){n.activity=null;if(n.cursor>=n.path.length&&now>=(v.retry||0)){e.routeNPC(n,['entering','discovering'].includes(v.phase)?v.goal:v.waiting);v.retry=now+1;}}
@@ -38,10 +40,11 @@ export class OfficeVisitors{
   return true;
  }
  collapse(now){this.discoveryAt=null;for(const v of this.entries){v.openedAt=null;v.visited=true;if(v.phase==='ready')continue;if(v.phase==='sitting'){continue;}if(v.motion&&v.motion.target===0){v.nextPhase='restaging';continue;}v.motion=null;this.beginWalk(v,'restaging',v.waiting);} }
- discover(){if(this.discoveryAt!==null)return;this.discoveryAt=this.e.mission.elapsed;const v=this.entries.slice().sort((a,b)=>distance(a.n.pos,a.goal)-distance(b.n.pos,b.goal))[0];if(!v)return;v.door.locked=false;v.door.manualClosed=false;
+ discover(){if(this.discoveryAt!==null||!this.office.seal.failed)return;this.discoveryAt=this.e.mission.elapsed;const v=this.entries.filter(v=>!v.n.dead&&!v.n.evacuated).sort((a,b)=>distance(a.n.pos,a.goal)-distance(b.n.pos,b.goal))[0];if(!v)return;v.door.locked=false;v.door.manualClosed=false;
   if(v.n.seated||v.motion?.target===1){v.phase='standing';v.nextPhase='discovering';v.motionAt=this.e.mission.elapsed;v.motion=new SeatMotion(v.standing||v.waiting,v.seat);v.motion.amount=1;v.motion.stand();v.n.seated=false;}
   else{v.motion=null;this.beginWalk(v,'discovering',v.goal);}
  }
+ checkDiscovery(){if(this.discoveryAt===null||!this.office.seal.failed)return false;const v=this.entries.find(v=>v.phase==='discovering'&&!v.n.dead&&!v.n.evacuated&&this.office.roomOf(v.n.pos)===this.office.office.id);if(!v)return false;v.phase='discovered';v.n.activity='rest';v.n.path=[];this.office.discoveryVisible=true;this.e.audio.gasp?.({x:v.n.pos.x,y:1.5,z:v.n.pos.z,floor:this.office.officeFloor});this.office.discoverDoctor();return true;}
  witnesses(){return this.entries.filter(v=>['entering','waiting'].includes(v.phase)&&this.office.roomOf(v.n.pos)===this.office.office.id).map(v=>v.n);}
  pose(){for(const v of this.entries)if(v.n.floor===this.e.floor&&(v.n.seated||v.n.seatPose))v.n.visual.poseSeated?.(v.n.seatPose?.weight??1,v.n.seatPose?.lean??0);}
  dispose(){for(const v of this.entries){v.n.officeVisitor=false;v.n.speed=v.saved.speed;}this.entries=[];this.office=this.e=null;}

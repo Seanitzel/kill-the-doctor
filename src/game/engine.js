@@ -528,6 +528,7 @@ export class GameEngine {
     return true;
   }
   npcCanMoveTo(n,x,z){
+    if(this.objectives?.china?.patients?.canMoveTo(n,x,z)===false)return false;
     if(!this.canStand(x,z,.22,n.floor,n.pos,n))return false;
     const avoids=(p,r)=>Math.hypot(x-p.x,z-p.z)>=r||Math.hypot(x-p.x,z-p.z)>=distance(n.pos,p)-.001;
     if(n.floor===this.floor&&!avoids(this.playerPos,.56))return false;
@@ -636,6 +637,7 @@ export class GameEngine {
   }
   waitForDoor(n,dt){
     const door=this.doorOnRoute(n);if(!door||distance(n.pos,door)>2.6)return false;
+    if(this.objectives?.china?.patients?.canUseDoor(n,door)===false)return true;
     if(door.locked){if(['doctor','nurse'].includes(n.role)&&n.room?.id===door.room)door.locked=false;else{n.path=[];n.wait=1.5;return true;}}
     if(!door.open&&door.manualClosed&&this.floor===n.floor&&distance(this.playerPos,door)<2.45)return true;
     if(this.objectives?.china?.patients?.beforeOpen(n,door)===false)return true;
@@ -680,7 +682,7 @@ export class GameEngine {
       if (destination) {
         const p = world(destination.x, destination.z), dist = distance(n.pos, p);if(n.evacuating&&dist<.14){n.cursor++;continue;}
         const current = n.path[Math.max(0, n.cursor - 1)], door = layout.doorEdges.get(edgeKey(key(current.x, current.z), key(destination.x, destination.z)));
-        if (door && !door.locked && distance(n.pos,door) < 2.6 && !(door.manualClosed&&local&&distance(this.playerPos,door)<2.45)) door.open = true;
+        if (door && !door.locked && distance(n.pos,door) < 2.6 && !(door.manualClosed&&local&&distance(this.playerPos,door)<2.45)&&this.objectives?.china?.patients?.beforeOpen(n,door)!==false) door.open = true;
         speed=n.evacuating?(n.blind?1.25:(n.evacSpeed||4)):n.reporting?4.1:hostile?mission.difficulty==='hard'?3.6:2.65:n.speed;
         if(speed>3.7&&this.nearStructure(n.pos,n.floor))speed=3.2;
         speed*=injurySpeed(n.injury);

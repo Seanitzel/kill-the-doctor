@@ -1,11 +1,11 @@
 import * as T from 'three';
 import {tileAt,key,TILE} from './layout.js';
 
-// Outward-facing opaque surfaces create a physical one-way view, including in
+// Outward-facing smoked glass creates a physical one-way view, including in
 // mirrors. The inside face is culled; no camera-dependent global hiding is used.
 export class OfficeGlassPrivacy{
  constructor(engine,office,doors,parent){
-  this.floor=office.floor;this.active=false;this.root=new T.Group();this.root.name='Office glass privacy';this.root.userData.floor=this.floor;parent.add(this.root);this.surfaces=new T.Group();this.root.add(this.surfaces);this.surfaces.visible=false;this.material=new T.MeshStandardMaterial({color:'#777d82',roughness:.82,side:T.FrontSide});this.boundaries=[];this.doorSurfaces=[];
+  this.floor=office.floor;this.active=false;this.root=new T.Group();this.root.name='Office glass privacy';this.root.userData.floor=this.floor;parent.add(this.root);this.surfaces=new T.Group();this.root.add(this.surfaces);this.surfaces.visible=false;this.material=new T.MeshStandardMaterial({color:'#171b1f',roughness:.1,metalness:.15,transparent:true,opacity:.9,depthWrite:false,side:T.FrontSide});this.boundaries=[];this.doorSurfaces=[];
   const layout=engine.levels[this.floor],roomAt=(x,z)=>{const p=tileAt(x,z);return layout.cells.get(key(p.x,p.z))?.room;};
   for(const wall of layout.walls){if(wall.door||wall.exterior)continue;for(const side of [-1,1]){
    const dx=wall.axis==='z'?side*.3:0,dz=wall.axis==='x'?side*.3:0;

@@ -26,7 +26,7 @@ test('male and female visitors may open or wait outside indefinitely, but contin
 test('visitors returning to their seats still observe mixing until they have physically left the office',()=>sim((e,o)=>{away(e,o);const v=o.patients.entries[0];v.phase='restaging';v.visited=true;v.n.pos.set(v.goal.x,0,v.goal.z);o.poisonAction={};o.afterNPCMovement();assert.equal(e.mission.result.success,false);}));
 test('China briefing and journal describe cupboard discovery, one-way privacy, restoring clear glass and the actual entry deadline',()=>{
  const save=defaultSave();save.storyReplayId='china';const a=prepareAssignment(save);assert.match(a.story.panels.at(-1)[1],/privacy remote inside his office cupboard/);assert.ok(a.story.assignmentSteps.some(s=>/remote.*dim the glass/.test(s)));
- const journal=assignmentJournal({type:'evidence',china:{doctorName:'Dr. Liu Wen'},country:{id:'china'},playMode:'story'}).join(' ');assert.match(journal,/grey and opaque from the hallway/);assert.match(journal,/transparent from inside/);assert.match(journal,/restore clear glass/);assert.match(journal,/actually walks into/);assert.doesNotMatch(journal,/Stop immediately when a visitor opens/);
+ const journal=assignmentJournal({type:'evidence',china:{doctorName:'Dr. Liu Wen'},country:{id:'china'},playMode:'story'}).join(' ');assert.match(journal,/dark, heavily dimmed glass from the hallway/);assert.match(journal,/transparent from inside/);assert.match(journal,/restore clear glass/);assert.match(journal,/actually walks into/);assert.doesNotMatch(journal,/Stop immediately when a visitor opens/);
  const other=assignmentJournal({type:'evidence',country:{id:'america'}}).join(' ');assert.doesNotMatch(other,/privacy remote/);
 });
 

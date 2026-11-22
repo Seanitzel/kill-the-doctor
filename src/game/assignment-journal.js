@@ -3,7 +3,7 @@ export function assignmentJournal(mission){
  if(!mission||mission.type==='standard')return [];
  if(mission.china)return [
   `Use the hospital notices and schedules to locate ${mission.china.doctorName||'the consultant'}’s office before the 15:00 meeting. Collect a spoon from the cafeteria station.`,
-  ...(mission.country?.id==='china'&&mission.playMode==='story'&&!mission.terror?['During the doctor’s break, search the cupboard inside his office for the glass privacy remote. Use it before mixing: the glass becomes grey and opaque from the hallway but stays transparent from inside. Visitors can still open the door and enter.']:[]),
+  ...(mission.country?.id==='china'&&mission.playMode==='story'&&!mission.terror?['During the doctor’s break, search the cupboard inside his office for the glass privacy remote. Use it before mixing: the glass becomes dark, heavily dimmed glass from the hallway but stays transparent from inside. Visitors can still open the door and enter.']:[]),
   'Wait outside until the doctor has fully left for a break. Enter unseen and mix the fictional KTD compound into the personal coffee for 30 seconds. USE again or move away to stop; progress is saved.',
   ...(mission.country?.id==='china'&&mission.playMode==='story'&&!mission.terror?['When the coffee is ready, stop mixing, then use the cupboard remote to restore clear glass before leaving so you can watch the doctor return.']:[]),
   'Press USE or walk away to stop mixing yourself, even after the coffee is ready. The door opening is your warning: stop before the visitor actually walks into the office. Continuing to mix once the visitor enters fails immediately. Leave unseen and watch through the window until the doctor drinks and becomes unresponsive.',

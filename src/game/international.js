@@ -1,3 +1,4 @@
+import {STORY_MISSIONS} from './story-missions.js';
 // Fictional hospitals and characters. Coordinates only locate the travel animation.
 export const LEGACY_COUNTRIES=[
  ['france','France','Paris',48.9,2.3,'Velmoraine','#728ca7','Dr. Camille Laurent','female'],
@@ -21,26 +22,29 @@ export const LEGACY_COUNTRIES=[
  ['south-africa','South Africa','Cape Town',-33.9,18.4,'Asterweft','#9b89aa','Dr. Naledi Mokoena','female'],
  ['sudan','Sudan','Port Sudan',19.6,37.2,'Sorelvane','#b19c85','Dr. Samir Idris','male'],
 ].map(([id,name,city,lat,lon,hospital,accent,doctor,gender],index)=>({id,name,city,lat,lon,hospital,accent,doctor,gender,index}));
-const additions=[['russia','Russia','Moscow',55.75,37.62,'Eldervoss','#71849e','Dr. Elena Morozova','female'],['venezuela','Venezuela','Caracas',10.48,-66.9,'Aurivane','#ad896d','Dr. Lucia Montoya','female'],['egypt','Egypt','Cairo',30.04,31.24,'Merivane','#b39b73','Dr. Youssef Nabil','male'],['somalia','Somalia','Mogadishu',2.05,45.32,'Elunara','#6fa6aa','Dr. Amina Warsame','female']].map(([id,name,city,lat,lon,hospital,accent,doctor,gender])=>({id,name,city,lat,lon,hospital,accent,doctor,gender}));
-export const COUNTRIES=['france','nigeria','china','india','russia','venezuela','america','egypt','somalia','england'].map((id,index)=>({...([...LEGACY_COUNTRIES,...additions].find(c=>c.id===id)),index}));
+const additions=[['russia','Russia','Moscow',55.75,37.62,'Eldervoss','#71849e','Dr. Elena Morozova','female'],['venezuela','Venezuela','Caracas',10.48,-66.9,'Aurivane','#ad896d','Dr. Lucia Montoya','female'],['romania','Romania','Bucharest',44.43,26.1,'Merivane','#b39b73','Dr. Andrei Ionescu','male'],['uganda','Uganda','Kampala',.35,32.58,'Elunara','#6fa6aa','Dr. Amina Namutebi','female']].map(([id,name,city,lat,lon,hospital,accent,doctor,gender])=>({id,name,city,lat,lon,hospital,accent,doctor,gender}));
+export const COUNTRIES=Object.keys(STORY_MISSIONS).map((id,index)=>({...([...LEGACY_COUNTRIES,...additions].find(c=>c.id===id)),index}));
+export const DEFAULT_HOSPITAL=Object.freeze({id:'default',name:'Default hospital',hospital:'Nhalewick',city:'Northline',doctor:'Dr. Elias Voss',gender:'male',accent:'#567989',index:0,default:true});
+export const countryId=id=>({egypt:'romania',somalia:'uganda'}[id]||id);
 export function completedCountries(save){
- if(Array.isArray(save.completedCountryIds))return COUNTRIES.filter(c=>save.completedCountryIds.includes(c.id)).map(c=>c.id);
+ if(Array.isArray(save.completedCountryIds))return COUNTRIES.filter(c=>save.completedCountryIds.map(countryId).includes(c.id)).map(c=>c.id);
  const count=Math.min(COUNTRIES.length,Math.max(0,Math.floor(Number(save.campaignCompleted??save.completed)||0)));return COUNTRIES.slice(0,count).map(c=>c.id);
 }
 export function campaignProgress(save){return completedCountries(save).length;}
-export function campaignLevel(save){return Math.max(1,(countryFor(save)?.index||0)+1);}
-export function countryFor(save){return (save.playMode==='freestyle'||save.storyReplayId)?(COUNTRIES.find(c=>c.id===(save.storyReplayId||save.countryId))||COUNTRIES[0]):COUNTRIES.find(c=>!completedCountries(save).includes(c.id))||COUNTRIES.at(-1);}
+export function campaignLevel(save){return save.playMode==='freestyle'?Math.max(1,(save.freeplayCompleted||0)+1):Math.max(1,(countryFor(save)?.index||0)+1);}
+export function countryFor(save){if(save.playMode==='freestyle')return COUNTRIES.find(c=>c.id===countryId(save.freeplayCountryId))||DEFAULT_HOSPITAL;return save.storyReplayId?(COUNTRIES.find(c=>c.id===countryId(save.storyReplayId))||COUNTRIES[0]):COUNTRIES.find(c=>!completedCountries(save).includes(c.id))||COUNTRIES.at(-1);}
 // Temporary exploration access requested by the owner. Set false to restore Story locks.
 export const STORY_EXPLORATION_UNLOCKED=true;
 export function storyCountries(save){return STORY_EXPLORATION_UNLOCKED?COUNTRIES:unlockedCountries(save);}
 export function unlockedCountries(save){return COUNTRIES.filter(c=>completedCountries(save).includes(c.id));}
-export function setPlayMode(save,mode,id){if(!['story','freestyle'].includes(mode))return false;if(mode==='freestyle'&&!unlockedCountries(save).some(c=>c.id===(id||save.countryId)))return false;save.playMode=mode;save.storyReplayId=mode==='story'&&id&&storyCountries(save).some(c=>c.id===id)?id:null;if(id)save.countryId=id;save.activeAssignment=null;return true;}
+export function setPlayMode(save,mode,id){if(!['story','freestyle'].includes(mode))return false;id=countryId(id);if(mode==='freestyle'&&id&&id!=='default'&&!unlockedCountries(save).some(c=>c.id===id))return false;save.playMode=mode;save.storyReplayId=mode==='story'&&id&&storyCountries(save).some(c=>c.id===id)?id:null;if(mode==='freestyle')save.freeplayCountryId=id&&id!=='default'?id:null;else if(id)save.countryId=id;save.activeAssignment=null;return true;}
 export function migrateInternational(data){
+ data={...data,countryId:countryId(data.countryId),storyReplayId:countryId(data.storyReplayId),freeplayCountryId:countryId(data.freeplayCountryId),completedCountryIds:Array.isArray(data.completedCountryIds)?data.completedCountryIds.map(countryId):data.completedCountryIds,pendingTravel:data.pendingTravel?{from:countryId(data.pendingTravel.from),to:countryId(data.pendingTravel.to)}:null};
  const count=Math.min((data.internationalVersion>=3?COUNTRIES:LEGACY_COUNTRIES).length,Math.max(0,Math.floor(Number(data.campaignCompleted??data.completed)||0))),oldOrder=[LEGACY_COUNTRIES[1],LEGACY_COUNTRIES[0],...LEGACY_COUNTRIES.slice(2)];
  const ids=Array.isArray(data.completedCountryIds)?completedCountries(data):((data.internationalVersion||0)>=3?COUNTRIES:(data.internationalVersion||0)>=2?LEGACY_COUNTRIES:oldOrder).slice(0,count).filter(c=>COUNTRIES.some(n=>n.id===c.id)).map(c=>c.id);
  const country=COUNTRIES.find(c=>c.id===data.countryId&&ids.includes(c.id));
  const pending=data.pendingTravel,valid=pending&&COUNTRIES.some(c=>c.id===pending.from)&&COUNTRIES.some(c=>c.id===pending.to)&&pending.from!==pending.to;
- return {internationalVersion:3,completedCountryIds:data.completedCountryIds===null&&count===0?null:ids,campaignCompleted:data.campaignCompleted===null&&count===0?null:ids.length,storyReplayId:COUNTRIES.some(c=>c.id===data.storyReplayId)&&(STORY_EXPLORATION_UNLOCKED||ids.includes(data.storyReplayId))?data.storyReplayId:null,playMode:data.playMode==='freestyle'&&country?'freestyle':'story',countryId:country?.id||COUNTRIES[0].id,pendingTravel:valid?{from:pending.from,to:pending.to}:null,countryAttempts:COUNTRIES.map((country,i)=>{const previous=(data.internationalVersion||0)>=3?COUNTRIES:(data.internationalVersion||0)>=2?LEGACY_COUNTRIES:oldOrder,index=previous.findIndex(c=>c.id===country.id);return index<0?0:Math.max(0,Math.floor(Number(data.countryAttempts?.[index])||0));})};
+ return {internationalVersion:3,completedCountryIds:data.completedCountryIds===null&&count===0?null:ids,campaignCompleted:data.campaignCompleted===null&&count===0?null:ids.length,storyReplayId:COUNTRIES.some(c=>c.id===data.storyReplayId)&&(STORY_EXPLORATION_UNLOCKED||ids.includes(data.storyReplayId))?data.storyReplayId:null,playMode:data.playMode==='freestyle'?'freestyle':'story',freeplayCountryId:COUNTRIES.some(c=>c.id===data.freeplayCountryId&&ids.includes(c.id))?data.freeplayCountryId:data.freeplayCountryId===undefined&&data.playMode==='freestyle'?country?.id||null:null,countryId:country?.id||COUNTRIES[0].id,pendingTravel:valid?{from:pending.from,to:pending.to}:null,countryAttempts:COUNTRIES.map((country,i)=>{const previous=(data.internationalVersion||0)>=3?COUNTRIES:(data.internationalVersion||0)>=2?LEGACY_COUNTRIES:oldOrder,index=previous.findIndex(c=>c.id===country.id);return index<0?0:Math.max(0,Math.floor(Number(data.countryAttempts?.[index])||0));})};
 }
 export function recordInternationalResult(save,mission,success){
  save.completedCountryIds=completedCountries(save);save.campaignCompleted=save.completedCountryIds.length;save.internationalVersion=3;save.countryAttempts??=Array(COUNTRIES.length).fill(0);save.countryAttempts[mission.country.index]=(save.countryAttempts[mission.country.index]||0)+1;

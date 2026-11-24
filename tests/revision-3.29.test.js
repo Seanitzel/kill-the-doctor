@@ -45,8 +45,8 @@ test('Story sky, precipitation and sunset illumination stay visible from indoors
  assert.equal(storySkyColor('nigeria',0).getHexString(),'071e31');assert.equal(storySkyColor('nigeria',300).getHexString(),'071e31');
 });
 
-test('Egypt has a setting sun followed by a nighttime-only crescent, with a gradual fade and a continuous colour transition',()=>{
- const group=new T.Group();addEveningWeather(group,'egypt',{story:true});addNightSky(group,{story:true,country:'egypt'});const weather=group.userData.evening,sky=group.userData.nightSky,view={floor:0,camera:new T.PerspectiveCamera()},bodies=sky.celestials;
+test('Romania retains a setting sun followed by a nighttime-only crescent, with a gradual fade and a continuous colour transition',()=>{
+ const group=new T.Group();addEveningWeather(group,'romania',{story:true});addNightSky(group,{story:true,country:'romania'});const weather=group.userData.evening,sky=group.userData.nightSky,view={floor:0,camera:new T.PerspectiveCamera()},bodies=sky.celestials;
  try{
   weather.began=100;let previousY=Infinity;
   for(const age of [0,30,60,90,115,149,150,156,162,240]){
@@ -55,7 +55,7 @@ test('Egypt has a setting sun followed by a nighttime-only crescent, with a grad
    assert.equal(bodies.moon.visible,age>=150);if(age===0)assert.equal(bodies.sun.visible,true);if(age>=150)assert.equal(bodies.sun.visible,false);
    if(age===150)assert.equal(bodies.moon.material.uniforms.visibility.value,0);if(age===156)assert.ok(bodies.moon.material.uniforms.visibility.value>0&&bodies.moon.material.uniforms.visibility.value<1);
   }
-  const before=storySkyColor('egypt',149.99),after=storySkyColor('egypt',150);assert.ok(['r','g','b'].every(k=>Math.abs(before[k]-after[k])<.001));
+  const before=storySkyColor('romania',149.99),after=storySkyColor('romania',150);assert.ok(['r','g','b'].every(k=>Math.abs(before[k]-after[k])<.001));
   assert.ok(bodies.moon.material.uniforms.sunDirection.value.z>0,'crescent light is behind the visible lunar hemisphere');
  }finally{disposeObjectResources(group,{textures:true});}
 });

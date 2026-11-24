@@ -1,3 +1,4 @@
+import {fitPremium} from './premium-outfits.js';
 import {applyCulturalAttire} from './cultural-attire.js';
 import {COUNTRIES} from './international.js';
 import {PREMIUM_OUTFITS} from './loadout.js';
@@ -370,8 +371,8 @@ function skinTattoo(model,source,{center,width,height,minZ,style,name}){
   }
   if(!indices.length)return;
   const geometry=source.geometry.clone();geometry.setAttribute('uv',new THREE.BufferAttribute(uv,2));geometry.setIndex(indices);
-  const material=clothMaterial('#ffffff',{map:tattooTexture(style),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,roughness:.95,side:THREE.FrontSide});
-  const decal=new THREE.SkinnedMesh(geometry,material);decal.name=name;decal.position.copy(source.position);decal.quaternion.copy(source.quaternion);decal.scale.copy(source.scale);decal.matrix.copy(source.matrix);decal.matrixAutoUpdate=source.matrixAutoUpdate;decal.bindMode=source.bindMode;decal.skeleton=source.skeleton;decal.bindMatrix.copy(source.bindMatrix);decal.bindMatrixInverse.copy(source.bindMatrixInverse);decal.userData.appearanceOwned=true;decal.userData.appearanceOwnedTexture=true;decal.frustumCulled=false;source.parent.add(decal);
+  const material=clothMaterial('#ffffff',{map:tattooTexture(style),transparent:true,depthWrite:false,alphaTest:.06,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4,roughness:.95,side:THREE.FrontSide});
+  const decal=new THREE.SkinnedMesh(geometry,material);decal.name=name;decal.position.copy(source.position);decal.quaternion.copy(source.quaternion);decal.scale.copy(source.scale);decal.matrix.copy(source.matrix);decal.matrixAutoUpdate=source.matrixAutoUpdate;decal.bindMode=source.bindMode;decal.skeleton=source.skeleton;decal.morphTargetDictionary=source.morphTargetDictionary;decal.morphTargetInfluences=source.morphTargetInfluences;decal.renderOrder=2;decal.bindMatrix.copy(source.bindMatrix);decal.bindMatrixInverse.copy(source.bindMatrixInverse);decal.userData.appearanceOwned=true;decal.userData.appearanceOwnedTexture=true;decal.frustumCulled=false;source.parent.add(decal);
 }
 function fittedGlasses(model,skin,eyeMeshes,sunglasses=false){
   const head=model.getObjectByName('Head'),points=eyeMeshes.flatMap(mesh=>coordinates(mesh,model).points);if(!head||!points.length)return;
@@ -487,14 +488,15 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
   }
   const top=find('Outfit_Top');
   const premium=PREMIUM_OUTFITS.find(o=>o.id===person.outfit);
-  if(role==='civilian'&&premium&&top){for(const mesh of meshes)if(/Outfit_Top|Outfit_Bottom/.test(mesh.material?.name||'')){mesh.material.map=null;mesh.material.color.set(mesh.material.name.includes('Bottom')?person.pants||premium.color:person.accent||premium.color);}fitOutfit(model,top,premium.base,person.accent||premium.color,['expedition','velvet','ivory'].includes(premium.id),premium.id==='ivory');premiumDetails(model,top,premium);}
+  if(role==='civilian'&&premium&&top)fitPremium(model,person,premium,{bonePoint,attachGeometry,clothMaterial,coordinates,reshape,inverseSkinMatrix,fitOutfit,fitSuitSleeves,fittedGlasses});
   else if(role==='civilian'&&top && ['jacket','tactical','suit'].includes(person.outfit))fitOutfit(model,top,person.outfit,person.accent || '#526778');
   const hair=find('Hair'), skin=find('Skin');
   if(hair){const style=person.hairstyle||'original',hex=person.hair||'#342b25';if(['cropped','slick','ponytail','ponytail-front','ponytail-side'].includes(style))fitHair(model,hair,skin,style,hex);else if(['afro','braids','straight','curls-short','curls-long'].includes(style))extendedHair(model,hair,skin,style,hex);
     colorHair(hair,model,hex,person.highlights);model.traverse(object=>{if(object.userData.appearanceOwned&&/hair$|ponytail$/.test(object.name))colorHair(object,model,hex,person.highlights);});}
+  if(premium&&premium.base!=='suit'){const neck=bonePoint(model,'Neck');model.traverse(o=>{if(o.isMesh&&(o.material?.name.includes('Hair')||o.userData.appearanceOwned&&/hair$|ponytail$/.test(o.name)))reshape(o,model,p=>{if(p.y<neck.y+.075)p.y=neck.y+.075+(p.y-(neck.y+.075))*.03;});});}
   if(person.refined&&skin){skin.material.roughness=.67;for(const mesh of meshes)if(mesh.material?.name.includes('Eye'))mesh.material.roughness=.24;}
   shapeFace(model,person,skin,meshes);
-  if(role==='civilian'||['security','police'].includes(role))accessories(model,['security','police'].includes(role)?{cap:true,hairstyle:'cropped'}:person,skin,find('Glasses'),meshes);
+  if(role==='civilian'||['security','police'].includes(role)){const look=premium?.id==='black-tie'?{...person,glasses:false,sunglasses:true}:premium?.id==='biker'?{...person,glasses:false,sunglasses:false}:premium?.id==='shearling'?{...person,cap:false}:person;accessories(model,['security','police'].includes(role)?{cap:true,hairstyle:'cropped'}:look,skin,find('Glasses'),meshes);}
   if(['security','police'].includes(role)){fitSuitSleeves(model,top,clothMaterial('#253a50'));securityEquipment(model);for(const m of meshes)if(/Outfit_Top|Outfit_Bottom|Outfit_Footwear/.test(m.material?.name||'')){m.material.map=null;m.material.color.set(m.material.name.includes('Footwear')?'#10151b':m.material.name.includes('Bottom')?'#17212b':'#253a50');m.material.needsUpdate=true;}const chest=model.getObjectByName('Spine2');if(chest){const neck=bonePoint(model,'Neck'),g=new THREE.BoxGeometry(.10,.07,.012);g.translate(.11,neck.y-.17,.14);attachGeometry(model,chest,g,clothMaterial('#bcc4b3'),'KTD security shield');}}
   else if(role!=='civilian'&&person.glasses)fittedGlasses(model,skin,meshes.filter(mesh=>mesh.material?.name.includes('Wolf3D_Eye')));
   if(role==='patient')applyCulturalAttire(model,person,{bonePoint,attachGeometry,clothMaterial,inverseSkinMatrix,coordinates});
@@ -537,32 +539,6 @@ export function shapeFace(model,person,skin,meshes=[]){
   reshape(skin,model,transform);skin.userData.faceShapes={eye:person.eyeShape||'natural',nose:person.noseShape||'natural',mouth:person.mouthShape||'natural'};
   for(const mesh of meshes)if(/Wolf3D_Eye|Wolf3D_Teeth/.test(mesh.material?.name||''))reshape(mesh,model,transform);
 }
-function premiumDetails(model,top,item){
-  const chest=model.getObjectByName('Spine2'),spine=model.getObjectByName('Spine1');if(!chest||!spine)return;
-  const {points}=coordinates(top,model),box=new THREE.Box3().setFromPoints(points),front=surfaceAt(points,false),y=bonePoint(model,'Hips').y+.18;
-  const trim=clothMaterial(item.trim,{roughness:.6});
-  for(const side of [-1,1])for(let i=0;i<(item.id==='nocturne'?3:1);i++){const x=side*.045,by=y+i*.065,g=new THREE.SphereGeometry(.006,8,6);g.scale(1,1,.4);g.translate(x,by,front(x,by)+.01);attachGeometry(model,spine,g,trim,'KTD '+item.id+' tailored button');}
-  if(item.id==='ivory'){
-    const hem=box.min.y;reshape(top,model,p=>{if(p.y<hem+.18)p.y+=.065*(1-THREE.MathUtils.smoothstep(p.y,hem,hem+.18));});
-    const rib=clothMaterial(item.trim);for(let i=0;i<3;i++)fittedPanel(model,spine,[[-.16,y-.11+i*.012],[.16,y-.11+i*.012],[.16,y-.105+i*.012],[-.16,y-.105+i*.012]],front,rib,'KTD ivory bomber ribbed waistband',false,.005);
-    for(const side of[-1,1])fittedPanel(model,chest,[[side*.06,y+.09],[side*.15,y+.12],[side*.15,y+.04],[side*.06,y+.01]],front,trim,'KTD ivory diagonal bomber pocket',false,.005);
-  }else if(item.id==='velvet'){
-    const hem=box.min.y,waist=hem+.22;reshape(top,model,p=>{if(p.y<waist){const t=1-THREE.MathUtils.smoothstep(p.y,hem,waist);p.y-=.26*t;p.x*=1+.50*t;p.z=.01+(p.z-.01)*(1+.85*t);}});top.userData.fittedCoatHem=true;
-    for(const side of[-1,1])fittedPanel(model,spine,[[side*.04,y-.02],[side*.17,y-.02],[side*.17,y+.012],[side*.04,y+.012]],front,trim,'KTD velvet coat belt',false,.008);
-  }else if(item.id==='cobalt'){
-    for(const side of[-1,1]){fittedPanel(model,chest,[[side*.075,y+.13],[side*.145,y+.13],[side*.145,y+.27],[side*.075,y+.27]],front,trim,'KTD cobalt technical shoulder harness',false,.009);}
-  }else if(item.id==='expedition'){
-    // Extend the existing skinned fabric, preserving its atlas and bone weights.
-    // The former rigid green cylinder was detached from the jacket silhouette.
-    const hem=box.min.y,waist=hem+.17;
-    reshape(top,model,p=>{if(p.y<waist){const t=THREE.MathUtils.smoothstep(p.y,hem,waist),amount=1-t;p.y-=.065*amount;p.x*=1-.025*amount;p.z-=(p.z-.01)*.025*amount;}});
-    top.userData.fittedCoatHem=true;
-    const updated=coordinates(top,model).points,frontHem=surfaceAt(updated,false);
-    for(const side of[-1,1])fittedPanel(model,spine,[[side*.065,hem+.19],[side*.15,hem+.19],[side*.15,hem+.165],[side*.065,hem+.165]],frontHem,trim,'KTD expedition pocket flap',false,.004);
-  }
-  else{fittedPanel(model,chest,[[.085,box.max.y-.16],[.13,box.max.y-.16],[.13,box.max.y-.18],[.085,box.max.y-.18]],(x,y)=>front(x,y)+.014,trim,'KTD '+item.id+' pocket square');}
-}
-
 // Preserve the real finger skinning while replacing the source outfit’s glove
 // atlas. Separating faces avoids z-fighting or a rigid mitten over the hand.
 const handFaceCache=new WeakMap();

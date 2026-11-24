@@ -45,9 +45,9 @@ test('Nigerian artwork appears only on the two outermost corridor walls, alterna
  assert.deepEqual(nigerianGalleryPlan(makeLayout(3,1)),[]);
 });
 
-test('Egyptian floral geometry cannot cover an office window opening on any public floor',()=>{
+test('Romanian floral geometry cannot cover an office window opening on any public floor',()=>{
  for(const floor of [0,1,2,4,5]){
-  const a=hospital('egypt',floor);
+  const a=hospital('romania',floor);
   try{
    a.h.group.updateMatrixWorld(true);
    const floral=[];a.h.group.traverse(o=>{if(o.isMesh&&[a.style.materials.floral,a.style.materials.floralHeader].includes(o.material))floral.push(o);});

@@ -40,7 +40,7 @@ test('An autonomous contact cannot shoot before the primary target, harm patient
   const e=Object.create(GameEngine.prototype),save=defaultSave();Object.assign(e,{mission:new Mission(save,123),scene:new THREE.Scene(),effects:[],audio:{sound(){}},hooks:{},notify(){},emitHUD(){},canStand:()=>true,lineOfSight:()=>true});
   const ally=person('contact',0,0,0),staff=person('staff',0,0,5),patient=person('patient',0,0,5);patient.role='patient';staff.complicity='Concealed records';
   assert.equal(e.allyShot(ally,staff),false);e.mission.eliminate({id:'target',role:'doctor'});assert.equal(e.allyShot(ally,patient),false);assert.equal(patient.dead,undefined);
-  e.lineOfSight=()=>false;assert.equal(e.allyShot(ally,staff),false);e.lineOfSight=()=>true;assert.equal(e.allyShot(ally,staff),true);assert.equal(staff.dead,undefined);assert.equal(staff.injury.wounds[0].part,'back');assert.equal(e.allyShot(ally,staff),true);assert.equal(staff.dead,undefined);assert.equal(e.allyShot(ally,staff),true);assert.equal(staff.dead,true);assert.equal(e.mission.staffKills,2);assert.equal(e.allyShot(ally,staff),false);
+  e.lineOfSight=()=>false;assert.equal(e.allyShot(ally,staff),false);e.lineOfSight=()=>true;assert.equal(e.allyShot(ally,staff),true);assert.equal(staff.dead,true);assert.equal(staff.injury.wounds[0].part,'back');assert.equal(e.mission.staffKills,2);assert.equal(e.allyShot(ally,staff),false);
   e.clearEffects();assert.equal(e.effects.length,0);
 });
 test('Transient contact routes follow obstacles without growing the shared flow-field cache',()=>{
@@ -63,7 +63,7 @@ test('The contact physically follows into a private room and waits for the prima
   try{hospitals=levels.map(layout=>buildHospital(layout,materials));}finally{globalThis.document=previousDocument;}
   const e=Object.create(GameEngine.prototype),save=defaultSave(),room=levels[0].rooms.find(r=>r.kind==='bathroom');
   Object.assign(e,{mission:new Mission(save,123),levels,hospitals,navLayouts:levels.map((level,i)=>makeNavigation(level,hospitals[i].colliders)),scene:new THREE.Scene(),effects:[],npcs:[],floor:0,playerPos:new THREE.Vector3(room.center.x,0,room.center.z),player:{root:new THREE.Group()},keys:new Set(),captureTime:0,time:0,hooks:{},muzzle:{intensity:0},blackout:0,impairment:0,coughCooldown:999,nextBlackout:Infinity,nextPA:Infinity,shotCooldown:0,audio:{sound(){},speak(){},gasp(){}},notify(){},say(){},emitHUD(){},finish(){}});
-  e.systems=new MissionSystems(e);e.incidents=new HospitalIncidents(e);e.incidents.setup();e.mission.elapsed=e.incidents.arrivalAt;e.incidents.arrive();const contact=e.incidents.contact;assert.ok(contact);assert.equal(e.incidents.choose('escort'),true);
+  e.systems=new MissionSystems(e);e.incidents=new HospitalIncidents(e);e.incidents.setup();e.incidents.arrivalAt=30;e.mission.elapsed=30;e.incidents.arrive();const contact=e.incidents.contact;assert.ok(contact);assert.equal(e.incidents.choose('escort'),true);
   for(let frame=0;frame<1200&&!e.incidents.privateTogether(contact);frame++){e.time+=1/30;e.mission.elapsed+=1/30;e.updateNPCs(1/30);e.updateEnvironment(1/30);assert.equal(e.canStand(contact.pos.x,contact.pos.z,.21,contact.floor),true);}
   assert.equal(e.incidents.privateTogether(contact),true);assert.equal(e.incidents.choose('recruit'),true);assert.equal(e.incidents.choose('handover'),true);
   const staff=person('staff',0,room.center.x,room.center.z-3);staff.role='doctor';staff.complicity='Concealed records';staff.speed=0;staff.visual.animate=()=>{};e.npcs.push(staff);

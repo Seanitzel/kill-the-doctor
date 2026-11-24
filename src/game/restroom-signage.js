@@ -1,7 +1,7 @@
 import {nativeSign} from './hospital-signs.js';
 import * as THREE from 'three';
 
-const MONOCHROME=new Set(['nigeria','venezuela','somalia','egypt','india']);
+const MONOCHROME=new Set(['nigeria','venezuela','uganda','romania','india']);
 function circle(ctx,x,y,r,color){ctx.fillStyle=color;if(ctx.arc){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}else ctx.fillRect(x-r,y-r,r*2,r*2);}
 function polygon(ctx,points,color){ctx.fillStyle=color;if(!ctx.moveTo){ctx.fillRect(points[0][0],points[0][1],20,20);return;}ctx.beginPath();ctx.moveTo(...points[0]);for(const p of points.slice(1))ctx.lineTo(...p);ctx.closePath();ctx.fill();}
 function line(ctx,points,width,color){if(!ctx.stroke){ctx.fillStyle=color;for(const [x,y]of points)ctx.fillRect(x-width/2,y-width/2,width,width);return;}ctx.beginPath();ctx.moveTo(...points[0]);for(const p of points.slice(1))ctx.lineTo(...p);ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=color;ctx.stroke();}
@@ -37,7 +37,7 @@ function doorPlaque(direction,country){
  ctx.fillStyle=background;if(ctx.bezierCurveTo){outline();ctx.fill();ctx.strokeStyle='#b7cbd5';ctx.lineWidth=7;ctx.stroke();ctx.save();ctx.translate(40,26);ctx.scale(.92,.91);outline();ctx.lineWidth=3;ctx.stroke();ctx.restore();}else ctx.fillRect(20,20,984,560);
  ctx.fillStyle=mono?'#ffffff':'#c4d5dd';if(ctx.roundRect){ctx.beginPath();ctx.roundRect(305,95,390,325,28);ctx.fill();}else ctx.fillRect(305,95,390,325);
  person(ctx,405,121,true,ink,1.3);person(ctx,585,121,false,ink,1.3);ctx.fillStyle=ink;ctx.fillRect(495,130,6,265);
- arrow(ctx,827,285,direction,text,.95);ctx.font='bold 76px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=text;const native=nativeSign('Toilet',country);ctx.font=`bold ${native?59:76}px Arial`;ctx.fillText('TOILET',512,native?460:493);if(native){ctx.font='500 48px Arial';ctx.direction=country==='egypt'?'rtl':'ltr';ctx.fillText(native,512,523,790);}
+ arrow(ctx,827,285,direction,text,.95);ctx.font='bold 76px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=text;const native=nativeSign('Toilet',country);ctx.font=`bold ${native?59:76}px Arial`;ctx.fillText('TOILET',512,native?460:493);if(native){ctx.font='500 48px Arial';ctx.direction=country==='romania'?'rtl':'ltr';ctx.fillText(native,512,523,790);}
  for(const x of [245,779])for(const y of [67,533]){circle(ctx,x,y,12,'#8b9da7');line(ctx,[[x-5,y-4],[x+5,y+4]],2,'#d5e1e6');}
  const sign=panel(canvas,1.12,.656,'Bathroom door pictogram plaque',true);sign.userData.direction=direction;sign.userData.palette={background,ink};return sign;
 }

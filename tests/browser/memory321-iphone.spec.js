@@ -27,5 +27,5 @@ test('iPhone high-quality session survives beyond three minutes with bounded gra
   expect(sample.failed).toBeFalsy();expect(sample.contextLost).toBe(false);expect(sample.result).toBeNull();expect(sample.npcs).toBeLessThan(150);expect(Math.max(...sample.fields)).toBeLessThanOrEqual(8);expect(sample.audio.active).toBeLessThanOrEqual(24);expect(sample.audio.voices).toBeLessThanOrEqual(8*1024*1024);
  }
  await testInfo.attach('iphone-memory-soak',{body:JSON.stringify(samples,null,2),contentType:'application/json'});
- expect(samples.at(-1).elapsed).toBeGreaterThan(120);if(samples.at(-1).country==='egypt'){expect(samples.at(-1).celestials).toEqual({moon:true,sun:false});}const warm=samples[3];for(const sample of samples.slice(4)){expect(sample.resources.geometries).toBeLessThanOrEqual(warm.resources.geometries+100);expect(sample.resources.textures).toBeLessThanOrEqual(warm.resources.textures+60);}expect(errors).toEqual([]);
+ expect(samples.at(-1).elapsed).toBeGreaterThan(120);if(samples.at(-1).country==='romania'){expect(samples.at(-1).celestials).toEqual({moon:true,sun:false});}const warm=samples[3];for(const sample of samples.slice(4)){expect(sample.resources.geometries).toBeLessThanOrEqual(warm.resources.geometries+100);expect(sample.resources.textures).toBeLessThanOrEqual(warm.resources.textures+60);}expect(errors).toEqual([]);
 });

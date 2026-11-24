@@ -7,7 +7,7 @@ import {floralWallBand} from './wall-surfaces.js';
 export const NIGERIAN_PAINTINGS=[['artMarket','nigeria-market'],['artPottery','nigeria-pottery'],['artWeaving','nigeria-weaving'],['artBaskets','nigeria-baskets'],['artGarden','nigeria-garden'],['artLagoon','nigeria-lagoon'],['artTailor','nigeria-tailor'],['artCourtyard','nigeria-courtyard'],['artProduce','nigeria-produce'],['artTextiles','nigeria-textiles'],['artHarvest','nigeria-harvest'],['artCooking','nigeria-cooking']];
 export const NIGERIAN_FAMILY_ART=[["artFamily0", "nigeria-family-courtyard"], ["artFamily1", "nigeria-family-garden"], ["artFamily2", "nigeria-family-meal"], ["artFamily3", "nigeria-family-lagoon"], ["artFamily4", "nigeria-family-school"], ["artFamily5", "nigeria-family-gardening"], ["artFamily6", "nigeria-family-stories"], ["artFamily7", "nigeria-family-market"], ["artFamily8", "nigeria-family-preparing"], ["artFamily9", "nigeria-siblings-reading"], ["artFamily10", "nigeria-family-walk"], ["artFamily11", "nigeria-garden-watering"], ["artFamily12", "nigeria-grandparents-tea"], ["artFamily13", "nigeria-tailoring-family"], ["artFamily14", "nigeria-family-harvesting"], ["artFamily15", "nigeria-family-stall"], ["artFamily16", "nigeria-family-canoe"], ["artFamily17", "nigeria-family-homecoming"], ["artFamily18", "nigeria-family-craft"], ["artFamily19", "nigeria-family-porch"]];
 export const INDIAN_PAINTINGS=[["artIndia0", "india-family-courtyard"], ["artIndia1", "india-handloom"], ["artIndia2", "india-river-town"], ["artIndia3", "india-flower-stall"]];
-const ART={nigeria:[...NIGERIAN_PAINTINGS,...NIGERIAN_FAMILY_ART],india:INDIAN_PAINTINGS,egypt:[['floral','egypt-floral'],['floorMarble','egypt-marble']]};
+const ART={nigeria:[...NIGERIAN_PAINTINGS,...NIGERIAN_FAMILY_ART],india:INDIAN_PAINTINGS,romania:[['floral','egypt-floral'],['floorMarble','egypt-marble']]};
 async function decodeArt(blob){
  if(typeof createImageBitmap==='function')return createImageBitmap(blob,{imageOrientation:'flipY'});
  const url=URL.createObjectURL(blob),image=document.createElement('img');try{image.src=url;await image.decode();image.close=()=>image.removeAttribute('src');return image;}finally{URL.revokeObjectURL(url);}
@@ -89,7 +89,7 @@ export function addCountryDecor(group,batch,m,layout,profile,{colliders=[]}={}){
    batch.addObject(panel(group,m,face,1.6,1.2,'Indian framed daily-life painting',m[INDIAN_PAINTINGS[i+1][0]]));
   }
  }
- if(profile.country==='egypt'){
+ if(profile.country==='romania'){
   group.userData.floralPanels=faces.length;group.userData.floralPanelBounds=[];
   for(const face of faces){const band=floralWallBand(face.wall),plane=mesh('plane',band.window?m.floralHeader:m.floral,[2.94,band.height,1],[0,0,0]);plane.name='Ivory floral relief · solid hallway wall';plane.position.set(face.x,band.center,face.z);plane.rotation.y=face.rotation;group.add(plane);batch.addObject(plane);group.userData.floralPanelBounds.push({x:face.x,z:face.z,axis:face.wall.axis,side:face.side,...band});}
   m.gold||=new T.MeshStandardMaterial({color:'#d4ad4c',metalness:.62,roughness:.28,emissive:'#49300d',emissiveIntensity:.16});m.flowerStem||=new T.MeshStandardMaterial({color:'#556d47',roughness:.85});

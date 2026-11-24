@@ -1,3 +1,4 @@
+import {storyMission,STORY_MISSIONS} from './story-missions.js';
 import {effectiveDifficulty,recordGuidanceProgress} from './progression.js';
 import {normalizeColorPalettes,normalizeSavedColors} from './saved-colors.js';
 import {securityCount} from './security-rules.js';
@@ -20,8 +21,8 @@ export const UPGRADE_INFO = [
   {id:'magazine',name:'Extended magazines',description:'Adds two pistol rounds and one rifle round per level.',cost: 310,max:3},
   {id:'vitals',name:'Protective lining',description:'Makes incoming security fire less accurate. Three non-lethal wounds are still fatal.',cost: 280,max:3},
   {id:'reload',name:'Quick-change reload',description:'Reload 18% faster per level.',cost: 250,max:3},
-  {id:'accuracy',name:'Precision sights',description:'Wider target acquisition and steadier aim per level.',cost: 280,max:3},
-  {id:'power',name:'Weapon tuning',description:'Improved shot recovery and guard stopping power.',cost: 310,max:3},
+  {id:'accuracy',name:'Precision sights',description:'Improve target acquisition by 3% per level.',cost: 280,max:3},
+  {id:'power',name:'Weapon tuning',description:'Fire 12% faster per level with either weapon.',cost: 310,max:3},
   {id:'regularMask',name:'Regular face mask',description:'70% chance to block each new contamination exposure.',cost: 550,max:1},
   {id:'n95',name:'N95 respirator',description:'Complete protection from new gas exposure while equipped.',cost: 950,max:1},
 ];
@@ -33,7 +34,7 @@ export const STAFF = [
   { name: 'Dr. Sofia Vale', role: 'Attending', gender: 'female', hair: '#573a2d', skin: '#c58d6c', accent: '#426e79', glasses: true },
   { name: 'Nurse Jonas Beck', role: 'Senior nurse', gender: 'male', hair: '#8b7761', skin: '#dfbba0', accent: '#4a8193', glasses: false },
 ];
-export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],savedOutfitColors:[],colorPalettes:normalizeColorPalettes({}),colorDefaults:{},characterLooks:Object.fromEntries(CHARACTERS.filter(c=>c.id!=='custom').map(c=>[c.id,defaultAppearance(c)])),freeplayCompleted:0,guidanceMilestones:{story:false,freeplay:false},guidanceNoticePending:false,playMode:'story',storyReplayId:null,internationalVersion:3,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(10).fill(0),loadout:{weapon:'pistol',mask:false,maskType:'n95'},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{helpfulGuidance:true,volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
+export function defaultSave(){return {coins:0,completed:0,attempts:0,character:'male',unlockedCharacters:CHARACTERS.filter(c=>!c.cost).map(c=>c.id),appearance:defaultAppearance(),customAppearance:defaultAppearance(CHARACTERS[2]),customSlots:[null,null,null],ownedOutfits:[],savedOutfitColors:[],colorPalettes:normalizeColorPalettes({}),colorDefaults:{},characterLooks:Object.fromEntries(CHARACTERS.filter(c=>c.id!=='custom').map(c=>[c.id,defaultAppearance(c)])),freeplayCompleted:0,guidanceMilestones:{story:false,freeplay:false},guidanceNoticePending:false,playMode:'story',storyReplayId:null,freeplayCountryId:null,internationalVersion:3,completedCountryIds:null,pendingTravel:null,campaignCompleted:null,countryId:'france',countryAttempts:Array(10).fill(0),loadout:{weapon:'pistol',mask:false,maskType:'n95'},storySeen:[],lastStory:'',upgrades:Object.fromEntries(UPGRADE_INFO.map(u=>[u.id,0])),settings:{helpfulGuidance:true,volume:.5,speech:true,sensitivity:1,brightness:1,flashlightBrightness:1,quality:'high',difficulty:'standard'}};}
 export function readSave(storage) {
   const blank = defaultSave();
   try {
@@ -62,30 +63,31 @@ export function readSave(storage) {
   return blank;
 }
 export function writeSave(storage, save) { try { rememberCharacter(save);storage.setItem(SAVE_KEY, JSON.stringify(save)); return true; } catch { return false; } }
-export function upgradePrice(save,id){const info=UPGRADE_INFO.find(u=>u.id===id);return info?(info.cost-150)*((save.upgrades?.[id]||0)+1)+150:Infinity;}
-export function purchase(save, id) {
-  const info = UPGRADE_INFO.find(u => u.id === id);
-  if (!info || save.upgrades[id] >= info.max) return false;
-  const cost = upgradePrice(save,id);
-  if (save.coins < cost) return false;
-  save.coins -= cost; save.upgrades[id]++;
-  if(['mask','n95','regularMask'].includes(id)){save.loadout.mask=true;save.loadout.maskType=id==='regularMask'?'regular':'n95';}if(id==='sniper')save.loadout.weapon='sniper';
-  return true;
+export function upgradeLevel(save,id){const info=UPGRADE_INFO.find(u=>u.id===id);return info?Math.min(info.max,Math.max(0,Math.floor(Number(save.upgrades?.[id])||0),id==='n95'?Math.floor(Number(save.upgrades?.mask)||0):0)):0;}
+export function upgradePrice(save,id){const info=UPGRADE_INFO.find(u=>u.id===id);return info?(info.cost-150)*(upgradeLevel(save,id)+1)+150:Infinity;}
+export function purchase(save,id){
+  const info=UPGRADE_INFO.find(u=>u.id===id);if(!info||!Number.isFinite(save.coins))return false;
+  save.upgrades||={};const current=upgradeLevel(save,id);
+  if(current>=info.max||(['mask','n95'].includes(id)&&(save.upgrades.n95||save.upgrades.mask)))return false;
+  const cost=(info.cost-150)*(current+1)+150;if(save.coins<cost)return false;
+  save.coins-=cost;save.upgrades[id]=current+1;save.loadout||={weapon:'pistol',mask:false,maskType:'n95'};
+  if(['mask','n95','regularMask'].includes(id)){save.loadout.mask=true;save.loadout.maskType=id==='regularMask'?'regular':'n95';}if(id==='sniper')save.loadout.weapon='sniper';return true;
 }
+
 export class Mission {
   constructor(save, seed = Date.now(), attempt = save.attempts) {
-    this.save = save; this.random = rng(seed); this.seed = seed;
+    this.save=save;this.country=countryFor(save);this.playMode=save.playMode||'story';this.story=storyMission(this);seed=this.story?.seed??seed;attempt=this.story?0:attempt;this.random=rng(seed);this.seed=seed;
     this.round = campaignLevel(save);this.country=countryFor(save);this.playMode=save.playMode||'story';this.countryAttempt=save.countryAttempts?.[this.country.index]||0;this.selectionType=assignmentType(save);this.explicitInfiltration=this.selectionType==='infiltration';this.type=this.explicitInfiltration?'evidence':this.selectionType;this.keys=[];this.photos=[];this.photoImages={};this.videoClips={};this.operationDoctors=[];this.requiredHiddenIds=new Set();this.patientReleased=false;
     this.difficulty = effectiveDifficulty(save);this.challenge=campaignChallenge(this.round,this.difficulty);
     const doctors=STAFF.filter(s=>s.name.startsWith('Dr.'));const targetIndex=(attempt+Math.floor(this.random()*3))%doctors.length;
     const floors=publicFloorIds(this.round),floor = attempt === 0 ? 0 : floors[Math.floor(this.random()*floors.length)];
-    const availableRooms = makeLayout(floor,this.country.index).rooms.filter(r => !(coffeeLevel(this.round)?!['clinic'].includes(r.kind):['cafe', 'office', 'utility', 'morgue', 'bathroom'].includes(r.kind)));
+    const availableRooms = makeLayout(floor,this.country.index).rooms.filter(r => !((coffeeLevel(this.round)||this.playMode==='freestyle'&&this.difficulty==='hard')?!['clinic'].includes(r.kind):['cafe', 'office', 'utility', 'morgue', 'bathroom'].includes(r.kind)));
     this.target = { ...doctors[targetIndex],name:this.country.doctor,gender:this.country.gender, id: 'target', floor, room: availableRooms[Math.floor(this.random() * availableRooms.length)] };
     if(this.type!=='standard')this.target={...doctors[0],name:this.country.doctor,gender:this.country.gender,id:'operation-doctor-0',floor:3,room:makeLayout(3).rooms[0]};
     this.target=countryPerson(this.target,'doctor',this.country,this.seed,'target',0);
     this.state = 'investigate'; this.clues = []; this.elapsed = 0; this.timer = 0;
     this.eliminatedIds=new Set();this.hiddenAccompliceKills=0;this.accompliceKills=0;this.staffKills = 0; this.shots = 0; this.targetDown = false; this.identified = false; this.result = null;
-    this.informationBoardFloor=this.round===1&&attempt===0?0:floors[(Math.abs(seed)+this.country.index)%floors.length];this.recordsNotice=false;this.locatedRecords=false;this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
+    this.informationBoardFloor=this.story?0:this.round===1&&attempt===0?0:floors[(Math.abs(seed)+this.country.index)%floors.length];this.recordsNotice=false;this.locatedRecords=false;this.suspicion = 0; this.blackoutCount = 0;this.china=chinaMission(this)?new ChinaCase(this):null;
   }
   get weaponRequired(){return this.type==='standard'||this.type==='rescue'||!!this.china;}
   get operativeRole(){return this.type==='rescue'||this.photoOnly?'detective':'assassin';}
@@ -128,7 +130,7 @@ export class Mission {
     } else { this.suspicion = Math.min(100, this.suspicion + 38); }
     return true;
   }
-  beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]*this.challenge.escapeScale+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0)+(securityCount(this.round)-1)*9;}this.suspicion=Math.max(this.suspicion,suspicion);}
+  beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]*this.challenge.escapeScale+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0)+(securityCount(this.round,this.playMode,this.difficulty)-1)*9;}this.suspicion=Math.max(this.suspicion,suspicion);}
   collectKey(id){if(this.result||!['basement','theatre','laboratory'].includes(id)||this.keys.includes(id))return false;this.keys.push(id);return true;}
   photograph(id){if(this.type!=='evidence'||this.result||!['ledger','consent','theatre'].includes(id)||this.photos.includes(id))return false;this.photos.push(id);if(this.photos.length===3)this.beginEscape(0);return true;}
   releasePatient(){if(this.type!=='rescue'||!this.keys.includes('basement')||!this.keys.includes('theatre')||this.patientReleased||this.result)return false;if(!this.rescueEncounterReady)return false;this.patientReleased=true;this.state='rescue-escort';this.timer=0;return true;}

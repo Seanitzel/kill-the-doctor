@@ -26,7 +26,7 @@ export function removeOutfitColor(save, color) {
 
 // Category palettes are independent. Legacy shared swatches are copied once per
 // category on read; later writes never change another category or its default.
-export const COLOR_CATEGORIES=['accent','pants','hair','skin','eyes','highlights'];
+export const COLOR_CATEGORIES=['accent','pants','shoes','hair','skin','eyes','highlights'];
 export function categoryColors(save,key){
   if(!COLOR_CATEGORIES.includes(key))return [];
   if(Object.hasOwn(save.colorPalettes||{},key))return normalizeSavedColors(save.colorPalettes[key]);

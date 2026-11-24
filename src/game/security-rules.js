@@ -1,2 +1,2 @@
-export function securityCount(level=1){return level>=10?8:level>=9?6:level>=7?4+(level-7):level>=5?2+(level-5):1;}
+export function securityCount(level=1,mode='story',difficulty='standard'){return mode==='story'?([1,2,2,2,2,2,3,3,3,4][Math.min(9,Math.max(0,level-1))]):({relaxed:1,standard:2,hard:4}[difficulty]||2);}
 export function complicityFor(n){if(n.id==='target')return 'Assigned case';if(n.operationDoctor)return 'Unauthorized operating team';if(n.role!=='doctor'&&n.role!=='nurse')return null;if(n.id==='rota-custodian')return 'Management concealed patient records';if(n.room?.kind==='lab')return 'Assigned to the unauthorized research programme';if(n.room?.kind==='office'&&n.role==='doctor')return 'Management concealed patient records';return null;}

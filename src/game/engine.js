@@ -774,10 +774,7 @@ export class GameEngine {
   updateLights() {
     const dark = this.blackout > 0, emergency = this.mission?.state === 'escape'&&(!this.mission.china||this.mission.policeAlert);
     const continuous=!motionLighting(this.mission);const flicker=continuous?1:this.life?.flickerLevel() || 1,privateOffice=this.objectives?.china;
-    // Fixed fixture lights need a steady diffuse fill across the entire floor,
-    // including ceilings and rooms far from the limited mobile light slots.
-    this.ambient.intensity = dark ? .14 : continuous ? 3.25 : .95; this.ambient.color.set(dark ? '#50647e' : '#d3e3f0');
-    this.ambient.groundColor?.set(!dark&&continuous?'#c4cdd3':'#3e5264'); this.rim.intensity = dark ? .3 : 2.5;
+    this.ambient.intensity = dark ? .14 : .95; this.ambient.color.set(dark ? '#50647e' : '#d3e3f0'); this.rim.intensity = dark ? .3 : 2.5;
     this.materials.light.emissiveIntensity = dark ? .015 : 1.6;
     const lightAnchor = this.mission ? this.playerPos : this.camera.position;
     const near=this.nearestFixtures;near.length=0;

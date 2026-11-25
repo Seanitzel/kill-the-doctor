@@ -168,7 +168,7 @@ export class HospitalLife {
     this.privacy.release(`${item.room.floor}:${item.room.id}`);
     this.queue=this.queue.filter(line=>line.actor!==item.patient&&line.actor!==item.doctor);
     const goal={x:0,z:18};e.systems.stand(item.patient,goal);item.patient.appointmentDeparture={goal};item.patient.speed=1.6;item.patient.contamination=0;e.systems.route(item.patient,goal);
-    e.notify('Appointment complete · the patient is leaving. The doctor is available.','clue');
+    if(e.mission.clues.some(c=>['directory','schedule'].includes(c.type)))e.notify('Appointment complete · the patient is leaving. The doctor is available.','clue');
   }
   prepareNPC(n){
     if(n.reporting||n.evacuating)return false;
@@ -182,7 +182,7 @@ export class HospitalLife {
     return true;
   }
   appointmentHUD(){
-    const e=this.engine,item=this.targetCase;if(!item||item.appointment.startedAt===null||e.mission.targetDown)return null;
+    const e=this.engine,item=this.targetCase;if(!item||item.appointment.startedAt===null||e.mission.targetDown||!e.mission.clues.some(c=>['directory','schedule'].includes(c.type)))return null;
     const a=item.appointment,id=`${item.room.floor}:${item.room.id}`,privacy=this.privacy.rooms.get(id),warning=this.privacy.active===id&&privacy?.stage==='requested'?Math.max(0,Math.ceil(privacy.warningDelay-(e.mission.elapsed-privacy.enteredAt))):null;
     return {room:item.room.name,floor:item.room.floor,complete:a.completed,seconds:a.remaining(e.mission.elapsed),warningSeconds:warning,inside:this.privacy.active===id&&!a.completed,warnings:privacy?.warnings||0};
   }

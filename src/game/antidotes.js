@@ -3,7 +3,7 @@ import {disposeObjectResources} from './resources.js';
 export class AntidoteStations {
   constructor(engine){
     this.e=engine;this.stations=[];
-    const selected=0;for(const layout of engine.levels.filter(l=>l.floor===selected)){const station=buildAntidoteCabinet(layout);if(!station)continue;this.stations.push(station);engine.scene.add(station.root);engine.hospitals[layout.floor].colliders.push(station.collider);}this.update();
+    for(const layout of engine.levels.filter(l=>[0,2].includes(l.floor))){const station=buildAntidoteCabinet(layout);if(!station)continue;this.stations.push(station);engine.scene.add(station.root);engine.hospitals[layout.floor].colliders.push(station.collider);}this.update();
   }
   interactions(){return this.stations.filter(s=>s.interaction.floor===this.e.floor).map(s=>({...s.interaction,station:s,label:s.available?'Use contamination antidote':'Antidote cabinet · empty'}));}
   use(item){

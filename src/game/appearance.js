@@ -1,3 +1,4 @@
+import {fitPremium} from './premium-outfits.js';
 import {applyCulturalAttire} from './cultural-attire.js';
 import {COUNTRIES} from './international.js';
 import {PREMIUM_OUTFITS} from './loadout.js';
@@ -487,14 +488,14 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
   }
   const top=find('Outfit_Top');
   const premium=PREMIUM_OUTFITS.find(o=>o.id===person.outfit);
-  if(role==='civilian'&&premium&&top){for(const mesh of meshes)if(/Outfit_Top|Outfit_Bottom/.test(mesh.material?.name||'')){mesh.material.map=null;mesh.material.color.set(mesh.material.name.includes('Bottom')?person.pants||premium.color:person.accent||premium.color);}fitOutfit(model,top,premium.base,person.accent||premium.color,['expedition','velvet','ivory'].includes(premium.id),premium.id==='ivory');premiumDetails(model,top,premium);}
+  if(role==='civilian'&&premium&&top)fitPremium(model,person,premium,{bonePoint,attachGeometry,clothMaterial,coordinates,reshape,inverseSkinMatrix,fitOutfit,fitSuitSleeves,fittedGlasses});
   else if(role==='civilian'&&top && ['jacket','tactical','suit'].includes(person.outfit))fitOutfit(model,top,person.outfit,person.accent || '#526778');
   const hair=find('Hair'), skin=find('Skin');
   if(hair){const style=person.hairstyle||'original',hex=person.hair||'#342b25';if(['cropped','slick','ponytail','ponytail-front','ponytail-side'].includes(style))fitHair(model,hair,skin,style,hex);else if(['afro','braids','straight','curls-short','curls-long'].includes(style))extendedHair(model,hair,skin,style,hex);
     colorHair(hair,model,hex,person.highlights);model.traverse(object=>{if(object.userData.appearanceOwned&&/hair$|ponytail$/.test(object.name))colorHair(object,model,hex,person.highlights);});}
   if(person.refined&&skin){skin.material.roughness=.67;for(const mesh of meshes)if(mesh.material?.name.includes('Eye'))mesh.material.roughness=.24;}
   shapeFace(model,person,skin,meshes);
-  if(role==='civilian'||['security','police'].includes(role))accessories(model,['security','police'].includes(role)?{cap:true,hairstyle:'cropped'}:person,skin,find('Glasses'),meshes);
+  if(role==='civilian'||['security','police'].includes(role)){const look=premium?.id==='black-tie'?{...person,glasses:false,sunglasses:true}:premium?.id==='biker'?{...person,glasses:false,sunglasses:false}:premium?.id==='shearling'?{...person,cap:false}:person;accessories(model,['security','police'].includes(role)?{cap:true,hairstyle:'cropped'}:look,skin,find('Glasses'),meshes);}
   if(['security','police'].includes(role)){fitSuitSleeves(model,top,clothMaterial('#253a50'));securityEquipment(model);for(const m of meshes)if(/Outfit_Top|Outfit_Bottom|Outfit_Footwear/.test(m.material?.name||'')){m.material.map=null;m.material.color.set(m.material.name.includes('Footwear')?'#10151b':m.material.name.includes('Bottom')?'#17212b':'#253a50');m.material.needsUpdate=true;}const chest=model.getObjectByName('Spine2');if(chest){const neck=bonePoint(model,'Neck'),g=new THREE.BoxGeometry(.10,.07,.012);g.translate(.11,neck.y-.17,.14);attachGeometry(model,chest,g,clothMaterial('#bcc4b3'),'KTD security shield');}}
   else if(role!=='civilian'&&person.glasses)fittedGlasses(model,skin,meshes.filter(mesh=>mesh.material?.name.includes('Wolf3D_Eye')));
   if(role==='patient')applyCulturalAttire(model,person,{bonePoint,attachGeometry,clothMaterial,inverseSkinMatrix,coordinates});

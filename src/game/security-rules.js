@@ -1,2 +1,3 @@
-export function securityCount(level=1){return level>=10?8:level>=9?6:level>=7?4+(level-7):level>=5?2+(level-5):1;}
+import {STORY_MISSIONS} from './story-missions.js';
+export function securityCount(level=1,mode='story'){return mode==='story'&&level<=10?Object.values(STORY_MISSIONS)[Math.max(0,level-1)].guards:level>=10?8:level>=9?6:level>=7?4+(level-7):level>=5?2+(level-5):1;}
 export function complicityFor(n){if(n.id==='target')return 'Assigned case';if(n.operationDoctor)return 'Unauthorized operating team';if(n.role!=='doctor'&&n.role!=='nurse')return null;if(n.id==='rota-custodian')return 'Management concealed patient records';if(n.room?.kind==='lab')return 'Assigned to the unauthorized research programme';if(n.room?.kind==='office'&&n.role==='doctor')return 'Management concealed patient records';return null;}

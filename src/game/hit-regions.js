@@ -10,9 +10,9 @@ export function bodyRegions(visual){
  capsule('hips',null,'Hips','Spine',.155,'Hips');
  for(const side of ['Left','Right']){
   capsule('arm',side,side+'Arm',side+'ForeArm',.065,side+'Arm');capsule('arm',side,side+'ForeArm',side+'Hand',.06,side+'ForeArm');
-  capsule('leg',side,side+'UpLeg',side+'Leg',.095,side+'UpLeg');capsule('leg',side,side+'Leg',side+'Foot',.075,side+'Leg');
+  capsule('leg',side,side+'UpLeg',side+'Leg',.095,side+'UpLeg');capsule('leg',side,side+'Leg',side+'Foot',.075,side+'Leg');capsule('foot',side,side+'Foot',side+'ToeBase',.075,side+'Foot');
  }
- if(!regions.length){const p=(x,y,z=0)=>root.localToWorld(new T.Vector3(x,y,z)),add=(part,side,a,b,radius)=>regions.push({part,side,a:p(...a),b:p(...b),radius,bone:root});add('head',null,[0,1.65,0],[0,1.73,0],.12);add('neck',null,[0,1.51,0],[0,1.59,0],.07);add('chest',null,[0,1.28,0],[0,1.46,0],.17);add('hips',null,[0,.94,0],[0,1.14,0],.16);for(const sign of[-1,1]){const side=sign<0?'Left':'Right';add('arm',side,[sign*.3,1.43,0],[sign*.34,.98,0],.07);add('leg',side,[sign*.12,.89,0],[sign*.13,.13,0],.09);}}
+ if(!regions.length){const p=(x,y,z=0)=>root.localToWorld(new T.Vector3(x,y,z)),add=(part,side,a,b,radius)=>regions.push({part,side,a:p(...a),b:p(...b),radius,bone:root});add('head',null,[0,1.65,0],[0,1.73,0],.12);add('neck',null,[0,1.51,0],[0,1.59,0],.07);add('chest',null,[0,1.28,0],[0,1.46,0],.17);add('hips',null,[0,.94,0],[0,1.14,0],.16);for(const sign of[-1,1]){const side=sign<0?'Left':'Right';add('arm',side,[sign*.3,1.43,0],[sign*.34,.98,0],.07);add('leg',side,[sign*.12,.89,0],[sign*.13,.13,0],.09);add('foot',side,[sign*.13,.07,-.03],[sign*.13,.07,.16],.075);}}
  return regions;
 }
 export function bodyHit(visual,ray,maxDistance=Infinity){

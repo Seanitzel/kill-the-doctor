@@ -1,3 +1,4 @@
+export const countryId=id=>({egypt:'romania',somalia:'uganda'}[id]||id);
 // Fictional hospitals and characters. Coordinates only locate the travel animation.
 export const LEGACY_COUNTRIES=[
  ['france','France','Paris',48.9,2.3,'Velmoraine','#728ca7','Dr. Camille Laurent','female'],
@@ -21,10 +22,10 @@ export const LEGACY_COUNTRIES=[
  ['south-africa','South Africa','Cape Town',-33.9,18.4,'Asterweft','#9b89aa','Dr. Naledi Mokoena','female'],
  ['sudan','Sudan','Port Sudan',19.6,37.2,'Sorelvane','#b19c85','Dr. Samir Idris','male'],
 ].map(([id,name,city,lat,lon,hospital,accent,doctor,gender],index)=>({id,name,city,lat,lon,hospital,accent,doctor,gender,index}));
-const additions=[['russia','Russia','Moscow',55.75,37.62,'Eldervoss','#71849e','Dr. Elena Morozova','female'],['venezuela','Venezuela','Caracas',10.48,-66.9,'Aurivane','#ad896d','Dr. Lucia Montoya','female'],['egypt','Egypt','Cairo',30.04,31.24,'Merivane','#b39b73','Dr. Youssef Nabil','male'],['somalia','Somalia','Mogadishu',2.05,45.32,'Elunara','#6fa6aa','Dr. Amina Warsame','female']].map(([id,name,city,lat,lon,hospital,accent,doctor,gender])=>({id,name,city,lat,lon,hospital,accent,doctor,gender}));
-export const COUNTRIES=['france','nigeria','china','india','russia','venezuela','america','egypt','somalia','england'].map((id,index)=>({...([...LEGACY_COUNTRIES,...additions].find(c=>c.id===id)),index}));
+const additions=[['russia','Russia','Moscow',55.75,37.62,'Eldervoss','#71849e','Dr. Elena Morozova','female'],['venezuela','Venezuela','Caracas',10.48,-66.9,'Aurivane','#ad896d','Dr. Lucia Montoya','female'],['romania','Romania','Bucharest',44.43,26.1,'Merivane','#b39b73','Dr. Andrei Ionescu','male'],['uganda','Uganda','Kampala',.35,32.58,'Elunara','#6fa6aa','Dr. Amina Namutebi','female']].map(([id,name,city,lat,lon,hospital,accent,doctor,gender])=>({id,name,city,lat,lon,hospital,accent,doctor,gender}));
+export const COUNTRIES=['france','nigeria','china','india','russia','venezuela','america','romania','uganda','england'].map((id,index)=>({...([...LEGACY_COUNTRIES,...additions].find(c=>c.id===id)),index}));
 export function completedCountries(save){
- if(Array.isArray(save.completedCountryIds))return COUNTRIES.filter(c=>save.completedCountryIds.includes(c.id)).map(c=>c.id);
+ if(Array.isArray(save.completedCountryIds))return COUNTRIES.filter(c=>save.completedCountryIds.map(countryId).includes(c.id)).map(c=>c.id);
  const count=Math.min(COUNTRIES.length,Math.max(0,Math.floor(Number(save.campaignCompleted??save.completed)||0)));return COUNTRIES.slice(0,count).map(c=>c.id);
 }
 export function campaignProgress(save){return completedCountries(save).length;}
@@ -36,6 +37,7 @@ export function storyCountries(save){return STORY_EXPLORATION_UNLOCKED?COUNTRIES
 export function unlockedCountries(save){return COUNTRIES.filter(c=>completedCountries(save).includes(c.id));}
 export function setPlayMode(save,mode,id){if(!['story','freestyle'].includes(mode))return false;if(mode==='freestyle'&&!unlockedCountries(save).some(c=>c.id===(id||save.countryId)))return false;save.playMode=mode;save.storyReplayId=mode==='story'&&id&&storyCountries(save).some(c=>c.id===id)?id:null;if(id)save.countryId=id;save.activeAssignment=null;return true;}
 export function migrateInternational(data){
+ data={...data,countryId:countryId(data.countryId),storyReplayId:countryId(data.storyReplayId),completedCountryIds:Array.isArray(data.completedCountryIds)?data.completedCountryIds.map(countryId):data.completedCountryIds,pendingTravel:data.pendingTravel?{from:countryId(data.pendingTravel.from),to:countryId(data.pendingTravel.to)}:null};
  const count=Math.min((data.internationalVersion>=3?COUNTRIES:LEGACY_COUNTRIES).length,Math.max(0,Math.floor(Number(data.campaignCompleted??data.completed)||0))),oldOrder=[LEGACY_COUNTRIES[1],LEGACY_COUNTRIES[0],...LEGACY_COUNTRIES.slice(2)];
  const ids=Array.isArray(data.completedCountryIds)?completedCountries(data):((data.internationalVersion||0)>=3?COUNTRIES:(data.internationalVersion||0)>=2?LEGACY_COUNTRIES:oldOrder).slice(0,count).filter(c=>COUNTRIES.some(n=>n.id===c.id)).map(c=>c.id);
  const country=COUNTRIES.find(c=>c.id===data.countryId&&ids.includes(c.id));

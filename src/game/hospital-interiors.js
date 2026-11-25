@@ -12,8 +12,8 @@ export const INTERIORS=Object.freeze({
  russia:{ceilingColor:'#b9cbd3',ceilingGrout:'#9baeb8',wall:'#e9eeec',lower:'#d5e0e3',floor:'#3677ad',grout:'#2e6191',accent:'#426d96',chair:'#5285a6',metal:'#b6c8d2',wood:'#bec8cf',style:'Russian blue clinical tiles'},
  venezuela:{grainy:true,ceilingColor:'#929292',ceilingGrout:'#717171',wall:'#e9dec7',lower:'#d4c6ad',floor:'#797979',grout:'#585858',accent:'#657b75',chair:'#7b9186',metal:'#9ca7a4',wood:'#b9aa92',style:'Venezuelan cream and grey'},
  america:{glassEnds:true,wall:'#e6e0d4',lower:'#d6cebb',floor:'#bf9562',grout:'#937044',accent:'#657c83',chair:'#537188',metal:'#afb8b8',wood:'#a77b4d',flooring:'wood',style:'American warm wood care'},
- egypt:{ceilingColor:'#d2ac4d',ceilingGrout:'#8e6a23',floral:true,wall:'#e8e1d4',lower:'#d5c8b3',floor:'#14191b',grout:'#74603e',accent:'#8a7652',chair:'#686c70',metal:'#bba16a',wood:'#a88b5e',flooring:'black-gold-marble',ornament:'geometry',style:'Egyptian marble and gold'},
- somalia:{ceilingColor:'#987c5b',ceilingGrout:'#735f48',lowerHeight:2.0,wall:'#e7ddbf',lower:'#c5ab46',floor:'#b9ab89',grout:'#9b8f71',accent:'#8d824c',chair:'#8c896c',metal:'#9b9784',wood:'#8c7956',worn:true,style:'Somali yellow and cream wards'},
+ romania:{ceilingColor:'#d2ac4d',ceilingGrout:'#8e6a23',floral:true,wall:'#e8e1d4',lower:'#d5c8b3',floor:'#14191b',grout:'#74603e',accent:'#8a7652',chair:'#686c70',metal:'#bba16a',wood:'#a88b5e',flooring:'black-gold-marble',ornament:'geometry',style:'Romanian marble and gold'},
+ uganda:{ceilingColor:'#987c5b',ceilingGrout:'#735f48',lowerHeight:2.0,wall:'#e7ddbf',lower:'#c5ab46',floor:'#b9ab89',grout:'#9b8f71',accent:'#8d824c',chair:'#8c896c',metal:'#9b9784',wood:'#8c7956',worn:true,style:'Ugandan yellow and cream wards'},
 });
 export function interiorFor(mission){return mission?.playMode==='story'&&!mission.terror&&mission.mode!=='terror'?INTERIORS[mission.country?.id]||null:null;}
 // Own only clones and newly created maps; the default pool survives mode switches.
@@ -25,15 +25,15 @@ export function createInterior(base,mission){
  materials.lowerWall=materials.wall.clone();materials.lowerWall.color.set(profile.lower);
  const map=finishTexture(profile);maps.push(map);materials.floor.map=map;materials.floor.color.set('#ffffff');materials.floor.roughness=profile.worn||profile.grainy?.84:profile.flooring?.includes('marble')?.28:.46;materials.floor.metalness=0;if(profile.grainy){materials.floor.bumpMap=map;materials.floor.bumpScale=.012;}
  if(profile.ceiling||profile.ceilingColor){const ceiling=finishTexture(profile,true);maps.push(ceiling);materials.ceiling.map=ceiling;materials.ceiling.color.set('#ffffff');}
- if(profile.country==='egypt'||mission.country.id==='egypt'){materials.ceiling.metalness=.38;materials.ceiling.roughness=.3;materials.ceiling.emissive.set('#78561c');materials.ceiling.emissiveIntensity=.13;}
+ if(profile.country==='romania'||mission.country.id==='romania'){materials.ceiling.metalness=.38;materials.ceiling.roughness=.3;materials.ceiling.emissive.set('#78561c');materials.ceiling.emissiveIntensity=.13;}
  const art=interiorArt(materials,mission.country.id,maps);
- materials.light.emissive.set(mission.country.id==='egypt'?'#ffe3b5':profile.worn?'#f4e7ce':'#d5e9f4');
+ materials.light.emissive.set(mission.country.id==='romania'?'#ffe3b5':profile.worn?'#f4e7ce':'#d5e9f4');
  let disposed=false;return{loadArt:art.load,profile:{...profile,country:mission.country.id},materials,dispose(){if(disposed)return;disposed=true;art.dispose();for(const map of maps)map.dispose();for(const value of Object.values(materials))value.dispose();}};
 }
 export function localizeSigns(root,profile){
  if(!profile)return;const signs=[];root.traverse(o=>{if(o.userData.signText&&!o.userData.localizedCountry)signs.push(o);});
  for(const original of signs){const info=original.userData.signText,native=nativeSign(info.text,profile.country)||nativeSign(info.subtitle,profile.country);if(!native)continue;const nativeBelowSubtitle=!nativeSign(info.text,profile.country);
- const replacement=sign(info.text,info.subtitle,info.width,info.height,{...info.options,native,nativeBelowSubtitle,rtl:profile.country==='egypt',background:profile.accent});
+ const replacement=sign(info.text,info.subtitle,info.width,info.height,{...info.options,native,nativeBelowSubtitle,rtl:false,background:profile.accent});
  original.material.map?.dispose();original.material.dispose();original.material=replacement.material;replacement.geometry.dispose();original.userData.localizedCountry=profile.country;original.userData.native=native;
  }
 }
@@ -42,7 +42,7 @@ export function addInteriorDetails(group,batch,m,layout,profile,options={}){
  // Accents sit on existing wall faces above reach; no door, route or collider moves.
  if(profile.ornament){const walls=layout.walls.filter(w=>{if(w.axis!=='x'||w.door||w.exterior||Math.round(w.x+w.z)%4===0)return false;return[-1,1].some(side=>{const p=tileAt(w.x,w.z+side*.3);return layout.cells.get(key(p.x,p.z))?.room==='hall';});});for(const wall of walls.filter((_,i)=>i%Math.max(1,Math.floor(walls.length/4))===0).slice(0,4)){
   const side=[-1,1].find(side=>{const p=tileAt(wall.x,wall.z+side*.3);return layout.cells.get(key(p.x,p.z))?.room==='hall';});
-  const ornament=new T.Group();ornament.name=profile.ornament==='lotus'?'Framed Indian lotus craft':'Egyptian geometric wall panel';ornament.position.set(wall.x,2.2,wall.z+side*.14);ornament.rotation.y=side<0?Math.PI:0;group.add(ornament);
+  const ornament=new T.Group();ornament.name=profile.ornament==='lotus'?'Framed Indian lotus craft':'Romanian geometric wall panel';ornament.position.set(wall.x,2.2,wall.z+side*.14);ornament.rotation.y=side<0?Math.PI:0;group.add(ornament);
   mesh('box',m.wood,[1.25,.94,.035],[0,0,0],ornament);mesh('box',m.linen,[1.12,.81,.045],[0,0,.025],ornament);
   for(let i=0;i<8;i++){const angle=i*Math.PI/4,shape=mesh(profile.ornament==='lotus'?'sphere':'box',m.steel,profile.ornament==='lotus'?[.085,.20,.012]:[.23,.23,.015],[Math.sin(angle)*.22,Math.cos(angle)*.22,.06],ornament);shape.rotation.z=-angle+(profile.ornament==='geometry'?Math.PI/4:0);}
  }}

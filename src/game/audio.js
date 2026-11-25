@@ -8,7 +8,7 @@ import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
 import {waitFor} from './startup.js';
 const AUDIO_REVISION='3.0.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
-export const HOSPITAL_SAMPLE_FILES=Object.freeze({'rain-field':'/audio/rain-field-v313.mp3','ambulance-field':'/audio/ambulance-field-v315.mp3','car-engine':'/audio/car-engine-v315.mp3','car-road':'/audio/car-road-v315.mp3','flight-airplane':'/audio/flight-airplane.mp3','laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',hawk:'/audio/hawk-v319.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
+export const HOSPITAL_SAMPLE_FILES=Object.freeze({'coffee-stir':'/audio/coffee-stir-v336.mp3','rain-field':'/audio/rain-field-v313.mp3','ambulance-field':'/audio/ambulance-field-v315.mp3','car-engine':'/audio/car-engine-v315.mp3','car-road':'/audio/car-road-v315.mp3','flight-airplane':'/audio/flight-airplane.mp3','laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',hawk:'/audio/hawk-v319.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
 const disconnect=node=>{try{node?.disconnect();}catch{}};
 
@@ -136,7 +136,7 @@ export class HospitalAudio {
   }
   sound(name,options={}) {
     if(this.disposed||!this.enabled||!this.ctx)return;
-    if(name==='stir'){this.noise(.48,.009,460+Math.random()*180);this.tone(1180+Math.random()*100,.035,.003,'sine');return;}
+    if(name==='stir'){this.playSample('coffee-stir',options.position||this.listenerPosition,.24);return;}
     if(name==='gas'){this.noise(1.2,.10,1600);return;}
     if(name==='glass-break'){this.noise(.16,.10,5200);this.tone(2600,.08,.035,'triangle');this.delay(()=>this.noise(.12,.04,3200),95);return;}
     if(name==='vending'){this.tone(820,.09,.07,'sine');this.delay(()=>this.noise(.4,.10,210),100);this.delay(()=>this.tone(110,.16,.10,'triangle'),260);return;}

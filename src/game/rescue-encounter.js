@@ -3,7 +3,7 @@ import {mesh,material} from './assets.js';import {weaponModel} from './gear.js';
 import {disposeObjectResources} from './resources.js';import {segmentHit3D,obstacleBounds} from './collision.js';
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 export class RescueEncounter{
- constructor(e,patient){this.e=e;this.patient=patient;this.started=false;this.ready=false;this.root=new T.Group();this.root.name='Rescue confrontation';e.scene.add(this.root);const doctors=e.npcs.filter(n=>n.operationDoctor),both=e.mission.random()<.5,first=Math.floor(e.mission.random()*2);this.entries=doctors.map((n,i)=>({n,resists:both||i===first,kind:['gun','injection','gas'][Math.floor(e.mission.random()*3)],phase:'waiting'}));}
+ constructor(e,patient){this.e=e;this.patient=patient;this.started=false;this.ready=false;this.root=new T.Group();this.root.name='Rescue confrontation';e.scene.add(this.root);const doctors=e.npcs.filter(n=>n.operationDoctor),both=e.mission.playMode==='story'||e.mission.random()<.5,first=Math.floor(e.mission.random()*2);this.entries=doctors.map((n,i)=>({n,resists:both||i===first,kind:['gun','injection','gas'][Math.floor(e.mission.random()*3)],phase:'waiting'}));}
  speak(n,text){this.e.life?.speak(n,text,true);}
  fail(reason){if(!this.e.mission.result){this.e.mission.finish(false,reason);this.e.finish();}}
  begin(){if(this.started)return;const e=this.e,m=e.mission;this.started=true;this.at=m.elapsed;const player={id:'rescue-detective',name:e.playerProfile?.name||'Detective',person:e.playerProfile||{gender:'male'},pos:e.playerPos,floor:3,visual:e.player};this.speak(player,'Raise your hands! You’re under arrest!');for(const door of e.levels[3].doors)door.locked=false;

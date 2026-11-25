@@ -236,7 +236,7 @@ export function makePlayer(assets, gender, person = null, role = 'civilian') {
           if(name.includes('Skin')||name.includes('Body')){o.material.map=recolorCloth(o.material.map,'#ffffff',assets,clothLeases);o.material.color.set(person.skin||'#e0ad87');o.material.emissive.set(person.skin||'#e0ad87');o.material.emissiveIntensity=.035;o.material.metalness=0;o.material.userData.skinAlbedo=true;}
           if (name.includes('Glasses')) o.visible = !!person.glasses;
         } else if (name.includes('Outfit_Top')) o.material.color.set(gender === 'male' ? '#667683' : '#697b88');
-        if (name.includes('Outfit_Footwear')) o.material.color.set('#4a5b66');
+        if (name.includes('Outfit_Footwear')) o.material.color.set(role==='civilian'?(person?.shoes||'#4a5b66'):'#4a5b66');
       }
     }
   });

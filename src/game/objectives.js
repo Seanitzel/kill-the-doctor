@@ -1,3 +1,4 @@
+import {rescueDoctorCount} from './story-missions.js';
 import {KeyOffices} from './key-offices.js';
 import {RescueEncounter} from './rescue-encounter.js';
 import {evidenceRoom} from './campaign-locations.js';
@@ -27,8 +28,10 @@ export class AssignmentObjectives{
     }
     }
     const operating=e.hospitals[3].operatingSets?.[0],room=e.levels[3].rooms[0],anchors=operating?.anchors||{patient:{x:-3,y:1,z:-3.65,bedRotation:0},doctor:{x:-4.4,z:-4.5,yaw:Math.PI/2},assistant:{x:-1.6,z:-4.5,yaw:-Math.PI/2},rescue:{x:-3,z:-1}};
-    for(const [i,p] of [anchors.doctor,anchors.assistant].entries()){
-      const doctor={...m.target,name:i===0?m.country?.doctor||'Dr. Adrian Vale':'Dr. Amira Solano',gender:i===0?m.country?.gender||'male':'female',accent:'#729a9f'};
+    const count=m.type==='rescue'?rescueDoctorCount(m):2,spawns=[anchors.doctor,anchors.assistant];
+    if(count>2){const nav=e.systems.navigationFor(3);for(let i=2;i<count;i++)spawns.push(nav.nearest({x:room.center.x+(i%2?-3:3),z:room.center.z+3+Math.floor((i-2)/2)*2}).point);}
+    for(const [i,p] of spawns.entries()){
+      const doctor={...m.target,name:i===0?m.country?.doctor||'Dr. Adrian Vale':[ 'Dr. Amira Solano','Dr. Julian Reed','Dr. Maya Bell','Dr. Owen Clarke'][i-1],gender:i===0?m.country?.gender||'male':i%2?'female':'male',accent:'#729a9f'};
       const n=e.spawnNPC(doctor,'doctor',3,p,room,`operation-doctor-${i}`,{fixed:true});n.activity='examine';n.visual.root.rotation.y=p.yaw||0;n.operationDoctor=true;
     }
     const person={name:'Casey Morris',gender:'female',skin:'#b98664',hair:'#332621',accent:'#a7bbc1'},p=anchors.patient;

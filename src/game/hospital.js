@@ -1,3 +1,4 @@
+import {addHallwayCameras} from './hallway-details.js';
 import {addInteriorDetails,localizeSigns} from './hospital-interiors.js';
 import {cafeteriaTables} from './cafeteria-layout.js';
 import {addStairwell} from './stairs.js';
@@ -81,7 +82,11 @@ export function buildHospital(layout, m, site=null, interior=null, {story=!!inte
     wallCube(m.trim, x, .08, z, horizontal ? length : .22, .16, horizontal ? .22 : length);
     wallCube(m.stripe, x, 1.03, z, horizontal ? length : .22, .13, horizontal ? .22 : length);
     wallCube(m.steel, x, .94, z, horizontal ? length : .26, .045, horizontal ? .26 : length);
-    Object.assign(collider(x,z,sx+.03,sz+.03),{minY:0,maxY:3.6,type:'wall',...(glass&&interior?.country==='china'?{sightGlass:true}:{})});
+    // Split the real pane from its sill/header. Rifles can penetrate glazing,
+    // never the solid wall underneath, lintel or metal mullion.
+    if(window){for(const [lo,hi]of [[0,WINDOW_SILL],[WINDOW_HEAD,3.6]])Object.assign(collider(x,z,sx+.03,sz+.03),{minY:lo,maxY:hi,type:'wall'});Object.assign(collider(x,z,sx+.03,sz+.03),{minY:WINDOW_SILL,maxY:WINDOW_HEAD,type:'window',bulletGlass:true});Object.assign(collider(x,z,horizontal?.045:.21,horizontal?.21:.045),{minY:WINDOW_SILL,maxY:WINDOW_HEAD,type:'window-frame'});}
+    else if(glass){Object.assign(collider(x,z,sx+.03,sz+.03),{minY:0,maxY:3.6,type:'wall',bulletGlass:true,...(interior?.country==='china'?{sightGlass:true}:{})});for(const side of[-1,1])Object.assign(collider(x+(horizontal?side*(length/2-.025):0),z+(horizontal?0:side*(length/2-.025)),horizontal?.05:.2,horizontal?.2:.05),{minY:0,maxY:3.64,type:'window-frame'});Object.assign(collider(x,z,sx+.03,sz+.03),{minY:3.58,maxY:3.64,type:'window-frame'});}
+    else Object.assign(collider(x,z,sx+.03,sz+.03),{minY:0,maxY:3.6,type:'wall'});
     const wall = new THREE.Mesh(new THREE.BoxGeometry(sx, 3.6, sz), new THREE.MeshBasicMaterial({ visible: false })); wall.position.set(x, 1.8, z); wall.updateMatrixWorld(); wallMeshes.push(wall);
   }
   for (const w of layout.walls) {
@@ -301,6 +306,7 @@ export function buildHospital(layout, m, site=null, interior=null, {story=!!inte
     interactables.push({type:'exit',label:'Leave through the rear exit',x:-19.5,z:-32.7});placeSign('← REAR EXIT','GROUND FLOOR',-15,2.85,-22.6,Math.PI,2.7,.5);
   }
   addSiteDetails(group,batch,m,layout,site);
+  addHallwayCameras(group,layout);
   for(const seat of seatRequests)if(chairFits(seat.x,seat.z,seat.rotation,layout,colliders)){chair(batch,m,seat.x,seat.z,seat.rotation);seats.push(seat);}
   addInteriorDetails(group,batch,m,layout,interior,{colliders});localizeSigns(group,interior);
   const statics = [...batch.finish(),...joinedWalls.finish(group)];

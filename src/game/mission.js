@@ -128,7 +128,7 @@ export class Mission {
     } else { this.suspicion = Math.min(100, this.suspicion + 38); }
     return true;
   }
-  beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]*this.challenge.escapeScale+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0)+(securityCount(this.round)-1)*9;}this.suspicion=Math.max(this.suspicion,suspicion);}
+  beginEscape(suspicion=0){if(this.state!=='escape'||!this.timer){this.state='escape';this.timer=({relaxed:150,standard:110,hard:75})[this.difficulty]*this.challenge.escapeScale+(this.type==='rescue'?100:0)+(this.save.upgrades.suppressor?15:0)+(securityCount(this.round,this.playMode)-1)*9;}this.suspicion=Math.max(this.suspicion,suspicion);}
   collectKey(id){if(this.result||!['basement','theatre','laboratory'].includes(id)||this.keys.includes(id))return false;this.keys.push(id);return true;}
   photograph(id){if(this.type!=='evidence'||this.result||!['ledger','consent','theatre'].includes(id)||this.photos.includes(id))return false;this.photos.push(id);if(this.photos.length===3)this.beginEscape(0);return true;}
   releasePatient(){if(this.type!=='rescue'||!this.keys.includes('basement')||!this.keys.includes('theatre')||this.patientReleased||this.result)return false;if(!this.rescueEncounterReady)return false;this.patientReleased=true;this.state='rescue-escort';this.timer=0;return true;}

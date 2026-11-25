@@ -1,4 +1,3 @@
-import {storyMission} from './story-missions.js';
 import {shotResponse} from './gunshot-response.js';
 import * as THREE from 'three';
 import {mayHitStaff} from './loadout.js';
@@ -25,11 +24,11 @@ export function contactIdentity(round,seed,attempt=0){
 export class HospitalIncidents{
   constructor(engine){this.e=engine;this.contact=null;this.scan=0;this.heardSerial=0;this.nextConversation=0;this.trail=[];this.trailFloor=null;}
   setup(){
-    const e=this.e,story=storyMission(e.mission);if(story){if(story.psychosis)this.arrivalAt=30;return;}if(e.mission.type!=='standard'||!(lateContactRound(e.mission.round,e.mission.countryAttempt)??contactRound(e.mission.round)))return;this.arrivalAt=65+e.mission.random()*45;
+    const e=this.e;if(e.mission.type!=='standard'||!(lateContactRound(e.mission.round,e.mission.countryAttempt)??contactRound(e.mission.round)))return;this.arrivalAt=65+e.mission.random()*45;
   }
   arrive(){
-    const e=this.e;if(this.contact||!this.arrivalAt||e.mission.elapsed<this.arrivalAt||e.mission.state==='escape'&&e.mission.playMode!=='story'||e.mission.result)return false;
-    const entry=e.systems.navigationFor(0).nearest({x:3,z:39}).point;if(e.mission.playMode!=='story'&&e.floor===0&&e.camera?.isCamera){e.camera.updateMatrixWorld();const screen=new THREE.Vector3(entry.x,1.3,entry.z).project(e.camera);if(Math.abs(screen.x)<1.15&&Math.abs(screen.y)<1.15&&screen.z>0&&screen.z<1&&e.lineOfSight(e.playerPos,entry,0))return false;}const person=contactIdentity(e.mission.round,e.mission.seed,e.mission.playMode==='story'?0:e.mission.countryAttempt||0),visual=makePlayer(e.assets,person.gender,{...person,outfit:'jacket'},'civilian'),n=e.spawnNPC(person,'patient',0,entry,null,'unexpected-contact',{visual});
+    const e=this.e;if(this.contact||!this.arrivalAt||e.mission.elapsed<this.arrivalAt||e.mission.state==='escape'||e.mission.result)return false;
+    const entry=e.systems.navigationFor(0).nearest({x:3,z:39}).point;if(e.floor===0&&e.camera?.isCamera){e.camera.updateMatrixWorld();const screen=new THREE.Vector3(entry.x,1.3,entry.z).project(e.camera);if(Math.abs(screen.x)<1.15&&Math.abs(screen.y)<1.15&&screen.z>0&&screen.z<1&&e.lineOfSight(e.playerPos,entry,0))return false;}const person=contactIdentity(e.mission.round,e.mission.seed,e.mission.countryAttempt||0),visual=makePlayer(e.assets,person.gender,{...person,outfit:'jacket'},'civilian'),n=e.spawnNPC(person,'patient',0,entry,null,'unexpected-contact',{visual});
     n.recruit={state:'panicked',nextBurst:e.mission.elapsed,speakAt:e.mission.elapsed+4,shotAt:0,phase:'calm'};n.activity='panic';n.speed=4.3;n.contamination=0;n.name=person.name;n.person={...person,voiceCountry:e.mission.country?.id,voiceRole:'patient',voicePlayMode:n.person?.voicePlayMode,voiceOrdinal:n.person?.voiceOrdinal||0,recruit:true};this.contact=n;
     this.privateRoom=e.levels[0].rooms.find(r=>r.kind==='bathroom');return true;
   }

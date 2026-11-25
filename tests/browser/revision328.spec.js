@@ -28,7 +28,7 @@ test.describe(device,()=>{
  });
 
  test('Egypt keeps office windows transparent and crops floral relief to solid headers',async({page},info)=>{
-  await boot(page,'romania');
+  await boot(page,'egypt');
   const report=await page.evaluate(()=>{
    const e=window.__ktd.engine,h=e.hospitals[0],panels=h.group.userData.floralPanelBounds;
    const p=panels.find(p=>p.window&&p.axis==='z'&&Math.abs(p.x)<6&&p.z<0);

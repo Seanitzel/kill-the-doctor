@@ -1,4 +1,3 @@
-import {motionLighting} from './story-missions.js';
 import {cafeteriaTables} from './cafeteria-layout.js';
 import {SNEEZE_REPLIES} from './life-rules.js';
 import {MealProp} from './meal-prop.js';
@@ -28,7 +27,7 @@ export class HospitalLife {
   propBox(parent,color,size,pos) {const o=new THREE.Mesh(new THREE.BoxGeometry(...size),material(color));o.position.set(...pos);o.castShadow=true;o.userData.lifeOwned=true;parent.add(o);return o;}
   propSphere(parent,color,size,pos) {const o=new THREE.Mesh(new THREE.SphereGeometry(1,14,10),material(color));o.scale.set(...size);o.position.set(...pos);o.userData.lifeOwned=true;parent.add(o);return o;}
   actor(name,role,gender,floor,room,x,z,activity,options={}) {
-    const person={name,gender,skin:options.skin||'#d2ad94',hair:options.hair||'#4d4034',accent:role==='patient'?'#91aebe':'#719fb6',role:role==='doctor'?'Consultant':role==='nurse'?'Ward nurse':'Patient'};
+    const person={name,gender,skin:options.skin||'#d2ad94',hair:options.hair||'#4d4034',accent:role==='patient'?'#91aebe':'#719fb6',role:role==='doctor'?'Consultant':'Ward nurse'};
     const n=this.engine.spawnNPC(person,role,floor,{x,z},room,`life-${name.toLowerCase().replace(/[^a-z0-9]/g,'')}-${floor}`,{fixed:true,...options});
     n.activity=activity;n.seated=!!options.seated;n.baselineY=n.seated?-.35:options.y||0;n.pos.y=n.baselineY;
     n.visual.root.rotation.y=options.yaw||0;n.contamination=options.contamination||0;n.nextCough=3;
@@ -52,7 +51,7 @@ export class HospitalLife {
       this.groups.push({kind:'patients',floor,actors:[patientA,patientB],next:6,conversation:floor});
       const seat=e.hospitals[floor].seats.find(s=>s.waiting);if(seat)this.actor('Consultation waiting patient','patient',floor%2?'male':'female',floor,null,seat.x,seat.z,'rest',{seated:true,yaw:seat.rotation});
       yield floor;
-      }else{const seat=e.hospitals[floor].seats.find(s=>s.waiting);if(seat)this.actor('Waiting patient','patient',floor%2?'male':'female',floor,null,seat.x,seat.z,'rest',{seated:true,yaw:seat.rotation});}
+      }else{const seat=e.hospitals[floor].seats.find(s=>s.waiting);if(seat)this.actor('Specialist waiting patient','patient',floor%2?'male':'female',floor,null,seat.x,seat.z,'rest',{seated:true,yaw:seat.rotation});}
       for(const room of e.levels[floor].rooms.filter(r=>CLINICAL_KINDS.includes(r.kind)).filter((r,i)=>floor<3||i<2||r.id===e.mission.target.room.id)) {
         const minX=(room.x-11)*3-1.5,maxX=(room.x+room.w-1-11)*3+1.5,minZ=(room.z-11)*3-1.5;
         const clinic=room.kind==='clinic',rotation=clinic?0:Math.PI/2;
@@ -157,7 +156,7 @@ export class HospitalLife {
     const e=this.engine,actor=this.privacyWitness(room);if(!actor||actor.floor!==e.floor||dist(e.playerPos,actor.pos)>18){this.privacy.leave();this.privacyActor=null;return;}
     if(actor!==this.privacyActor)this.privacy.leave();this.privacyActor=actor;
     const id=`${e.floor}:${room.id}`,action=this.privacy.active===id?this.privacy.update(id,e.mission.elapsed):this.privacy.enter(id,e.mission.elapsed,room.id===e.mission.target?.room.id?{warningDelay:TARGET_PRIVACY_GRACE,reportDelay:TARGET_PRIVACY_GRACE*2}:{});
-    this.privacyResponse(actor,action);if(action==='request'||action==='warning')e.yieldOfficeExit?.(actor,room);
+    this.privacyResponse(actor,action);
   }
   updateAppointment(room){
     const e=this.engine,item=this.targetCase;if(!item||e.mission.targetDown||item.doctor.targetFlee||item.doctor.dead||e.mission.state==='escape')return;
@@ -183,17 +182,17 @@ export class HospitalLife {
     return true;
   }
   appointmentHUD(){
-    const e=this.engine,item=this.targetCase;if(!item||!e.mission.recordsNotice||item.appointment.startedAt===null||e.mission.targetDown)return null;
+    const e=this.engine,item=this.targetCase;if(!item||item.appointment.startedAt===null||e.mission.targetDown)return null;
     const a=item.appointment,id=`${item.room.floor}:${item.room.id}`,privacy=this.privacy.rooms.get(id),warning=this.privacy.active===id&&privacy?.stage==='requested'?Math.max(0,Math.ceil(privacy.warningDelay-(e.mission.elapsed-privacy.enteredAt))):null;
     return {room:item.room.name,floor:item.room.floor,complete:a.completed,seconds:a.remaining(e.mission.elapsed),warningSeconds:warning,inside:this.privacy.active===id&&!a.completed,warnings:privacy?.warnings||0};
   }
   triggerFlicker(duration=1.65) {
-    const e=this.engine;if(!motionLighting(e.mission))return;const fixtures=e.hospitals[e.floor].fixtures;if(!fixtures.length)return;
+    const e=this.engine,fixtures=e.hospitals[e.floor].fixtures;
     const fixture=[...fixtures].sort((a,b)=>a.distanceToSquared(e.playerPos)-b.distanceToSquared(e.playerPos))[0];
     this.flicker={fixture:fixture.clone(),floor:e.floor,start:e.mission.elapsed,duration};if(e.audio.hospitalMachine)e.audio.hospitalMachine('zap',{x:fixture.x,y:fixture.y,z:fixture.z,floor:e.floor},.32);else e.audio.sound('flicker');
   }
   flickerLevel() {
-    if(!motionLighting(this.engine.mission)||!this.flicker||this.flicker.floor!==this.engine.floor)return 1;
+    if(!this.flicker||this.flicker.floor!==this.engine.floor)return 1;
     const t=this.engine.mission.elapsed-this.flicker.start;
     if(t>=this.flicker.duration)return 1;
     return [[.05,.14],[.3,.42],[.65,.75],[1.03,1.15],[1.4,1.48]].some(([a,b])=>t>=a&&t<b)?.12:1;

@@ -27,7 +27,7 @@ function actor(e,pos,id='nurse'){const root=new THREE.Group();root.position.set(
 
 test('Ground-floor antidotes cure once per cabinet, preserve clean doses, protect briefly and fully detach on reset',()=>{
  const e=simulation();try{
- const counts=e.hospitals.map(h=>h.colliders.length);e.antidotes=withCanvas(()=>new AntidoteStations(e));assert.equal(e.antidotes.hud()[0].floor,0);assert.equal(e.antidotes.stations.length,2);
+ const counts=e.hospitals.map(h=>h.colliders.length);e.antidotes=withCanvas(()=>new AntidoteStations(e));assert.equal(e.antidotes.hud()[0].floor,0);assert.equal(e.antidotes.stations.length,1);
  for(const floor of e.antidotes.stations.map(s=>s.interaction.floor)){e.floor=floor;e.antidotes.update();const item=e.antidotes.interactions()[0];e.playerPos.set(item.x,0,item.z);assert.equal(e.antidotes.use(item),false);assert.equal(item.station.available,true);
  e.impairment=60;e.impairmentTotal=60;e.exposureSource='patient';assert.equal(e.antidotes.use(item),true);assert.equal(e.impairment,0);assert.equal(e.impairmentTotal,0);assert.equal(e.exposureSource,null);assert.equal(item.station.available,false);assert.equal(e.antidotes.use(item),false);
  e.triggerCough({contamination:30,name:'sick'});assert.equal(e.impairment,0);e.mission.elapsed+=8.01;e.triggerCough({contamination:30,name:'sick'});assert.equal(e.impairment,30);e.impairment=0;}
@@ -42,7 +42,7 @@ test('A target consultation lasts 45–90 game seconds; first warning waits a fu
 test('The assigned clinical doctor examines a real patient and waiting outside ends the examination with a physical departure',()=>{
  const e=simulation();try{
  const room=e.levels[0].rooms.find(r=>r.kind==='clinic');e.mission.target={...e.mission.target,floor:0,room};e.spawnNPCs();e.life=new HospitalLife(e);const item=e.life.targetCase;assert.ok(item);assert.equal(item.doctor.id,'target');assert.equal(item.doctor.clinicalPatient,item.patient);assert.equal(item.doctor.activity,'examine');
- e.playerPos.set(room.center.x,0,room.center.z+3);e.mission.elapsed=10;e.life.updateAppointment(room);e.life.reactToEntry(room);assert.equal((e.mission.recordsNotice=true,e.life.appointmentHUD()).warningSeconds,5);assert.equal(e.life.privacy.update(`0:${room.id}`,14.999),null);assert.equal(e.life.privacy.update(`0:${room.id}`,15),'warning');
+ e.playerPos.set(room.center.x,0,room.center.z+3);e.mission.elapsed=10;e.life.updateAppointment(room);e.life.reactToEntry(room);assert.equal(e.life.appointmentHUD().warningSeconds,5);assert.equal(e.life.privacy.update(`0:${room.id}`,14.999),null);assert.equal(e.life.privacy.update(`0:${room.id}`,15),'warning');
  e.life.privacy.leave();e.playerPos.set(0,0,22);e.mission.elapsed=item.appointment.endsAt-.001;e.life.updateAppointment(null);assert.equal(item.completed,undefined);
  e.mission.elapsed=item.appointment.endsAt;e.life.updateAppointment(null);assert.equal(item.completed,true);assert.equal(item.doctor.clinicalPatient,null);assert.equal(item.doctor.activity,'rest');assert.equal(e.life.privacyWitness(room),null);assert.equal(e.life.privacy.rooms.size,0);assert.equal(item.patient.lying,false);assert.ok(item.patient.path.length>0);
  // Keep the departure isolated from unrelated wandering crowds; the actual bed, infusion and door remain solid.

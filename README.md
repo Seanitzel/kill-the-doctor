@@ -2,7 +2,7 @@
 
 A fictional third-person hospital stealth game built with **Vue 3, Three.js and Web Audio**, packaged for **Android and iOS with Capacitor 8**.
 
-[Play the web edition](https://seanitzel.github.io/kill-the-doctor/) · [Native builds and phone setup](MOBILE.md) · [Latest verification notes](docs/release-3.36.md)
+[Play the web edition](https://seanitzel.github.io/kill-the-doctor/) · [Native builds and phone setup](MOBILE.md) · [Latest verification notes](docs/release-3.35.md)
 
 ## Run
 
@@ -22,7 +22,7 @@ The production server uses port 4173. `npm run build:pages` builds with the GitH
 
 ## Play
 
-Choose Adrian, Alex or a custom character, view the client story, enter the hospital, investigate the assignment and escape before lockdown. The ten-country story campaign has fixed targets, rooms and appearances, with Target Mission, Disguise & Evidence and Rescue Operation assignments. The current campaign's briefing and objective HUD describe the mission rules. Successful missions unlock subsequent countries and award coins for equipment and outfits.
+Choose Adrian, Alex or a custom character, view the client story, enter the hospital, investigate the assignment and escape before lockdown. The twenty-country story campaign includes target, rescue and evidence assignments. The current campaign's briefing and objective HUD describe the mission rules. Successful missions unlock subsequent countries and award coins for equipment and outfits.
 
 | Action | Desktop | Phone |
 | --- | --- | --- |
@@ -49,9 +49,9 @@ Progress, equipment, settings and up to three custom looks save automatically. O
 - Modular three-floor hospital plus a restricted basement, solid doors/furniture and avoidance routes. Level six adds public stairs and a rear automatic exit.
 - Clinical appointments, staff conversations, pharmacy/cafeteria activity, maternity, emergency arrivals and ambient hospital sound.
 - Investigation, confidential schedules, keys, badges, covert coffee interactions and evidence recordings.
-- Contamination and masks, antidotes on the ground and second floors, advance spit warnings and a ten-second hit restriction, intermittent lights and a directional torch.
-- Security pursuit, evacuation and timed escape. America has three required hidden accomplices and England has five; they can hide, relocate and use guns, gas or syringes. Some Freeplay Target assignments have optional hiders. Security and accomplice map tracking have separate unlock rules.
-- Character customization, independent shoe colour, separate five-outfit male and four-outfit female premium collections, coin purchases, weapon upgrades and Mystery Soda's independent 40% double / 60% halve appointment roll.
+- Contamination and masks, a ground-floor antidote, advance spit warnings and a ten-second hit restriction, intermittent lights and a directional torch.
+- Security pursuit, evacuation and timed escape. From level five, marked accomplices can run, hide, relocate and telegraph different attacks. Hidden offenders are required in armed Story assignments, optional in Freeplay; other marked staff remain optional. Security and accomplice map tracking have separate unlock rules.
+- Character customization, distinct premium outfit designs, coin purchases, weapon upgrades and Mystery Soda's independent 40% double / 60% halve appointment roll.
 - Illustrated stories, globe flight transitions, a ten-country campaign with completed Story replays, persistent progression and reward animations.
 
 The hospitals, characters, cases and compounds are fictional. Asset notices and recording provenance are in `public/credits.txt`, `public/licenses/` and the audio source files. The game has no backend or external API dependency for play.
@@ -84,4 +84,4 @@ See [MOBILE.md](MOBILE.md) for APKs, iOS Simulator apps, release bundles/archive
 
 `window.__ktd` is a mutable testing bridge available only in development/native-test builds. Production packages omit it. `sources/` in the parent project is synced read-only reference material.
 
-Story exploration access is currently enabled at the owner’s request until they ask to restore locks (`STORY_EXPLORATION_UNLOCKED` in `src/game/international.js`). It permits selecting all Story destinations without adding completion records or unlocking their Freeplay interiors. The original default Freeplay hospital is always available; completing a country unlocks its interior as an optional Freeplay destination.
+Story exploration access is currently enabled at the owner’s request until they ask to restore locks (`STORY_EXPLORATION_UNLOCKED` in `src/game/international.js`). It permits selecting all Story destinations without adding completion records or granting Freeplay access.

@@ -40,6 +40,6 @@ test('complete France and Nigeria recordings retain separate native patients, En
 });
 
 test('other destinations, Freeplay and Terror retain their existing voice bank',()=>{
-  for(const country of ['china','india','russia','venezuela','america','romania','uganda','england'])assert.equal(resolveStoryVoice(bank,'Hello',{voiceCountry:country,voiceRole:'patient',voicePlayMode:'story',gender:'female'}),null);
+  for(const country of ['china','india','russia','venezuela','america','egypt','somalia','england'])assert.equal(resolveStoryVoice(bank,'Hello',{voiceCountry:country,voiceRole:'patient',voicePlayMode:'story',gender:'female'}),null);
   for(const country of bank.countries)for(const mode of ['freestyle','terror','other',undefined])assert.equal(resolveStoryVoice(bank,'Hello',{voiceCountry:country,voiceRole:'patient',voicePlayMode:mode,gender:'male'}),null);
 });

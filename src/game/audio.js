@@ -8,7 +8,7 @@ import { dialogueKey,ANNOUNCEMENT_LINES } from './life-rules.js';
 import {waitFor} from './startup.js';
 const AUDIO_REVISION='3.0.0';
 const DIALOGUE_MAX_BYTES=8*1024*1024,DIALOGUE_MAX_ENTRIES=32,DIALOGUE_MAX_PENDING=8;
-export const HOSPITAL_SAMPLE_FILES=Object.freeze({'coffee-stir':'/audio/coffee-stir-v336.mp3','rain-field':'/audio/rain-field-v313.mp3','ambulance-field':'/audio/ambulance-field-v315.mp3','car-engine':'/audio/car-engine-v315.mp3','car-road':'/audio/car-road-v315.mp3','flight-airplane':'/audio/flight-airplane.mp3','laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',hawk:'/audio/hawk-v319.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
+export const HOSPITAL_SAMPLE_FILES=Object.freeze({'rain-field':'/audio/rain-field-v313.mp3','ambulance-field':'/audio/ambulance-field-v315.mp3','car-engine':'/audio/car-engine-v315.mp3','car-road':'/audio/car-road-v315.mp3','flight-airplane':'/audio/flight-airplane.mp3','laugh-male':'/audio/laugh-male.mp3','laugh-female':'/audio/laugh-female.mp3',newborn:'/audio/newborn-cry.mp3',labor:'/audio/labor-groan.mp3',breathing:'/audio/labor-breathing.mp3',sneeze:'/audio/sneeze-human-v29.mp3','evacuation-scream':'/audio/evacuation-scream-v29.mp3',hawk:'/audio/hawk-v319.mp3',cough:'/audio/cough-warning.mp3',gasp:'/audio/witness-gasp.mp3','pain-female':'/audio/pain-female.mp3','pain-male':'/audio/pain-male.mp3','distress-female':'/audio/distress-female.mp3','distress-male':'/audio/distress-male.mp3',...FOLEY_FILES});
 export const MACHINE_DURATIONS=Object.freeze({'blood-pressure':4.8,monitor:.65,ventilator:3.4,zap:.19});
 const disconnect=node=>{try{node?.disconnect();}catch{}};
 
@@ -103,10 +103,6 @@ export class HospitalAudio {
     if(paused)this.stopAmbient();this.setSettings(this.settings);
     try{const action=paused?this.ctx?.suspend():this.ctx?.resume();action?.catch(()=>{});}catch{}
   }
-  failureCue(){
-    const ctx=this.ctx;if(!ctx||this.disposed||!this.settings?.volume)return;
-    const epoch=this.controlEpoch;Promise.resolve(ctx.resume()).then(()=>{if(this.disposed||this.ctx!==ctx||epoch!==this.controlEpoch)return;const gain=ctx.createGain();gain.gain.value=this.settings.volume*.08;gain.connect(ctx.destination);const now=ctx.currentTime;for(const [offset,freq,duration]of [[0,196,.35],[.13,146.83,.45],[.28,98,.70]]){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=freq;g.gain.setValueAtTime(0,now+offset);g.gain.linearRampToValueAtTime(1,now+offset+.015);g.gain.exponentialRampToValueAtTime(.001,now+offset+duration);o.connect(g);g.connect(gain);o.onended=()=>{o.disconnect();g.disconnect();};o.start(now+offset);o.stop(now+offset+duration);}const id=setTimeout(()=>{this.timers.delete(id);gain.disconnect();if(!this.enabled&&this.ctx===ctx)ctx.suspend().catch(()=>{});},1200);this.timers.add(id);}).catch(()=>{});
-  }
   delay(callback,ms){
     const epoch=this.effectEpoch,ctx=this.ctx;
     const id=setTimeout(()=>{this.timers.delete(id);if(this.ownsContext(ctx)&&this.enabled&&epoch===this.effectEpoch)callback();},ms);
@@ -140,21 +136,20 @@ export class HospitalAudio {
   }
   sound(name,options={}) {
     if(this.disposed||!this.enabled||!this.ctx)return;
-    if(name==='failure'){this.tone(196,.34,.11,'sine');this.delay(()=>this.tone(146.83,.45,.10,'sine'),130);this.delay(()=>this.tone(98,.7,.08,'sine'),280);return;}
-    if(name==='stir'){this.playSample('coffee-stir',options.position||this.listenerPosition,.24);return;}
+    if(name==='stir'){this.noise(.48,.009,460+Math.random()*180);this.tone(1180+Math.random()*100,.035,.003,'sine');return;}
     if(name==='gas'){this.noise(1.2,.10,1600);return;}
     if(name==='glass-break'){this.noise(.16,.10,5200);this.tone(2600,.08,.035,'triangle');this.delay(()=>this.noise(.12,.04,3200),95);return;}
     if(name==='vending'){this.tone(820,.09,.07,'sine');this.delay(()=>this.noise(.4,.10,210),100);this.delay(()=>this.tone(110,.16,.10,'triangle'),260);return;}
     if(name==='bottle-drop'){this.noise(.065,.13,650);this.tone(180,.1,.10,'triangle');this.delay(()=>this.noise(.04,.06,1000),100);return;}
     if(name==='bottle-pickup'){this.noise(.045,.045,1700);return;}
-    if(['step','shot','rifle'].includes(name)&&this.enabled&&this.foley?.play(name,{...options,suppressed:!!this.settings.suppressor,stepScale:1/(1+(this.footwearLevel||0)*.15)}))return;
+    if(['step','shot','rifle'].includes(name)&&this.enabled&&this.foley?.play(name,{...options,suppressed:!!this.settings.suppressor}))return;
     if (name === 'flicker') this.hospitalMachine('zap',options.position||this.listenerPosition,.55);
     if(name==='rifle'){this.noise(.32,.68,2200);this.tone(48,.32,.4,'triangle');}
     if(name==='gasp'){if(this.samples.gasp){this.sampleNodes('gasp',{x:0,y:1,z:0},.6);return;}this.noise(.35,.28,2300);this.tone(310,.17,.05,'sine');}
     if(name==='sneeze'&&this.samples.sneeze)this.playSample('sneeze',options.position||this.listenerPosition,.24);
     if(name==='magnet'){this.tone(90,1.1,.25,'sawtooth');this.noise(.8,.18,500);}
     if (name === 'shot') { this.noise(.22, this.settings.suppressor ? .25 : .6, 3400); this.tone(62, .2, .4, 'triangle'); }
-    if (name === 'step') this.noise(.065,.048/(1+(this.footwearLevel||0)*.15),550);
+    if (name === 'step') this.noise(.065, .048, 550);
     if (name === 'door') { this.noise(.25, .07, 300); this.tone(130, .12, .04, 'triangle'); }
     if (name === 'clue') { this.tone(523, .22, .12); this.delay(() => this.tone(784, .3, .1), 130); }
     if (name === 'blackout') { this.noise(.6, .25, 250); this.tone(38, 1.2, .28, 'triangle'); }

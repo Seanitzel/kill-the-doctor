@@ -36,12 +36,12 @@ export const key = (x, z) => `${x},${z}`;
 export const edgeKey = (a, b) => [a, b].sort().join('|');
 export const world = (x, z) => ({ x: (x - 11) * TILE, z: (z - 11) * TILE });
 export const tileAt = (x, z) => ({ x: Math.round(x / TILE + 11), z: Math.round(z / TILE + 11) });
-export function makeLayout(floor = 0, siteIndex = 0, expanded = false, rescue = false) {
+export function makeLayout(floor = 0, siteIndex = 0, expanded = false) {
   const cells = new Map();
   const fill = (x, z, w, h, room = 'hall') => {
     for (let i = x; i < x + w; i++) for (let j = z; j < z + h; j++) cells.set(key(i, j), { x: i, z: j, room });
   };
-  if(floor===3){fill(10,3,2,4);if(rescue){fill(2,5,19,2);fill(2,13,19,2);fill(2,19,19,2);for(const x of [2,6,14,19])fill(x,5,x===19?2:1,16);}}
+  if(floor===3)fill(10,3,2,4);
   else {
   fill(10, 3, 2, 20); fill(2, 10, 18, 2);
   fill(2, 3, 2, 17); fill(18, 3, 2, 17);
@@ -51,24 +51,24 @@ export function makeLayout(floor = 0, siteIndex = 0, expanded = false, rescue = 
   }
   if(expanded&&floor!==3){fill(0,3,2,3);if(floor===0)fill(4,0,2,3);}
   fill(11,2,1,1); // Recessed walk-in lift cabin behind the north corridor.
-  const specs=floor===3?(rescue?[[7,7,7,6],[3,7,3,6],[15,7,4,6],[7,15,7,4],[3,15,3,4],[15,15,4,4]]:[[7,7,7,6]]):[...roomSpecs,[4,20,3,3]];
+  const specs=floor===3?[[7,7,7,6]]:[...roomSpecs,[4,20,3,3]];
   const rooms = specs.map(([x, z, w, h], i) => {
-    let [name, subtitle, kind] = floor===3?(i===0?['Restricted theatre','Authorized personnel only','rescue-theater']:[['Clinical storage','Service corridor','utility'],['Recovery laboratory','Restricted area','lab'],['Observation ward','Patient monitoring','ward'],['Staff files','Clinical records','office'],['Recovery suite','Restricted care','ward']][i-1]):i===8?['Bathroom','Toilets & washbasins','bathroom']:(floor>3?upperDepartments[floor-4]:departments.slice(floor*8,floor*8+8))[((i + Math.max(0,Math.floor(siteIndex))*(floor+1)) % 8)];
+    let [name, subtitle, kind] = floor===3?['Restricted theatre','Authorized personnel only','rescue-theater']:i===8?['Bathroom','Toilets & washbasins','bathroom']:(floor>3?upperDepartments[floor-4]:departments.slice(floor*8,floor*8+8))[((i + Math.max(0,Math.floor(siteIndex))*(floor+1)) % 8)];
     if(floor===2&&siteIndex===2&&name==='Transplant Ward'){kind='office';subtitle='Transplant consultant · Dr. Liu Wen';}
-    const room = { id: `f${floor}-r${i}`, index: i, x, z, w, h, name, subtitle, kind, floor, number: kind==='bathroom'?null:floor===3?`B${String(i+1).padStart(2,'0')}`:`${floorOrdinal(floor) + 1}${String(i + 1).padStart(2, '0')}`, wing: i < 2 || (i >= 4 && i < 6) ? 'West' : 'East' };
+    const room = { id: `f${floor}-r${i}`, index: i, x, z, w, h, name, subtitle, kind, floor, number: kind==='bathroom'?null:floor===3?'B01':`${floorOrdinal(floor) + 1}${String(i + 1).padStart(2, '0')}`, wing: i < 2 || (i >= 4 && i < 6) ? 'West' : 'East' };
     room.center = world(x + (w - 1) / 2, z + (h - 1) / 2);
     fill(x, z, w, h, room.id);
     return room;
   });
   const doors = [];
   for (const room of rooms) {
-    const x = floor===3&&!rescue?10:room.x+1, z = floor===3?room.z:room.z < 10 ? room.z + room.h - 1 : room.z;
+    const x = floor===3?10:room.x+1, z = floor===3?room.z:room.z < 10 ? room.z + room.h - 1 : room.z;
     const otherZ = z + (floor!==3&&room.z < 10 ? 1 : -1);
     doors.push({ id: `${room.id}-door`, a: key(x, z), b: key(x, otherZ), room: room.id, floor, x: world(x, z).x, z: (world(x, z).z + world(x, otherZ).z) / 2, axis: 'x', open: false, locked: false });
     // A second door to the perimeter ring lets departments connect through the hospital.
-    if(floor===3&&!rescue||room.kind==='bathroom')continue;
-    const backZ = floor===3?room.z+room.h-1:room.z < 10 ? room.z : room.z + room.h - 1;
-    const outZ = backZ + (floor!==3&&room.z < 10 ? -1 : 1);
+    if(floor===3||room.kind==='bathroom')continue;
+    const backZ = room.z < 10 ? room.z : room.z + room.h - 1;
+    const outZ = backZ + (room.z < 10 ? -1 : 1);
     doors.push({ id: `${room.id}-back`, a: key(x, backZ), b: key(x, outZ), room: room.id, floor, x: world(x, backZ).x, z: (world(x, backZ).z + world(x, outZ).z) / 2, axis: 'x', open: room.kind!=='lab', locked: false });
   }
   const doorEdges = new Map(doors.map(d => [edgeKey(d.a, d.b), d]));
@@ -87,7 +87,7 @@ export function makeLayout(floor = 0, siteIndex = 0, expanded = false, rescue = 
     }
   }
   const directory=floor===3?{x:-4,z:-21}:{...world(9,20)},schedule=floor===3?{x:-4,z:-18}:{...world(17,11)};
-  return { floor, expanded, rescue:floor===3&&rescue, stairLinks:[], cells, rooms, doors, doorEdges, walls,exits:floor===0?[{x:0,z:39},...(expanded?[{x:-19.5,z:-32.7}]:[])]:[],
+  return { floor, expanded, stairLinks:[], cells, rooms, doors, doorEdges, walls,exits:floor===0?[{x:0,z:39},...(expanded?[{x:-19.5,z:-32.7}]:[])]:[],
     exit: { ...world(11, floor===0?24:22), floor: 0 },
     elevator: { ...world(11, 3), floor, label: 'Elevator / stairs' },
     directory: { ...directory, floor, label: floor ? `${ALL_FLOORS[floor]} directory` : 'Staff directory' },

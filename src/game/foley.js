@@ -31,7 +31,7 @@ export class HospitalFoley{
       this.input.connect(delay);delay.connect(filter);filter.connect(gain);gain.connect(destination);
     }
   }
-  play(kind,{running=false,suppressed=false,basement=false,stepScale=1}={}){
+  play(kind,{running=false,suppressed=false,basement=false}={}){
     if(this.disposed||this.ctx?.state==='closed')return false;
     const step=kind==='step',keys=step?['step-01','step-02','step-03','step-04'].filter(k=>this.buffers[k]):[kind==='rifle'?'rifle-shot':'pistol-shot'];
     if(!keys.length||!this.buffers[keys[0]])return false;
@@ -40,7 +40,7 @@ export class HospitalFoley{
     const pan=this.ctx.createStereoPanner?.()||this.ctx.createGain();
     source.buffer=this.buffers[key];source.playbackRate.value=step?[.97,1.025,.99,1.01][index%4]*(running?1.035:1):[.99,1.01,1][index%3];
     filter.type='lowpass';filter.frequency.value=step?4200:basement?2200:suppressed?1250:14500;
-    gain.gain.value=step?(running?.38:.27)*stepScale*[1,.9,.96,.87][index%4]:(kind==='rifle'?.95:.79)*(suppressed?.28:1)*(basement?.40:1);
+    gain.gain.value=step?(running?.38:.27)*[1,.9,.96,.87][index%4]:(kind==='rifle'?.95:.79)*(suppressed?.28:1)*(basement?.40:1);
     if(pan.pan)pan.pan.value=step?(index%2?.12:-.12):.08;
     source.connect(filter);filter.connect(gain);gain.connect(pan);pan.connect(this.input);
     const record={source,filter,gain,pan,key};this.active.add(record);

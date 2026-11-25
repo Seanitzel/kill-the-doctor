@@ -24,8 +24,8 @@ function moonMaterial(crescent){
 }
 
 export function addStoryCelestials(sky,moon,haze,country){
- if(!['america','romania'].includes(country))return null;
- moon.geometry.dispose();moon.material.dispose();moon.geometry=new T.SphereGeometry(.48,48,32);moon.material=moonMaterial(country==='romania');moon.name=country==='romania'?'Nighttime crescent moon':'Full moon with lunar surface detail';moon.position.set(-15,20,94);haze.visible=false;
+ if(!['america','egypt'].includes(country))return null;
+ moon.geometry.dispose();moon.material.dispose();moon.geometry=new T.SphereGeometry(.48,48,32);moon.material=moonMaterial(country==='egypt');moon.name=country==='egypt'?'Nighttime crescent moon':'Full moon with lunar surface detail';moon.position.set(-15,20,94);haze.visible=false;
  if(country==='america')return {moon};
  // A soft solar limb and broad atmospheric glow share one small billboard.
  // No bloom render targets or opaque sphere silhouette on mobile GPUs.

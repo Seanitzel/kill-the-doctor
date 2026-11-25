@@ -27,7 +27,7 @@ const country = (language, modelLanguage, languageName, staffAccent, texts, note
 export const COUNTRY_DIALOGUE = {
   // New destinations use the approved shared American English bank. No unreviewed
   // local-language or accent performance is presented as a native recording.
-  ...Object.fromEntries(['russia','venezuela','romania','uganda'].map(id=>[id,country('en-US','en','English','Shared American English performance; local accent not recorded.',ENGLISH,'English-only release; no native-language recordings commissioned.')])),
+  ...Object.fromEntries(['russia','venezuela','egypt','somalia'].map(id=>[id,country('en-US','en','English','Shared American English performance; local accent not recorded.',ENGLISH,'English-only release; no native-language recordings commissioned.')])),
   france: country('fr-FR','fr','French',
     'Fluent professional English with a natural contemporary Parisian French accent; calm and conversational.', [
     'Vous attendez ici depuis longtemps ?',

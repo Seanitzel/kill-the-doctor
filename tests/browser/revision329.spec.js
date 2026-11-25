@@ -18,7 +18,7 @@ async function skyView(page,age,z=40){return page.evaluate(({age,z})=>{
  },{age,z});}
 
 test('all Story climates keep one sky colour, exposure and celestial state through the entrance',async({page},info)=>{
- test.setTimeout(240000);const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});const countries=phone?['nigeria','england','america','romania']:['france','nigeria','china','india','russia','venezuela','america','romania','uganda','england'],reports=[];
+ test.setTimeout(240000);const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});const countries=phone?['nigeria','england','america','egypt']:['france','nigeria','china','india','russia','venezuela','america','egypt','somalia','england'],reports=[];
  for(const country of countries){
   console.log('Checking Story sky',country);await boot(page,country);const states=[];for(const z of [30,34.7,35.89,35.91,40])states.push(await skyView(page,20,z));
   expect(new Set(states.map(s=>s.bg)).size).toBe(1);expect(states.every(s=>s.bg===s.fog&&s.skyVisible)).toBe(true);expect(new Set(states.map(s=>s.sunLight)).size).toBe(1);expect(new Set(states.map(s=>s.exposure)).size).toBe(1);expect(states.every(s=>!s.failed&&!s.lost)).toBe(true);
@@ -30,7 +30,7 @@ test('all Story climates keep one sky colour, exposure and celestial state throu
 });
 
 test('Egypt shows its setting sun, then a dark sky with a crescent only after nightfall',async({page},info)=>{
- await boot(page,'romania');const frames=[];
+ await boot(page,'egypt');const frames=[];
  for(const age of [0,45,90,165]){const state=await skyView(page,age);frames.push({age,...state});await page.screenshot({path:`artifacts/revision329/egypt-${age}-${suffix}.png`});}
  expect(frames[0].sun).toBe(true);expect(frames.slice(0,3).every(s=>!s.moon)).toBe(true);expect(frames[3].moon).toBe(true);expect(frames[3].sun).toBe(false);expect(frames[0].bg).not.toBe(frames[3].bg);expect(frames[3].phase[2]).toBeGreaterThan(0);
  const pause=await page.evaluate(()=>{const e=window.__ktd.engine;e.mission.elapsed=45;e.updateExterior();const w=e.hospitals[0].group.userData.evening,before={age:w.age,bg:e.scene.background.getHex(),light:w.sun.intensity};e.time+=240;e.updateExterior();return{before,after:{age:w.age,bg:e.scene.background.getHex(),light:w.sun.intensity}};});expect(pause.after).toEqual(pause.before);

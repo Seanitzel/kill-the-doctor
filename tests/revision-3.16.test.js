@@ -227,7 +227,7 @@ test("spit has a 1.5-second dodge warning, misses a sidestep and blocks movement
   assert.ok(itchStrength(0.1) < 0.01);
 });
 function threatWorld(guardsDefeated=true) {
-  const e = hospitalSim("america");
+  const e = hospitalSim("russia");
   e.npcs = [];
   e.playerPos.set(0, 0, 30);
   for (let i = 0; i < 5; i++) {
@@ -261,7 +261,7 @@ test("security tracks live first; accomplices unlock only after all guards are d
   const { e, threats, g } = threatWorld(false);
   try {
     assert.ok(threats.enabled);
-    assert.equal(threats.entries.length, 3);
+    assert.equal(threats.entries.length, 0);
     let dots = threats.tracking();
     assert.deepEqual(
       dots.map((d) => d.id),
@@ -324,11 +324,10 @@ test("all four attack types telegraph, respect solid cover, allow a dodge, and f
       const { e, threats } = threatWorld();
       try {
         const a = threats.entries[0];
-        for(const b of threats.entries)if(b!==a)b.cooldown=Infinity;
         a.kind = kind;
         a.phase = "runner";
         e.lineOfSight = () => true;
-        e.playerPos.copy(a.n.pos).add(new T.Vector3(0, 0, kind==='syringe'?.6:1));
+        e.playerPos.copy(a.n.pos).add(new T.Vector3(0, 0, 1));
         threats.update(0.1);
         assert.ok(a.attack, kind);
         assert.equal(e.mission.result, null);
@@ -336,9 +335,9 @@ test("all four attack types telegraph, respect solid cover, allow a dodge, and f
         if (dodge) e.lineOfSight = () => false;
         e.mission.elapsed += ATTACKS[kind].windup + 0.01;
         threats.update(0.1);
-        assert.equal(!!e.mission.result, !dodge&&kind==='syringe', kind);
+        assert.equal(!!e.mission.result, !dodge&&kind!=='gun', kind);
         if (!dodge&&kind==='gun')assert.ok(e.playerInjury?.hits>0&&e.playerInjury.hits<3);
-        else if(!dodge&&kind==='syringe')assert.equal(e.mission.result.success,false);else if(!dodge)assert.equal(e.impairment,60);
+        else if (!dodge) assert.equal(e.mission.result.success, false);
       } finally {
         threats.dispose();
         disposeSim(e);

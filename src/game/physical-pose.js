@@ -37,10 +37,8 @@ export class PhysicalPose {
     this.save(b.Spine2);b.Spine2.rotation.x+=.16*w;this.model.updateWorldMatrix(true,true);return true;
   }
   leanToDesk(){for(const[name,angle]of[['Spine',.25],['Spine1',.12]]){const bone=this.bones[name];if(!bone)continue;this.save(bone);bone.quaternion.copy(this.records.get(bone).q);bone.rotation.x+=angle;}this.model.updateWorldMatrix(true,true);}
-  cover(direction,weight=1){const b=this.bones;if(!b.Spine)return false;this.begin();const local=this.v().copy(direction).applyQuaternion(this.model.getWorldQuaternion(this.q()).invert());if(b.Head){this.save(b.Head);b.Head.rotation.y+=Math.sign(local.x||local.z)*.65*(1-weight*.6);}for(const[name,scale]of[['Spine',.30],['Spine1',.18]]){const bone=b[name];if(!bone)continue;this.save(bone);bone.rotation.z-=local.x*scale*weight;bone.rotation.x+=local.z*scale*weight;bone.updateWorldMatrix(false,true);}return true;}
+  cover(direction,weight=1){const b=this.bones;if(!b.Spine)return false;this.begin();const local=this.v().copy(direction).applyQuaternion(this.model.getWorldQuaternion(this.q()).invert());for(const[name,scale]of[['Spine',.30],['Spine1',.18]]){const bone=b[name];if(!bone)continue;this.save(bone);bone.rotation.z-=local.x*scale*weight;bone.rotation.x+=local.z*scale*weight;bone.updateWorldMatrix(false,true);}return true;}
 
-  torch(){const b=this.bones;if(!b.LeftArm||!b.LeftForeArm||!b.LeftHand)return false;this.begin();const target=this.point(b.LeftArm).add(this.v(-.025,-.19,.32));this.solve(b.LeftArm,b.LeftForeArm,b.LeftHand,target,this.v(-1,-.3,0));return true;}
-  inject(worldTarget,amount=1){const b=this.bones;if(!b.RightArm||!b.RightForeArm||!b.RightHand)return false;this.begin();const target=this.model.worldToLocal(this.v().copy(worldTarget)),start=this.point(b.RightHand),blend=T.MathUtils.smoothstep(amount,0,1);target.lerpVectors(start,target,blend);this.solve(b.RightArm,b.RightForeArm,b.RightHand,target,this.v(-1,-.25,.2));for(const f of this.fingers){this.save(f);f.rotation.z+=f.name.includes('Thumb')?.25:.6;}return true;}
   scratch(time,blend=1){
     const b=this.bones,m=this.model,hand=b.RightHand;if(!hand||!b.RightArm||!b.RightForeArm||!b.Head||!b.RightHandIndex2||!b.RightHandMiddle2||!b.RightHandIndex1||!b.RightHandRing1)return null;
     this.begin();

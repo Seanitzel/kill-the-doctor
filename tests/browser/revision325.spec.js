@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-const countries=['france','nigeria','china','india','russia','venezuela','america','egypt','somalia','england'];
+const countries=['france','nigeria','china','india','russia','venezuela','america','romania','uganda','england'];
 const initialized=new WeakSet();
 async function boot(page,index=0,mode='story'){
  if(!initialized.has(page)){await page.addInitScript(()=>{const stored=sessionStorage.getItem('ktd325-save');localStorage.setItem('ktd-northline-v1',stored||JSON.stringify({settings:{quality:'low',volume:0,speech:false}}));});initialized.add(page);}

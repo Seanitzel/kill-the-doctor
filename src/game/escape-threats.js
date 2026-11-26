@@ -1,3 +1,4 @@
+import {GasMist,syringeModel,gasExposure,incapacitate,holdEnemyProp} from './enemy-effects.js';
 import { complicityFor } from "./security-rules.js";
 import * as T from "three";
 import { mesh, material } from "./assets.js";
@@ -15,7 +16,7 @@ export const ATTACKS = Object.freeze({
     reason: "An armed accomplice shot you.",
   },
   syringe: {
-    range: 1.6,
+    range: 1.15,
     windup: 1.35,
     label: "Syringe raised · back away!",
     reason: "An accomplice incapacitated you with a fictional injection.",
@@ -46,7 +47,8 @@ export function threatKind(index) {
 export class EscapeThreats {
   constructor(e) {
     this.e = e;
-    this.enabled = e.mission.round >= 5 && (e.mission.type==='standard'||!!e.mission.china);
+    this.requiredCount=e.mission.playMode==='story'?(e.mission.story?.hidden||0):0;
+    this.enabled=e.mission.type==='standard'&&(e.mission.playMode==='story'?this.requiredCount>0:e.mission.seed%3!==0);
     this.entries = [];
     this.reservedRequired=null;
     this.spots = [];
@@ -75,6 +77,10 @@ export class EscapeThreats {
         count++;
       }
       this.makeSpots();
+      const selected=pool.filter(n=>n.complicity).slice(0,this.requiredCount||({relaxed:1,standard:2,hard:3}[e.mission.difficulty]||2));
+      this.reservedRequired=new Set(selected.map(n=>n.id));
+      for(const [i,n]of selected.entries()){const entry={n,kind:threatKind(i+1),phase:'runner',nextRoute:0};n.escapeThreat=entry;this.entries.push(entry);this.makeWeapon(entry);this.chooseSpot(entry);if(this.requiredCount)e.mission.requiredHiddenIds.add(n.id);}
+
     }
   }
   roomAt(pos, floor) {
@@ -192,19 +198,13 @@ export class EscapeThreats {
     this.spots.push(spot);
     return spot;
   }
-  reserve(actors){
-    if(!this.enabled||this.e.mission.playMode!=='story'||this.started)return;
-    this.reservedRequired=new Set();const available=new Map();
-    for(const spot of this.spots)available.set(spot.floor,(available.get(spot.floor)||0)+1);
-    // Register the existing mandatory offenders before the security phase.
-    // They stay in place; hiding/fleeing begins only after the guards are down.
-    for(const[i,n]of actors.entries())if(i%3!==0&&!n.operationDoctor&&(available.get(n.floor)||0)>0){this.reservedRequired.add(n.id);this.e.mission.requiredHiddenIds.add(n.id);available.set(n.floor,available.get(n.floor)-1);}
-  }
+  reserve(actors){return this.reservedRequired;}
   start(actors) {
     if (this.started||this.e.mission.type==='standard'&&this.e.npcs.some(n=>n.role==='security'&&!n.dead&&!n.evacuated)) return;
     this.started = true;
     const e = this.e;
     for (const [i, n] of actors.entries()) {
+      if(n.escapeThreat)continue;
       n.accompliceHeld = false;
       n.reporting = null;
       if (!this.enabled) {
@@ -249,12 +249,12 @@ export class EscapeThreats {
     entry.spot = spot;
     spot.occupied = n;
     entry.phase = "seeking";
-    entry.nextRoute = 0;
+    entry.nextRoute = 0;entry.relocateAt=e.mission.elapsed+18+(entry.n.routine||0)%7;
     n.evacuating = false;
     n.evacPending = false;
     n.activity = null;
     n.hiding = false;
-    n.wasHidden = true;if(this.e.mission.playMode==='story')this.e.mission.requiredHiddenIds?.add(n.id);
+    n.wasHidden = true;if(this.requiredCount&&this.reservedRequired.has(n.id))this.e.mission.requiredHiddenIds?.add(n.id);
     n.bonusValue = HIDDEN_BONUS;
     n.path=[];n.cursor=0;n.wait=0;
     return true;
@@ -298,24 +298,13 @@ export class EscapeThreats {
         "position",
         new T.Float32BufferAttribute(new Float32Array(36), 3),
       );
-      entry.cloud = new T.Points(
-        geometry,
-        new T.PointsMaterial({
-          color: entry.kind === "gas" ? "#b8a5db" : "#7cc4c8",
-          size: 0.22,
-          transparent: true,
-          opacity: 0.38,
-          depthWrite: false,
-        }),
-      );
-      entry.cloud.frustumCulled = false;
-      entry.cloud.visible = false;
-      this.root.add(entry.cloud);
+      geometry.dispose();entry.mist=new GasMist(this.root);entry.cloud=entry.mist.root;
     }
+    if(entry.kind==='syringe'){disposeObjectResources(g);g.clear();g.add(syringeModel());}
     g.visible = false;
   }
   interactions() {
-    if (!this.e.mission.targetDown) return [];
+    if (!this.enabled) return [];
     return this.entries
       .filter(
         (a) => a.phase === "hidden" && !a.n.dead && a.n.floor === this.e.floor,
@@ -357,7 +346,7 @@ export class EscapeThreats {
   }
   prepare(n) {
     const a = n.escapeThreat;
-    if (!this.enabled || !a || n.dead || !this.e.mission.targetDown)
+    if (!this.enabled || !a || n.dead)
       return false;
     if (a.attack) {
       n.activity = "guard-aim";
@@ -441,6 +430,7 @@ export class EscapeThreats {
         continue;
       }
       if (a.phase === "hidden") {
+        if(now>=(a.relocateAt||Infinity)&&n.floor===e.floor){const old=a.spot;this.reveal(a);a.relocateFrom=old.room;continue;}
         const inRoom =
           n.floor === e.floor &&
           this.roomAt(e.playerPos, e.floor)?.id === a.spot.room.id;
@@ -506,41 +496,22 @@ export class EscapeThreats {
           continue;
         }
         const age = now - a.attack.at;
-        if (a.cloud) {
-          a.cloud.visible = age > attack.windup - 0.6 && n.floor === e.floor;
-          const p = a.cloud.geometry.attributes.position,
-            dx = e.playerPos.x - n.pos.x,
-            dz = e.playerPos.z - n.pos.z,
-            length = Math.max(0.01, Math.hypot(dx, dz));
-          for (let i = 0; i < 12; i++) {
-            const f = ((age * 0.8 + i / 12) % 1) * attack.range;
-            p.setXYZ(
-              i,
-              n.pos.x + (dx / length) * f + Math.sin(i * 3 + now) * 0.12,
-              1.3 + Math.sin(i + now) * 0.14,
-              n.pos.z + (dz / length) * f,
-            );
-          }
-          p.needsUpdate = true;
-        }
+        if(a.mist){if(age>attack.windup-.6)a.mist.update(n.pos,e.playerPos,age,attack.range);else a.mist.hide();}
         if (age >= attack.windup) {
           if (a.kind === "gun") e.audio.sound("shot");
           const dodged =
             a.kind === "syringe"
-              ? d > 1.25
+              ? d > .9
               : a.kind === "gun"
                 ? distance(e.playerPos, a.attack.origin) > 1.15
                 : d > attack.range ||
                   distance(e.playerPos, a.attack.origin) > 0.95;
           if(a.kind==='gun'){e.combat?.hostileShot(n,a.attack.aim);if(e.mission.result)return;}
-          if (!dodged && a.kind!=='gun') {
-            e.mission.finish(
-              false,
-              attack.reason + " Watch the warning and break line of sight.",
-            );
-            e.finish();
-            return;
+          if(!dodged&&a.kind!=='gun'){
+            if(a.kind==='syringe'){incapacitate(e,attack.reason);return;}
+            gasExposure(e);
           }
+          a.mist?.hide();
           a.attack = null;
           a.cooldown = now + 3;
           if (a.cloud) a.cloud.visible = false;
@@ -569,13 +540,9 @@ export class EscapeThreats {
           e.time,
         );
       }
+      if(a.attack&&a.kind==='syringe')n.visual.poseInjection?.(e.playerPos.clone().setY(1.45),Math.min(1,(e.mission.elapsed-a.attack.at)/ATTACKS.syringe.windup));
       a.prop.visible = !!a.attack;
-      if (a.prop.visible && n.visual.hand) {
-        n.visual.root.updateMatrixWorld(true);
-        n.visual.hand.getWorldPosition((this.grip ??= new T.Vector3()));
-        a.prop.position.copy(n.visual.root.worldToLocal(this.grip));
-        a.prop.position.z += 0.05;
-      }
+      if(a.prop.visible)holdEnemyProp(e,a);
     }
   }
   tracking() {
@@ -614,7 +581,7 @@ export class EscapeThreats {
     if (this.disposed) return;
     this.disposed = true;
     for (const a of this.entries) {
-      a.prop?.removeFromParent();
+      a.mist?.dispose();a.prop?.removeFromParent();
       disposeObjectResources(a.prop);
       a.mask?.removeFromParent();
       disposeObjectResources(a.mask);

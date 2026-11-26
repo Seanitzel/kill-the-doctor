@@ -21,19 +21,19 @@ test('India restores brown finishes and fans, with a silver elephant, framed art
 });
 test('America far side glass, white toilet plaques, continuous snowy ground, French lightning and soft Egyptian sun render correctly',async({page},info)=>{
  test.setTimeout(240000);const errors=[];page.on('pageerror',e=>errors.push(e.message));const reports=[];
- for(const country of ['america','nigeria','venezuela','somalia','egypt','india','russia','england','france']){
+ for(const country of ['america','nigeria','venezuela','uganda','romania','india','russia','england','france']){
   console.log('Country visual',country);await boot(page,country);
   if(country==='america'){await shot(page,'america-west-glass',[-25.3,1.7,6],[-28.5,2.1,-1]);await shot(page,'america-east-glass',[23,1.7,6],[25.5,2.1,-1]);}
-  if(['nigeria','venezuela','somalia','egypt','india'].includes(country)){const palettes=await page.evaluate(()=>{const e=window.__ktd.engine,result=[];e.hospitals[0].group.traverse(o=>{if(o.name==='Bathroom door pictogram plaque')result.push(o.userData.palette);});return result;});expect(palettes.length).toBeGreaterThan(0);expect(palettes.every(p=>p.background==='#ffffff'&&p.ink==='#111111')).toBe(true);reports.push({country,palettes});if(country==='nigeria'){await page.evaluate(()=>{const e=window.__ktd.engine,root=e.hospitals[0].group.getObjectByName('Bathroom projecting plaque'),p=root.position.clone(),normal=p.clone().set(0,0,1).applyQuaternion(root.quaternion);e.playerPos.copy(p).addScaledVector(normal,2);e.playerPos.y=0;e.updateLights();e.camera.position.copy(p).addScaledVector(normal,2.4);e.camera.lookAt(p);e.renderScene();});await page.screenshot({path:`artifacts/revision330/toilet-white-black-${suffix}.png`});}}
+  if(['nigeria','venezuela','uganda','romania','india'].includes(country)){const palettes=await page.evaluate(()=>{const e=window.__ktd.engine,result=[];e.hospitals[0].group.traverse(o=>{if(o.name==='Bathroom door pictogram plaque')result.push(o.userData.palette);});return result;});expect(palettes.length).toBeGreaterThan(0);expect(palettes.every(p=>p.background==='#ffffff'&&p.ink==='#111111')).toBe(true);reports.push({country,palettes});if(country==='nigeria'){await page.evaluate(()=>{const e=window.__ktd.engine,root=e.hospitals[0].group.getObjectByName('Bathroom projecting plaque'),p=root.position.clone(),normal=p.clone().set(0,0,1).applyQuaternion(root.quaternion);e.playerPos.copy(p).addScaledVector(normal,2);e.playerPos.y=0;e.updateLights();e.camera.position.copy(p).addScaledVector(normal,2.4);e.camera.lookAt(p);e.renderScene();});await page.screenshot({path:`artifacts/revision330/toilet-white-black-${suffix}.png`});}}
   if(['russia','england'].includes(country)){await shot(page,`${country}-snow`,[2,1.1,39],[-10,.15,42]);const w=await page.evaluate(()=>{const w=window.__ktd.engine.hospitals[0].group.userData.evening;return{banks:w.banks.length,surface:!!w.snowSurface,flakes:w.count};});expect(w).toEqual({banks:0,surface:true,flakes:170});reports.push({country,...w});}
   if(country==='france'){await shot(page,'france-lightning',[-4,1.7,40],[-14,13,56],{age:35.05});const flash=await page.evaluate(()=>window.__ktd.engine.hospitals[0].group.userData.evening.flash.intensity);expect(flash).toBeGreaterThan(20);}
-  if(country==='egypt'){await shot(page,'egypt-sun',[1.5,1.7,40],[3,15,104],{age:0});const material=await page.evaluate(()=>window.__ktd.engine.hospitals[0].group.userData.nightSky.celestials.sun.material.type);expect(material).toBe('ShaderMaterial');}
+  if(country==='romania'){await shot(page,'egypt-sun',[1.5,1.7,40],[3,15,104],{age:0});const material=await page.evaluate(()=>window.__ktd.engine.hospitals[0].group.userData.nightSky.celestials.sun.material.type);expect(material).toBe('ShaderMaterial');}
  }
  await info.attach('country-details',{body:JSON.stringify(reports),contentType:'application/json'});expect(errors).toEqual([]);
 });
 
 test('culturally dressed patients keep bounded garments in walking and seated poses and release textures on country changes',async({page},info)=>{
- test.setTimeout(180000);await boot(page,'egypt');const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ test.setTimeout(180000);await boot(page,'romania');const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const report=await page.evaluate(async()=>{
   const e=window.__ktd.engine,{Mission}=await import('/src/game/mission.js'),{Box3}=await import('/node_modules/.vite/deps/three.js'),samples=[],released=[];
   for(const country of ['nigeria','india','nigeria','india']){

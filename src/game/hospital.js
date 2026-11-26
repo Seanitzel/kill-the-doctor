@@ -1,4 +1,5 @@
-import {addHallwayCameras} from './hallway-details.js';
+import {addHallwayCameras,hallwayDirections} from './hallway-details.js';
+import {coffeeStation} from './coffee-station.js';
 import {addInteriorDetails,localizeSigns} from './hospital-interiors.js';
 import {cafeteriaTables} from './cafeteria-layout.js';
 import {addStairwell} from './stairs.js';
@@ -40,7 +41,7 @@ export function buildLift(layout,m){
   const floor=sign(FLOOR_CODES[layout.floor],'CALL',.25,.33);floor.name='Lift floor indicator';floor.position.set(x+1.55,1.77,faceZ);group.add(floor);const wallNumber=sign(FLOOR_CODES[layout.floor],'FLOOR',.65,.92,{background:'#203b4a',color:'#e1edf0',center:true,fontSize:740,subFontSize:110});wallNumber.name='Large floor number left of elevator';wallNumber.position.set(x-1.92,1.72,faceZ+.03);group.add(wallNumber);
   return group;
 }
-export function buildHospital(layout, m, site=null, interior=null, {story=!!interior}={}) {
+export function buildHospital(layout, m, site=null, interior=null, {story=!!interior,infiltration=['china','russia','romania'].includes(site?.id)}={}) {
   const group = new THREE.Group(), batch = new Batcher(group), colliders = [], interactables = [], fixtures = [], wallMeshes = [], pharmacies = [], bathrooms = [], operatingSets = [], workstations = [], entrances=[];
   group.userData.storyInterior=story;
   const cube = (...args) => batch.box(...args);
@@ -280,8 +281,9 @@ export function buildHospital(layout, m, site=null, interior=null, {story=!!inte
     interactables.push({ type: 'exit', label: 'Leave the hospital', x: layout.exit.x, z: layout.exit.z });
   } else if(layout.floor!==3)placeSign('PATIENT SERVICES', `${FLOORS[layout.floor].toUpperCase()} / NHALEWICK`, 3, 2.9, 33.25, Math.PI, 3.8, .68);
   for (const p of (layout.floor===3?[]:[[-1.5,0],[-1.5,18],[-21,0],[21,0],[-1.5,-18]])) {
-    placeSign('↑  LIFT    /    WEST ←   → EAST','G: CLINICAL    1: SPECIALISTS    2: ADVANCED CARE',p[0],2.9,p[1]+.01,0,4.6,.57);
-    placeSign('↓  MAIN ENTRANCE    /    EAST ←   → WEST','G: CLINICAL    1: SPECIALISTS    2: ADVANCED CARE',p[0],2.9,p[1]-.01,Math.PI,4.6,.57);
+    const directions=hallwayDirections(layout,p[0],p[1]),branches=[directions.west?'WEST ←':'',directions.east?'→ EAST':''].filter(Boolean).join('   '),reverse=[directions.east?'EAST ←':'',directions.west?'→ WEST':''].filter(Boolean).join('   ');
+    placeSign(`${directions.north?'↑ LIFT':'LIFT · NORTH'}${branches?' / '+branches:''}`,'G: CLINICAL    1: SPECIALISTS    2: ADVANCED CARE',p[0],2.9,p[1]+.01,0,4.6,.57);
+    placeSign(`${directions.south?'↓ MAIN ENTRANCE':'ENTRANCE · SOUTH'}${reverse?' / '+reverse:''}`,'G: CLINICAL    1: SPECIALISTS    2: ADVANCED CARE',p[0],2.9,p[1]-.01,Math.PI,4.6,.57);
     Object.assign(collider(p[0],p[1],4.6,.06),{minY:2.615,maxY:3.185,type:'header'});
   }
   // Corridors include benches, service carts, hand sanitizers, notices and equipment.
@@ -307,6 +309,11 @@ export function buildHospital(layout, m, site=null, interior=null, {story=!!inte
   }
   addSiteDetails(group,batch,m,layout,site);
   addHallwayCameras(group,layout);
+  const cafe=layout.rooms.find(r=>r.kind==='cafe');
+  if(cafe&&layout.floor===0&&!infiltration){
+    const plannedSeats=seatRequests.map(s=>footprint(s.x,s.z,.80,.76,1.18,s.rotation,'chair'));const station=coffeeStation(group,cafe,{colliders:[...colliders,...plannedSeats],doors:layout.doors});group.userData.coffeeStation=station;
+    for(const b of [station.bounds,...station.extraBounds])colliders.push(footprint(b.x,b.z,b.w,b.d,b.h,0,'coffee-station'));
+  }
   for(const seat of seatRequests)if(chairFits(seat.x,seat.z,seat.rotation,layout,colliders)){chair(batch,m,seat.x,seat.z,seat.rotation);seats.push(seat);}
   addInteriorDetails(group,batch,m,layout,interior,{colliders});localizeSigns(group,interior);
   const statics = [...batch.finish(),...joinedWalls.finish(group)];

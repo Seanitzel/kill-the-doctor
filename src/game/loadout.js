@@ -70,13 +70,13 @@ export function selectCharacter(save,id){const c=CHARACTERS.find(c=>c.id===id);i
 export function unlockCharacter(save,id){return CHARACTERS.some(c=>c.id===id)&&!save.unlockedCharacters?.includes(id)?selectCharacter(save,id):false;}
 export function weaponInfo(save,kind=save.loadout?.weapon||'pistol'){
   const sniper=kind==='sniper'&&save.upgrades?.sniper>0,mag=save.upgrades?.magazine||0;
-  return sniper?{id:'sniper',name:'SCOPED RIFLE',capacity:4+mag,reserve:16,range:80,cooldown:1.05,reload:2.2/(1+(save.upgrades?.reload||0)*.18),assist:1+(save.upgrades?.accuracy||0)*.12,damage:1+(save.upgrades?.power||0)*.5,fov:19}:{id:'pistol',name:'SERVICE PISTOL',capacity:6+mag*2,reserve:30,range:28,cooldown:.32/(1+(save.upgrades?.power||0)*.12),reload:1.4/(1+(save.upgrades?.reload||0)*.18),assist:1+(save.upgrades?.accuracy||0)*.12,damage:1+(save.upgrades?.power||0)*.5,fov:48};
+  return sniper?{id:'sniper',name:'SCOPED RIFLE',capacity:4+mag,reserve:16,range:80,cooldown:1.05/(1+(save.upgrades?.power||0)*.12),reload:2.2/(1+(save.upgrades?.reload||0)*.18),assist:1+(save.upgrades?.accuracy||0)*.12,damage:1+(save.upgrades?.power||0)*.5,fov:19}:{id:'pistol',name:'SERVICE PISTOL',capacity:6+mag*2,reserve:30,range:28,cooldown:.32/(1+(save.upgrades?.power||0)*.12),reload:1.4/(1+(save.upgrades?.reload||0)*.18),assist:1+(save.upgrades?.accuracy||0)*.12,damage:1+(save.upgrades?.power||0)*.5,fov:48};
 }
 export function maskProtects(save){return !!(save.loadout?.mask&&((save.loadout.maskType||'n95')==='n95')&&(save.upgrades?.n95||save.upgrades?.mask));}
 export function gasBlocked(save,random=Math.random){return maskProtects(save)||!!(save.loadout?.mask&&save.loadout.maskType==='regular'&&save.upgrades?.regularMask&&random()<.7);}
 export function hasMask(save){return !!(save.upgrades?.mask||save.upgrades?.n95||save.upgrades?.regularMask);}
 export const STAFF_BONUS=25;
-export function mayHitStaff(mission,npc){return npc.id==='target'||!!(mission.policeAlert&&['security','police'].includes(npc.role))||!!(mission.targetDown&&(npc.complicity||npc.operationDoctor||['security','police'].includes(npc.role)));}
+export function mayHitStaff(mission,npc){return npc.id==='target'||mission.type==='standard'&&!!npc.wasHidden||!!(mission.policeAlert&&['security','police'].includes(npc.role))||!!(mission.targetDown&&(npc.complicity||npc.operationDoctor||['security','police'].includes(npc.role)));}
 export function seesDrawnWeapon(observer,player,yaw,visible,range=11){
   if(!visible)return false;const dx=player.x-observer.x,dz=player.z-observer.z,d=Math.hypot(dx,dz);
   return d<range&&(d<2.5||(dx*Math.sin(yaw)+dz*Math.cos(yaw))/Math.max(d,.001)>.1);

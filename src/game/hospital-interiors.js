@@ -15,7 +15,7 @@ export const INTERIORS=Object.freeze({
  romania:{ceilingColor:'#d2ac4d',ceilingGrout:'#8e6a23',floral:true,wall:'#e8e1d4',lower:'#d5c8b3',floor:'#14191b',grout:'#74603e',accent:'#8a7652',chair:'#686c70',metal:'#bba16a',wood:'#a88b5e',flooring:'black-gold-marble',ornament:'geometry',style:'Romanian marble and gold'},
  uganda:{ceilingColor:'#987c5b',ceilingGrout:'#735f48',lowerHeight:2.0,wall:'#e7ddbf',lower:'#c5ab46',floor:'#b9ab89',grout:'#9b8f71',accent:'#8d824c',chair:'#8c896c',metal:'#9b9784',wood:'#8c7956',worn:true,style:'Ugandan yellow and cream wards'},
 });
-export function interiorFor(mission){return mission?.playMode==='story'&&!mission.terror&&mission.mode!=='terror'?INTERIORS[mission.country?.id]||null:null;}
+export function interiorFor(mission){return (mission?.playMode==='story'||mission?.playMode==='freestyle'&&!mission.country?.default)&&!mission.terror&&mission.mode!=='terror'?INTERIORS[mission.country?.id]||null:null;}
 // Own only clones and newly created maps; the default pool survives mode switches.
 export function createInterior(base,mission){
  const profile=interiorFor(mission);if(!profile)return null;
@@ -25,9 +25,9 @@ export function createInterior(base,mission){
  materials.lowerWall=materials.wall.clone();materials.lowerWall.color.set(profile.lower);
  const map=finishTexture(profile);maps.push(map);materials.floor.map=map;materials.floor.color.set('#ffffff');materials.floor.roughness=profile.worn||profile.grainy?.84:profile.flooring?.includes('marble')?.28:.46;materials.floor.metalness=0;if(profile.grainy){materials.floor.bumpMap=map;materials.floor.bumpScale=.012;}
  if(profile.ceiling||profile.ceilingColor){const ceiling=finishTexture(profile,true);maps.push(ceiling);materials.ceiling.map=ceiling;materials.ceiling.color.set('#ffffff');}
- if(profile.country==='romania'||mission.country.id==='romania'){materials.ceiling.metalness=.38;materials.ceiling.roughness=.3;materials.ceiling.emissive.set('#78561c');materials.ceiling.emissiveIntensity=.13;}
+ if(profile.country==='romania'||mission.country.id==='romania'){materials.ceiling.metalness=.38;materials.ceiling.roughness=.3;materials.ceiling.emissive?.set('#78561c');materials.ceiling.emissiveIntensity=.13;}
  const art=interiorArt(materials,mission.country.id,maps);
- materials.light.emissive.set(mission.country.id==='romania'?'#ffe3b5':profile.worn?'#f4e7ce':'#d5e9f4');
+ materials.light.emissive?.set(mission.country.id==='romania'?'#ffe3b5':profile.worn?'#f4e7ce':'#d5e9f4');
  let disposed=false;return{loadArt:art.load,profile:{...profile,country:mission.country.id},materials,dispose(){if(disposed)return;disposed=true;art.dispose();for(const map of maps)map.dispose();for(const value of Object.values(materials))value.dispose();}};
 }
 export function localizeSigns(root,profile){

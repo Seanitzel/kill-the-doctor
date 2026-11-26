@@ -371,8 +371,8 @@ function skinTattoo(model,source,{center,width,height,minZ,style,name}){
   }
   if(!indices.length)return;
   const geometry=source.geometry.clone();geometry.setAttribute('uv',new THREE.BufferAttribute(uv,2));geometry.setIndex(indices);
-  const material=clothMaterial('#ffffff',{map:tattooTexture(style),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,roughness:.95,side:THREE.FrontSide});
-  const decal=new THREE.SkinnedMesh(geometry,material);decal.name=name;decal.position.copy(source.position);decal.quaternion.copy(source.quaternion);decal.scale.copy(source.scale);decal.matrix.copy(source.matrix);decal.matrixAutoUpdate=source.matrixAutoUpdate;decal.bindMode=source.bindMode;decal.skeleton=source.skeleton;decal.bindMatrix.copy(source.bindMatrix);decal.bindMatrixInverse.copy(source.bindMatrixInverse);decal.userData.appearanceOwned=true;decal.userData.appearanceOwnedTexture=true;decal.frustumCulled=false;source.parent.add(decal);
+  const material=clothMaterial('#ffffff',{map:tattooTexture(style),transparent:true,depthWrite:false,alphaTest:.06,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4,roughness:.95,side:THREE.FrontSide});
+  const decal=new THREE.SkinnedMesh(geometry,material);decal.name=name;decal.position.copy(source.position);decal.quaternion.copy(source.quaternion);decal.scale.copy(source.scale);decal.matrix.copy(source.matrix);decal.matrixAutoUpdate=source.matrixAutoUpdate;decal.bindMode=source.bindMode;decal.skeleton=source.skeleton;decal.morphTargetDictionary=source.morphTargetDictionary;decal.morphTargetInfluences=source.morphTargetInfluences;decal.renderOrder=2;decal.bindMatrix.copy(source.bindMatrix);decal.bindMatrixInverse.copy(source.bindMatrixInverse);decal.userData.appearanceOwned=true;decal.userData.appearanceOwnedTexture=true;decal.frustumCulled=false;source.parent.add(decal);
 }
 function fittedGlasses(model,skin,eyeMeshes,sunglasses=false){
   const head=model.getObjectByName('Head'),points=eyeMeshes.flatMap(mesh=>coordinates(mesh,model).points);if(!head||!points.length)return;
@@ -493,6 +493,7 @@ export function applyAppearance(model, person, role = 'civilian', cache = irisCa
   const hair=find('Hair'), skin=find('Skin');
   if(hair){const style=person.hairstyle||'original',hex=person.hair||'#342b25';if(['cropped','slick','ponytail','ponytail-front','ponytail-side'].includes(style))fitHair(model,hair,skin,style,hex);else if(['afro','braids','straight','curls-short','curls-long'].includes(style))extendedHair(model,hair,skin,style,hex);
     colorHair(hair,model,hex,person.highlights);model.traverse(object=>{if(object.userData.appearanceOwned&&/hair$|ponytail$/.test(object.name))colorHair(object,model,hex,person.highlights);});}
+  if(premium&&premium.base!=='suit'){const neck=bonePoint(model,'Neck');model.traverse(o=>{if(o.isMesh&&(o.material?.name.includes('Hair')||o.userData.appearanceOwned&&/hair$|ponytail$/.test(o.name)))reshape(o,model,p=>{if(p.y<neck.y+.075)p.y=neck.y+.075+(p.y-(neck.y+.075))*.03;});});}
   if(person.refined&&skin){skin.material.roughness=.67;for(const mesh of meshes)if(mesh.material?.name.includes('Eye'))mesh.material.roughness=.24;}
   shapeFace(model,person,skin,meshes);
   if(role==='civilian'||['security','police'].includes(role)){const look=premium?.id==='black-tie'?{...person,glasses:false,sunglasses:true}:premium?.id==='biker'?{...person,glasses:false,sunglasses:false}:premium?.id==='shearling'?{...person,cap:false}:person;accessories(model,['security','police'].includes(role)?{cap:true,hairstyle:'cropped'}:look,skin,find('Glasses'),meshes);}

@@ -20,8 +20,13 @@ export class AssignmentObjectives{
     if(!m.china){
     const records=evidenceRoom(m.country),maintenance=e.levels[0].rooms.find(r=>r.kind==='utility');
     this.keyOffices.add('basement','Basement access pass',records);
-    this.keyOffices.add('theatre','Theatre key',maintenance);
-    const nurse=e.npcs.find(n=>n.id==='life-nurseirislowe-0');if(nurse){nurse.activity=null;nurse.room=null;nurse.wait=0;nurse.keyCarrier=true;nurse.speed=.85;this.keyCarrier=nurse;}
+    if(m.type!=='rescue')this.keyOffices.add('theatre','Theatre key',maintenance);
+    if(m.type==='rescue'){
+      const nav=e.systems.navigationFor(0),start=nav.nearest(maintenance.center).point;
+      const nurse=e.spawnNPC({name:'Nurse Ellis Morgan',role:'Maintenance clinician',gender:'male',skin:'#987052',hair:'#2d2520',accent:'#8bbbd8'},'nurse',0,start,null,'maintenance-key-carrier',{fixed:true});
+      nurse.activity=null;nurse.room=null;nurse.wait=0;nurse.keyCarrier=true;nurse.speed=2.35;this.keyCarrier=nurse;
+      this.errands=['office','cafe','bathroom','utility'].map(kind=>{const room=e.levels[0].rooms.find(r=>r.kind===kind)||maintenance;return{room,kind,goal:nav.nearest({x:room.center.x+(kind==='bathroom'?1:0),z:room.center.z+1.1}).point};});this.errandIndex=0;this.errandWait=0;
+    }
     for(const original of PHOTO_SITES){const spec=original.id==='ledger'?{...original,floor:records.floor,roomKind:records.kind}:original;const room=original.id==='ledger'?records:e.levels[spec.floor].rooms.find(r=>r.kind===spec.roomKind),site={...spec,x:room.center.x,y:1.35,z:room.center.z,room};
       if(spec.id!=='theatre'){const board=new THREE.Group();board.position.set(site.x,1.28,site.z);this.props.add(board);board.userData.floor=spec.floor;mesh('box',material('#334c60'),[.68,.7,.04],[0,0,0],board);mesh('box',material('#ece9da'),[.58,.6,.045],[0,0,.025],board);for(let i=0;i<6;i++)mesh('box',material(i===3?'#9f4d4d':'#4e626a'),[.4,.018,.005],[0,.19-i*.075,.052],board);mesh('box',material('#617986'),[.07,1.3,.07],[0,-.6,0],board);site.z+=.08;}
       this.photoSites.push(site);
@@ -29,10 +34,10 @@ export class AssignmentObjectives{
     }
     const operating=e.hospitals[3].operatingSets?.[0],room=e.levels[3].rooms[0],anchors=operating?.anchors||{patient:{x:-3,y:1,z:-3.65,bedRotation:0},doctor:{x:-4.4,z:-4.5,yaw:Math.PI/2},assistant:{x:-1.6,z:-4.5,yaw:-Math.PI/2},rescue:{x:-3,z:-1}};
     const count=m.type==='rescue'?rescueDoctorCount(m):2,spawns=[anchors.doctor,anchors.assistant];
-    if(count>2){const nav=e.systems.navigationFor(3);for(let i=2;i<count;i++)spawns.push(nav.nearest({x:room.center.x+(i%2?-3:3),z:room.center.z+3+Math.floor((i-2)/2)*2}).point);}
+    if(count>2){const nav=e.systems.navigationFor(3);for(let i=2;i<count;i++)spawns.push(nav.nearest(e.levels[3].rooms[(i-1)%e.levels[3].rooms.length].center).point);}
     for(const [i,p] of spawns.entries()){
-      const doctor={...m.target,name:i===0?m.country?.doctor||'Dr. Adrian Vale':[ 'Dr. Amira Solano','Dr. Julian Reed','Dr. Maya Bell','Dr. Owen Clarke'][i-1],gender:i===0?m.country?.gender||'male':i%2?'female':'male',accent:'#729a9f'};
-      const n=e.spawnNPC(doctor,'doctor',3,p,room,`operation-doctor-${i}`,{fixed:true});n.activity='examine';n.visual.root.rotation.y=p.yaw||0;n.operationDoctor=true;
+      const doctor={...m.target,name:i===0?m.country?.doctor||'Dr. Adrian Vale':['Dr. Amira Solano','Dr. Julian Reed','Dr. Maya Bell','Dr. Owen Clarke'][i-1],gender:i===0?m.country?.gender||'male':i%2?'female':'male',accent:'#729a9f'};
+      const n=e.spawnNPC(doctor,'doctor',3,p,e.levels[3].rooms.find(r=>r.center.x===p.x&&r.center.z===p.z)||room,`operation-doctor-${i}`,{fixed:true});n.activity='examine';n.visual.root.rotation.y=p.yaw||0;n.operationDoctor=true;
     }
     const person={name:'Casey Morris',gender:'female',skin:'#b98664',hair:'#332621',accent:'#a7bbc1'},p=anchors.patient;
     const patient=e.spawnNPC(person,'patient',3,p,room,'rescue-patient',{fixed:true});patient.activity='rest';patient.lying=true;patient.baselineY=p.y||1;patient.pos.y=patient.baselineY;patient.bedRotation=p.bedRotation||0;patient.visual.root.rotation.x=-Math.PI/2;patient.hitOffset=new THREE.Vector3(0,.13,-.9);patient.hitRadius=.46;patient.contamination=0;patient.rescuePatient=true;settleBedPatient(patient);this.patient=patient;this.releasePoint=anchors.rescue;this.escort=patient;if(m.china)this.china=new ChinaOperation(e,this.patient);else if(m.type==='rescue')this.rescue=new RescueEncounter(e,this.patient);
@@ -80,6 +85,12 @@ export class AssignmentObjectives{
     e.audio.sound('clue');e.hooks.shot?.();e.notify(`Photograph saved · ${site.label} (${m.photos.length}/3)`,'clue');e.emitHUD();return true;
   }
   prepareNPC(n){
+    if(n===this.keyCarrier&&!this.e.mission.keys.includes('theatre')){
+      const e=this.e,task=this.errands[this.errandIndex%this.errands.length],now=e.mission.elapsed;n.activity=null;n.wait=0;
+      if(distance(n.pos,task.goal)<.5){n.path=[];n.activity=task.kind==='bathroom'?'rest':task.kind==='cafe'?'drink':'examine';if(!this.errandWait){this.errandWait=now+(task.kind==='bathroom'?10:5);n.visual.root.rotation.y=task.kind==='bathroom'?Math.PI:0;}if(now>=this.errandWait){this.errandWait=0;this.errandIndex++;n.path=[];this.errandRoute=0;}}
+      else if(now>=(this.errandRoute||0)){e.routeNPC(n,task.goal);this.errandRoute=now+1.2;}
+      return true;
+    }
     if(this.keyOffices?.prepare(n)||this.china?.prepareNPC(n)||this.rescue?.prepare(n))return true;
     const e=this.e;if(n!==this.patient||e.mission.type!=='rescue'&&!n.lying)return false;
     if(!e.mission.patientReleased){n.path=[];return true;}

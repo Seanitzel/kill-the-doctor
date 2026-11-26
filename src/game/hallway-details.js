@@ -2,6 +2,11 @@ import * as T from 'three';
 import {mesh,material} from './assets.js';
 import {key,world} from './layout.js';
 
+export function hallwayDirections(layout,x,z){
+ const tile={x:Math.round(x/3+11),z:Math.round(z/3+11)};
+ const open=(dx,dz)=>[1,2,3].every(step=>layout.cells.get(key(tile.x+dx*step,tile.z+dz*step))?.room==='hall');
+ return {west:open(-1,0),east:open(1,0),north:open(0,-1),south:open(0,1)};
+}
 export function addHallwayCameras(group,layout){
  const root=new T.Group();root.name='Hallway corner security cameras';group.add(root);let count=0,cornerIndex=0;
  const ivory=material('#d0d4d0'),dark=material('#232d35'),lens=material('#152e3c',{metalness:.5,roughness:.1});

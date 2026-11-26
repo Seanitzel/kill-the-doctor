@@ -57,7 +57,7 @@ test('Only the assigned doctor starts evacuation; staff bonuses bank once after 
   const failed=new Mission(defaultSave(),110);failed.eliminate({id:'target',role:'doctor'});failed.eliminate({id:'extra',role:'nurse'});assert.equal(failed.finish(false,'caught').coins,0);
 });
 test('Assignments cover three floors and remain doctor-only',()=>{
-  const floors=new Set();for(let i=1;i<=80;i++){const save=defaultSave();save.attempts=i;const m=new Mission(save,i);floors.add(m.target.floor);assert.match(m.target.name,/^Dr\./);}
+  const floors=new Set();for(let i=1;i<=80;i++){const save=defaultSave();save.playMode='freestyle';save.attempts=i;const m=new Mission(save,i);floors.add(m.target.floor);assert.match(m.target.name,/^Dr\./);}
   assert.equal(FLOORS.length,4);assert.deepEqual([...floors].sort(),[0,1,2]);
 });
 test('Witnesses need proximity, facing and a clear view of the weapon',()=>{
@@ -80,11 +80,9 @@ function simulation(){
   Object.assign(e,{mission:new Mission(save,123),levels,hospitals,navLayouts,npcs:[],floor:0,playerPos:new THREE.Vector3(3,0,30),player:{root:new THREE.Group()},keys:new Set(),captureTime:0,time:0,weaponDrawn:false,hooks:{},audio:{sound(){},gasp(){},speak(){}},notify(){},finish(){e.finished=true;}});
   e.systems=new MissionSystems(e);return e;
 }
-test('Drawing in view causes one audible gasp and a report; walls and holstering prevent detection',()=>{
-  const e=simulation(),n=actor('witness',0,0,24);e.npcs=[n];e.playerPos.set(0,0,27);let gasps=0;e.audio.gasp=()=>gasps++;
-  e.systems.update(.2);assert.equal(gasps,0);e.mission.legitimateDraw=true;e.weaponDrawn=true;e.systems.update(.2);assert.equal(gasps,1);assert.ok(n.reporting);e.systems.update(.2);assert.equal(gasps,1);
-  e.mission.elapsed=n.reporting.deadline+.01;e.systems.prepareNPC(n);assert.equal(e.mission.result,null);assert.equal(e.mission.policeAlert,true);assert.equal(e.mission.state,'escape');assert.ok(e.mission.timer>0);assert.equal(e.finished,undefined);
-  const blocked=simulation();blocked.npcs=[actor('other',0,0,24)];blocked.playerPos.set(0,0,27);blocked.weaponDrawn=true;blocked.lineOfSight=()=>false;blocked.systems.update(.2);assert.equal(blocked.npcs[0].reporting,undefined);
+test('Visitors warn a confronted target without reporting a public-draw failure; walls and holstering prevent detection',()=>{
+ const e=simulation(),n=actor('witness',0,0,24);e.npcs=[n];e.playerPos.set(0,0,27);e.mission.legitimateDraw=true;e.weaponDrawn=true;e.systems.update(.2);assert.equal(n.targetWarning,true);assert.equal(n.reporting,undefined);assert.equal(e.mission.result,null);
+ const blocked=simulation();blocked.npcs=[actor('other',0,0,24)];blocked.playerPos.set(0,0,27);blocked.weaponDrawn=true;blocked.lineOfSight=()=>false;blocked.systems.update(.2);assert.equal(blocked.npcs[0].reporting,undefined);
 });
 test('Primary target interrupts reports and evacuates immediately with an immediate alarm',()=>{
   const e=simulation(),n=actor('reporter',1,0,0);e.npcs=[n];n.reporting={deadline:0};let alarms=0;e.audio.sound=kind=>{if(kind==='alarm')alarms++;};

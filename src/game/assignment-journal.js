@@ -1,25 +1,26 @@
+import {rescueDoctorCount} from './story-missions.js';
 import {evidenceLabel} from './campaign-locations.js';
 export function assignmentJournal(mission){
  if(!mission||mission.type==='standard')return [];
  if(mission.china)return [
   `Use the hospital notices and schedules to locate ${mission.china.doctorName||'the consultant'}’s office before the ${Math.floor(mission.china.coverSeconds/60)}:00 meeting. Collect a spoon from the cafeteria station.`,
   ...(mission.country?.id==='china'&&mission.playMode==='story'&&!mission.terror?['During the doctor’s break, search the cupboard inside his office for the glass privacy remote. Use it before mixing: the glass becomes dark, heavily dimmed glass from the hallway but stays transparent from inside. Visitors can still open the door and enter.']:[]),
-  'Wait outside until the doctor has fully left for a break. Enter unseen and mix the fictional KTD compound into the personal coffee for 30 seconds. USE again or move away to stop early; progress is saved. Mixing stops automatically at 30/30 with the spoon-collection sound.',
-  ...(mission.country?.id==='china'&&mission.playMode==='story'&&!mission.terror?['When the coffee is ready, stop mixing, then use the cupboard remote to restore clear glass before leaving so you can watch the doctor return.']:[]),
-  'Mixing ends automatically at 30/30. Press USE or walk away to stop early. The door opening is your warning: stop before the visitor actually walks into the office. Continuing to mix once the visitor enters fails immediately. Leave unseen and watch through the window until the doctor drinks and becomes unresponsive.',
+  'Wait outside until the doctor has fully left for a break. Enter unseen and mix the fictional KTD compound into the personal coffee for 30 seconds. USE again or move away to stop early; progress is saved. Stirring stops automatically at 30/30 with the spoon-collection confirmation sound.',
+  ...(mission.country?.id==='china'&&mission.playMode==='story'&&!mission.terror?['When the coffee is ready and mixing stops, use the cupboard remote to restore clear glass before leaving so you can watch the doctor return.']:[]),
+  'Press USE or walk away to stop mixing early. Mixing ends automatically at 30/30. The door opening is your warning: stop before the visitor actually walks into the office. Continuing to mix once the visitor enters fails immediately. Leave unseen and watch through the window until the doctor drinks and becomes unresponsive.',
   'When the doctor collapses, enter and close the doors within five seconds. Then collect the nearby office key and lock up within a separate five seconds. Take the ID and basement access pass; the desk drawers are decoys.',
   'Change into the doctor’s uniform from the office cupboard. Your covert camera is already packed. Leave and secure the office again before going downstairs.',
   'In the basement, record four seconds from each of the three marked angles. Use the equipment cart to pass the requested instruments. Two incorrect or missed requests expose the disguise.',
   'Secure all three recordings before confronting the operating doctors, then escape through the ground-floor glass entrance.'
  ];
  const keys=[`Find the basement pass in ${evidenceLabel(mission.country)}. Follow the hospital notices and search monitored offices while the doctor is away.`,
-  'Find the spare theatre key in Maintenance, or crouch behind the passing charge nurse and use TALK / USE unseen.'];
+  mission.type==='rescue'?'Observe the maintenance clinician’s errands. Crouch behind them and use TALK / USE only when nobody can witness the theft; the bathroom offers a secluded opportunity. There is no spare theatre key in a cupboard.':'Find the spare theatre key in Maintenance, or crouch behind the passing charge nurse and use TALK / USE unseen.'];
  return mission.photoOnly?[...keys,
   `Photograph the ledger in ${evidenceLabel(mission.country)}, the consent file in Research (2), and the operating theatre (B).`,
   'Approach each subject, centre it in the camera and take a photo. Avoid security and harm nobody.',
   'Bring all three photographs back through the main entrance.'
  ]:[...keys,
-  'Enter the basement and confront the operating team. Protect the patient and doctors who surrender; stop anyone who attacks.',
+  `Enter the connected basement and stop the ${rescueDoctorCount(mission)} designated doctors. Search adjoining rooms and cover; some doctors hide, relocate or attack using guns, gas or injections. A doctor reaching the elevator escapes immediately. Protect the patient and any surrendered doctor.`,
   'Release the patient beside the bed, then stay close while escorting them to the lift and the main entrance.',
   'Bring any handcuffed doctor with you. Other hospital staff and patients remain protected.'
  ];

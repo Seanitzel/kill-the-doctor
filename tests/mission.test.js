@@ -57,6 +57,6 @@ test('Malformed saves are repaired and unavailable storage does not break gamepl
 });
 test('Assignments are varied, deterministic, and always placed in playable rooms', () => {
   const assignments=new Set();
-  for(let i=0;i<30;i++){const save=defaultSave();save.attempts=i;const m=new Mission(save,i+123);const again=new Mission(save,i+123);assert.equal(m.target.name,again.target.name);assert.equal(m.target.room.id,again.target.room.id);const l=makeLayout(m.target.floor);assert.ok(l.cells.has(key(m.target.room.x+1,m.target.room.z+1)));assignments.add(`${m.target.name}-${m.target.room.id}`);}
+  for(let i=0;i<30;i++){const save=defaultSave();save.playMode='freestyle';save.attempts=i;const m=new Mission(save,i+123);const again=new Mission(save,i+123);assert.equal(m.target.name,again.target.name);assert.equal(m.target.room.id,again.target.room.id);const l=makeLayout(m.target.floor);assert.ok(l.cells.has(key(m.target.room.x+1,m.target.room.z+1)));assignments.add(`${m.target.name}-${m.target.room.id}`);}
   assert.ok(assignments.size>10);
 });

@@ -45,7 +45,7 @@ test('Story sky, precipitation and sunset illumination stay visible from indoors
  assert.equal(storySkyColor('nigeria',0).getHexString(),'071e31');assert.equal(storySkyColor('nigeria',300).getHexString(),'071e31');
 });
 
-test('Romania has a setting sun followed by a nighttime-only crescent, with a gradual fade and a continuous colour transition',()=>{
+test('Romania retains a setting sun followed by a nighttime-only crescent, with a gradual fade and a continuous colour transition',()=>{
  const group=new T.Group();addEveningWeather(group,'romania',{story:true});addNightSky(group,{story:true,country:'romania'});const weather=group.userData.evening,sky=group.userData.nightSky,view={floor:0,camera:new T.PerspectiveCamera()},bodies=sky.celestials;
  try{
   weather.began=100;let previousY=Infinity;

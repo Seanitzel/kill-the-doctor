@@ -7,6 +7,7 @@ export class PhysicalPose {
     this.model=model;this.bones={};model.traverse(b=>{if(b.isBone)this.bones[b.name]=b;});
     this.records=new Map();this.changed=[];
     for(const b of Object.values(this.bones))this.records.set(b,{bone:b,p:new T.Vector3(),q:new T.Quaternion(),active:false});
+    this.leftFingers=Object.keys(this.bones).filter(n=>n.startsWith('LeftHand')&&/\d$/.test(n)).map(n=>this.bones[n]);
     this.fingers=Object.keys(this.bones).filter(n=>n.startsWith('RightHand')&&/\d$/.test(n)).map(n=>this.bones[n]);
     this.vectors=Array.from({length:96},()=>new T.Vector3());this.quaternions=Array.from({length:40},()=>new T.Quaternion());this.matrix=new T.Matrix4();
     this.scratchResult={target:new T.Vector3(),grip:new T.Vector3(),palmNormal:new T.Vector3(),error:Infinity,reachable:false};
@@ -37,8 +38,15 @@ export class PhysicalPose {
     this.save(b.Spine2);b.Spine2.rotation.x+=.16*w;this.model.updateWorldMatrix(true,true);return true;
   }
   leanToDesk(){for(const[name,angle]of[['Spine',.25],['Spine1',.12]]){const bone=this.bones[name];if(!bone)continue;this.save(bone);bone.quaternion.copy(this.records.get(bone).q);bone.rotation.x+=angle;}this.model.updateWorldMatrix(true,true);}
-  cover(direction,weight=1){const b=this.bones;if(!b.Spine)return false;this.begin();const local=this.v().copy(direction).applyQuaternion(this.model.getWorldQuaternion(this.q()).invert());for(const[name,scale]of[['Spine',.30],['Spine1',.18]]){const bone=b[name];if(!bone)continue;this.save(bone);bone.rotation.z-=local.x*scale*weight;bone.rotation.x+=local.z*scale*weight;bone.updateWorldMatrix(false,true);}return true;}
+  cover(direction,weight=1){const b=this.bones;if(!b.Spine)return false;this.begin();const local=this.v().copy(direction).applyQuaternion(this.model.getWorldQuaternion(this.q()).invert());if(b.Head){this.save(b.Head);b.Head.rotation.y+=Math.sign(local.x||local.z)*.65*(1-weight*.6);}for(const[name,scale]of[['Spine',.30],['Spine1',.18]]){const bone=b[name];if(!bone)continue;this.save(bone);bone.rotation.z-=local.x*scale*weight;bone.rotation.x+=local.z*scale*weight;bone.updateWorldMatrix(false,true);}return true;}
 
+  torch(){const b=this.bones,hand=b.LeftHand;if(!b.LeftArm||!b.LeftForeArm||!hand||!b.LeftHandMiddle1)return false;this.begin();const target=this.point(b.LeftArm).add(this.v(.025,-.19,.32));this.solve(b.LeftArm,b.LeftForeArm,hand,target,this.v(1,-.3,0));
+    const local=bone=>hand.worldToLocal(bone.getWorldPosition(this.v())),forward=local(b.LeftHandMiddle1).normalize(),across=local(b.LeftHandIndex1).sub(local(b.LeftHandRing1)),palm=this.v().copy(forward).cross(across).normalize();
+    const orientation=this.q().setFromRotationMatrix(this.basis(this.v(-.85,-.12,.2),this.v(0,1,0))).multiply(this.q().setFromRotationMatrix(this.basis(forward,palm)).invert());this.save(hand);hand.quaternion.copy(hand.parent.getWorldQuaternion(this.q()).invert().multiply(this.model.getWorldQuaternion(this.q())).multiply(orientation));
+    for(const finger of this.leftFingers){this.save(finger);finger.rotation.z-=finger.name.includes('Thumb')?.35:(finger.name.endsWith('1')?.65:finger.name.endsWith('2')?.95:.7);}
+    this.model.updateWorldMatrix(true,true);return true;}
+
+  inject(worldTarget,amount=1){const b=this.bones;if(!b.RightArm||!b.RightForeArm||!b.RightHand)return false;this.begin();const target=this.model.worldToLocal(this.v().copy(worldTarget)),start=this.point(b.RightHand),blend=T.MathUtils.smoothstep(amount,0,1);target.lerpVectors(start,target,blend);this.solve(b.RightArm,b.RightForeArm,b.RightHand,target,this.v(-1,-.25,.2));for(const f of this.fingers){this.save(f);f.rotation.z+=f.name.includes('Thumb')?.25:.6;}return true;}
   scratch(time,blend=1){
     const b=this.bones,m=this.model,hand=b.RightHand;if(!hand||!b.RightArm||!b.RightForeArm||!b.Head||!b.RightHandIndex2||!b.RightHandMiddle2||!b.RightHandIndex1||!b.RightHandRing1)return null;
     this.begin();
